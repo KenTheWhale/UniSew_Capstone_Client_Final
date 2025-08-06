@@ -1,39 +1,102 @@
-import { Box, Paper, Stack, Container, Divider } from '@mui/material';
-import { Typography, Button, Space } from 'antd';
-import { 
-    CheckCircleOutlined, 
-    CloseCircleOutlined, 
-    DollarOutlined, 
-    UserOutlined, 
-    CalendarOutlined, 
-    EditOutlined, 
-    FileTextOutlined,
+import {Box, Container, Divider, Paper, Stack} from '@mui/material';
+import {Button, Typography} from 'antd';
+import {
     ArrowRightOutlined,
+    CalendarOutlined,
+    CheckCircleOutlined,
+    ClockCircleOutlined,
+    CloseCircleOutlined,
+    DollarOutlined,
+    EditOutlined,
+    FileTextOutlined,
     SafetyCertificateOutlined,
-    ClockCircleOutlined
+    UserOutlined
 } from '@ant-design/icons';
 import {parseID} from "../../utils/ParseIDUtil.jsx";
+import {pickPackage} from "../../services/DesignService.jsx";
+import {useEffect, useState} from 'react';
 
 export default function PaymentResult() {
+    if(!sessionStorage.getItem('paymentPackageDetails')){
+        window.location.href = '/school/design'
+    }
+
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [hasProcessed, setHasProcessed] = useState(false);
+    
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
-    const stateParam = urlParams.get('state');
-    
+
+    const vnpResponseCode = urlParams.get('vnp_ResponseCode');
+    const vnpTransactionStatus = urlParams.get('vnp_TransactionStatus');
+    const vnpAmount = urlParams.get('vnp_Amount');
+    const vnpOrderInfo = urlParams.get('vnp_OrderInfo');
+    const vnpTxnRef = urlParams.get('vnp_TxnRef');
+
     let success = false;
     let packageDetails = null;
 
-    if (stateParam) {
-        try {
-            const decodedState = decodeURIComponent(stateParam);
-            const parsedState = JSON.parse(decodedState);
-            success = parsedState.success;
-            packageDetails = parsedState.packageDetails;
-        } catch (error) {
-            console.error('Error parsing state from URL:', error);
+    if (vnpResponseCode !== null) {
+
+        success = vnpResponseCode === '00';
+        
+
+        if (success && vnpOrderInfo) {
+
+            try {
+                const storedPackageDetails = sessionStorage.getItem('paymentPackageDetails');
+                if (storedPackageDetails) {
+                    packageDetails = JSON.parse(storedPackageDetails);
+                }
+            } catch (error) {
+                console.error('Error parsing stored package details:', error);
+            }
+        }
+    } else {
+        // Fallback to old state parameter method
+        const stateParam = urlParams.get('state');
+        if (stateParam) {
+            try {
+                const decodedState = decodeURIComponent(stateParam);
+                const parsedState = JSON.parse(decodedState);
+                success = parsedState.success;
+                packageDetails = parsedState.packageDetails;
+            } catch (error) {
+                console.error('Error parsing state from URL:', error);
+            }
         }
     }
 
     const { designer, package: pkg, request } = packageDetails || {};
+
+    // Call pickPackage when payment is successful
+    useEffect(() => {
+        const processPaymentSuccess = async () => {
+            if (success && packageDetails && !hasProcessed && !isProcessing) {
+                setIsProcessing(true);
+                try {
+                    const data = {
+                        packageId: pkg.id,
+                        designRequestId: request.id
+                    };
+                    
+                    const response = await pickPackage(data);
+                    if (response && response.status === 200) {
+                        console.log('Package picked successfully');
+                    } else {
+                        console.error('Failed to pick package');
+                    }
+                } catch (error) {
+                    console.error('Error picking package:', error);
+                } finally {
+                    setIsProcessing(false);
+                    setHasProcessed(true);
+                }
+            }
+        };
+
+        processPaymentSuccess();
+    }, [success, packageDetails, hasProcessed, isProcessing, pkg, request]);
 
     return (
         <Box sx={{ 
@@ -78,9 +141,28 @@ export default function PaymentResult() {
                                     Payment Successful!
                                 </Typography.Title>
                                 <Typography.Paragraph style={{ fontSize: '16px', color: '#475569', margin: 0, maxWidth: '500px' }}>
-                                    Your payment for the design package has been successfully processed. 
-                                    Your designer will be notified and will begin working on your project.
+                                    Your payment for the design package has been successfully processed.
                                 </Typography.Paragraph>
+                                
+                                {/* VNPay Transaction Details */}
+                                {vnpTxnRef && (
+                                    <Box sx={{ 
+                                        mt: 2, 
+                                        p: 2, 
+                                        backgroundColor: '#f6ffed', 
+                                        borderRadius: 2,
+                                        border: '1px solid #b7eb8f'
+                                    }}>
+                                        <Typography.Text style={{ fontSize: '14px', color: '#52c41a', fontWeight: 600 }}>
+                                            Transaction ID: {vnpTxnRef}
+                                        </Typography.Text>
+                                        {vnpAmount && (
+                                            <Typography.Text style={{ fontSize: '14px', color: '#52c41a', display: 'block', mt: 1 }}>
+                                                Amount: {(parseInt(vnpAmount) / 100).toLocaleString('vi-VN')} VND
+                                            </Typography.Text>
+                                        )}
+                                    </Box>
+                                )}
                                 
                                 {/* Success Features */}
                                 <Box sx={{ display: 'flex', gap: 3, mt: 2 }}>
@@ -118,6 +200,26 @@ export default function PaymentResult() {
                                 <Typography.Paragraph style={{ fontSize: '16px', color: '#475569', margin: 0, maxWidth: '500px' }}>
                                     There was an issue with your payment. Please check your payment method and try again.
                                 </Typography.Paragraph>
+                                
+                                {/* VNPay Error Details */}
+                                {vnpResponseCode && vnpResponseCode !== '00' && (
+                                    <Box sx={{ 
+                                        mt: 2, 
+                                        p: 2, 
+                                        backgroundColor: '#fff2f0', 
+                                        borderRadius: 2,
+                                        border: '1px solid #ffccc7'
+                                    }}>
+                                        <Typography.Text style={{ fontSize: '14px', color: '#f5222d', fontWeight: 600 }}>
+                                            Response Code: {vnpResponseCode}
+                                        </Typography.Text>
+                                        {vnpTxnRef && (
+                                            <Typography.Text style={{ fontSize: '14px', color: '#f5222d', display: 'block', mt: 1 }}>
+                                                Transaction ID: {vnpTxnRef}
+                                            </Typography.Text>
+                                        )}
+                                    </Box>
+                                )}
                             </Stack>
                         )}
                     </Paper>
@@ -276,7 +378,11 @@ export default function PaymentResult() {
                                 backgroundColor: '#1976d2',
                                 borderColor: '#1976d2'
                             }}
-                            onClick={() => window.location.href = '/school/design'}
+                            onClick={() => {
+                                // Clear sessionStorage after successful processing
+                                sessionStorage.removeItem('paymentPackageDetails');
+                                window.location.href = '/school/design'
+                            }}
                         >
                             Go to Design Management
                         </Button>

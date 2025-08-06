@@ -14,6 +14,8 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Paper, Divider, Chip } from '@mui/material';
 import {parseID} from "../../../utils/ParseIDUtil.jsx";
 import {pickPackage} from "../../../services/DesignService.jsx";
+import {getPaymentUrl} from "../../../services/PaymentService.jsx";
+import {enqueueSnackbar} from "notistack";
 
 export default function DesignPaymentPopup({ visible, onCancel, selectedPackageDetails }) {
 
@@ -32,20 +34,30 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedPackageD
     const isFullPackageDetails = designer && pkg;
 
     const handleProceedToPayment = async () => {
-        // In a real application, you would integrate with a payment gateway here
-        // For now, we simulate success and navigate to PaymentResult
-        const result = true
-        const data = {
-            packageId: pkg.id,
-            designRequestId: request.id
-        }
-        pickPackage(data).then(res => {
-            if(res && res.status === 200){
-                onCancel();
-                const stateToPass = encodeURIComponent(JSON.stringify({ success: result, packageDetails: selectedPackageDetails }));
-                window.location.href = `/school/payment/result?state=${stateToPass}`;
+        try {
+            // Store package details in sessionStorage for VNPay callback
+            const packageDetailsToStore = {
+                designer: designer,
+                package: pkg,
+                request: request
+            };
+            sessionStorage.setItem('paymentPackageDetails', JSON.stringify(packageDetailsToStore));
+            
+            const response = await getPaymentUrl(
+                pkg.pkgFee,
+                `Payment for ${pkg.name} package - Design Request ${parseID(request.id, 'dr')}`,
+                'design_request',
+                '/school/payment/result'
+            );
+            
+            if (response && response.status === 200) {
+                window.location.href = response.data.body.url;
+            } else {
+                enqueueSnackbar('Failed to generate payment URL. Please try again.', {variant: 'error'})
             }
-        })
+        } catch (error) {
+            enqueueSnackbar('Error generating payment URL', {variant: 'error'})
+        }
     };
 
     return (

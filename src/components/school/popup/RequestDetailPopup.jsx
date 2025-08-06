@@ -20,6 +20,7 @@ import { parseID } from "../../../utils/ParseIDUtil.jsx";
 import { Box, Chip } from '@mui/material';
 import { PiShirtFoldedFill, PiPantsFill } from "react-icons/pi";
 import { GiSkirt } from "react-icons/gi";
+import DisplayImage from '../../ui/DisplayImage.jsx';
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function statusTag(status) {
@@ -77,7 +78,6 @@ const getItemIcon = (itemType) => {
 };
 
 export default function RequestDetailPopup({ visible, onCancel, request }) {
-    const [selectedImage, setSelectedImage] = useState(null);
     
     if (!request) {
         return (
@@ -264,19 +264,12 @@ export default function RequestDetailPopup({ visible, onCancel, request }) {
                             </Space>
                         } size="small">
                             <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                                <img 
-                                    src={request.logoImage} 
-                                    alt="Logo Design"
-                                    style={{
-                                        maxWidth: '200px',
-                                        maxHeight: '200px',
-                                        objectFit: 'contain',
-                                        border: '1px solid #e0e0e0',
-                                        borderRadius: '8px',
-                                        cursor: 'pointer'
-                                    }}
-                                    onClick={() => setSelectedImage(request.logoImage)}
-                                />
+                                                            <DisplayImage 
+                                imageUrl={request.logoImage} 
+                                alt="Logo Design"
+                                width="200px"
+                                height="200px"
+                            />
                             </Box>
                         </Card>
                     )}
@@ -352,19 +345,12 @@ export default function RequestDetailPopup({ visible, onCancel, request }) {
                                                 </Text>
                                                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                                                     {item.images.map((image, imgIndex) => (
-                                                        <img
+                                                        <DisplayImage
                                                             key={imgIndex}
-                                                            src={image.url}
+                                                            imageUrl={image.url}
                                                             alt={`Reference ${imgIndex + 1}`}
-                                                            style={{
-                                                                width: '60px',
-                                                                height: '60px',
-                                                                objectFit: 'cover',
-                                                                borderRadius: '4px',
-                                                                border: '1px solid #e0e0e0',
-                                                                cursor: 'pointer'
-                                                            }}
-                                                            onClick={() => setSelectedImage(image.url)}
+                                                            width="60px"
+                                                            height="60px"
                                                         />
                                                     ))}
                                                 </Box>
@@ -412,26 +398,7 @@ export default function RequestDetailPopup({ visible, onCancel, request }) {
                 </Box>
             </Modal>
 
-            {/* Image Preview Modal */}
-            <Modal
-                open={!!selectedImage}
-                onCancel={() => setSelectedImage(null)}
-                footer={null}
-                centered
-                width={600}
-            >
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2 }}>
-                    <img 
-                        src={selectedImage} 
-                        alt="Preview"
-                        style={{
-                            maxWidth: '100%',
-                            maxHeight: '400px',
-                            objectFit: 'contain'
-                        }}
-                    />
-                </Box>
-            </Modal>
+
         </>
     );
 }
