@@ -18,10 +18,44 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import EmojiPicker from 'emoji-picker-react';
 import { useSnackbar } from 'notistack';
 import { parseID } from '../../../utils/ParseIDUtil.jsx';
+import { addDoc, collection, serverTimestamp, onSnapshot, query, where } from 'firebase/firestore';
+import { auth, db } from "../../../services/firebase-config.jsx";
 
 const { TextArea } = Input;
 const { Title, Text } = Typography;
 
+export function useDesignChatMessages(roomId) {
+    const [chatMessages, setChatMessages] = useState([]);
+
+    useEffect(() => {
+        if (!roomId) return;
+        const messageRef = collection(db, "messages");
+        const queryMessages = query(messageRef, where("room", "==", roomId));
+
+        const unsubscribe = onSnapshot(queryMessages, (snapshot) => {
+            let messages = [];
+            snapshot.forEach(doc => {
+                messages.push({ ...doc.data(), id: doc.id });
+            });
+            messages.sort((a, b) => a.createdAt?.seconds - b.createdAt?.seconds);
+            setChatMessages(messages);
+        });
+        return () => unsubscribe();
+    }, [roomId]);
+
+    const sendMessage = async (text) => {
+        if (!text) return;
+        const messageRef = collection(db, "messages");
+        await addDoc(messageRef, {
+            text,
+            createdAt: serverTimestamp(),
+            user: auth.currentUser?.displayName || "User",
+            room: roomId,
+        });
+    };
+
+    return { chatMessages, sendMessage };
+}
 // New RevisionRequestModal component
 function RevisionRequestModal({ visible, onCancel, onSubmit, selectedDeliveryId }) {
     const [form] = Form.useForm();
@@ -101,8 +135,8 @@ function RevisionRequestModal({ visible, onCancel, onSubmit, selectedDeliveryId 
 
 export default function DesignChat() {
     const [requestData, setRequestData] = useState(null);
-    const [chatMessages, setChatMessages] = useState([]);
-    const [newMessage, setNewMessage] = useState('');
+    // const [chatMessages, setChatMessages] = useState([]);
+    // const [newMessage, setNewMessage] = useState('');
     const [designDeliveries, setDesignDeliveries] = useState([
         { id: 1, name: 'Concept 1.0', link: '#', date: '2024-01-15', status: 'delivered' },
         { id: 2, name: 'Concept 2.0', link: '#', date: '2024-01-18', status: 'delivered' },
@@ -120,6 +154,9 @@ export default function DesignChat() {
     const [isConfirmFinalModalVisible, setIsConfirmFinalModalVisible] = useState(false);
     const [deliveryToMakeFinal, setDeliveryToMakeFinal] = useState(null);
     const [isFinalDesignSet, setIsFinalDesignSet] = useState(false);
+    const roomId = requestData?.id;
+    const { chatMessages, sendMessage } = useDesignChatMessages(roomId);
+    const [newMessage, setNewMessage] = useState('');
 
     useEffect(() => {
         const storedRequest = localStorage.getItem('currentDesignRequest');
@@ -131,15 +168,23 @@ export default function DesignChat() {
         }
     }, []);
 
+    // const handleSendMessage = () => {
+    //     if (newMessage.trim()) {
+    //         const now = new Date();
+    //         const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    //         const formattedDay = now.toLocaleDateString('en-US', { weekday: 'short' });
+    //         setChatMessages([...chatMessages, { text: newMessage, sender: 'user', timestamp: `${formattedDay}, ${formattedTime}` }]);
+    //         setNewMessage('');
+    //         setShowEmojiPicker(false); // Hide picker after sending
+    //         // In a real application, you would send this message to a backend
+    //     }
+    // };
+
     const handleSendMessage = () => {
         if (newMessage.trim()) {
-            const now = new Date();
-            const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-            const formattedDay = now.toLocaleDateString('en-US', { weekday: 'short' });
-            setChatMessages([...chatMessages, { text: newMessage, sender: 'user', timestamp: `${formattedDay}, ${formattedTime}` }]);
+            sendMessage(newMessage.trim());
             setNewMessage('');
-            setShowEmojiPicker(false); // Hide picker after sending
-            // In a real application, you would send this message to a backend
+            setShowEmojiPicker(false);
         }
     };
 
@@ -346,21 +391,22 @@ export default function DesignChat() {
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                         {chatMessages.map((msg, index) => (
                                             <Box
-                                                key={index}
+                                                key={msg.id || index}
                                                 sx={{
                                                     display: 'flex',
-                                                    justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
+                                                    justifyContent: msg.user === (auth.currentUser?.displayName || "User") ? 'flex-end' : 'flex-start',
                                                     mb: 2
                                                 }}
                                             >
+                                                {/* ... Bubble/chat UI như cũ, chỉ đổi chỗ lấy sender/message */}
                                                 <Box sx={{
                                                     display: 'flex',
                                                     alignItems: 'flex-end',
                                                     gap: 1,
                                                     maxWidth: '70%'
                                                 }}>
-                                                    {msg.sender !== 'user' && (
-                                                        <Avatar 
+                                                    {msg.user !== (auth.currentUser?.displayName || "User") && (
+                                                        <Avatar
                                                             size="small"
                                                             style={{ backgroundColor: '#1976d2' }}
                                                             icon={<UserSwitchOutlined />}
@@ -369,38 +415,33 @@ export default function DesignChat() {
                                                     <Box sx={{
                                                         p: 2,
                                                         borderRadius: 4,
-                                                        backgroundColor: msg.sender === 'user' ? 'linear-gradient(135deg, #1976d2, #42a5f5)' : 'white',
-                                                        color: msg.sender === 'user' ? 'white' : '#1e293b',
-                                                        border: msg.sender !== 'user' ? '2px solid #e2e8f0' : 'none',
+                                                        backgroundColor: msg.user === (auth.currentUser?.displayName || "User")
+                                                            ? 'linear-gradient(135deg, #1976d2, #42a5f5)'
+                                                            : 'white',
+                                                        color: msg.user === (auth.currentUser?.displayName || "User") ? 'white' : '#1e293b',
+                                                        border: msg.user !== (auth.currentUser?.displayName || "User") ? '2px solid #e2e8f0' : 'none',
                                                         maxWidth: '100%',
                                                         wordWrap: 'break-word',
-                                                        boxShadow: msg.sender === 'user' ? '0 4px 12px rgba(25, 118, 210, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                                        position: 'relative',
-                                                        '&::before': msg.sender === 'user' ? {
-                                                            content: '""',
-                                                            position: 'absolute',
-                                                            top: 0,
-                                                            left: 0,
-                                                            right: 0,
-                                                            height: '2px',
-                                                        } : {}
+                                                        boxShadow: msg.user === (auth.currentUser?.displayName || "User")
+                                                            ? '0 4px 12px rgba(25, 118, 210, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                                        position: 'relative'
                                                     }}>
                                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                                            <Typography.Text 
-                                                                style={{ 
-                                                                    fontSize: '12px', 
-                                                                    color: msg.sender === 'user' ? 'rgba(1, 1, 1, 0.8)' : '#64748b'
+                                                            <Typography.Text
+                                                                style={{
+                                                                    fontSize: '12px',
+                                                                    color: msg.user === (auth.currentUser?.displayName || "User")
+                                                                        ? 'rgba(1, 1, 1, 0.8)' : '#64748b'
                                                                 }}
                                                             >
-                                                                {msg.sender === 'user' ? 'You' : 'Designer'}
+                                                                {msg.user === (auth.currentUser?.displayName || "User") ? 'You' : msg.user}
                                                             </Typography.Text>
-                                                            <Typography.Text 
-                                                                style={{ 
-                                                                    fontSize: '11px', 
-                                                                    color: msg.sender === 'user' ? 'rgba(1, 1, 1, 0.8)' : '#94a3b8'
-                                                                }}
+                                                            <Typography.Text
+                                                                style={{ fontSize: '11px', color: '#94a3b8' }}
                                                             >
-                                                                {msg.timestamp}
+                                                                {msg.createdAt?.seconds
+                                                                    ? new Date(msg.createdAt.seconds * 1000).toLocaleTimeString()
+                                                                    : ''}
                                                             </Typography.Text>
                                                         </Box>
                                                         {msg.text && (
@@ -408,23 +449,9 @@ export default function DesignChat() {
                                                                 {msg.text}
                                                             </Typography.Text>
                                                         )}
-                                                        {msg.imageUrl && (
-                                                            <Box sx={{ mt: 1 }}>
-                                                                <img 
-                                                                    src={msg.imageUrl} 
-                                                                    alt="Uploaded" 
-                                                                    style={{ 
-                                                                        maxWidth: '100%', 
-                                                                        borderRadius: '8px',
-                                                                        maxHeight: '200px',
-                                                                        objectFit: 'cover'
-                                                                    }} 
-                                                                />
-                                                            </Box>
-                                                        )}
                                                     </Box>
-                                                    {msg.sender === 'user' && (
-                                                        <Avatar 
+                                                    {msg.user === (auth.currentUser?.displayName || "User") && (
+                                                        <Avatar
                                                             size="small"
                                                             style={{ backgroundColor: '#52c41a' }}
                                                             icon={<UserOutlined />}
@@ -446,7 +473,7 @@ export default function DesignChat() {
                                             value={newMessage}
                                             onChange={(e) => setNewMessage(e.target.value)}
                                             onPressEnter={handleSendMessage}
-                                            style={{ 
+                                            style={{
                                                 borderRadius: '25px',
                                                 padding: '16px 20px',
                                                 fontSize: '16px',
@@ -520,9 +547,9 @@ export default function DesignChat() {
                                             }
                                         }}
                                     />
-                                    <Button 
-                                        type="primary" 
-                                        icon={<SendOutlined />} 
+                                    <Button
+                                        type="primary"
+                                        icon={<SendOutlined />}
                                         onClick={handleSendMessage}
                                         style={{ 
                                             borderRadius: '50%', 
