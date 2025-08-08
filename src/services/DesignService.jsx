@@ -15,6 +15,11 @@ export const getSchoolDesignRequests = async () => {
     return response || null
 }
 
+export const getAppliedDesignerDesignRequests = async () => {
+    const response = await axiosClient.post("/design/designer/request")
+    return response || null
+}
+
 export const getDesignRequests = async () => {
     const response = await axiosClient.get("/design/pending/request")
     return response || null

@@ -23,7 +23,8 @@ import {
     TableChart,
     Timeline,
     Visibility,
-    Inventory
+    Inventory,
+    Assignment
 } from '@mui/icons-material';
 import {Tag} from 'antd';
 import {signout} from "../../services/AccountService.jsx";
@@ -40,8 +41,11 @@ export default function DesignerDashboardLayout() {
         const pathname = location.pathname;
         if (pathname.includes('/designer/requests') || pathname.includes('/designer/dashboard')) {
             setActiveMenu('requests');
-        } else if (pathname.includes('/designer/packages')) {
-            setActiveMenu('packages');
+        } else if (pathname.includes('/designer/applied/requests')) {
+            setActiveMenu('applied');
+        } else {
+            // If current route doesn't match any navbar items, set no active menu
+            setActiveMenu('');
         }
     }, [location.pathname]);
 
@@ -207,11 +211,11 @@ export default function DesignerDashboardLayout() {
                                     my: 0.5,
                                     background: activeMenu === 'requests'
                                         ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                                        : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+                                        : 'transparent',
                                     color: activeMenu === 'requests' ? 'white' : '#495057',
                                     boxShadow: activeMenu === 'requests'
                                         ? '0 4px 12px rgba(102, 126, 234, 0.3)'
-                                        : '0 2px 8px rgba(0, 0, 0, 0.05)',
+                                        : 'none',
                                     '&:hover': {
                                         background: activeMenu === 'requests'
                                             ? 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)'
@@ -231,6 +235,42 @@ export default function DesignerDashboardLayout() {
                                     </ListItemIcon>
                                     <ListItemText
                                         primary="Requested Designs"
+                                        sx={{fontWeight: 600}}
+                                    />
+                                </ListItemButton>
+                            </ListItem>
+                            <ListItem disablePadding>
+                                <ListItemButton
+                                    sx={{
+                                        borderRadius: 2,
+                                        mx: 1,
+                                        my: 0.5,
+                                        background: activeMenu === 'applied'
+                                            ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                                            : 'transparent',
+                                        color: activeMenu === 'applied' ? 'white' : '#495057',
+                                        boxShadow: activeMenu === 'applied'
+                                            ? '0 4px 12px rgba(102, 126, 234, 0.3)'
+                                            : 'none',
+                                        '&:hover': {
+                                            background: activeMenu === 'applied'
+                                                ? 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)'
+                                                : 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
+                                            color: activeMenu === 'applied' ? 'white' : '#1976d2',
+                                            transform: 'translateY(-1px)',
+                                            boxShadow: activeMenu === 'applied'
+                                                ? '0 6px 16px rgba(102, 126, 234, 0.4)'
+                                                : '0 4px 12px rgba(25, 118, 210, 0.2)'
+                                        },
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                    onClick={() => window.location.href = '/designer/applied/requests'}
+                                >
+                                    <ListItemIcon sx={{color: activeMenu === 'applied' ? 'white' : 'inherit'}}>
+                                        <Assignment/>
+                                    </ListItemIcon>
+                                    <ListItemText
+                                        primary="Applied Designs"
                                         sx={{fontWeight: 600}}
                                     />
                                 </ListItemButton>

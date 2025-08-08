@@ -1,33 +1,24 @@
 import React, {useState} from 'react';
-import {Button, Space, Spin, Tag, Typography, Card, Row, Col, Avatar, Divider, InputNumber, Rate} from 'antd';
-import {Dialog, DialogTitle, DialogContent, DialogActions} from '@mui/material';
+import {Button, Card, Col, Row, Space, Spin, Tag, Typography} from 'antd';
+import {Avatar, Box, Dialog, DialogActions, DialogContent, DialogTitle} from '@mui/material';
 import {
-    CalendarOutlined,
+    BankOutlined,
     CheckCircleOutlined,
+    ClockCircleOutlined,
     CloseCircleOutlined,
+    DollarOutlined,
+    EnvironmentOutlined,
     FileTextOutlined,
     InfoCircleOutlined,
-    SyncOutlined,
-    UserOutlined,
-    DollarOutlined,
-    ClockCircleOutlined,
-    EditOutlined,
-    PictureOutlined,
-    BankOutlined,
-    GiftOutlined,
-    StarOutlined,
     PhoneOutlined,
-    MailOutlined,
-    EnvironmentOutlined,
-    ShopOutlined
+    PictureOutlined,
+    ShopOutlined,
+    SyncOutlined
 } from '@ant-design/icons';
-import {DesignServices} from '@mui/icons-material';
-import {useNavigate} from 'react-router-dom';
-import {parseID} from "../../../utils/ParseIDUtil.jsx";
-import {Box, Chip} from '@mui/material';
-import {PiShirtFoldedFill, PiPantsFill} from "react-icons/pi";
+import {parseID} from "../../utils/ParseIDUtil.jsx";
+import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
 import {GiSkirt} from "react-icons/gi";
-import DisplayImage from '../../ui/DisplayImage.jsx';
+import DisplayImage from '../ui/DisplayImage.jsx';
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function statusTag(status) {
@@ -88,9 +79,8 @@ const getItemIcon = (itemType) => {
     }
 };
 
-export default function RequestDetailPopup({visible, onCancel, request}) {
-    const [extraRevision, setExtraRevision] = useState(0);
-    const [showExtraRevisionModal, setShowExtraRevisionModal] = useState(false);
+export default function AppliedRequestDetail({visible, onCancel, request}) {
+    const [showChatModal, setShowChatModal] = useState(false);
 
     if (!request) {
         return (
@@ -111,36 +101,24 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
         let buttonAction;
 
         switch (status) {
-            case 'created':
-                buttonText = 'Submit design request';
-                buttonAction = onCancel;
-                break;
-            case 'completed':
-                buttonText = 'Create Order';
-                buttonAction = onCancel;
-                break;
-            case 'unpaid':
-                buttonText = 'Make Payment';
-                buttonAction = () => setShowExtraRevisionModal(true);
-                break;
             case 'paid':
-                buttonText = 'Chat with designer';
+                buttonText = 'Start Chat with School';
                 buttonAction = () => {
                     localStorage.setItem('currentDesignRequest', JSON.stringify(request));
                     onCancel();
-                    window.location.href = '/school/chat';
-                };
-                break;
-            case 'pending':
-                buttonText = 'Chat with designer';
-                buttonAction = () => {
-                    localStorage.setItem('currentDesignRequest', JSON.stringify(request));
-                    onCancel();
-                    window.location.href = '/school/chat';
+                    window.location.href = '/designer/chat';
                 };
                 break;
             case 'progressing':
-                buttonText = 'View request progress';
+                buttonText = 'Continue Working';
+                buttonAction = () => {
+                    localStorage.setItem('currentDesignRequest', JSON.stringify(request));
+                    onCancel();
+                    window.location.href = '/designer/chat';
+                };
+                break;
+            case 'completed':
+                buttonText = 'View Final Design';
                 buttonAction = onCancel;
                 break;
             case 'rejected':
@@ -204,12 +182,12 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                 }}>
                     <InfoCircleOutlined style={{color: 'white', fontSize: '18px'}}/>
                     <span style={{fontWeight: 600, fontSize: '16px'}}>
-                        Design Request: {parseID(request.id, 'dr')}
+                        Applied Design Request: {parseID(request.id, 'dr')}
                     </span>
                 </DialogTitle>
                 <DialogContent sx={{padding: '20px', overflowY: 'auto'}}>
                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
-
+                        
                         {/* Compact Header */}
                         <Card
                             size="small"
@@ -226,7 +204,7 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                             {request.name}
                                         </Text>
                                         <Text style={{color: '#64748b', fontSize: '12px'}}>
-                                            Created: {formatDate(request.creationDate)}
+                                            Applied: {formatDate(request.creationDate)}
                                         </Text>
                                     </Space>
                                 </Col>
@@ -236,7 +214,7 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                             Design Request
                                         </Text>
                                         <Text style={{fontSize: '10px', color: '#94a3b8'}}>
-                                            Basic Information
+                                            Project Information
                                         </Text>
                                     </Space>
                                 </Col>
@@ -253,108 +231,92 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
 
                         {/* Main Content - Two Columns */}
                         <Row gutter={[16, 16]}>
-                            {/* Left Column - Designer & Quotation */}
+                            {/* Left Column - School & Quotation */}
                             <Col span={12}>
                                 <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
-
-                                    {/* Designer Info */}
-                                    {request.finalDesignQuotation && (
-                                        <Card
-                                            title={
-                                                <Space>
-                                                    <UserOutlined style={{color: '#1976d2'}}/>
-                                                    <span style={{
-                                                        fontWeight: 600,
-                                                        fontSize: '14px'
-                                                    }}>Selected Designer</span>
-                                                </Space>
-                                            }
-                                            size="small"
-                                            style={{
-                                                border: '1px solid #e2e8f0',
-                                                borderRadius: 8
-                                            }}
-                                        >
-                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
-                                                <Avatar
-                                                    size={48}
-                                                    src={request.finalDesignQuotation.designer.customer.avatar || request.finalDesignQuotation.designer.customer.name.charAt(0)}
-                                                    style={{
-                                                        border: '2px solid #1976d2',
-                                                        backgroundColor: '#1976d2'
-                                                    }}
-                                                >
-                                                    {request.finalDesignQuotation.designer.customer.name.charAt(0)}
-                                                </Avatar>
-                                                <Box sx={{flex: 1}}>
-                                                    <Text style={{fontWeight: 600, fontSize: '14px', color: '#1e293b'}}>
-                                                        {request.finalDesignQuotation.designer.customer.name}
+                                    
+                                    {/* School Info */}
+                                    <Card 
+                                        title={
+                                            <Space>
+                                                <BankOutlined style={{color: '#1976d2'}}/>
+                                                <span style={{fontWeight: 600, fontSize: '14px'}}>School Information</span>
+                                            </Space>
+                                        } 
+                                        size="small"
+                                        style={{
+                                            border: '1px solid #e2e8f0',
+                                            borderRadius: 8
+                                        }}
+                                    >
+                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                            <Avatar
+                                                sx={{
+                                                    width: 48,
+                                                    height: 48,
+                                                    backgroundColor: '#1976d2',
+                                                    fontSize: '18px',
+                                                    fontWeight: 600
+                                                }}
+                                                src={request.school?.avatar}
+                                                slotProps={{
+                                                    img: {
+                                                        referrerPolicy: 'no-referrer'
+                                                    }
+                                                }}
+                                            />
+                                            <Box sx={{flex: 1}}>
+                                                <Text style={{fontWeight: 600, fontSize: '14px', color: '#1e293b'}}>
+                                                    {request.school?.business || 'School Name'}
+                                                </Text>
+                                                <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mt: 0.5}}>
+                                                    <Text style={{fontSize: '10px', color: '#64748b'}}>
+                                                        School Client
                                                     </Text>
-                                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mt: 0.5}}>
-                                                        <Rate
-                                                            disabled
-                                                            defaultValue={request.finalDesignQuotation.designer.rating}
-                                                            style={{fontSize: '10px'}}
-                                                        />
-                                                        <Text style={{fontSize: '10px', color: '#64748b'}}>
-                                                            ({request.finalDesignQuotation.designer.rating})
-                                                        </Text>
-                                                    </Box>
                                                 </Box>
                                             </Box>
-
-                                            <Row gutter={[8, 8]}>
-                                                <Col span={12}>
-                                                    <Space direction="vertical" size="small">
-                                                        <Space>
-                                                            <ShopOutlined style={{color: '#1976d2', fontSize: '12px'}}/>
-                                                            <Text style={{fontSize: '12px'}}>
-                                                                {request.finalDesignQuotation.designer.customer.business}
-                                                            </Text>
-                                                        </Space>
-                                                        <Space>
-                                                            <PhoneOutlined
-                                                                style={{color: '#1976d2', fontSize: '12px'}}/>
-                                                            <Text style={{fontSize: '12px', color: '#64748b'}}>
-                                                                {request.finalDesignQuotation.designer.customer.phone}
-                                                            </Text>
-                                                        </Space>
+                                        </Box>
+                                        
+                                        <Row gutter={[8, 8]}>
+                                            <Col span={12}>
+                                                <Space direction="vertical" size="small">
+                                                    <Space>
+                                                        <ShopOutlined style={{color: '#1976d2', fontSize: '12px'}}/>
+                                                        <Text style={{fontSize: '12px'}}>
+                                                            {request.school?.name || 'School Institution'}
+                                                        </Text>
                                                     </Space>
-                                                </Col>
-                                                <Col span={12}>
-                                                    <Space direction="vertical" size="small">
-                                                        <Space>
-                                                            <EnvironmentOutlined
-                                                                style={{color: '#64748b', fontSize: '12px'}}/>
-                                                            <Text style={{fontSize: '12px', color: '#64748b'}}>
-                                                                {request.finalDesignQuotation.designer.customer.address}
-                                                            </Text>
-                                                        </Space>
-                                                        <Space>
-                                                            <ClockCircleOutlined
-                                                                style={{color: '#1976d2', fontSize: '12px'}}/>
-                                                            <Text style={{fontSize: '12px', color: '#64748b'}}>
-                                                                {request.finalDesignQuotation.designer.startTime} - {request.finalDesignQuotation.designer.endTime}
-                                                            </Text>
-                                                        </Space>
+                                                    <Space>
+                                                        <PhoneOutlined style={{color: '#1976d2', fontSize: '12px'}}/>
+                                                        <Text style={{fontSize: '12px', color: '#64748b'}}>
+                                                            Contact: {request.school?.phone || 'Available'}
+                                                        </Text>
                                                     </Space>
-                                                </Col>
-                                            </Row>
-                                        </Card>
-                                    )}
+                                                </Space>
+                                            </Col>
+                                            <Col span={12}>
+                                                <Space direction="vertical" size="small">
+                                                    <Space>
+                                                        <EnvironmentOutlined style={{color: '#64748b', fontSize: '12px'}}/>
+                                                        <Text style={{fontSize: '12px', color: '#64748b'}}>
+                                                            Location: {request.school?.address || 'Available'}
+                                                        </Text>
+                                                    </Space>
+                                                    <Space></Space>
+                                                </Space>
+                                            </Col>
+                                        </Row>
+                                    </Card>
 
-                                    {/* Service Summary */}
-                                    {request.finalDesignQuotation && (
-                                        <Card
+                                    {/* Quotation Summary */}
+                                    {request.finalDesignQuotation && request.price && (
+                                        <Card 
                                             title={
                                                 <Space>
                                                     <DollarOutlined style={{color: '#1976d2'}}/>
-                                                    <span style={{
-                                                        fontWeight: 600,
-                                                        fontSize: '14px'
-                                                    }}>Service Summary</span>
+                                                    <span style={{fontWeight: 600, fontSize: '14px'}}>Your Quotation</span>
                                                 </Space>
-                                            }
+                                            } 
                                             size="small"
                                             style={{
                                                 border: '1px solid #e2e8f0',
@@ -374,19 +336,11 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                                         flexDirection: 'column',
                                                         justifyContent: 'center'
                                                     }}>
-                                                        <Text style={{
-                                                            fontSize: '10px',
-                                                            color: '#166534',
-                                                            fontWeight: 600
-                                                        }}>
+                                                        <Text style={{fontSize: '10px', color: '#166534', fontWeight: 600}}>
                                                             PRICE (VND)
                                                         </Text>
-                                                        <Title level={4} style={{
-                                                            margin: '4px 0 0 0',
-                                                            color: '#166534',
-                                                            fontWeight: 700
-                                                        }}>
-                                                            {formatCurrency(request.price)}
+                                                        <Title level={4} style={{margin: '4px 0 0 0', color: '#166534', fontWeight: 700}}>
+                                                            {formatCurrency(request.price || 0)}
                                                         </Title>
                                                     </Box>
                                                 </Col>
@@ -402,19 +356,11 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                                         flexDirection: 'column',
                                                         justifyContent: 'center'
                                                     }}>
-                                                        <Text style={{
-                                                            fontSize: '10px',
-                                                            color: '#92400e',
-                                                            fontWeight: 600
-                                                        }}>
+                                                        <Text style={{fontSize: '10px', color: '#92400e', fontWeight: 600}}>
                                                             DELIVERY
                                                         </Text>
-                                                        <Title level={4} style={{
-                                                            margin: '4px 0 0 0',
-                                                            color: '#92400e',
-                                                            fontWeight: 700
-                                                        }}>
-                                                            {request.finalDesignQuotation.deliveryWithIn} days
+                                                        <Title level={4} style={{margin: '4px 0 0 0', color: '#92400e', fontWeight: 700}}>
+                                                            {request.finalDesignQuotation?.deliveryWithIn || 7} days
                                                         </Title>
                                                     </Box>
                                                 </Col>
@@ -430,18 +376,10 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                                         flexDirection: 'column',
                                                         justifyContent: 'center'
                                                     }}>
-                                                        <Text style={{
-                                                            fontSize: '10px',
-                                                            color: '#1e40af',
-                                                            fontWeight: 600
-                                                        }}>
+                                                        <Text style={{fontSize: '10px', color: '#1e40af', fontWeight: 600}}>
                                                             REVISIONS
                                                         </Text>
-                                                        <Title level={4} style={{
-                                                            margin: '4px 0 0 0',
-                                                            color: '#1e40af',
-                                                            fontWeight: 700
-                                                        }}>
+                                                        <Title level={4} style={{margin: '4px 0 0 0', color: '#1e40af', fontWeight: 700}}>
                                                             {request.revisionTime === 9999 ? 'Unlimited' : request.revisionTime}
                                                         </Title>
                                                     </Box>
@@ -458,52 +396,34 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                                         flexDirection: 'column',
                                                         justifyContent: 'center'
                                                     }}>
-                                                        <Text style={{
-                                                            fontSize: '10px',
-                                                            color: '#991b1b',
-                                                            fontWeight: 600
-                                                        }}>
+                                                        <Text style={{fontSize: '10px', color: '#991b1b', fontWeight: 600}}>
                                                             DEADLINE
                                                         </Text>
-                                                        <Title level={5} style={{
-                                                            margin: '4px 0 0 0',
-                                                            color: '#991b1b',
-                                                            fontWeight: 700
-                                                        }}>
-                                                            {formatDeadline(request.finalDesignQuotation.acceptanceDeadline)}
+                                                        <Title level={5} style={{margin: '4px 0 0 0', color: '#991b1b', fontWeight: 700}}>
+                                                            {request.finalDesignQuotation?.acceptanceDeadline ? formatDeadline(request.finalDesignQuotation.acceptanceDeadline) : 'TBD'}
                                                         </Title>
                                                     </Box>
                                                 </Col>
                                             </Row>
-                                            {request.finalDesignQuotation.note && (
-                                                <Box sx={{
-                                                    mt: 1.5,
-                                                    p: 1.5,
-                                                    bgcolor: '#f8fafc',
-                                                    borderRadius: 6,
-                                                    border: '1px solid #e2e8f0'
-                                                }}>
-                                                    <Text style={{
-                                                        fontStyle: 'italic',
-                                                        color: '#475569',
-                                                        fontSize: '12px'
-                                                    }}>
-                                                        <strong>Note:</strong> {request.finalDesignQuotation.note}
+                                            {request.finalDesignQuotation?.note && (
+                                                <Box sx={{mt: 1.5, p: 1.5, bgcolor: '#f8fafc', borderRadius: 6, border: '1px solid #e2e8f0'}}>
+                                                    <Text style={{fontStyle: 'italic', color: '#475569', fontSize: '12px'}}>
+                                                        <strong>Your Note:</strong> {request.finalDesignQuotation.note}
                                                     </Text>
                                                 </Box>
                                             )}
                                         </Card>
                                     )}
 
-                                    {/* Logo Design */}
-                                    {request.logoImage && (
-                                        <Card
+                                    {/* Logo Image */}
+                                    {request.logoImage && request.logoImage !== '' && (
+                                        <Card 
                                             title={
                                                 <Space>
                                                     <PictureOutlined style={{color: '#1976d2'}}/>
                                                     <span style={{fontWeight: 600, fontSize: '14px'}}>Logo Image</span>
                                                 </Space>
-                                            }
+                                            } 
                                             size="small"
                                             style={{
                                                 border: '1px solid #e2e8f0',
@@ -525,16 +445,13 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
 
                             {/* Right Column - Uniform Items */}
                             <Col span={12}>
-                                <Card
+                                <Card 
                                     title={
                                         <Space>
                                             <FileTextOutlined style={{color: '#1976d2'}}/>
-                                            <span style={{
-                                                fontWeight: 600,
-                                                fontSize: '14px'
-                                            }}>Uniform Items ({request.items?.length || 0})</span>
+                                            <span style={{fontWeight: 600, fontSize: '14px'}}>Design Requirements ({request.items?.length || 0})</span>
                                         </Space>
-                                    }
+                                    } 
                                     size="small"
                                     style={{
                                         border: '1px solid #e2e8f0',
@@ -574,11 +491,7 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                                             {getItemIcon(item.type)}
                                                         </Box>
                                                         <Box sx={{flex: 1}}>
-                                                            <Text strong style={{
-                                                                fontSize: '13px',
-                                                                color: '#1e293b',
-                                                                display: 'block'
-                                                            }}>
+                                                            <Text strong style={{fontSize: '13px', color: '#1e293b', display: 'block'}}>
                                                                 {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
                                                             </Text>
                                                             <Text style={{fontSize: '11px', color: '#64748b'}}>
@@ -588,23 +501,13 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                                     </Box>
 
                                                     {/* Details */}
-                                                    <Box sx={{
-                                                        flex: 1,
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        gap: 0.5
-                                                    }}>
+                                                    <Box sx={{flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5}}>
                                                         <Text style={{fontSize: '11px', color: '#64748b'}}>
                                                             Fabric: {item.fabricName}
                                                         </Text>
-
-                                                        <Box sx={{
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            gap: 0.5,
-                                                            mt: 0.5
-                                                        }}>
-                                                            <Text style={{fontSize: '11px', color: '#475569'}}>
+                                                        
+                                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5}}>
+                                                        <Text style={{fontSize: '11px', color: '#475569'}}>
                                                                 Color: {item.color}
                                                             </Text>
                                                             <Box sx={{
@@ -614,15 +517,11 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                                                 bgcolor: item.color,
                                                                 border: '1px solid #e0e0e0'
                                                             }}/>
+                                                            
                                                         </Box>
 
                                                         {item.logoPosition && (
-                                                            <Box sx={{
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                gap: 0.5,
-                                                                mt: 0.5
-                                                            }}>
+                                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5}}>
                                                                 <Text style={{fontSize: '10px', color: '#64748b'}}>
                                                                     Logo: {item.logoPosition}
                                                                 </Text>
@@ -630,12 +529,7 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                                         )}
 
                                                         {item.note && (
-                                                            <Text style={{
-                                                                fontSize: '10px',
-                                                                fontStyle: 'italic',
-                                                                color: '#64748b',
-                                                                mt: 0.5
-                                                            }}>
+                                                            <Text style={{fontSize: '10px', fontStyle: 'italic', color: '#64748b', mt: 0.5}}>
                                                                 Note: {item.note}
                                                             </Text>
                                                         )}
@@ -652,14 +546,14 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                                                 color: '#475569',
                                                                 textTransform: 'uppercase'
                                                             }}>
-                                                                Sample Images
+                                                                Reference Images
                                                             </Text>
                                                             <Box sx={{display: 'flex', gap: 0.5, flexWrap: 'wrap'}}>
-                                                                {item.sampleImages.map((image, imgIndex) => (
+                                                                {item.sampleImages?.map((image, imgIndex) => (
                                                                     <DisplayImage
-                                                                        key={imgIndex}
+                                                                        key={image.id || imgIndex}
                                                                         imageUrl={image.url}
-                                                                        alt={`Sample ${imgIndex + 1}`}
+                                                                        alt={`Reference ${imgIndex + 1}`}
                                                                         width="32px"
                                                                         height="32px"
                                                                     />
@@ -676,14 +570,14 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                         </Row>
 
                         {/* Feedback */}
-                        {request.feedback && request.feedback !== '' && (
-                            <Card
+                        {request.feedback && request.feedback !== '' && request.feedback !== null && (
+                            <Card 
                                 title={
                                     <Space>
                                         <InfoCircleOutlined style={{color: '#1976d2'}}/>
-                                        <span style={{fontWeight: 600, fontSize: '14px'}}>Feedback</span>
+                                        <span style={{fontWeight: 600, fontSize: '14px'}}>School Feedback</span>
                                     </Space>
-                                }
+                                } 
                                 size="small"
                                 style={{
                                     border: '1px solid #e2e8f0',
@@ -702,96 +596,6 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                 </DialogContent>
                 <DialogActions sx={{padding: '16px 24px', borderTop: '1px solid #f0f0f0'}}>
                     {getFooterButtons(request.status)}
-                </DialogActions>
-            </Dialog>
-
-            {/* Extra Revision Dialog */}
-            <Dialog
-                open={showExtraRevisionModal}
-                onClose={() => setShowExtraRevisionModal(false)}
-                maxWidth="sm"
-                fullWidth
-                PaperProps={{
-                    sx: {
-                        borderRadius: 2,
-                        boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
-                    }
-                }}
-            >
-                <DialogTitle sx={{
-                    borderBottom: '1px solid #f0f0f0',
-                    padding: '16px 24px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1
-                }}>
-                    <EditOutlined style={{color: '#1976d2'}}/>
-                    <span style={{fontWeight: 600}}>
-                        Add Extra Revisions
-                    </span>
-                </DialogTitle>
-                <DialogContent sx={{padding: '24px'}}>
-                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
-                        <Box sx={{
-                            p: 3,
-                            backgroundColor: '#f8fafc',
-                            borderRadius: 2,
-                            border: '1px solid #e2e8f0'
-                        }}>
-                            <Typography.Text style={{fontSize: '14px', color: '#475569'}}>
-                                You can purchase additional revisions for your design request. Each extra revision costs
-                                500,000 VND.
-                            </Typography.Text>
-                        </Box>
-
-                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
-                            <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
-                                <Typography.Text strong>Number of Extra Revisions:</Typography.Text>
-                                <InputNumber
-                                    min={0}
-                                    max={10}
-                                    value={extraRevision}
-                                    onChange={setExtraRevision}
-                                    style={{width: 120}}
-                                />
-                            </Box>
-
-                            {extraRevision > 0 && (
-                                <Box sx={{
-                                    p: 2,
-                                    backgroundColor: '#e3f2fd',
-                                    borderRadius: 2,
-                                    border: '1px solid #1976d2'
-                                }}>
-                                    <Typography.Text style={{color: '#1976d2', fontWeight: 600}}>
-                                        Extra Revision Cost: {(extraRevision * 500000).toLocaleString('vi-VN')} VND
-                                    </Typography.Text>
-                                </Box>
-                            )}
-                        </Box>
-                    </Box>
-                </DialogContent>
-                <DialogActions sx={{padding: '16px 24px', borderTop: '1px solid #f0f0f0'}}>
-                    <Button onClick={() => setShowExtraRevisionModal(false)}>
-                        Cancel
-                    </Button>
-                    <Button
-                        type="primary"
-                        onClick={() => {
-                            // Store extra revision in sessionStorage
-                            sessionStorage.setItem('extraRevision', extraRevision.toString());
-                            setShowExtraRevisionModal(false);
-                            onCancel();
-                            // Redirect to payment or handle payment logic
-                            window.location.href = '/school/payment';
-                        }}
-                        style={{
-                            backgroundColor: '#1976d2',
-                            borderColor: '#1976d2'
-                        }}
-                    >
-                        Proceed to Payment
-                    </Button>
                 </DialogActions>
             </Dialog>
         </>

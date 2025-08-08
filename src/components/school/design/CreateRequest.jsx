@@ -26,6 +26,7 @@ import { ColorPicker } from 'antd';
 import { enqueueSnackbar } from "notistack";
 import { createDesignRequest, getFabrics } from "../../../services/DesignService.jsx";
 import axios from "axios";
+import {uploadCloudinary} from "../../../services/UploadImageService.jsx";
 
 
 export default function CreateRequest() {
@@ -288,26 +289,11 @@ export default function CreateRequest() {
         });
     };
 
-    const handleUploadCloudinary = async (file) => {
-        const name = file.name.split('.')[0];
-
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('upload_preset', 'unisew');
-        formData.append('public_id', name);
-        formData.append('api_key', '923517352954895');
-        const response = await axios.post("https://api.cloudinary.com/v1_1/dj0ckodyq/image/upload", formData)
-        if (response && response.status === 200) {
-            return response.data.url
-        }
-        return null;
-    }
-
     const handleMapImages = async (images) => {
         if (images.length === 0) return []
         const resultImage = []
         for (const img of images) {
-            const response = await handleUploadCloudinary(img)
+            const response = await uploadCloudinary(img)
             if (response) {
                 resultImage.push({ url: response })
             }
@@ -414,7 +400,7 @@ export default function CreateRequest() {
 
         //Logo image
         const logoFile = designRequest.logo.file
-        const logo = await handleUploadCloudinary(logoFile)
+        const logo = await uploadCloudinary(logoFile)
 
         // Design item list
         const designItems = []

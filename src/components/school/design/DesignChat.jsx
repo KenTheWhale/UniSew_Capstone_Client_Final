@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Avatar, Button, Form, Input, Modal, Typography} from 'antd';
+import {Avatar, Button, Form, Input, Modal, Typography, Card} from 'antd';
 import {
     CheckCircleOutlined,
     EditOutlined,
@@ -10,7 +10,8 @@ import {
     SmileOutlined,
     UploadOutlined,
     UserOutlined,
-    UserSwitchOutlined
+    UserSwitchOutlined,
+    InfoCircleOutlined
 } from '@ant-design/icons';
 import {Box, Chip, Container, Paper} from '@mui/material';
 import EmojiPicker from 'emoji-picker-react';
@@ -18,8 +19,594 @@ import {useSnackbar} from 'notistack';
 import {parseID} from '../../../utils/ParseIDUtil.jsx';
 import {addDoc, collection, onSnapshot, query, serverTimestamp, where} from 'firebase/firestore';
 import {auth, db} from "../../../configs/firebase-config.jsx";
+import {Dialog, DialogTitle, DialogContent, DialogActions} from '@mui/material';
+import {Space, Tag, Row, Col, Avatar as AntAvatar, Divider, Rate} from 'antd';
+import {
+    CalendarOutlined,
+    CheckCircleOutlined as CheckCircleOutlinedIcon,
+    CloseCircleOutlined,
+    FileTextOutlined as FileTextOutlinedIcon,
+    InfoCircleOutlined as InfoCircleOutlinedIcon,
+    SyncOutlined,
+    UserOutlined as UserOutlinedIcon,
+    DollarOutlined,
+    ClockCircleOutlined,
+    EditOutlined as EditOutlinedIcon,
+    PictureOutlined,
+    BankOutlined,
+    GiftOutlined,
+    StarOutlined,
+    PhoneOutlined,
+    MailOutlined,
+    EnvironmentOutlined,
+    ShopOutlined
+} from '@ant-design/icons';
+import {DesignServices} from '@mui/icons-material';
+import {useNavigate} from 'react-router-dom';
+import {Box as MuiBox, Chip as MuiChip} from '@mui/material';
+import {PiShirtFoldedFill, PiPantsFill} from "react-icons/pi";
+import {GiSkirt} from "react-icons/gi";
+import DisplayImage from '../../ui/DisplayImage.jsx';
 
 const {TextArea} = Input;
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function statusTag(status) {
+    let color = '';
+    let icon = null;
+    switch (status) {
+        case 'created':
+            color = 'blue';
+            icon = <FileTextOutlinedIcon/>;
+            break;
+        case 'paid':
+            color = 'green';
+            icon = <CheckCircleOutlinedIcon/>;
+            break;
+        case 'unpaid':
+            color = 'orange';
+            icon = <CloseCircleOutlined/>;
+            break;
+        case 'progressing':
+            color = 'purple';
+            icon = <SyncOutlined/>;
+            break;
+        case 'completed':
+            color = 'cyan';
+            icon = <CheckCircleOutlinedIcon/>;
+            break;
+        case 'rejected':
+            color = 'red';
+            icon = <CloseCircleOutlined/>;
+            break;
+        case 'pending':
+            color = 'processing';
+            icon = <ClockCircleOutlined/>;
+            break;
+        case 'selected':
+            color = 'green';
+            icon = <CheckCircleOutlinedIcon/>;
+            break;
+        default:
+            color = 'default';
+            break;
+    }
+    return <Tag style={{margin: 0}} color={color}>{icon} {status}</Tag>;
+}
+
+// Function to get appropriate icon based on item type
+const getItemIcon = (itemType) => {
+    const type = itemType?.toLowerCase() || '';
+
+    if (type.includes('shirt') || type.includes('áo')) {
+        return <PiShirtFoldedFill style={{fontSize: '20px'}}/>;
+    } else if (type.includes('pant') || type.includes('quần')) {
+        return <PiPantsFill style={{fontSize: '20px'}}/>;
+    } else if (type.includes('skirt') || type.includes('váy')) {
+        return <GiSkirt style={{fontSize: '20px'}}/>;
+    } else {
+        return <FileTextOutlinedIcon/>;
+    }
+};
+
+// Design Detail Dialog Component
+function DesignDetailDialog({visible, onCancel, request}) {
+    if (!request) {
+        return (
+            <Dialog open={visible} onClose={onCancel} maxWidth="md" fullWidth>
+                <DialogContent>
+                    <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4}}>
+                        <Typography.Text>Loading request details...</Typography.Text>
+                    </Box>
+                </DialogContent>
+            </Dialog>
+        );
+    }
+
+    const {Text, Title} = Typography;
+
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('vi-VN', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    };
+
+    const formatCurrency = (amount) => {
+        return amount.toLocaleString('vi-VN');
+    };
+
+    const formatDeadline = (deadlineString) => {
+        const date = new Date(deadlineString);
+        return date.toLocaleDateString('vi-VN', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    };
+
+    return (
+        <Dialog
+            open={visible}
+            onClose={onCancel}
+            maxWidth="lg"
+            fullWidth
+            PaperProps={{
+                sx: {
+                    borderRadius: 3,
+                    boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                    maxHeight: '85vh'
+                }
+            }}
+        >
+            <DialogTitle sx={{
+                borderBottom: '1px solid #f0f0f0',
+                padding: '16px 24px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white'
+            }}>
+                <InfoCircleOutlinedIcon style={{color: 'white', fontSize: '18px'}}/>
+                <span style={{fontWeight: 600, fontSize: '16px'}}>
+                    Design Request: {parseID(request.id, 'dr')}
+                </span>
+            </DialogTitle>
+            <DialogContent sx={{padding: '20px', overflowY: 'auto'}}>
+                <MuiBox sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                    
+                    {/* Compact Header */}
+                    <Row gutter={[16, 8]} align="middle" style={{
+                        background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: 8,
+                        padding: '16px'
+                    }}>
+                        <Col span={8}>
+                            <Space direction="vertical" size="small">
+                                <Text style={{fontWeight: 600, fontSize: '16px', color: '#1e293b'}}>
+                                    {request.name}
+                                </Text>
+                                <Text style={{color: '#64748b', fontSize: '12px'}}>
+                                    Created: {formatDate(request.creationDate)}
+                                </Text>
+                            </Space>
+                        </Col>
+                        <Col span={8} style={{textAlign: 'center'}}>
+                            <Space direction="vertical" size="small">
+                                <Text style={{fontSize: '12px', color: '#64748b'}}>
+                                    Design Request
+                                </Text>
+                                <Text style={{fontSize: '10px', color: '#94a3b8'}}>
+                                    Basic Information
+                                </Text>
+                            </Space>
+                        </Col>
+                        <Col span={8} style={{display: 'flex', justifyContent: 'flex-end', textAlign: 'right'}}>
+                            <Space direction="vertical" size="small">
+                                {statusTag(request.status)}
+                                <Text style={{color: '#64748b', fontSize: '12px'}}>
+                                    Privacy: {request.privacy ? 'Private' : 'Public'}
+                                </Text>
+                            </Space>
+                        </Col>
+                    </Row>
+
+                    {/* Main Content - Two Columns */}
+                    <Row gutter={[16, 16]}>
+                        {/* Left Column - Designer & Quotation */}
+                        <Col span={12}>
+                            <MuiBox sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                                
+                                {/* Designer Info */}
+                                {request.finalDesignQuotation && (
+                                    <Row gutter={[8, 8]} style={{
+                                        border: '1px solid #e2e8f0',
+                                        borderRadius: 8,
+                                        padding: '16px',
+                                        background: 'white'
+                                    }}>
+                                        <Col span={24}>
+                                            <Space direction="vertical" size="small" style={{width: '100%'}}>
+                                                <Space>
+                                                    <UserOutlinedIcon style={{color: '#1976d2'}}/>
+                                                    <span style={{fontWeight: 600, fontSize: '14px'}}>Selected Designer</span>
+                                                </Space>
+                                                <Space>
+                                                    <AntAvatar
+                                                        size={48}
+                                                        src={request.finalDesignQuotation.designer.customer.avatar || request.finalDesignQuotation.designer.customer.name.charAt(0)}
+                                                        style={{
+                                                            border: '2px solid #1976d2',
+                                                            backgroundColor: '#1976d2'
+                                                        }}
+                                                    >
+                                                        {request.finalDesignQuotation.designer.customer.name.charAt(0)}
+                                                    </AntAvatar>
+                                                    <Space direction="vertical" size="small">
+                                                        <Text style={{fontWeight: 600, fontSize: '14px', color: '#1e293b'}}>
+                                                            {request.finalDesignQuotation.designer.customer.name}
+                                                        </Text>
+                                                        <Space>
+                                                            <Rate 
+                                                                disabled 
+                                                                defaultValue={request.finalDesignQuotation.designer.rating} 
+                                                                style={{fontSize: '10px'}}
+                                                            />
+                                                            <Text style={{fontSize: '10px', color: '#64748b'}}>
+                                                                ({request.finalDesignQuotation.designer.rating})
+                                                            </Text>
+                                                        </Space>
+                                                    </Space>
+                                                </Space>
+                                            </Space>
+                                        </Col>
+                                    </Row>
+                                )}
+
+                                {/* Service Summary */}
+                                {request.finalDesignQuotation && (
+                                    <Card
+                                        title={
+                                            <Space>
+                                                <DollarOutlined style={{color: '#1976d2'}}/>
+                                                <span style={{
+                                                    fontWeight: 600,
+                                                    fontSize: '14px'
+                                                }}>Service Summary</span>
+                                            </Space>
+                                        }
+                                        size="small"
+                                        style={{
+                                            border: '1px solid #e2e8f0',
+                                            borderRadius: 8
+                                        }}
+                                    >
+                                        <Row gutter={[8, 8]} style={{display: 'flex'}}>
+                                            <Col span={6} style={{display: 'flex'}}>
+                                                <Box sx={{
+                                                    p: 1.5,
+                                                    backgroundColor: '#f0fdf4',
+                                                    borderRadius: 6,
+                                                    border: '1px solid #bbf7d0',
+                                                    textAlign: 'center',
+                                                    width: '100%',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    justifyContent: 'center'
+                                                }}>
+                                                    <Text style={{
+                                                        fontSize: '10px',
+                                                        color: '#166534',
+                                                        fontWeight: 600
+                                                    }}>
+                                                        PRICE (VND)
+                                                    </Text>
+                                                    <Title level={4} style={{
+                                                        margin: '4px 0 0 0',
+                                                        color: '#166534',
+                                                        fontWeight: 700
+                                                    }}>
+                                                        {formatCurrency(request.price)}
+                                                    </Title>
+                                                </Box>
+                                            </Col>
+                                            <Col span={6} style={{display: 'flex'}}>
+                                                <Box sx={{
+                                                    p: 1.5,
+                                                    backgroundColor: '#fef3c7',
+                                                    borderRadius: 6,
+                                                    border: '1px solid #fde68a',
+                                                    textAlign: 'center',
+                                                    width: '100%',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    justifyContent: 'center'
+                                                }}>
+                                                    <Text style={{
+                                                        fontSize: '10px',
+                                                        color: '#92400e',
+                                                        fontWeight: 600
+                                                    }}>
+                                                        DELIVERY
+                                                    </Text>
+                                                    <Title level={4} style={{
+                                                        margin: '4px 0 0 0',
+                                                        color: '#92400e',
+                                                        fontWeight: 700
+                                                    }}>
+                                                        {request.finalDesignQuotation.deliveryWithIn} days
+                                                    </Title>
+                                                </Box>
+                                            </Col>
+                                            <Col span={6} style={{display: 'flex'}}>
+                                                <Box sx={{
+                                                    p: 1.5,
+                                                    backgroundColor: '#dbeafe',
+                                                    borderRadius: 6,
+                                                    border: '1px solid #93c5fd',
+                                                    textAlign: 'center',
+                                                    width: '100%',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    justifyContent: 'center'
+                                                }}>
+                                                    <Text style={{
+                                                        fontSize: '10px',
+                                                        color: '#1e40af',
+                                                        fontWeight: 600
+                                                    }}>
+                                                        REVISIONS
+                                                    </Text>
+                                                    <Title level={4} style={{
+                                                        margin: '4px 0 0 0',
+                                                        color: '#1e40af',
+                                                        fontWeight: 700
+                                                    }}>
+                                                        {request.revisionTime === 9999 ? 'Unlimited' : request.revisionTime}
+                                                    </Title>
+                                                </Box>
+                                            </Col>
+                                            <Col span={6} style={{display: 'flex'}}>
+                                                <Box sx={{
+                                                    p: 1.5,
+                                                    backgroundColor: '#fef2f2',
+                                                    borderRadius: 6,
+                                                    border: '1px solid #fca5a5',
+                                                    textAlign: 'center',
+                                                    width: '100%',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    justifyContent: 'center'
+                                                }}>
+                                                    <Text style={{
+                                                        fontSize: '10px',
+                                                        color: '#991b1b',
+                                                        fontWeight: 600
+                                                    }}>
+                                                        DEADLINE
+                                                    </Text>
+                                                    <Title level={5} style={{
+                                                        margin: '4px 0 0 0',
+                                                        color: '#991b1b',
+                                                        fontWeight: 700
+                                                    }}>
+                                                        {formatDeadline(request.finalDesignQuotation.acceptanceDeadline)}
+                                                    </Title>
+                                                </Box>
+                                            </Col>
+                                        </Row>
+                                        {request.finalDesignQuotation.note && (
+                                            <Box sx={{
+                                                mt: 1.5,
+                                                p: 1.5,
+                                                bgcolor: '#f8fafc',
+                                                borderRadius: 6,
+                                                border: '1px solid #e2e8f0'
+                                            }}>
+                                                <Text style={{
+                                                    fontStyle: 'italic',
+                                                    color: '#475569',
+                                                    fontSize: '12px'
+                                                }}>
+                                                    <strong>Note:</strong> {request.finalDesignQuotation.note}
+                                                </Text>
+                                            </Box>
+                                        )}
+                                    </Card>
+                                )}
+
+                                {/* Logo Design */}
+                                {request.logoImage && (
+                                    <Row gutter={[8, 8]} style={{
+                                        border: '1px solid #e2e8f0',
+                                        borderRadius: 8,
+                                        padding: '16px',
+                                        background: 'white'
+                                    }}>
+                                        <Col span={24}>
+                                            <Space direction="vertical" size="small" style={{width: '100%'}}>
+                                                <Space>
+                                                    <PictureOutlined style={{color: '#1976d2'}}/>
+                                                    <span style={{fontWeight: 600, fontSize: '14px'}}>Logo Image</span>
+                                                </Space>
+                                                <MuiBox sx={{display: 'flex', justifyContent: 'center', p: 1}}>
+                                                    <DisplayImage
+                                                        imageUrl={request.logoImage}
+                                                        alt="Logo Design"
+                                                        width="150px"
+                                                        height="150px"
+                                                    />
+                                                </MuiBox>
+                                            </Space>
+                                        </Col>
+                                    </Row>
+                                )}
+                            </MuiBox>
+                        </Col>
+
+                        {/* Right Column - Uniform Items */}
+                        <Col span={12}>
+                            <Row gutter={[8, 8]} style={{
+                                border: '1px solid #e2e8f0',
+                                borderRadius: 8,
+                                padding: '16px',
+                                background: 'white',
+                                height: 'fit-content'
+                            }}>
+                                <Col span={24}>
+                                    <Space direction="vertical" size="small" style={{width: '100%'}}>
+                                        <Space>
+                                            <FileTextOutlinedIcon style={{color: '#1976d2'}}/>
+                                            <span style={{fontWeight: 600, fontSize: '14px'}}>Uniform Items ({request.items?.length || 0})</span>
+                                        </Space>
+                                        <Row gutter={[12, 12]}>
+                                            {request.items?.map((item, index) => (
+                                                <Col span={12} key={index}>
+                                                    <MuiBox sx={{
+                                                        p: 2,
+                                                        border: '1px solid #e2e8f0',
+                                                        borderRadius: 8,
+                                                        background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
+                                                        height: '100%',
+                                                        display: 'flex',
+                                                        flexDirection: 'column'
+                                                    }}>
+                                                        {/* Header */}
+                                                        <MuiBox sx={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: 1,
+                                                            mb: 1.5
+                                                        }}>
+                                                            <MuiBox sx={{
+                                                                display: 'flex',
+                                                                justifyContent: 'center',
+                                                                alignItems: 'center',
+                                                                width: 32,
+                                                                height: 32,
+                                                                borderRadius: 6,
+                                                                bgcolor: '#e3f2fd',
+                                                                flexShrink: 0
+                                                            }}>
+                                                                {getItemIcon(item.type)}
+                                                            </MuiBox>
+                                                            <MuiBox sx={{flex: 1}}>
+                                                                <Text strong style={{fontSize: '13px', color: '#1e293b', display: 'block'}}>
+                                                                    {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
+                                                                </Text>
+                                                                <Text style={{fontSize: '11px', color: '#64748b'}}>
+                                                                    {item.category.toUpperCase()}
+                                                                </Text>
+                                                            </MuiBox>
+                                                        </MuiBox>
+
+                                                        {/* Details */}
+                                                        <MuiBox sx={{flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5}}>
+                                                            <Text style={{fontSize: '11px', color: '#64748b'}}>
+                                                                Fabric: {item.fabricName}
+                                                            </Text>
+                                                            
+                                                            <Space>
+                                                            <Text style={{fontSize: '11px', color: '#475569'}}>
+                                                                    Color: {item.color}
+                                                                </Text>
+                                                                <MuiBox sx={{
+                                                                    width: 10,
+                                                                    height: 10,
+                                                                    borderRadius: '50%',
+                                                                    bgcolor: item.color,
+                                                                    border: '1px solid #e0e0e0'
+                                                                }}/>
+                                                                
+                                                            </Space>
+
+                                                            {item.logoPosition && (
+                                                                <Space>
+                                                                    <Text style={{fontSize: '10px', color: '#64748b'}}>
+                                                                        Logo: {item.logoPosition}
+                                                                    </Text>
+                                                                </Space>
+                                                            )}
+
+                                                            {item.note && (
+                                                                <Text style={{fontSize: '10px', fontStyle: 'italic', color: '#64748b'}}>
+                                                                    Note: {item.note}
+                                                                </Text>
+                                                            )}
+                                                        </MuiBox>
+
+                                                        {/* Sample Images */}
+                                                        {item.sampleImages && item.sampleImages.length > 0 && (
+                                                            <MuiBox sx={{mt: 1.5, pt: 1, borderTop: '1px solid #f1f5f9'}}>
+                                                                <Text style={{
+                                                                    fontSize: '9px',
+                                                                    fontWeight: 600,
+                                                                    mb: 0.5,
+                                                                    display: 'block',
+                                                                    color: '#475569',
+                                                                    textTransform: 'uppercase'
+                                                                }}>
+                                                                    Sample Images
+                                                                </Text>
+                                                                <MuiBox sx={{display: 'flex', gap: 0.5, flexWrap: 'wrap'}}>
+                                                                    {item.sampleImages.map((image, imgIndex) => (
+                                                                        <DisplayImage
+                                                                            key={imgIndex}
+                                                                            imageUrl={image.url}
+                                                                            alt={`Sample ${imgIndex + 1}`}
+                                                                            width="32px"
+                                                                            height="32px"
+                                                                        />
+                                                                    ))}
+                                                                </MuiBox>
+                                                            </MuiBox>
+                                                        )}
+                                                    </MuiBox>
+                                                </Col>
+                                            ))}
+                                        </Row>
+                                    </Space>
+                                </Col>
+                            </Row>
+                        </Col>
+                    </Row>
+
+                    {/* Feedback */}
+                    {request.feedback && request.feedback !== '' && (
+                        <Row gutter={[8, 8]} style={{
+                            border: '1px solid #e2e8f0',
+                            borderRadius: 8,
+                            background: 'linear-gradient(135deg, #fff3cd 0%, #ffffff 100%)'
+                        }}>
+                            <Col span={24}>
+                                <Space direction="vertical" size="small" style={{width: '100%'}}>
+                                    <Space>
+                                        <InfoCircleOutlinedIcon style={{color: '#1976d2'}}/>
+                                        <span style={{fontWeight: 600, fontSize: '14px'}}>Feedback</span>
+                                    </Space>
+                                    <MuiBox sx={{p: 1.5, bgcolor: '#fff3cd', borderRadius: 6, border: '1px solid #ffeaa7'}}>
+                                        <Text style={{color: '#856404', fontSize: '12px'}}>
+                                            {request.feedback}
+                                        </Text>
+                                    </MuiBox>
+                                </Space>
+                            </Col>
+                        </Row>
+                    )}
+                </MuiBox>
+            </DialogContent>
+            <DialogActions sx={{padding: '16px 24px', borderTop: '1px solid #f0f0f0'}}>
+                <Button onClick={onCancel}>
+                    Close
+                </Button>
+            </DialogActions>
+        </Dialog>
+    );
+}
 
 export function useDesignChatMessages(roomId) {
     const [chatMessages, setChatMessages] = useState([]);
@@ -152,6 +739,7 @@ export default function DesignChat() {
     const [isConfirmFinalModalVisible, setIsConfirmFinalModalVisible] = useState(false);
     const [deliveryToMakeFinal, setDeliveryToMakeFinal] = useState(null);
     const [isFinalDesignSet, setIsFinalDesignSet] = useState(false);
+    const [isDesignDetailModalVisible, setIsDesignDetailModalVisible] = useState(false);
     const roomId = requestData?.id;
     const {chatMessages, sendMessage} = useDesignChatMessages(roomId);
     const [newMessage, setNewMessage] = useState('');
@@ -289,17 +877,40 @@ export default function DesignChat() {
                                     </Typography.Text>
                                 </Box>
                             </Box>
-                            <Chip
-                                label="PAID"
-                                color="success"
-                                size="large"
-                                style={{
-                                    backgroundColor: '#52c41a',
-                                    fontSize: '14px',
-                                    fontWeight: 600,
-                                    padding: '8px 16px'
-                                }}
-                            />
+                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                <Button
+                                    type="primary"
+                                    icon={<InfoCircleOutlined/>}
+                                    onClick={() => setIsDesignDetailModalVisible(true)}
+                                    style={{
+                                        background: 'linear-gradient(135deg, #1976d2, #42a5f5)',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        height: '40px',
+                                        fontSize: '14px',
+                                        fontWeight: 600,
+                                        boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+                                        transition: 'all 0.3s ease',
+                                        '&:hover': {
+                                            transform: 'translateY(-1px)',
+                                            boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)'
+                                        }
+                                    }}
+                                >
+                                    View Design Details
+                                </Button>
+                                <Chip
+                                    label="PAID"
+                                    color="success"
+                                    size="large"
+                                    style={{
+                                        backgroundColor: '#52c41a',
+                                        fontSize: '14px',
+                                        fontWeight: 600,
+                                        padding: '8px 16px'
+                                    }}
+                                />
+                            </Box>
                         </Box>
                     </Box>
 
@@ -699,7 +1310,7 @@ export default function DesignChat() {
                                                                     flex: 1
                                                                 }}
                                                             >
-                                                                Final
+                                                                Make final
                                                             </Button>
                                                         </>
                                                     )}
@@ -801,6 +1412,12 @@ export default function DesignChat() {
                 onCancel={handleCloseRevisionModal}
                 onSubmit={handleRevisionSubmit}
                 selectedDeliveryId={selectedDeliveryIdForRevision}
+            />
+
+            <DesignDetailDialog
+                visible={isDesignDetailModalVisible}
+                onCancel={() => setIsDesignDetailModalVisible(false)}
+                request={requestData}
             />
 
             <Modal

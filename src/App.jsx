@@ -23,6 +23,7 @@ import EmailConfirmation from "./components/auth/EmailConfirmation.jsx";
 import ProtectedRoute from "./configs/ProtectedRoute.jsx";
 import DesignerChat from "./components/designer/DesignerChat.jsx";
 import AppliedRequestList from "./components/designer/AppliedRequestList.jsx";
+import AppliedRequestDetail from "./components/designer/AppliedRequestDetail.jsx";
 
 const router = createBrowserRouter([
     {
@@ -130,6 +131,10 @@ const router = createBrowserRouter([
             {
                 path: 'applied/requests',
                 element: <AppliedRequestList/>
+            },
+            {
+                path: 'applied/detail',
+                element: <AppliedRequestDetail/>
             }
         ]
     }

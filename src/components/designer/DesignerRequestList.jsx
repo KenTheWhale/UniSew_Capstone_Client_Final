@@ -166,10 +166,10 @@ export default function DesignerRequestList() {
             key: 'school',
             align: 'left',
             width: 300,
-            render: (text) => (
+            render: (school) => (
                 <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
                     <Typography variant="body2" sx={{fontWeight: 500, color: '#2c3e50'}}>
-                        {text}
+                        {school?.business || 'School Name'}
                     </Typography>
                 </Box>
             ),
