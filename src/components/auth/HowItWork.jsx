@@ -16,14 +16,14 @@ export default function HowItWork() {
         },
         {
             number: '03',
-            title: 'Select a Designer and Package',
-            description: 'Review the proposals, choose the designer that best fits your needs, and select their preferred design package.',
+            title: 'Select a Designer and Quotation',
+            description: 'Review the proposals, choose the designer that best fits your needs, and select their preferred design quotation.',
             icon: '👨‍🎨'
         },
         {
             number: '04',
             title: 'Payment and Designer Chat',
-            description: 'Complete the payment for the chosen design package to unlock direct communication with your selected designer.',
+            description: 'Complete the payment for the chosen design quotation to unlock direct communication with your selected designer.',
             icon: '💬'
         },
         {

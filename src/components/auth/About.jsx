@@ -1,8 +1,8 @@
-import { Box, Container, Typography, Grid, Paper, Button, Divider } from "@mui/material";
+import {Box, Button, Container, Grid, Paper, Typography} from "@mui/material";
 import SchoolIcon from "@mui/icons-material/School";
 import DesignServicesIcon from "@mui/icons-material/DesignServices";
 import FactoryIcon from "@mui/icons-material/Factory";
-import { CheckCircleOutline, Timeline, Security, Support } from "@mui/icons-material";
+import {CheckCircleOutline, Support} from "@mui/icons-material";
 
 export default function About() {
   return (

@@ -1,6 +1,6 @@
 export const designerFindingWithin = 5
 
-export const designerMaxPackage = 5
+export const designerMaxQuotation = 5
 
 export const vietnamProvinces = [
     {

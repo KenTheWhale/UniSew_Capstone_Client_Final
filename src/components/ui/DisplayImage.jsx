@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Box, IconButton, Tooltip } from '@mui/material';
-import { Modal, Spin } from 'antd';
+import { Box, IconButton, Tooltip, Dialog, DialogContent, IconButton as MuiIconButton } from '@mui/material';
+import { Spin } from 'antd';
 import { LoadingOutlined, ZoomInOutlined } from '@ant-design/icons';
+import { Close as CloseIcon } from '@mui/icons-material';
 
-export default function DisplayImage({ 
-    imageUrl, 
-    height = 'auto', 
-    width = 'auto', 
+export default function DisplayImage({
+    imageUrl,
+    height = 'auto',
+    width = 'auto',
     alt = "Display Image"
 }) {
     const [isLoading, setIsLoading] = useState(true);
@@ -32,8 +33,8 @@ export default function DisplayImage({
 
     return (
         <>
-            <Box sx={{ 
-                position: 'relative', 
+            <Box sx={{
+                position: 'relative',
                 display: 'inline-block',
                 width: width,
                 height: height,
@@ -70,8 +71,8 @@ export default function DisplayImage({
                 )}
 
                 {/* Image */}
-                <img 
-                    src={imageUrl} 
+                <img
+                    src={imageUrl}
                     alt={alt}
                     style={{
                         width: '100%',
@@ -86,26 +87,95 @@ export default function DisplayImage({
                 />
             </Box>
 
-            {/* Modal for Full Size Image */}
-            <Modal
+            {/* Dialog for Full Size Image */}
+                            <Dialog
                 open={isModalOpen}
-                onCancel={() => setIsModalOpen(false)}
-                footer={null}
-                centered
-                width={600}
+                onClose={() => setIsModalOpen(false)}
+                maxWidth="lg"
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        background: 'rgba(0, 0, 0, 0.95)',
+                        borderRadius: 2,
+                        maxWidth: '90vw',
+                        maxHeight: '90vh',
+                        margin: 2
+                    }
+                }}
+                sx={{
+                    '& .MuiDialog-paper': {
+                        margin: 0
+                    }
+                }}
             >
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2 }}>
-                    <img 
-                        src={imageUrl} 
-                        alt={alt}
-                        style={{
-                            maxWidth: '100%',
-                            maxHeight: '400px',
-                            objectFit: 'contain'
+                <DialogContent sx={{ 
+                    p: 0, 
+                    position: 'relative',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    minHeight: '400px'
+                }}>
+                    <MuiIconButton
+                        onClick={() => setIsModalOpen(false)}
+                        sx={{
+                            position: 'absolute',
+                            top: 8,
+                            right: 8,
+                            color: 'white',
+                            zIndex: 1,
+                            '&:hover': {
+                                backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                            }
                         }}
-                    />
-                </Box>
-            </Modal>
+                    >
+                        <CloseIcon />
+                    </MuiIconButton>
+                    
+                    <Box sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 2,
+                        p: 3
+                    }}>
+                        <img
+                            src={imageUrl}
+                            alt={alt}
+                            style={{
+                                maxWidth: '100%',
+                                maxHeight: '80vh',
+                                objectFit: 'contain',
+                                borderRadius: '8px',
+                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                                display: 'block'
+                            }}
+                            onLoad={() => {}}
+                            onError={(e) => {
+                                e.target.style.display = 'none';
+                                // Show error message
+                                const errorDiv = document.createElement('div');
+                                errorDiv.innerHTML = `
+                                    <div style="color: white; text-align: center; padding: 20px;">
+                                        <h3>Failed to load image</h3>
+                                        <p>URL: ${imageUrl}</p>
+                                        <p>Please check if the URL is valid and accessible.</p>
+                                    </div>
+                                `;
+                                e.target.parentNode.appendChild(errorDiv);
+                            }}
+                        />
+                        <Box sx={{
+                            color: 'white',
+                            textAlign: 'center',
+                            fontSize: '0.875rem',
+                            opacity: 0.7
+                        }}>
+                            <div>Image URL: {imageUrl}</div>
+                        </Box>
+                    </Box>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

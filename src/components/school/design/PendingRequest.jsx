@@ -96,7 +96,7 @@ export default function PendingRequest() {
 
     const columns = [
         {
-            title: 'Request ID',
+            title: 'ID',
             dataIndex: 'id',
             key: 'id',
             align: 'center',
@@ -127,8 +127,8 @@ export default function PendingRequest() {
             title: 'Request Date',
             dataIndex: 'creationDate',
             key: 'creationDate',
-            align: 'center',
-            width: 300,
+            align: 'left',
+            width: 200,
             sorter: (a, b) => new Date(a.creationDate) - new Date(b.creationDate),
             render: (text) => {
                 const date = new Date(text);
@@ -153,8 +153,8 @@ export default function PendingRequest() {
         {
             title: 'Designer Finding End Date',
             key: 'designerFindingEndDate',
-            align: 'center',
-            width: 200,
+            align: 'left',
+            width: 250,
             sorter: (a, b) => {
                 const endDateA = new Date(a.creationDate);
                 endDateA.setDate(endDateA.getDate() + designerFindingWithin);
@@ -243,7 +243,7 @@ export default function PendingRequest() {
     ];
 
     return (
-        <Box sx={{backgroundColor: '#fafafa', minHeight: '100vh', width: '100%'}}>
+        <Box sx={{backgroundColor: '#fafafa', height: 'max-content', width: '100%'}}>
             {/* Hero Section */}
             <Box
                 sx={{
@@ -253,6 +253,7 @@ export default function PendingRequest() {
                     position: "relative",
                     overflow: "hidden",
                     width: '100%',
+                    height: 'max-content',
                     "&::before": {
                         content: '""',
                         position: "absolute",
@@ -299,7 +300,7 @@ export default function PendingRequest() {
             </Box>
 
             {/* Table Section */}
-            <Container maxWidth={false} sx={{width: '100%', pb: {xs: 4, md: 6}, mt: 5}}>
+            <Container maxWidth={false} sx={{width: '100%', pb: {xs: 4, md: 6}, mt: 5, height: 'max-content'}}>
                 <Paper
                     elevation={0}
                     sx={{
@@ -348,7 +349,7 @@ export default function PendingRequest() {
                                 backgroundColor: 'white',
                                 borderRadius: '8px',
                                 width: '100%',
-                                height: '90vh',
+                                height: 'max-content',
                                 overflow: 'auto'
                             }}
                             rowHoverColor="#fff8e1"
@@ -371,7 +372,7 @@ export default function PendingRequest() {
                 <DesignPaymentPopup
                     visible={isPaymentModalVisible}
                     onCancel={handleClosePaymentModal}
-                    selectedPackageDetails={paymentRequestDetails}
+                    selectedQuotationDetails={paymentRequestDetails}
                 />
             }
         </Box>

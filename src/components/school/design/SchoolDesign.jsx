@@ -361,7 +361,7 @@ export default function SchoolDesign() {
                                     {stats.paid}
                                 </Typography>
                                 <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
-                                    In Progress
+                                    Paid
                                 </Typography>
                             </CardContent>
                         </Card>

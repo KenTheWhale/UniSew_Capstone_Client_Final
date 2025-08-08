@@ -324,7 +324,15 @@ function MainHeader() {
                 <MenuItem
                   onClick={() => {
                     handleUserMenuClose();
-                    window.location.href = '/school/design';
+                    if(localStorage.getItem('user')) {
+                        const user = JSON.parse(localStorage.getItem('user'))
+                        if(user.role === 'school') {
+                            window.location.href = '/school/design';
+                        }else if(user.role === 'designer') {
+                            window.location.href = '/designer/requests';
+                        }
+                    }
+
                   }}
                   sx={{
                     fontSize: 16,
