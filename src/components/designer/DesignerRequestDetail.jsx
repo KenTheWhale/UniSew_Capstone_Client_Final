@@ -426,7 +426,7 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                         color: '#333',
                                                         transition: 'all 0.3s ease'
                                                     }}>
-                                                        {mergedRequestData.school || 'N/A'}
+                                                        {mergedRequestData.school?.business || mergedRequestData.school?.name || 'N/A'}
                                                     </Typography>
                                                 </Box>
                                             </Grid>

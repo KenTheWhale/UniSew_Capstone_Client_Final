@@ -93,8 +93,7 @@ export default function PaymentResult() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            py: 4,
-            mt: 60
+            py: 4
         }}>
             <Container maxWidth="md">
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
