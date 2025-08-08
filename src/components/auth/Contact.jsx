@@ -1,23 +1,5 @@
-import {
-    Box,
-    Button,
-    Container,
-    Grid,
-    Paper,
-    TextField,
-    Typography,
-    Card,
-    CardContent,
-    Divider
-} from '@mui/material';
-import {
-    LocationOn,
-    Email,
-    Phone,
-    AccessTime,
-    Send,
-    ContactSupport
-} from '@mui/icons-material';
+import {Box, Button, Card, CardContent, Container, Grid, Paper, TextField, Typography} from '@mui/material';
+import {ContactSupport, Email, LocationOn, Phone, Send} from '@mui/icons-material';
 
 export default function Contact() {
     const handleSubmit = (e) => {

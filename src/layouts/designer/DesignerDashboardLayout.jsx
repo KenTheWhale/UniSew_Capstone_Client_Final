@@ -237,58 +237,6 @@ export default function DesignerDashboardLayout() {
                             </ListItem>
                         </List>
 
-                        {/* Package Section */}
-                        <Typography
-                            variant="overline"
-                            sx={{
-                                px: 2,
-                                pb: 1,
-                                color: '#6c757d',
-                                fontWeight: 700,
-                                fontSize: '0.75rem',
-                                letterSpacing: '1px'
-                            }}
-                        >
-                            PACKAGE
-                        </Typography>
-                        <List sx={{mb: 3}}>
-                            <ListItem disablePadding>
-                                <ListItemButton sx={{
-                                    borderRadius: 2,
-                                    mx: 1,
-                                    my: 0.5,
-                                    background: activeMenu === 'packages'
-                                        ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
-                                        : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-                                    color: activeMenu === 'packages' ? 'white' : '#495057',
-                                    boxShadow: activeMenu === 'packages'
-                                        ? '0 4px 12px rgba(16, 185, 129, 0.3)'
-                                        : '0 2px 8px rgba(0, 0, 0, 0.05)',
-                                    '&:hover': {
-                                        background: activeMenu === 'packages'
-                                            ? 'linear-gradient(135deg, #059669 0%, #047857 100%)'
-                                            : 'linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%)',
-                                        color: activeMenu === 'packages' ? 'white' : '#2e7d32',
-                                        transform: 'translateY(-1px)',
-                                        boxShadow: activeMenu === 'packages'
-                                            ? '0 6px 16px rgba(16, 185, 129, 0.4)'
-                                            : '0 4px 12px rgba(46, 125, 50, 0.2)'
-                                    },
-                                    transition: 'all 0.3s ease'
-                                }}
-                                                onClick={() => window.location.href = '/designer/packages'}
-                                >
-                                    <ListItemIcon sx={{color: activeMenu === 'packages' ? 'white' : 'inherit'}}>
-                                        <Inventory/>
-                                    </ListItemIcon>
-                                    <ListItemText
-                                        primary="Package List"
-                                        sx={{fontWeight: activeMenu === 'packages' ? 600 : 400}}
-                                    />
-                                </ListItemButton>
-                            </ListItem>
-                        </List>
-
                         <Divider sx={{my: 3, borderColor: '#e9ecef'}}/>
 
                         {/* Analytics Section */}

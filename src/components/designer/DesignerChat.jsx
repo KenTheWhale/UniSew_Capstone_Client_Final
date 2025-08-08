@@ -2,26 +2,25 @@ import React, {useEffect, useState} from 'react';
 import {Avatar, Button, Form, Input, Modal, Typography} from 'antd';
 import {
     CheckCircleOutlined,
-    EditOutlined,
     EyeOutlined,
     FileTextOutlined,
     MessageOutlined,
+    SchoolOutlined,
     SendOutlined,
     SmileOutlined,
     UploadOutlined,
-    UserOutlined,
-    UserSwitchOutlined
+    UserOutlined
 } from '@ant-design/icons';
 import {Box, Chip, Container, Paper} from '@mui/material';
 import EmojiPicker from 'emoji-picker-react';
 import {useSnackbar} from 'notistack';
-import {parseID} from '../../../utils/ParseIDUtil.jsx';
+import {parseID} from '../../utils/ParseIDUtil.jsx';
 import {addDoc, collection, onSnapshot, query, serverTimestamp, where} from 'firebase/firestore';
-import {auth, db} from "../../../configs/firebase-config.jsx";
+import {auth, db} from "../../configs/firebase-config.jsx";
 
 const {TextArea} = Input;
 
-export function useDesignChatMessages(roomId) {
+export function useDesignerChatMessages(roomId) {
     const [chatMessages, setChatMessages] = useState([]);
 
     useEffect(() => {
@@ -46,7 +45,7 @@ export function useDesignChatMessages(roomId) {
         await addDoc(messageRef, {
             text,
             createdAt: serverTimestamp(),
-            user: auth.currentUser?.displayName || "User",
+            user: auth.currentUser?.displayName || "Designer",
             room: roomId,
         });
     };
@@ -54,8 +53,8 @@ export function useDesignChatMessages(roomId) {
     return {chatMessages, sendMessage};
 }
 
-// New RevisionRequestModal component
-function RevisionRequestModal({visible, onCancel, onSubmit, selectedDeliveryId}) {
+// New DeliverySubmissionModal component for designers
+function DeliverySubmissionModal({visible, onCancel, onSubmit}) {
     const [form] = Form.useForm();
 
     useEffect(() => {
@@ -67,7 +66,7 @@ function RevisionRequestModal({visible, onCancel, onSubmit, selectedDeliveryId})
     const handleOk = () => {
         form.validateFields()
             .then(values => {
-                onSubmit({...values, deliveryId: selectedDeliveryId});
+                onSubmit(values);
             })
             .catch(info => {
                 console.log('Validate Failed:', info);
@@ -78,22 +77,16 @@ function RevisionRequestModal({visible, onCancel, onSubmit, selectedDeliveryId})
         <Modal
             title={
                 <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
-                    <EditOutlined style={{color: '#1976d2', fontSize: '18px'}}/>
+                    <FileTextOutlined style={{color: '#1976d2', fontSize: '18px'}}/>
                     <Typography.Title level={5} style={{margin: 0, color: '#1e293b'}}>
-                        Request Revision
+                        Submit New Delivery
                     </Typography.Title>
-                    <Chip
-                        label={`Delivery ${selectedDeliveryId || 'N/A'}`}
-                        color="primary"
-                        size="small"
-                        style={{backgroundColor: '#1976d2'}}
-                    />
                 </Box>
             }
             open={visible}
             onCancel={onCancel}
             onOk={handleOk}
-            okText="Submit Revision Request"
+            okText="Submit Delivery"
             cancelText="Cancel"
             centered
             width={600}
@@ -108,20 +101,44 @@ function RevisionRequestModal({visible, onCancel, onSubmit, selectedDeliveryId})
             <Form
                 form={form}
                 layout="vertical"
-                name="revision_request_form"
+                name="delivery_submission_form"
             >
                 <Form.Item
-                    name="revisionDescription"
-                    label="Describe your revision request:"
-                    rules={[{required: true, message: 'Please describe your revision!'}]}
+                    name="deliveryName"
+                    label="Delivery Name:"
+                    rules={[{required: true, message: 'Please enter delivery name!'}]}
+                >
+                    <Input
+                        placeholder="e.g., Concept 1.0, Final Design v2.0..."
+                        style={{
+                            borderRadius: '8px'
+                        }}
+                    />
+                </Form.Item>
+                <Form.Item
+                    name="deliveryDescription"
+                    label="Description:"
+                    rules={[{required: true, message: 'Please describe your delivery!'}]}
                 >
                     <TextArea
                         rows={4}
-                        placeholder="e.g., Change the color of the logo to blue, adjust the font size, modify the layout..."
+                        placeholder="Describe the design changes, improvements, or new concepts included in this delivery..."
                         style={{
                             maxHeight: '120px',
                             overflowY: 'auto',
                             resize: 'none',
+                            borderRadius: '8px'
+                        }}
+                    />
+                </Form.Item>
+                <Form.Item
+                    name="deliveryLink"
+                    label="Design Link:"
+                    rules={[{required: true, message: 'Please provide the design link!'}]}
+                >
+                    <Input
+                        placeholder="https://figma.com/design-link..."
+                        style={{
                             borderRadius: '8px'
                         }}
                     />
@@ -131,10 +148,8 @@ function RevisionRequestModal({visible, onCancel, onSubmit, selectedDeliveryId})
     );
 }
 
-export default function DesignChat() {
+export default function DesignerChat() {
     const [requestData, setRequestData] = useState(null);
-    // const [chatMessages, setChatMessages] = useState([]);
-    // const [newMessage, setNewMessage] = useState('');
     const [designDeliveries, setDesignDeliveries] = useState([
         {id: 1, name: 'Concept 1.0', link: '#', date: '2024-01-15', status: 'delivered'},
         {id: 2, name: 'Concept 2.0', link: '#', date: '2024-01-18', status: 'delivered'},
@@ -145,15 +160,14 @@ export default function DesignChat() {
         description: 'The approved final design including all revisions.',
         date: '2024-01-20'
     });
-    const [isRevisionModalVisible, setIsRevisionModalVisible] = useState(false);
-    const [selectedDeliveryIdForRevision, setSelectedDeliveryIdForRevision] = useState(null);
+    const [isDeliveryModalVisible, setIsDeliveryModalVisible] = useState(false);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const {enqueueSnackbar} = useSnackbar();
     const [isConfirmFinalModalVisible, setIsConfirmFinalModalVisible] = useState(false);
     const [deliveryToMakeFinal, setDeliveryToMakeFinal] = useState(null);
     const [isFinalDesignSet, setIsFinalDesignSet] = useState(false);
     const roomId = requestData?.id;
-    const {chatMessages, sendMessage} = useDesignChatMessages(roomId);
+    const {chatMessages, sendMessage} = useDesignerChatMessages(roomId);
     const [newMessage, setNewMessage] = useState('');
 
     useEffect(() => {
@@ -161,8 +175,8 @@ export default function DesignChat() {
         if (storedRequest) {
             setRequestData(JSON.parse(storedRequest));
         } else {
-            // If no request data in localStorage, redirect to Design Management
-            window.location.href = '/school/design';
+            // If no request data in localStorage, redirect to Designer Dashboard
+            window.location.href = '/designer/dashboard';
         }
     }, []);
 
@@ -193,7 +207,7 @@ export default function DesignChat() {
                 const formattedDay = now.toLocaleDateString('en-US', {weekday: 'short'});
                 setChatMessages(prevMessages => [
                     ...prevMessages,
-                    {imageUrl: reader.result, sender: 'user', timestamp: `${formattedDay}, ${formattedTime}`}
+                    {imageUrl: reader.result, sender: 'designer', timestamp: `${formattedDay}, ${formattedTime}`}
                 ]);
             };
             reader.readAsDataURL(file);
@@ -205,14 +219,12 @@ export default function DesignChat() {
         setShowEmojiPicker(false); // Hide picker after selecting
     };
 
-    const handleOpenRevisionModal = (deliveryId) => {
-        setSelectedDeliveryIdForRevision(deliveryId);
-        setIsRevisionModalVisible(true);
+    const handleOpenDeliveryModal = () => {
+        setIsDeliveryModalVisible(true);
     };
 
-    const handleCloseRevisionModal = () => {
-        setIsRevisionModalVisible(false);
-        setSelectedDeliveryIdForRevision(null);
+    const handleCloseDeliveryModal = () => {
+        setIsDeliveryModalVisible(false);
     };
 
     const handleOpenConfirmFinalModal = (item) => {
@@ -243,11 +255,20 @@ export default function DesignChat() {
         handleOpenConfirmFinalModal(deliveryItem);
     };
 
-    const handleRevisionSubmit = (values) => {
-        console.log('Revision Request:', values);
-        // In a real application, send this to backend and update request status
-        enqueueSnackbar('Revision request submitted successfully!', {variant: 'success'});
-        handleCloseRevisionModal();
+    const handleDeliverySubmit = (values) => {
+        console.log('Delivery Submission:', values);
+        // Add new delivery to the list
+        const newDelivery = {
+            id: designDeliveries.length + 1,
+            name: values.deliveryName,
+            link: values.deliveryLink,
+            description: values.deliveryDescription,
+            date: new Date().toISOString().split('T')[0],
+            status: 'delivered'
+        };
+        setDesignDeliveries(prev => [...prev, newDelivery]);
+        enqueueSnackbar('Delivery submitted successfully!', {variant: 'success'});
+        handleCloseDeliveryModal();
     };
 
     return (
@@ -282,7 +303,7 @@ export default function DesignChat() {
                             <Box sx={{display: 'flex', alignItems: 'center', gap: 3}}>
                                 <Box>
                                     <Typography.Title level={2} style={{margin: 0, color: '#1e293b', fontWeight: 700}}>
-                                        Design Chat
+                                        Designer Chat
                                     </Typography.Title>
                                     <Typography.Text type="secondary" style={{fontSize: '16px', fontWeight: 500}}>
                                         Request ID: {requestData ? parseID(requestData.id, 'dr') : 'N/A'}
@@ -290,7 +311,7 @@ export default function DesignChat() {
                                 </Box>
                             </Box>
                             <Chip
-                                label="PAID"
+                                label="ACTIVE"
                                 color="success"
                                 size="large"
                                 style={{
@@ -306,7 +327,7 @@ export default function DesignChat() {
                     {/* Main Content */}
                     <Box sx={{display: 'flex', gap: 3, flex: 1, minHeight: 0, height: '90vh'}}>
 
-                        {/* Left Half - Designer Chat */}
+                        {/* Left Half - School Chat */}
                         <Paper
                             elevation={0}
                             sx={{
@@ -342,15 +363,15 @@ export default function DesignChat() {
                                         fontSize: '20px',
                                         boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)'
                                     }}>
-                                        <UserSwitchOutlined/>
+                                        <SchoolOutlined/>
                                     </Box>
                                     <Box>
                                         <Typography.Title level={4}
                                                           style={{margin: 0, color: '#1e293b', fontWeight: 600}}>
-                                            Designer Chat
+                                            School Chat
                                         </Typography.Title>
                                         <Typography.Text type="secondary" style={{fontSize: '14px', fontWeight: 500}}>
-                                            Communicate with your designer
+                                            Communicate with the school
                                         </Typography.Text>
                                     </Box>
                                 </Box>
@@ -385,35 +406,34 @@ export default function DesignChat() {
                                                 key={msg.id || index}
                                                 sx={{
                                                     display: 'flex',
-                                                    justifyContent: msg.user === (auth.currentUser?.displayName || "User") ? 'flex-end' : 'flex-start',
+                                                    justifyContent: msg.user === (auth.currentUser?.displayName || "Designer") ? 'flex-end' : 'flex-start',
                                                     mb: 2
                                                 }}
                                             >
-                                                {/* ... Bubble/chat UI như cũ, chỉ đổi chỗ lấy sender/message */}
                                                 <Box sx={{
                                                     display: 'flex',
                                                     alignItems: 'flex-end',
                                                     gap: 1,
                                                     maxWidth: '70%'
                                                 }}>
-                                                    {msg.user !== (auth.currentUser?.displayName || "User") && (
+                                                    {msg.user !== (auth.currentUser?.displayName || "Designer") && (
                                                         <Avatar
                                                             size="small"
                                                             style={{backgroundColor: '#1976d2'}}
-                                                            icon={<UserSwitchOutlined/>}
+                                                            icon={<SchoolOutlined/>}
                                                         />
                                                     )}
                                                     <Box sx={{
                                                         p: 2,
                                                         borderRadius: 4,
-                                                        backgroundColor: msg.user === (auth.currentUser?.displayName || "User")
+                                                        backgroundColor: msg.user === (auth.currentUser?.displayName || "Designer")
                                                             ? 'linear-gradient(135deg, #1976d2, #42a5f5)'
                                                             : 'white',
-                                                        color: msg.user === (auth.currentUser?.displayName || "User") ? 'white' : '#1e293b',
-                                                        border: msg.user !== (auth.currentUser?.displayName || "User") ? '2px solid #e2e8f0' : 'none',
+                                                        color: msg.user === (auth.currentUser?.displayName || "Designer") ? 'white' : '#1e293b',
+                                                        border: msg.user !== (auth.currentUser?.displayName || "Designer") ? '2px solid #e2e8f0' : 'none',
                                                         maxWidth: '100%',
                                                         wordWrap: 'break-word',
-                                                        boxShadow: msg.user === (auth.currentUser?.displayName || "User")
+                                                        boxShadow: msg.user === (auth.currentUser?.displayName || "Designer")
                                                             ? '0 4px 12px rgba(25, 118, 210, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
                                                         position: 'relative'
                                                     }}>
@@ -435,7 +455,7 @@ export default function DesignChat() {
                                                             </Typography.Text>
                                                         )}
                                                     </Box>
-                                                    {msg.user === (auth.currentUser?.displayName || "User") && (
+                                                    {msg.user === (auth.currentUser?.displayName || "Designer") && (
                                                         <Avatar
                                                             size="small"
                                                             style={{backgroundColor: '#52c41a'}}
@@ -604,7 +624,7 @@ export default function DesignChat() {
                                             </Box>
                                             <Typography.Title level={4}
                                                               style={{margin: 0, color: '#1e293b', fontWeight: 600}}>
-                                                Design Deliveries
+                                                My Deliveries
                                             </Typography.Title>
                                         </Box>
                                         <Box sx={{
@@ -672,40 +692,41 @@ export default function DesignChat() {
                                                         View
                                                     </Button>
                                                     {!isFinalDesignSet && (
-                                                        <>
-                                                            <Button
-                                                                size="small"
-                                                                icon={<EditOutlined/>}
-                                                                onClick={() => handleOpenRevisionModal(item.id)}
-                                                                style={{
-                                                                    borderRadius: '6px',
-                                                                    backgroundColor: '#722ed1',
-                                                                    borderColor: '#722ed1',
-                                                                    color: 'white',
-                                                                    flex: 1
-                                                                }}
-                                                            >
-                                                                Revision
-                                                            </Button>
-                                                            <Button
-                                                                size="small"
-                                                                icon={<CheckCircleOutlined/>}
-                                                                onClick={() => handleMakeFinal(item)}
-                                                                style={{
-                                                                    borderRadius: '6px',
-                                                                    backgroundColor: '#52c41a',
-                                                                    borderColor: '#52c41a',
-                                                                    color: 'white',
-                                                                    flex: 1
-                                                                }}
-                                                            >
-                                                                Final
-                                                            </Button>
-                                                        </>
+                                                        <Button
+                                                            size="small"
+                                                            icon={<CheckCircleOutlined/>}
+                                                            onClick={() => handleMakeFinal(item)}
+                                                            style={{
+                                                                borderRadius: '6px',
+                                                                backgroundColor: '#52c41a',
+                                                                borderColor: '#52c41a',
+                                                                color: 'white',
+                                                                flex: 1
+                                                            }}
+                                                        >
+                                                            Set Final
+                                                        </Button>
                                                     )}
                                                 </Box>
                                             </Paper>
                                         ))}
+                                        
+                                        {/* Add New Delivery Button */}
+                                        <Button
+                                            type="dashed"
+                                            icon={<FileTextOutlined/>}
+                                            onClick={handleOpenDeliveryModal}
+                                            style={{
+                                                borderRadius: '8px',
+                                                height: '48px',
+                                                border: '2px dashed #d9d9d9',
+                                                color: '#666',
+                                                fontSize: '14px',
+                                                fontWeight: 500
+                                            }}
+                                        >
+                                            + Add New Delivery
+                                        </Button>
                                     </Box>
                                 </Box>
                             </Paper>
@@ -796,11 +817,10 @@ export default function DesignChat() {
                 </Box>
             </Container>
 
-            <RevisionRequestModal
-                visible={isRevisionModalVisible}
-                onCancel={handleCloseRevisionModal}
-                onSubmit={handleRevisionSubmit}
-                selectedDeliveryId={selectedDeliveryIdForRevision}
+            <DeliverySubmissionModal
+                visible={isDeliveryModalVisible}
+                onCancel={handleCloseDeliveryModal}
+                onSubmit={handleDeliverySubmit}
             />
 
             <Modal

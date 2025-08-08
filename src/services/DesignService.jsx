@@ -20,32 +20,12 @@ export const getDesignRequests = async () => {
     return response || null
 }
 
-export const createPackage = async (data) => {
-    const response = await axiosClient.post("/design/package", data)
+export const createDesignQuotation = async (data) => {
+    const response = await axiosClient.post("/design/quotation", data)
     return response || null
 }
 
-export const getPackages = async () => {
-    const response = await axiosClient.post("/design/package/list")
-    return response || null
-}
-
-export const updatePackageStatus = async (data) => {
-    const response = await axiosClient.put("/design/packages/status", data)
-    return response || null
-}
-
-export const createRequestReceipt = async (data) => {
-    const response = await axiosClient.post("/design/receipt/package/", data)
-    return response || null
-}
-
-export const getRequestReceipt = async (data) => {
-    const response = await axiosClient.post("/design/list/receipt", data)
-    return response || null
-}
-
-export const pickPackage = async (data) => {
-    const response = await axiosClient.post("/design/pick-packages", data)
+export const pickQuotation = async (data) => {
+    const response = await axiosClient.post("/design/pick/quotation", data)
     return response || null
 }

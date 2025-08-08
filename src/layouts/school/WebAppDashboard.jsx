@@ -80,7 +80,7 @@ function Navbar({school, enqueueSnackbar}) {
             sx={{
                 width: "100%",
                 bgcolor: "white",
-                height: "150vh",
+                minHeight: "100vh",
                 display: 'flex',
                 flexDirection: 'column',
                 borderRight: "2px solid #f0f4f8",
@@ -270,9 +270,9 @@ function Content() {
                 display: 'flex',
                 flexDirection: 'column',
                 flex: 1,
-                maxHeight: '150vh',
+                height: 'max-content',
                 overflowY: 'auto',
-                bgcolor: '#fafafa'
+                backgroundColor: '#fafafa'
             }}
         >
             <Outlet/>
@@ -355,7 +355,7 @@ export default function WebAppDashboard() {
     };
 
     return (
-        <Box sx={{display: 'flex', minHeight: '100vh', bgcolor: '#fafafa'}}>
+        <Box sx={{display: 'flex', minHeight: '100vh', bgcolor: '#fafafa', overflow: 'hidden'}}>
             <Box sx={{width: 280, flexShrink: 0}}>
                 <Navbar school={user} enqueueSnackbar={enqueueSnackbar}/>
             </Box>

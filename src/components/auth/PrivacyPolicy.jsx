@@ -1,23 +1,6 @@
 import React from 'react';
-import {
-    Box,
-    Container,
-    Typography,
-    Paper,
-    Divider,
-    List,
-    ListItem,
-    ListItemIcon,
-    ListItemText
-} from '@mui/material';
-import {
-    Security,
-    InfoOutlined,
-    Share,
-    PersonOutline,
-    Update,
-    ContactSupport
-} from '@mui/icons-material';
+import {Box, Container, List, ListItem, ListItemIcon, ListItemText, Paper, Typography} from '@mui/material';
+import {ContactSupport, InfoOutlined, PersonOutline, Security, Share, Update} from '@mui/icons-material';
 
 export default function PrivacyPolicy() {
     const sections = [

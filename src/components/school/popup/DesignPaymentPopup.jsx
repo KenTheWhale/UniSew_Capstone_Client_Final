@@ -1,51 +1,60 @@
-import React, { useState } from 'react';
-import { Modal, Button, Typography, Space, Descriptions, Spin, message } from 'antd';
-import { 
-    DollarOutlined, 
-    CalendarOutlined, 
-    EditOutlined, 
-    UserOutlined,
+import React from 'react';
+import {Button, Modal, Spin, Typography} from 'antd';
+import {
+    CalendarOutlined,
     CheckCircleOutlined,
-    InfoCircleOutlined,
     CreditCardOutlined,
+    DollarOutlined,
+    EditOutlined,
+    InfoCircleOutlined,
     SafetyCertificateOutlined
 } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
-import { Box, Paper, Divider, Chip } from '@mui/material';
+import {Box, Chip, Paper} from '@mui/material';
 import {parseID} from "../../../utils/ParseIDUtil.jsx";
-import {pickPackage} from "../../../services/DesignService.jsx";
+import {getPaymentUrl} from "../../../services/PaymentService.jsx";
+import {enqueueSnackbar} from "notistack";
 
-export default function DesignPaymentPopup({ visible, onCancel, selectedPackageDetails }) {
+export default function DesignPaymentPopup({ visible, onCancel, selectedQuotationDetails }) {
 
-    if (!selectedPackageDetails) {
+    if (!selectedQuotationDetails) {
         return (
             <Modal open={visible} onCancel={onCancel} footer={null} centered>
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
-                    <Spin size="large" tip="Loading payment details..." />
+                    <Spin size="large" spinning tip="Loading payment details..." />
                 </Box>
             </Modal>
         );
     }
 
-    const { designer, package: pkg, request } = selectedPackageDetails;
-
-    const isFullPackageDetails = designer && pkg;
+    const { quotation, request } = selectedQuotationDetails;
 
     const handleProceedToPayment = async () => {
-        // In a real application, you would integrate with a payment gateway here
-        // For now, we simulate success and navigate to PaymentResult
-        const result = true
-        const data = {
-            packageId: pkg.id,
-            designRequestId: request.id
-        }
-        pickPackage(data).then(res => {
-            if(res && res.status === 200){
-                onCancel();
-                const stateToPass = encodeURIComponent(JSON.stringify({ success: result, packageDetails: selectedPackageDetails }));
-                window.location.href = `/school/payment/result?state=${stateToPass}`;
+        try {
+            // Store quotation details in sessionStorage for VNPay callback
+            const quotationDetailsToStore = {
+                quotation: quotation,
+                request: request
+            };
+            sessionStorage.setItem('paymentQuotationDetails', JSON.stringify(quotationDetailsToStore));
+            
+            const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
+            const totalAmount = quotation.price + (extraRevision * (quotation.extraRevisionPrice || 0));
+            
+            const response = await getPaymentUrl(
+                totalAmount,
+                `Payment for design quotation - Design Request ${parseID(request.id, 'dr')}`,
+                'design_request',
+                '/school/payment/result'
+            );
+            
+            if (response && response.status === 200) {
+                window.location.href = response.data.body.url;
+            } else {
+                enqueueSnackbar('Failed to generate payment URL. Please try again.', {variant: 'error'})
             }
-        })
+        } catch (error) {
+            enqueueSnackbar('Error generating payment URL', {variant: 'error'})
+        }
     };
 
     return (
@@ -139,23 +148,23 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedPackageD
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                             <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
-                                <strong>Name:</strong> {designer.designerName}
+                                <strong>Name:</strong> {quotation.designer.customer.name}
                             </Typography.Text>
                         </Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                             <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
-                                <strong>Email:</strong> {designer.email}
+                                <strong>Email:</strong> {quotation.designer.customer.account.email}
                             </Typography.Text>
                         </Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                             <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
-                                <strong>Phone:</strong> {designer.phone}
+                                <strong>Phone:</strong> {quotation.designer.customer.phone}
                             </Typography.Text>
                         </Box>
                     </Box>
                 </Paper>
 
-                {/* Package Details */}
+                {/* Quotation Details */}
                 <Paper 
                     elevation={0}
                     sx={{ 
@@ -181,10 +190,10 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedPackageD
                         </Box>
                         <Box>
                             <Typography.Title level={5} style={{ margin: 0, color: '#1e293b' }}>
-                                Design Package Details
+                                Design Quotation Details
                             </Typography.Title>
                             <Typography.Text type="secondary" style={{ fontSize: '14px' }}>
-                                {pkg.name || 'Selected Package'}
+                                Custom Quotation
                             </Typography.Text>
                         </Box>
                     </Box>
@@ -199,10 +208,10 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedPackageD
                             borderRadius: 2
                         }}>
                             <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
-                                <strong>Package Price:</strong>
+                                <strong>Quotation Price:</strong>
                             </Typography.Text>
                             <Typography.Title level={4} style={{ margin: 0, color: '#1976d2' }}>
-                                {pkg.pkgFee.toLocaleString('vi-VN')} VND
+                                {quotation.price.toLocaleString('vi-VN')} VND
                             </Typography.Title>
                         </Box>
 
@@ -219,7 +228,7 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedPackageD
                                     <strong>Design Time</strong>
                                 </Typography.Text>
                                 <Typography.Text style={{ color: '#1e293b', fontSize: '16px', fontWeight: 'bold' }}>
-                                    {pkg.pkgDuration} days
+                                    {quotation.deliveryWithIn} days
                                 </Typography.Text>
                             </Box>
 
@@ -235,10 +244,35 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedPackageD
                                     <strong>Max Revisions</strong>
                                 </Typography.Text>
                                 <Typography.Text style={{ color: '#1e293b', fontSize: '16px', fontWeight: 'bold' }}>
-                                    {pkg.pkgRevisionTime === 9999 ? 'Unlimited' : pkg.pkgRevisionTime}
+                                    {quotation.revisionTime === 9999 ? 'Unlimited' : quotation.revisionTime}
                                 </Typography.Text>
                             </Box>
                         </Box>
+
+                        {/* Extra Revision Information */}
+                        {(() => {
+                            const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
+                            return extraRevision > 0 ? (
+                                <Box sx={{ 
+                                    p: 2, 
+                                    backgroundColor: '#fff7e6', 
+                                    borderRadius: 2,
+                                    border: '1px solid #ffd591',
+                                    textAlign: 'center',
+                                    mt: 2
+                                }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 1 }}>
+                                        <EditOutlined style={{ color: '#fa8c16', fontSize: '16px' }} />
+                                        <Typography.Text style={{ color: '#fa8c16', fontWeight: 600, fontSize: '14px' }}>
+                                            Extra Revisions Purchased
+                                        </Typography.Text>
+                                    </Box>
+                                    <Typography.Text style={{ color: '#fa8c16', fontSize: '16px', fontWeight: 'bold' }}>
+                                        {extraRevision} additional revisions - {(extraRevision * (quotation.extraRevisionPrice || 0)).toLocaleString('vi-VN')} VND
+                                    </Typography.Text>
+                                </Box>
+                            ) : null;
+                        })()}
                     </Box>
                 </Paper>
 
@@ -282,7 +316,11 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedPackageD
                             </Typography.Title>
                         </Box>
                         <Typography.Title level={3} style={{ margin: 0, color: '#1976d2', fontWeight: 'bold' }}>
-                            {pkg.pkgFee.toLocaleString('vi-VN')} VND
+                            {(() => {
+                                const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
+                                const totalAmount = quotation.price + (extraRevision * (quotation.extraRevisionPrice || 0));
+                                return totalAmount.toLocaleString('vi-VN') + ' VND';
+                            })()}
                         </Typography.Title>
                     </Box>
                 </Paper>

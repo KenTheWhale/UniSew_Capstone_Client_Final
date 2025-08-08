@@ -13,15 +13,16 @@ import DesignChat from "./components/school/design/DesignChat.jsx";
 import {Slide} from '@mui/material';
 import CreateRequest from './components/school/design/CreateRequest.jsx';
 import PendingRequest from "./components/school/design/PendingRequest.jsx";
-import PaymentResult from "./components/auth/PaymentResult.jsx";
+import PaymentResult from "./components/school/PaymentResult.jsx";
 import DesignerRequestList from "./components/designer/DesignerRequestList.jsx";
 import DesignerDashboardLayout from "./layouts/designer/DesignerDashboardLayout.jsx";
 import PrivacyPolicy from "./components/auth/PrivacyPolicy.jsx";
 import HowItWork from "./components/auth/HowItWork.jsx";
 import DesignerRegister from "./components/auth/DesignerRegister.jsx";
 import EmailConfirmation from "./components/auth/EmailConfirmation.jsx";
-import DesignerPackageManagement from "./components/designer/DesignerPackageManagement.jsx";
 import ProtectedRoute from "./configs/ProtectedRoute.jsx";
+import DesignerChat from "./components/designer/DesignerChat.jsx";
+import AppliedRequestList from "./components/designer/AppliedRequestList.jsx";
 
 const router = createBrowserRouter([
     {
@@ -123,8 +124,12 @@ const router = createBrowserRouter([
                 element: <DesignerRequestList />
             },
             {
-                path: 'packages',
-                element: <DesignerPackageManagement />
+                path: 'chat',
+                element: <DesignerChat/>
+            },
+            {
+                path: 'applied/requests',
+                element: <AppliedRequestList/>
             }
         ]
     }
