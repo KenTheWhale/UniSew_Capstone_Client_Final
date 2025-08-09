@@ -23,7 +23,6 @@ import RequestDesignerPopup, {statusTag} from '../popup/RequestDesignerPopup';
 import DesignPaymentPopup from '../popup/DesignPaymentPopup';
 import {getSchoolDesignRequests} from "../../../services/DesignService.jsx";
 import {parseID} from "../../../utils/ParseIDUtil.jsx";
-import {designerFindingWithin} from "../../../configs/FixedVariables.jsx";
 
 export default function PendingRequest() {
     useEffect(() => {
@@ -39,7 +38,10 @@ export default function PendingRequest() {
             const response = await getSchoolDesignRequests();
             if (response && response.status === 200) {
                 console.log("Design request: ", response.data.body);
-                setPendingRequestsData(response.data.body || []);
+                const newData = response.data.body || [];
+                setPendingRequestsData(newData);
+                
+
             }
         } catch (error) {
             console.error("Error fetching design requests:", error);
@@ -50,6 +52,18 @@ export default function PendingRequest() {
 
     useEffect(() => {
         FetchSchoolDesign();
+    }, []);
+
+    // Refresh data when user returns from other pages
+    useEffect(() => {
+        const handleFocus = () => {
+            FetchSchoolDesign();
+        };
+
+        window.addEventListener('focus', handleFocus);
+        return () => {
+            window.removeEventListener('focus', handleFocus);
+        };
     }, []);
 
     const pendingRequests = pendingRequestsData.filter(request =>
@@ -150,49 +164,7 @@ export default function PendingRequest() {
                 );
             },
         },
-        {
-            title: 'Designer Finding End Date',
-            key: 'designerFindingEndDate',
-            align: 'left',
-            width: 250,
-            sorter: (a, b) => {
-                const endDateA = new Date(a.creationDate);
-                endDateA.setDate(endDateA.getDate() + designerFindingWithin);
-                const endDateB = new Date(b.creationDate);
-                endDateB.setDate(endDateB.getDate() + designerFindingWithin);
-                return endDateA - endDateB;
-            },
-            render: (_, record) => {
-                const creationDate = new Date(record.creationDate);
-                const endDate = new Date(creationDate);
-                endDate.setDate(endDate.getDate() + designerFindingWithin);
 
-                const day = String(endDate.getDate()).padStart(2, '0');
-                const month = String(endDate.getMonth() + 1).padStart(2, '0');
-                const year = endDate.getFullYear();
-
-                const now = new Date();
-                const daysUntilEnd = Math.floor((endDate - now) / (1000 * 60 * 60 * 24));
-
-                return (
-                    <Box>
-                        <Typography variant="body2" sx={{color: '#475569', fontSize: '0.875rem'}}>
-                            {`${day}/${month}/${year}`}
-                        </Typography>
-                        <Typography
-                            variant="caption"
-                            sx={{
-                                color: daysUntilEnd < 0 ? '#dc2626' : daysUntilEnd <= 1 ? '#f59e0b' : '#64748b',
-                                fontSize: '0.75rem',
-                                fontWeight: daysUntilEnd <= 1 ? 600 : 400
-                            }}
-                        >
-                            {daysUntilEnd < 0 ? 'Expired' : daysUntilEnd === 0 ? 'Today' : `${daysUntilEnd} days left`}
-                        </Typography>
-                    </Box>
-                );
-            },
-        },
         {
             title: 'Name',
             dataIndex: 'name',

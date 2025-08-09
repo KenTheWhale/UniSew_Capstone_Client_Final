@@ -104,7 +104,7 @@ export default function AppliedRequestDetail({visible, onCancel, request}) {
             case 'paid':
                 buttonText = 'Start Chat with School';
                 buttonAction = () => {
-                    localStorage.setItem('currentDesignRequest', JSON.stringify(request));
+                    localStorage.setItem('currentDesignRequestId', request.id);
                     onCancel();
                     window.location.href = '/designer/chat';
                 };
@@ -112,7 +112,7 @@ export default function AppliedRequestDetail({visible, onCancel, request}) {
             case 'progressing':
                 buttonText = 'Continue Working';
                 buttonAction = () => {
-                    localStorage.setItem('currentDesignRequest', JSON.stringify(request));
+                    localStorage.setItem('currentDesignRequestId', request.id);
                     onCancel();
                     window.location.href = '/designer/chat';
                 };

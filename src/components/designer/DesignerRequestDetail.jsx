@@ -35,7 +35,6 @@ import {
 import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
 import {GiSkirt} from "react-icons/gi";
 import {parseID} from "../../utils/ParseIDUtil.jsx";
-import {designerFindingWithin} from "../../configs/FixedVariables.jsx";
 import {createDesignQuotation} from "../../services/DesignService.jsx";
 import {enqueueSnackbar} from "notistack";
 import DisplayImage from "../ui/DisplayImage.jsx";
@@ -275,12 +274,7 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
         });
     };
 
-    const calculateAvailableUntil = (creationDate) => {
-        const startDate = new Date(creationDate);
-        const endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + designerFindingWithin);
-        return formatDate(endDate);
-    };
+
 
     const formatValidityDate = (dateString) => {
         if (!dateString) return '';
@@ -470,44 +464,7 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                 </Box>
                                             </Grid>
 
-                                            <Grid sx={{flex: 1}}>
-                                                <Box sx={{
-                                                    p: 2,
-                                                    background: 'rgba(248, 249, 250, 0.8)',
-                                                    borderRadius: 2,
-                                                    border: '1px solid rgba(233, 236, 239, 0.5)',
-                                                    textAlign: 'center',
-                                                    backdropFilter: 'blur(5px)',
-                                                    transition: 'all 0.3s ease',
-                                                    '&:hover': {
-                                                        background: 'rgba(240, 240, 240, 0.9)',
-                                                        transform: 'translateY(-1px)',
-                                                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                                                    }
-                                                }}>
-                                                    <ScheduleIcon sx={{
-                                                        color: '#666',
-                                                        fontSize: 24,
-                                                        mb: 1,
-                                                        transition: 'all 0.3s ease'
-                                                    }}/>
-                                                    <Typography variant="body2" sx={{
-                                                        color: '#666',
-                                                        fontWeight: 600,
-                                                        mb: 0.5,
-                                                        transition: 'all 0.3s ease'
-                                                    }}>
-                                                        Available Until
-                                                    </Typography>
-                                                    <Typography variant="body1" sx={{
-                                                        fontWeight: 600,
-                                                        color: '#333',
-                                                        transition: 'all 0.3s ease'
-                                                    }}>
-                                                        {calculateAvailableUntil(mergedRequestData.creationDate)}
-                                                    </Typography>
-                                                </Box>
-                                            </Grid>
+
                                         </Grid>
                                     </CardContent>
                                 </Card>

@@ -19,7 +19,8 @@ import {
     PhoneOutlined,
     MailOutlined,
     EnvironmentOutlined,
-    ShopOutlined
+    ShopOutlined,
+    EyeOutlined
 } from '@ant-design/icons';
 import {DesignServices} from '@mui/icons-material';
 import {useNavigate} from 'react-router-dom';
@@ -88,9 +89,298 @@ const getItemIcon = (itemType) => {
     }
 };
 
+// Result Delivery Modal Component
+function ResultDeliveryModal({visible, onCancel, resultDelivery}) {
+    if (!resultDelivery) return null;
+
+    const {Text, Title} = Typography;
+
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('vi-VN', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    };
+
+    return (
+        <Dialog
+            open={visible}
+            onClose={onCancel}
+            maxWidth="xl"
+            fullWidth
+            PaperProps={{
+                sx: {
+                    borderRadius: 3,
+                    boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                    maxHeight: '90vh'
+                }
+            }}
+        >
+            <DialogTitle sx={{
+                borderBottom: '1px solid #f0f0f0',
+                padding: '16px 24px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                color: 'white'
+            }}>
+                <CheckCircleOutlined style={{color: 'white', fontSize: '18px'}}/>
+                <span style={{fontWeight: 600, fontSize: '16px'}}>
+                    Final Design Result
+                </span>
+            </DialogTitle>
+            <DialogContent sx={{padding: '20px', overflowY: 'auto'}}>
+                <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
+
+                    {/* Header Info */}
+                    <Card
+                        size="small"
+                        style={{
+                            background: 'linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)',
+                            border: '1px solid #bbf7d0',
+                            borderRadius: 8
+                        }}
+                    >
+                        <Row gutter={[16, 8]} align="middle">
+                            <Col span={8}>
+                                <Space direction="vertical" size="small">
+                                    <Text style={{fontWeight: 600, fontSize: '16px', color: '#166534'}}>
+                                        {resultDelivery.name}
+                                    </Text>
+                                    <Text style={{color: '#64748b', fontSize: '12px'}}>
+                                        Submitted: {formatDate(resultDelivery.submitDate)}
+                                    </Text>
+                                </Space>
+                            </Col>
+                            <Col span={8} style={{textAlign: 'center'}}>
+                                <Space direction="vertical" size="small">
+                                    <Text style={{fontSize: '12px', color: '#64748b'}}>
+                                        Final Delivery
+                                    </Text>
+                                    <Text style={{fontSize: '10px', color: '#94a3b8'}}>
+                                        Design Result
+                                    </Text>
+                                </Space>
+                            </Col>
+                            <Col span={8} style={{display: 'flex', justifyContent: 'flex-end', textAlign: 'right'}}>
+                                <Space direction="vertical" size="small">
+                                    <Tag color="success" style={{margin: 0}}>
+                                        <CheckCircleOutlined/> Completed
+                                    </Tag>
+                                    <Text style={{color: '#64748b', fontSize: '12px'}}>
+                                        ID: {parseID(resultDelivery.id, 'dd')}
+                                    </Text>
+                                </Space>
+                            </Col>
+                        </Row>
+                    </Card>
+
+                    {/* Note Section */}
+                    {resultDelivery.note && (
+                        <Card
+                            title={
+                                <Space>
+                                    <InfoCircleOutlined style={{color: '#10b981'}}/>
+                                    <span style={{fontWeight: 600, fontSize: '14px'}}>Designer Note</span>
+                                </Space>
+                            }
+                            size="small"
+                            style={{
+                                border: '1px solid #e2e8f0',
+                                borderRadius: 8,
+                                background: 'linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)'
+                            }}
+                        >
+                            <Box sx={{p: 1.5, bgcolor: '#f0fdf4', borderRadius: 6, border: '1px solid #bbf7d0'}}>
+                                <Text style={{color: '#166534', fontSize: '14px', lineHeight: 1.6}}>
+                                    {resultDelivery.note}
+                                </Text>
+                            </Box>
+                        </Card>
+                    )}
+
+                    {/* Design Items */}
+                    <Card
+                        title={
+                            <Space>
+                                <FileTextOutlined style={{color: '#10b981'}}/>
+                                <span style={{
+                                    fontWeight: 600,
+                                    fontSize: '14px'
+                                }}>Final Design Items ({resultDelivery.items?.length || 0})</span>
+                            </Space>
+                        }
+                        size="small"
+                        style={{
+                            border: '1px solid #e2e8f0',
+                            borderRadius: 8
+                        }}
+                    >
+                        <Row gutter={[16, 16]}>
+                            {resultDelivery.items?.map((item, index) => (
+                                <Col span={12} key={index}>
+                                    <Box sx={{
+                                        p: 3,
+                                        border: '1px solid #e2e8f0',
+                                        borderRadius: 8,
+                                        background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
+                                        height: '100%',
+                                        display: 'flex',
+                                        flexDirection: 'column'
+                                    }}>
+                                        {/* Item Header */}
+                                        <Box sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 2,
+                                            mb: 2
+                                        }}>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                width: 40,
+                                                height: 40,
+                                                borderRadius: '50%',
+                                                bgcolor: '#10b981',
+                                                color: 'white',
+                                                flexShrink: 0
+                                            }}>
+                                                {getItemIcon(item.designItem?.type)}
+                                            </Box>
+                                            <Box sx={{flex: 1}}>
+                                                <Text strong
+                                                      style={{fontSize: '14px', color: '#1e293b', display: 'block'}}>
+                                                    {item.designItem?.type?.charAt(0).toUpperCase() + item.designItem?.type?.slice(1)} - {item.designItem?.category}
+                                                </Text>
+                                                <Text style={{fontSize: '11px', color: '#64748b'}}>
+                                                    Item #{index + 1}
+                                                </Text>
+                                            </Box>
+                                        </Box>
+
+                                        {/* Item Details */}
+                                        <Box sx={{flex: 1, display: 'flex', flexDirection: 'column', gap: 1, mb: 2}}>
+                                            <Text style={{fontSize: '12px', color: '#64748b'}}>
+                                                Fabric: {item.designItem?.fabricName}
+                                            </Text>
+
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                                <Text style={{fontSize: '12px', color: '#475569'}}>
+                                                    Color: {item.designItem?.color}
+                                                </Text>
+                                                <Box sx={{
+                                                    width: 12,
+                                                    height: 12,
+                                                    borderRadius: '50%',
+                                                    bgcolor: item.designItem?.color,
+                                                    border: '1px solid #e0e0e0'
+                                                }}/>
+                                            </Box>
+
+                                            {item.designItem?.logoPosition && (
+                                                <Text style={{fontSize: '12px', color: '#64748b'}}>
+                                                    Logo Position: {item.designItem.logoPosition}
+                                                </Text>
+                                            )}
+
+                                            {/* Logo Size for Shirt */}
+                                            {item.designItem?.type?.toLowerCase().includes('shirt') && (
+                                                <Box sx={{display: 'flex', gap: 2}}>
+                                                    <Text style={{fontSize: '11px', color: '#64748b'}}>
+                                                        Logo Size: {item.baseLogoHeight}cm × {item.baseLogoWidth}cm
+                                                    </Text>
+                                                </Box>
+                                            )}
+
+
+                                            {item.designItem?.note && (
+                                                <Text style={{fontSize: '11px', fontStyle: 'italic', color: '#64748b'}}>
+                                                    Note: {item.designItem.note}
+                                                </Text>
+                                            )}
+                                        </Box>
+
+                                        {/* Design Images */}
+                                        <Box sx={{mt: 'auto'}}>
+                                            <Row gutter={[8, 8]}>
+                                                <Col span={12}>
+                                                    <Box sx={{
+                                                        p: 1,
+                                                        backgroundColor: '#f0fdf4',
+                                                        borderRadius: 4,
+                                                        border: '1px solid #bbf7d0',
+                                                        textAlign: 'center'
+                                                    }}>
+                                                        <Text style={{
+                                                            fontSize: '10px',
+                                                            color: '#166534',
+                                                            display: 'block',
+                                                            mb: 0.5,
+                                                            fontWeight: 600
+                                                        }}>
+                                                            Front Design
+                                                        </Text>
+                                                        <DisplayImage
+                                                            imageUrl={item.frontImageUrl}
+                                                            alt="Front Design"
+                                                            width="100%"
+                                                            height="120px"
+                                                            style={{borderRadius: 4, objectFit: 'cover'}}
+                                                        />
+                                                    </Box>
+                                                </Col>
+                                                <Col span={12}>
+                                                    <Box sx={{
+                                                        p: 1,
+                                                        backgroundColor: '#fef2f2',
+                                                        borderRadius: 4,
+                                                        border: '1px solid #fca5a5',
+                                                        textAlign: 'center'
+                                                    }}>
+                                                        <Text style={{
+                                                            fontSize: '10px',
+                                                            color: '#991b1b',
+                                                            display: 'block',
+                                                            mb: 0.5,
+                                                            fontWeight: 600
+                                                        }}>
+                                                            Back Design
+                                                        </Text>
+                                                        <DisplayImage
+                                                            imageUrl={item.backImageUrl}
+                                                            alt="Back Design"
+                                                            width="100%"
+                                                            height="120px"
+                                                            style={{borderRadius: 4, objectFit: 'cover'}}
+                                                        />
+                                                    </Box>
+                                                </Col>
+                                            </Row>
+                                        </Box>
+                                    </Box>
+                                </Col>
+                            ))}
+                        </Row>
+                    </Card>
+                </Box>
+            </DialogContent>
+            <DialogActions sx={{padding: '16px 24px', borderTop: '1px solid #f0f0f0'}}>
+                <Button onClick={onCancel}>
+                    Close
+                </Button>
+            </DialogActions>
+        </Dialog>
+    );
+}
+
 export default function RequestDetailPopup({visible, onCancel, request}) {
     const [extraRevision, setExtraRevision] = useState(0);
     const [showExtraRevisionModal, setShowExtraRevisionModal] = useState(false);
+    const [showResultDeliveryModal, setShowResultDeliveryModal] = useState(false);
 
     if (!request) {
         return (
@@ -107,53 +397,67 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
     const {Text, Title} = Typography;
 
     const getFooterButtons = (status) => {
-        let buttonText = '';
-        let buttonAction;
+        let buttons = [];
 
         switch (status) {
             case 'created':
-                buttonText = 'Submit design request';
-                buttonAction = onCancel;
+                buttons.push(
+                    <Button key="action" type="primary" onClick={onCancel}>
+                        Submit design request
+                    </Button>
+                );
                 break;
             case 'completed':
-                buttonText = 'Create Order';
-                buttonAction = onCancel;
+                buttons.push(
+                    <Button key="order" type="primary" onClick={onCancel}>
+                        Create Order
+                    </Button>
+                );
+                // Add View Final Design button if resultDelivery exists
+                if (request.resultDelivery) {
+                    buttons.push(
+                        <Button
+                            key="viewFinal"
+                            type="default"
+                            icon={<EyeOutlined/>}
+                            onClick={() => setShowResultDeliveryModal(true)}
+                            style={{
+                                backgroundColor: '#10b981',
+                                borderColor: '#10b981',
+                                color: 'white'
+                            }}
+                        >
+                            View Final Design
+                        </Button>
+                    );
+                }
                 break;
             case 'unpaid':
-                buttonText = 'Make Payment';
-                buttonAction = () => setShowExtraRevisionModal(true);
+                buttons.push(
+                    <Button key="payment" type="primary" onClick={() => setShowExtraRevisionModal(true)}>
+                        Make Payment
+                    </Button>
+                );
                 break;
             case 'paid':
-                buttonText = 'Chat with designer';
-                buttonAction = () => {
-                    localStorage.setItem('currentDesignRequest', JSON.stringify(request));
-                    onCancel();
-                    window.location.href = '/school/chat';
-                };
+                buttons.push(
+                    <Button key="chat" type="primary" onClick={() => {
+                        // Store only the request ID
+                        localStorage.setItem('currentDesignRequestId', request.id);
+                        onCancel();
+                        window.location.href = '/school/chat';
+                    }}>
+                        Chat with designer
+                    </Button>
+                );
                 break;
-            case 'pending':
-                buttonText = 'Chat with designer';
-                buttonAction = () => {
-                    localStorage.setItem('currentDesignRequest', JSON.stringify(request));
-                    onCancel();
-                    window.location.href = '/school/chat';
-                };
-                break;
-            case 'progressing':
-                buttonText = 'View request progress';
-                buttonAction = onCancel;
-                break;
-            case 'rejected':
+            case 'canceled':
                 return null;
             default:
                 return null;
         }
 
-        return [
-            <Button key="action" type="primary" onClick={buttonAction}>
-                {buttonText}
-            </Button>,
-        ];
+        return buttons;
     };
 
     const formatDate = (dateString) => {
@@ -362,7 +666,7 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                             }}
                                         >
                                             <Row gutter={[8, 8]} style={{display: 'flex'}}>
-                                                <Col span={6} style={{display: 'flex'}}>
+                                                <Col span={8} style={{display: 'flex'}}>
                                                     <Box sx={{
                                                         p: 1.5,
                                                         backgroundColor: '#f0fdf4',
@@ -390,7 +694,7 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                                         </Title>
                                                     </Box>
                                                 </Col>
-                                                <Col span={6} style={{display: 'flex'}}>
+                                                <Col span={8} style={{display: 'flex'}}>
                                                     <Box sx={{
                                                         p: 1.5,
                                                         backgroundColor: '#fef3c7',
@@ -418,7 +722,7 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                                         </Title>
                                                     </Box>
                                                 </Col>
-                                                <Col span={6} style={{display: 'flex'}}>
+                                                <Col span={8} style={{display: 'flex'}}>
                                                     <Box sx={{
                                                         p: 1.5,
                                                         backgroundColor: '#dbeafe',
@@ -443,34 +747,6 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                                             fontWeight: 700
                                                         }}>
                                                             {request.revisionTime === 9999 ? 'Unlimited' : request.revisionTime}
-                                                        </Title>
-                                                    </Box>
-                                                </Col>
-                                                <Col span={6} style={{display: 'flex'}}>
-                                                    <Box sx={{
-                                                        p: 1.5,
-                                                        backgroundColor: '#fef2f2',
-                                                        borderRadius: 6,
-                                                        border: '1px solid #fca5a5',
-                                                        textAlign: 'center',
-                                                        width: '100%',
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        justifyContent: 'center'
-                                                    }}>
-                                                        <Text style={{
-                                                            fontSize: '10px',
-                                                            color: '#991b1b',
-                                                            fontWeight: 600
-                                                        }}>
-                                                            DEADLINE
-                                                        </Text>
-                                                        <Title level={5} style={{
-                                                            margin: '4px 0 0 0',
-                                                            color: '#991b1b',
-                                                            fontWeight: 700
-                                                        }}>
-                                                            {formatDeadline(request.finalDesignQuotation.acceptanceDeadline)}
                                                         </Title>
                                                     </Box>
                                                 </Col>
@@ -523,7 +799,7 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                 </Box>
                             </Col>
 
-                            {/* Right Column - Uniform Items */}
+                            {/* Right Column - Requested Design Items */}
                             <Col span={12}>
                                 <Card
                                     title={
@@ -532,7 +808,7 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                             <span style={{
                                                 fontWeight: 600,
                                                 fontSize: '14px'
-                                            }}>Uniform Items ({request.items?.length || 0})</span>
+                                            }}>Requested Design Items ({request.items?.length || 0})</span>
                                         </Space>
                                     }
                                     size="small"
@@ -794,6 +1070,15 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            {/* Result Delivery Modal */}
+            {request.resultDelivery && (
+                <ResultDeliveryModal
+                    visible={showResultDeliveryModal}
+                    onCancel={() => setShowResultDeliveryModal(false)}
+                    resultDelivery={request.resultDelivery}
+                />
+            )}
         </>
     );
 }
