@@ -83,7 +83,6 @@ export default function DesignerRequestList() {
     const handleCancel = () => {
         setIsModalVisible(false);
         setSelectedRequest(null);
-        window.location.reload()
     };
 
     const handleRetry = () => {
@@ -290,8 +289,8 @@ export default function DesignerRequestList() {
                         dataSource={filteredDesignRequests}
                         rowKey="id"
                         pagination={{
-                            defaultPageSize: 8,
-                            pageSizeOptions: ['5', '8', '10', '15'],
+                            defaultPageSize: 5,
+                            pageSizeOptions: ['5', '10'],
                             showSizeChanger: true,
                             showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total} requests`,
                             style: {marginTop: 16}

@@ -1,7 +1,8 @@
 export const prefixes = {
-    dr: 'DR',
-    ord: 'ORD',
-    pkg: 'PKG'
+    dr: 'DESR', //design request
+    ord: 'ORD', // order
+    dd: 'DESD', // design delivery
+    rr: 'REV' // revision request
 };
 
 export const parseID = (id, type) => {

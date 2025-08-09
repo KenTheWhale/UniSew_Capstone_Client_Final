@@ -15,10 +15,21 @@ export const getSchoolDesignRequests = async () => {
     return response || null
 }
 
+export const getDesignRequestDetailForSchool = async (requestId) => {
+    const response = await axiosClient.get(`/design/school/request/detail?id=${requestId}`)
+    return response || null
+}
+
 export const getAppliedDesignerDesignRequests = async () => {
     const response = await axiosClient.post("/design/designer/request")
     return response || null
 }
+
+export const getDesignRequestDetailForDesigner = async (requestId) => {
+    const response = await axiosClient.get(`/design/designer/request/detail?id=${requestId}`)
+    return response || null
+}
+
 
 export const getDesignRequests = async () => {
     const response = await axiosClient.get("/design/pending/request")
@@ -32,5 +43,32 @@ export const createDesignQuotation = async (data) => {
 
 export const pickQuotation = async (data) => {
     const response = await axiosClient.post("/design/pick/quotation", data)
+    return response || null
+}
+
+export const getDesignDeliveries = async (designRequestId) => {
+    const response = await axiosClient.post("/design/deliveries", {
+        designRequestId: designRequestId
+    })
+    return response || null
+}
+
+export const createDesignDelivery = async (data) => {
+    const response = await axiosClient.post("/design/delivery", data)
+    return response || null
+}
+
+export const createRevisionRequest = async (data) => {
+    const response = await axiosClient.post("/design/revision", data)
+    return response || null
+}
+
+export const getUndoneRevisionRequests = async (data) => {
+    const response = await axiosClient.post("/design/revision/list", data)
+    return response || null
+}
+
+export const makeDesignFinal = async (data) => {
+    const response = await axiosClient.post("/design/school/request/final", data)
     return response || null
 }

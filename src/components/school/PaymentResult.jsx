@@ -290,7 +290,11 @@ export default function PaymentResult() {
                                                         fontWeight: 700,
                                                         textAlign: 'center'
                                                     }}>
-                                                        {new Date().toLocaleDateString('vi-VN')}
+                                                        {new Date().toLocaleDateString('vi-VN', {
+                                                            day: '2-digit',
+                                                            month: '2-digit',
+                                                            year: 'numeric'
+                                                        })}
                                                     </Typography.Title>
                                                 </Box>
                                             </Box>
@@ -568,7 +572,7 @@ export default function PaymentResult() {
                                     borderColor: '#d9d9d9',
                                     color: '#475569'
                                 }}
-                                onClick={() => window.history.back()}
+                                onClick={() => window.location.href = '/school/pending/request'}
                             >
                                 Try Again
                             </Button>

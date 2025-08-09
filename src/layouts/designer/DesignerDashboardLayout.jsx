@@ -39,7 +39,7 @@ export default function DesignerDashboardLayout() {
     // Determine active menu based on current URL
     useEffect(() => {
         const pathname = location.pathname;
-        if (pathname.includes('/designer/requests') || pathname.includes('/designer/dashboard')) {
+        if (pathname.includes('/designer/requests')) {
             setActiveMenu('requests');
         } else if (pathname.includes('/designer/applied/requests')) {
             setActiveMenu('applied');

@@ -40,7 +40,10 @@ export default function SchoolDesign() {
             const response = await getSchoolDesignRequests();
             if(response && response.status === 200){
                 console.log("Design request: ", response.data.body);
-                setDesignRequests(response.data.body || []);
+                const newData = response.data.body || [];
+                setDesignRequests(newData);
+                
+
             }
         } catch (error) {
             console.error("Error fetching design requests:", error);
@@ -51,6 +54,18 @@ export default function SchoolDesign() {
 
     useEffect(() => {
         FetchSchoolDesign();
+    }, []);
+
+    // Refresh data when user returns from other pages
+    useEffect(() => {
+        const handleFocus = () => {
+            FetchSchoolDesign();
+        };
+
+        window.addEventListener('focus', handleFocus);
+        return () => {
+            window.removeEventListener('focus', handleFocus);
+        };
     }, []);
 
     const [isModalVisible, setIsModalVisible] = useState(false);

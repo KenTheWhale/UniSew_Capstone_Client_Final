@@ -1,50 +1,65 @@
 import React, {useEffect, useState} from 'react';
-import {Avatar, Button, Form, Input, Modal, Typography, Card} from 'antd';
+import {
+    Avatar,
+    Avatar as AntAvatar,
+    Button,
+    Card,
+    Col,
+    Form,
+    Input,
+    Modal,
+    Rate,
+    Row,
+    Space,
+    Tag,
+    Typography
+} from 'antd';
 import {
     CheckCircleOutlined,
+    CheckCircleOutlined as CheckCircleOutlinedIcon,
+    ClockCircleOutlined,
+    CloseCircleOutlined,
+    DollarOutlined,
     EditOutlined,
     EyeOutlined,
     FileTextOutlined,
+    FileTextOutlined as FileTextOutlinedIcon,
+    InfoCircleOutlined,
+    InfoCircleOutlined as InfoCircleOutlinedIcon,
     MessageOutlined,
+    PictureOutlined,
     SendOutlined,
     SmileOutlined,
+    SyncOutlined,
     UploadOutlined,
     UserOutlined,
-    UserSwitchOutlined,
-    InfoCircleOutlined
+    UserOutlined as UserOutlinedIcon,
+    UserSwitchOutlined
 } from '@ant-design/icons';
-import {Box, Chip, Container, Paper} from '@mui/material';
+import {
+    Box,
+    Box as MuiBox,
+    Chip,
+    Container,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Paper
+} from '@mui/material';
 import EmojiPicker from 'emoji-picker-react';
 import {useSnackbar} from 'notistack';
 import {parseID} from '../../../utils/ParseIDUtil.jsx';
 import {addDoc, collection, onSnapshot, query, serverTimestamp, where} from 'firebase/firestore';
 import {auth, db} from "../../../configs/firebase-config.jsx";
-import {Dialog, DialogTitle, DialogContent, DialogActions} from '@mui/material';
-import {Space, Tag, Row, Col, Avatar as AntAvatar, Divider, Rate} from 'antd';
 import {
-    CalendarOutlined,
-    CheckCircleOutlined as CheckCircleOutlinedIcon,
-    CloseCircleOutlined,
-    FileTextOutlined as FileTextOutlinedIcon,
-    InfoCircleOutlined as InfoCircleOutlinedIcon,
-    SyncOutlined,
-    UserOutlined as UserOutlinedIcon,
-    DollarOutlined,
-    ClockCircleOutlined,
-    EditOutlined as EditOutlinedIcon,
-    PictureOutlined,
-    BankOutlined,
-    GiftOutlined,
-    StarOutlined,
-    PhoneOutlined,
-    MailOutlined,
-    EnvironmentOutlined,
-    ShopOutlined
-} from '@ant-design/icons';
-import {DesignServices} from '@mui/icons-material';
-import {useNavigate} from 'react-router-dom';
-import {Box as MuiBox, Chip as MuiChip} from '@mui/material';
-import {PiShirtFoldedFill, PiPantsFill} from "react-icons/pi";
+    createRevisionRequest,
+    getDesignDeliveries,
+    getDesignRequestDetailForSchool,
+    getUndoneRevisionRequests,
+    makeDesignFinal
+} from "../../../services/DesignService.jsx";
+import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
 import {GiSkirt} from "react-icons/gi";
 import DisplayImage from '../../ui/DisplayImage.jsx';
 
@@ -138,14 +153,7 @@ function DesignDetailDialog({visible, onCancel, request}) {
         return amount.toLocaleString('vi-VN');
     };
 
-    const formatDeadline = (deadlineString) => {
-        const date = new Date(deadlineString);
-        return date.toLocaleDateString('vi-VN', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
-    };
+
 
     return (
         <Dialog
@@ -286,7 +294,7 @@ function DesignDetailDialog({visible, onCancel, request}) {
                                         }}
                                     >
                                         <Row gutter={[8, 8]} style={{display: 'flex'}}>
-                                            <Col span={6} style={{display: 'flex'}}>
+                                            <Col span={8} style={{display: 'flex'}}>
                                                 <Box sx={{
                                                     p: 1.5,
                                                     backgroundColor: '#f0fdf4',
@@ -314,7 +322,7 @@ function DesignDetailDialog({visible, onCancel, request}) {
                                                     </Title>
                                                 </Box>
                                             </Col>
-                                            <Col span={6} style={{display: 'flex'}}>
+                                            <Col span={8} style={{display: 'flex'}}>
                                                 <Box sx={{
                                                     p: 1.5,
                                                     backgroundColor: '#fef3c7',
@@ -342,7 +350,7 @@ function DesignDetailDialog({visible, onCancel, request}) {
                                                     </Title>
                                                 </Box>
                                             </Col>
-                                            <Col span={6} style={{display: 'flex'}}>
+                                            <Col span={8} style={{display: 'flex'}}>
                                                 <Box sx={{
                                                     p: 1.5,
                                                     backgroundColor: '#dbeafe',
@@ -367,34 +375,6 @@ function DesignDetailDialog({visible, onCancel, request}) {
                                                         fontWeight: 700
                                                     }}>
                                                         {request.revisionTime === 9999 ? 'Unlimited' : request.revisionTime}
-                                                    </Title>
-                                                </Box>
-                                            </Col>
-                                            <Col span={6} style={{display: 'flex'}}>
-                                                <Box sx={{
-                                                    p: 1.5,
-                                                    backgroundColor: '#fef2f2',
-                                                    borderRadius: 6,
-                                                    border: '1px solid #fca5a5',
-                                                    textAlign: 'center',
-                                                    width: '100%',
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    justifyContent: 'center'
-                                                }}>
-                                                    <Text style={{
-                                                        fontSize: '10px',
-                                                        color: '#991b1b',
-                                                        fontWeight: 600
-                                                    }}>
-                                                        DEADLINE
-                                                    </Text>
-                                                    <Title level={5} style={{
-                                                        margin: '4px 0 0 0',
-                                                        color: '#991b1b',
-                                                        fontWeight: 700
-                                                    }}>
-                                                        {formatDeadline(request.finalDesignQuotation.acceptanceDeadline)}
                                                     </Title>
                                                 </Box>
                                             </Col>
@@ -642,7 +622,409 @@ export function useDesignChatMessages(roomId) {
 }
 
 // New RevisionRequestModal component
-function RevisionRequestModal({visible, onCancel, onSubmit, selectedDeliveryId}) {
+function DeliveryDetailModal({visible, onCancel, delivery}) {
+    if (!delivery) return null;
+
+    return (
+        <Dialog
+            open={visible}
+            onClose={onCancel}
+            maxWidth="xl"
+            fullWidth
+            PaperProps={{
+                sx: {
+                    borderRadius: 4,
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+                    maxHeight: '90vh',
+                    overflow: 'hidden'
+                }
+            }}
+        >
+            {/* Header */}
+            <Box sx={{
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                p: 3,
+                position: 'relative',
+                overflow: 'hidden'
+            }}>
+                <Box sx={{
+                    position: 'absolute',
+                    top: -20,
+                    right: -20,
+                    width: 100,
+                    height: 100,
+                    borderRadius: '50%',
+                    background: 'rgba(255,255,255,0.1)',
+                    zIndex: 0
+                }}/>
+                <Box sx={{position: 'relative', zIndex: 1}}>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 1}}>
+                        <Box sx={{
+                            width: 48,
+                            height: 48,
+                            borderRadius: '50%',
+                            background: 'rgba(255,255,255,0.2)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backdropFilter: 'blur(10px)'
+                        }}>
+                            <FileTextOutlined style={{fontSize: '24px'}}/>
+                        </Box>
+                        <Box>
+                            <Typography.Title level={3} style={{margin: 0, color: 'white', fontWeight: 700}}>
+                                {delivery.name}
+                            </Typography.Title>
+                            <Typography.Text style={{color: 'rgba(255,255,255,0.8)', fontSize: '14px'}}>
+                                Delivery Details
+                            </Typography.Text>
+                        </Box>
+                    </Box>
+                </Box>
+            </Box>
+
+            {/* Content */}
+            <Box sx={{
+                display: 'flex',
+                height: 'calc(90vh - 120px)',
+                overflow: 'hidden'
+            }}>
+                {/* Left Side - Basic Info */}
+                <Box sx={{
+                    width: '35%',
+                    p: 3,
+                    borderRight: '1px solid #e2e8f0',
+                    backgroundColor: '#f8fafc',
+                    overflowY: 'auto'
+                }}>
+                    <Typography.Title level={4} style={{margin: '0 0 24px 0', color: '#1e293b'}}>
+                        Basic Information
+                    </Typography.Title>
+                    
+                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
+                        <Box sx={{
+                            p: 2.5,
+                            backgroundColor: 'white',
+                            borderRadius: 3,
+                            border: '1px solid #e2e8f0',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                        }}>
+                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                <Box sx={{
+                                    width: 32,
+                                    height: 32,
+                                    borderRadius: '50%',
+                                    background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'white',
+                                    fontSize: '14px'
+                                }}>
+                                    <FileTextOutlined/>
+                                </Box>
+                                <Typography.Text strong style={{fontSize: '16px'}}>Delivery Info</Typography.Text>
+                            </Box>
+                            
+                            <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                                <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                    <Typography.Text style={{color: '#64748b', fontSize: '13px'}}>Name</Typography.Text>
+                                    <Typography.Text strong style={{fontSize: '14px'}}>{delivery.name}</Typography.Text>
+                                </Box>
+                                <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                    <Typography.Text style={{color: '#64748b', fontSize: '13px'}}>Version</Typography.Text>
+                                    <Typography.Text strong style={{fontSize: '14px'}}>v{delivery.version}</Typography.Text>
+                                </Box>
+                                <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                    <Typography.Text style={{color: '#64748b', fontSize: '13px'}}>Submit Date</Typography.Text>
+                                    <Typography.Text strong style={{fontSize: '14px'}}>
+                                        {new Date(delivery.submitDate).toLocaleDateString('vi-VN', {
+                                            day: '2-digit',
+                                            month: '2-digit',
+                                            year: 'numeric'
+                                        })}
+                                    </Typography.Text>
+                                </Box>
+                                <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                    <Typography.Text style={{color: '#64748b', fontSize: '13px'}}>Type</Typography.Text>
+                                    <Tag color={delivery.isRevision ? 'purple' : 'blue'} style={{margin: 0}}>
+                                        {delivery.isRevision ? 'Revision' : 'Normal'}
+                                    </Tag>
+                                </Box>
+                            </Box>
+                        </Box>
+
+                        {delivery.note && (
+                            <Box sx={{
+                                p: 2.5,
+                                backgroundColor: 'white',
+                                borderRadius: 3,
+                                border: '1px solid #e2e8f0',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                            }}>
+                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                    <Box sx={{
+                                        width: 32,
+                                        height: 32,
+                                        borderRadius: '50%',
+                                        background: 'linear-gradient(135deg, #10b981, #059669)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: 'white',
+                                        fontSize: '14px'
+                                    }}>
+                                        <InfoCircleOutlined/>
+                                    </Box>
+                                    <Typography.Text strong style={{fontSize: '16px'}}>Note</Typography.Text>
+                                </Box>
+                                <Typography.Text style={{color: '#475569', fontSize: '14px', lineHeight: 1.6}}>
+                                    {delivery.note}
+                                </Typography.Text>
+                            </Box>
+                        )}
+                    </Box>
+                </Box>
+
+                {/* Right Side - Design Items */}
+                <Box sx={{
+                    width: '65%',
+                    p: 3,
+                    overflowY: 'auto'
+                }}>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
+                        <Typography.Title level={4} style={{margin: 0, color: '#1e293b'}}>
+                            Design Items
+                        </Typography.Title>
+                        <Tag color="blue" style={{margin: 0}}>
+                            {delivery.deliveryItems?.length || 0} items
+                        </Tag>
+                    </Box>
+
+                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
+                        {delivery.deliveryItems?.map((item, index) => (
+                            <Box key={index} sx={{
+                                p: 3,
+                                backgroundColor: 'white',
+                                borderRadius: 4,
+                                border: '1px solid #e2e8f0',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                                transition: 'all 0.3s ease',
+                                '&:hover': {
+                                    boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+                                    transform: 'translateY(-2px)'
+                                }
+                            }}>
+                                {/* Item Header */}
+                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
+                                    <Box sx={{
+                                        width: 40,
+                                        height: 40,
+                                        borderRadius: '50%',
+                                        background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: 'white',
+                                        fontSize: '16px'
+                                    }}>
+                                        {getItemIcon(item.designItem?.type)}
+                                    </Box>
+                                    <Box>
+                                        <Typography.Title level={5} style={{margin: 0, color: '#1e293b'}}>
+                                            {item.designItem?.type?.charAt(0).toUpperCase() + item.designItem?.type?.slice(1)} - {item.designItem?.category}
+                                        </Typography.Title>
+                                        <Typography.Text style={{color: '#64748b', fontSize: '12px'}}>
+                                            Item #{index + 1}
+                                        </Typography.Text>
+                                    </Box>
+                                </Box>
+
+                                {/* Item Details Grid */}
+                                <Row gutter={[24, 16]}>
+                                    <Col span={8}>
+                                        <Box sx={{
+                                            p: 2,
+                                            backgroundColor: '#f8fafc',
+                                            borderRadius: 3,
+                                            border: '1px solid #e2e8f0'
+                                        }}>
+                                            <Typography.Text strong style={{fontSize: '13px', color: '#475569'}}>
+                                                Color
+                                            </Typography.Text>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1.5, mt: 1}}>
+                                                <Box sx={{
+                                                    width: 20,
+                                                    height: 20,
+                                                    borderRadius: '50%',
+                                                    backgroundColor: item.designItem?.color,
+                                                    border: '2px solid #e0e0e0',
+                                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                                }}/>
+                                                <Typography.Text style={{fontSize: '13px'}}>
+                                                    {item.designItem?.color}
+                                                </Typography.Text>
+                                            </Box>
+                                        </Box>
+                                    </Col>
+                                    <Col span={8}>
+                                        <Box sx={{
+                                            p: 2,
+                                            backgroundColor: '#f8fafc',
+                                            borderRadius: 3,
+                                            border: '1px solid #e2e8f0'
+                                        }}>
+                                            <Typography.Text strong style={{fontSize: '13px', color: '#475569'}}>
+                                                Fabric
+                                            </Typography.Text>
+                                            <Typography.Text style={{fontSize: '13px', display: 'block', mt: 1}}>
+                                                {item.designItem?.fabricName}
+                                            </Typography.Text>
+                                        </Box>
+                                    </Col>
+                                    <Col span={8}>
+                                        <Box sx={{
+                                            p: 2,
+                                            backgroundColor: '#f8fafc',
+                                            borderRadius: 3,
+                                            border: '1px solid #e2e8f0'
+                                        }}>
+                                            <Typography.Text strong style={{fontSize: '13px', color: '#475569'}}>
+                                                Logo Position
+                                            </Typography.Text>
+                                            <Typography.Text style={{fontSize: '13px', display: 'block', mt: 1}}>
+                                                {item.designItem?.logoPosition || 'N/A'}
+                                            </Typography.Text>
+                                        </Box>
+                                    </Col>
+                                </Row>
+
+                                {/* Logo Dimensions for Shirt */}
+                                {item.designItem?.type?.toLowerCase().includes('shirt') && (
+                                    <Row gutter={[24, 16]} style={{marginTop: 16}}>
+                                        <Col span={12}>
+                                            <Box sx={{
+                                                p: 2,
+                                                backgroundColor: '#fef3c7',
+                                                borderRadius: 3,
+                                                border: '1px solid #fde68a'
+                                            }}>
+                                                <Typography.Text strong style={{fontSize: '13px', color: '#92400e'}}>
+                                                    Logo Height
+                                                </Typography.Text>
+                                                <Typography.Text style={{fontSize: '14px', display: 'block', mt: 1, fontWeight: 600, color: '#92400e'}}>
+                                                    {item.baseLogoHeight} cm
+                                                </Typography.Text>
+                                            </Box>
+                                        </Col>
+                                        <Col span={12}>
+                                            <Box sx={{
+                                                p: 2,
+                                                backgroundColor: '#fef3c7',
+                                                borderRadius: 3,
+                                                border: '1px solid #fde68a'
+                                            }}>
+                                                <Typography.Text strong style={{fontSize: '13px', color: '#92400e'}}>
+                                                    Logo Width
+                                                </Typography.Text>
+                                                <Typography.Text style={{fontSize: '14px', display: 'block', mt: 1, fontWeight: 600, color: '#92400e'}}>
+                                                    {item.baseLogoWidth} cm
+                                                </Typography.Text>
+                                            </Box>
+                                        </Col>
+                                    </Row>
+                                )}
+
+                                {/* Design Images */}
+                                <Row gutter={[24, 16]} style={{marginTop: 16}}>
+                                    <Col span={12}>
+                                        <Box sx={{
+                                            p: 2,
+                                            backgroundColor: '#f0fdf4',
+                                            borderRadius: 3,
+                                            border: '1px solid #bbf7d0',
+                                            textAlign: 'center'
+                                        }}>
+                                            <Typography.Text strong style={{fontSize: '13px', color: '#166534', display: 'block', mb: 1}}>
+                                                Front Design
+                                            </Typography.Text>
+                                            <DisplayImage
+                                                imageUrl={item.frontImageUrl}
+                                                alt="Front Design"
+                                                width="100%"
+                                                height="200px"
+                                                style={{borderRadius: 8, objectFit: 'cover'}}
+                                            />
+                                        </Box>
+                                    </Col>
+                                    <Col span={12}>
+                                        <Box sx={{
+                                            p: 2,
+                                            backgroundColor: '#fef2f2',
+                                            borderRadius: 3,
+                                            border: '1px solid #fca5a5',
+                                            textAlign: 'center'
+                                        }}>
+                                            <Typography.Text strong style={{fontSize: '13px', color: '#991b1b', display: 'block', mb: 1}}>
+                                                Back Design
+                                            </Typography.Text>
+                                            <DisplayImage
+                                                imageUrl={item.backImageUrl}
+                                                alt="Back Design"
+                                                width="100%"
+                                                height="200px"
+                                                style={{borderRadius: 8, objectFit: 'cover'}}
+                                            />
+                                        </Box>
+                                    </Col>
+                                </Row>
+
+                                {/* Item Note */}
+                                {item.designItem?.note && (
+                                    <Box sx={{
+                                        mt: 2,
+                                        p: 2,
+                                        backgroundColor: '#f8fafc',
+                                        borderRadius: 3,
+                                        border: '1px solid #e2e8f0'
+                                    }}>
+                                        <Typography.Text type="secondary" style={{fontSize: '12px', fontStyle: 'italic'}}>
+                                            <strong>Note:</strong> {item.designItem.note}
+                                        </Typography.Text>
+                                    </Box>
+                                )}
+                            </Box>
+                        ))}
+                    </Box>
+                </Box>
+            </Box>
+
+            {/* Footer */}
+            <Box sx={{
+                p: 2,
+                borderTop: '1px solid #e2e8f0',
+                backgroundColor: '#f8fafc',
+                display: 'flex',
+                justifyContent: 'flex-end'
+            }}>
+                <Button 
+                    onClick={onCancel}
+                    style={{
+                        borderRadius: 8,
+                        height: '40px',
+                        padding: '0 24px',
+                        fontWeight: 600
+                    }}
+                >
+                    Close
+                </Button>
+            </Box>
+        </Dialog>
+    );
+}
+
+function RevisionRequestModal({visible, onCancel, onSubmit, selectedDeliveryId, remainingRevisions}) {
     const [form] = Form.useForm();
 
     useEffect(() => {
@@ -670,7 +1052,7 @@ function RevisionRequestModal({visible, onCancel, onSubmit, selectedDeliveryId})
                         Request Revision
                     </Typography.Title>
                     <Chip
-                        label={`Delivery ${selectedDeliveryId || 'N/A'}`}
+                        label={`${parseID(selectedDeliveryId, 'dd') || 'N/A'}`}
                         color="primary"
                         size="small"
                         style={{backgroundColor: '#1976d2'}}
@@ -679,9 +1061,17 @@ function RevisionRequestModal({visible, onCancel, onSubmit, selectedDeliveryId})
             }
             open={visible}
             onCancel={onCancel}
-            onOk={handleOk}
+            onOk={remainingRevisions > 0 ? handleOk : undefined}
             okText="Submit Revision Request"
             cancelText="Cancel"
+            okButtonProps={{
+                disabled: remainingRevisions === 0,
+                style: {
+                    backgroundColor: remainingRevisions === 0 ? '#d1d5db' : '#1976d2',
+                    borderColor: remainingRevisions === 0 ? '#d1d5db' : '#1976d2',
+                    color: remainingRevisions === 0 ? '#6b7280' : 'white'
+                }
+            }}
             centered
             width={600}
             styles={{
@@ -692,28 +1082,58 @@ function RevisionRequestModal({visible, onCancel, onSubmit, selectedDeliveryId})
                 }
             }}
         >
-            <Form
-                form={form}
-                layout="vertical"
-                name="revision_request_form"
-            >
-                <Form.Item
-                    name="revisionDescription"
-                    label="Describe your revision request:"
-                    rules={[{required: true, message: 'Please describe your revision!'}]}
-                >
-                    <TextArea
-                        rows={4}
-                        placeholder="e.g., Change the color of the logo to blue, adjust the font size, modify the layout..."
-                        style={{
-                            maxHeight: '120px',
-                            overflowY: 'auto',
-                            resize: 'none',
-                            borderRadius: '8px'
-                        }}
-                    />
-                </Form.Item>
-            </Form>
+            {remainingRevisions === 0 ? (
+                <Box sx={{
+                    p: 3,
+                    backgroundColor: '#fef2f2',
+                    borderRadius: 2,
+                    border: '1px solid #fca5a5',
+                    textAlign: 'center'
+                }}>
+                    <Typography.Text style={{color: '#dc2626', fontSize: '16px', fontWeight: 600}}>
+                        No revisions remaining!
+                    </Typography.Text>
+                    <Typography.Text style={{color: '#991b1b', fontSize: '14px', display: 'block', mt: 1}}>
+                        You have used all available revisions for this design request.
+                    </Typography.Text>
+                </Box>
+            ) : (
+                <>
+                    <Box sx={{
+                        p: 2,
+                        backgroundColor: '#fef3c7',
+                        borderRadius: 2,
+                        border: '1px solid #fde68a',
+                        mb: 2
+                    }}>
+                        <Typography.Text style={{color: '#92400e', fontSize: '14px', fontWeight: 600}}>
+                            Remaining revisions: {remainingRevisions}
+                        </Typography.Text>
+                    </Box>
+                    <Form
+                        form={form}
+                        layout="vertical"
+                        name="revision_request_form"
+                    >
+                        <Form.Item
+                            name="revisionDescription"
+                            label="Describe your revision request:"
+                            rules={[{required: true, message: 'Please describe your revision!'}]}
+                        >
+                            <TextArea
+                                rows={4}
+                                placeholder="e.g., Change the color of the logo to blue, adjust the font size, modify the layout..."
+                                style={{
+                                    maxHeight: '120px',
+                                    overflowY: 'auto',
+                                    resize: 'none',
+                                    borderRadius: '8px'
+                                }}
+                            />
+                        </Form.Item>
+                    </Form>
+                </>
+            )}
         </Modal>
     );
 }
@@ -722,16 +1142,8 @@ export default function DesignChat() {
     const [requestData, setRequestData] = useState(null);
     // const [chatMessages, setChatMessages] = useState([]);
     // const [newMessage, setNewMessage] = useState('');
-    const [designDeliveries, setDesignDeliveries] = useState([
-        {id: 1, name: 'Concept 1.0', link: '#', date: '2024-01-15', status: 'delivered'},
-        {id: 2, name: 'Concept 2.0', link: '#', date: '2024-01-18', status: 'delivered'},
-    ]);
-    const [finalDelivery, setFinalDelivery] = useState({
-        name: 'Final Design v3.0',
-        link: '#',
-        description: 'The approved final design including all revisions.',
-        date: '2024-01-20'
-    });
+    const [designDeliveries, setDesignDeliveries] = useState([]);
+    const [finalDelivery, setFinalDelivery] = useState(null);
     const [isRevisionModalVisible, setIsRevisionModalVisible] = useState(false);
     const [selectedDeliveryIdForRevision, setSelectedDeliveryIdForRevision] = useState(null);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -740,16 +1152,93 @@ export default function DesignChat() {
     const [deliveryToMakeFinal, setDeliveryToMakeFinal] = useState(null);
     const [isFinalDesignSet, setIsFinalDesignSet] = useState(false);
     const [isDesignDetailModalVisible, setIsDesignDetailModalVisible] = useState(false);
+    const [isDeliveryDetailModalVisible, setIsDeliveryDetailModalVisible] = useState(false);
+    const [selectedDelivery, setSelectedDelivery] = useState(null);
+    const [loadingDeliveries, setLoadingDeliveries] = useState(false);
+    const [revisionRequests, setRevisionRequests] = useState([]);
+    const [loadingRevisionRequests, setLoadingRevisionRequests] = useState(false);
     const roomId = requestData?.id;
     const {chatMessages, sendMessage} = useDesignChatMessages(roomId);
     const [newMessage, setNewMessage] = useState('');
 
+    // Fetch design deliveries from API
+    const fetchDesignDeliveries = async (designRequestId) => {
+        try {
+            setLoadingDeliveries(true);
+            const response = await getDesignDeliveries(designRequestId);
+            if (response && response.status === 200) {
+                console.log("Design deliveries: ", response.data.body);
+                const deliveries = response.data.body || [];
+                setDesignDeliveries(deliveries);
+                
+                // Check if there's a final delivery
+                const finalDelivery = deliveries.find(delivery => delivery.isFinal);
+                if (finalDelivery) {
+                    setFinalDelivery(finalDelivery);
+                    setIsFinalDesignSet(true);
+                }
+            } else {
+                console.log("No deliveries found or error occurred");
+                setDesignDeliveries([]);
+            }
+        } catch (err) {
+            console.error("Error fetching design deliveries:", err);
+            setDesignDeliveries([]);
+        } finally {
+            setLoadingDeliveries(false);
+        }
+    };
+
+    // Fetch request details from API
+    const fetchRequestDetails = async (requestId) => {
+        try {
+            const response = await getDesignRequestDetailForSchool(requestId);
+            if (response && response.status === 200) {
+                console.log("Request details: ", response.data.body);
+                const request = response.data.body;
+                setRequestData(request);
+                // Fetch deliveries and revision requests for this request
+                if (request.id) {
+                    fetchDesignDeliveries(request.id);
+                    fetchRevisionRequests(request.id);
+                }
+            } else {
+                console.error("Failed to fetch request details");
+                window.location.href = '/school/design';
+            }
+        } catch (error) {
+            console.error("Error fetching request details:", error);
+            window.location.href = '/school/design';
+        }
+    };
+
+    // Fetch revision requests from API
+    const fetchRevisionRequests = async (requestId) => {
+        try {
+            setLoadingRevisionRequests(true);
+            const response = await getUndoneRevisionRequests({requestId: requestId});
+            if (response && response.status === 200) {
+                console.log("Revision requests: ", response.data.body);
+                setRevisionRequests(response.data.body || []);
+            } else {
+                console.log("No revision requests found or error occurred");
+                setRevisionRequests([]);
+            }
+        } catch (err) {
+            console.error("Error fetching revision requests:", err);
+            setRevisionRequests([]);
+        } finally {
+            setLoadingRevisionRequests(false);
+        }
+    };
+
     useEffect(() => {
-        const storedRequest = localStorage.getItem('currentDesignRequest');
-        if (storedRequest) {
-            setRequestData(JSON.parse(storedRequest));
+        const storedRequestId = localStorage.getItem('currentDesignRequestId');
+        if (storedRequestId) {
+            // Fetch request details using API
+            fetchRequestDetails(storedRequestId);
         } else {
-            // If no request data in localStorage, redirect to Design Management
+            // If no request ID in localStorage, redirect to Design Management
             window.location.href = '/school/design';
         }
     }, []);
@@ -803,6 +1292,16 @@ export default function DesignChat() {
         setSelectedDeliveryIdForRevision(null);
     };
 
+    const handleOpenDeliveryDetailModal = (delivery) => {
+        setSelectedDelivery(delivery);
+        setIsDeliveryDetailModalVisible(true);
+    };
+
+    const handleCloseDeliveryDetailModal = () => {
+        setIsDeliveryDetailModalVisible(false);
+        setSelectedDelivery(null);
+    };
+
     const handleOpenConfirmFinalModal = (item) => {
         setDeliveryToMakeFinal(item);
         setIsConfirmFinalModalVisible(true);
@@ -813,17 +1312,46 @@ export default function DesignChat() {
         setDeliveryToMakeFinal(null);
     };
 
-    const handleConfirmMakeFinal = () => {
+    const handleConfirmMakeFinal = async () => {
         if (deliveryToMakeFinal) {
-            setFinalDelivery({
-                name: deliveryToMakeFinal.name,
-                link: deliveryToMakeFinal.link,
-                description: `Final version based on ${deliveryToMakeFinal.name}.`,
-                date: new Date().toISOString().split('T')[0]
-            });
-            enqueueSnackbar(`'${deliveryToMakeFinal.name}' has been set as Final Delivery!`, {variant: 'success'});
-            setIsFinalDesignSet(true); // Set state to disable buttons
-            handleCloseConfirmFinalModal();
+            try {
+                // Call makeDesignFinal API
+                const response = await makeDesignFinal({
+                    deliveryId: deliveryToMakeFinal.id
+                });
+                
+                if (response && response.status === 201) {
+                    // Set final delivery data
+                    setFinalDelivery(deliveryToMakeFinal);
+                    setIsFinalDesignSet(true);
+                    
+                    enqueueSnackbar(`'${deliveryToMakeFinal.name}' has been set as Final Delivery!`, {variant: 'success'});
+                    handleCloseConfirmFinalModal();
+                    
+                    // Refresh deliveries to get updated status
+                    if (requestData?.id) {
+                        fetchDesignDeliveries(requestData.id);
+                    }
+                    
+                    // Fetch latest request data from API instead of manually updating
+                    try {
+                        const latestResponse = await getDesignRequestDetailForSchool(requestData.id);
+                        if (latestResponse && latestResponse.status === 200) {
+                            const updatedRequest = latestResponse.data.body;
+                            if (updatedRequest) {
+                                setRequestData(updatedRequest);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error fetching latest request data:', error);
+                    }
+                } else {
+                    enqueueSnackbar('Failed to set final delivery. Please try again.', {variant: 'error'});
+                }
+            } catch (error) {
+                console.error('Error setting final delivery:', error);
+                enqueueSnackbar('Error setting final delivery. Please try again.', {variant: 'error'});
+            }
         }
     };
 
@@ -831,20 +1359,57 @@ export default function DesignChat() {
         handleOpenConfirmFinalModal(deliveryItem);
     };
 
-    const handleRevisionSubmit = (values) => {
-        console.log('Revision Request:', values);
-        // In a real application, send this to backend and update request status
-        enqueueSnackbar('Revision request submitted successfully!', {variant: 'success'});
-        handleCloseRevisionModal();
+    const handleRevisionSubmit = async (values) => {
+        try {
+            console.log('Revision Request:', values);
+            
+            // Prepare data for createRevisionRequest API
+            const revisionData = {
+                deliveryId: selectedDeliveryIdForRevision,
+                note: values.revisionDescription
+            };
+            
+            // Call createRevisionRequest API
+            const response = await createRevisionRequest(revisionData);
+            
+            if (response && response.status === 201) {
+                enqueueSnackbar('Revision request submitted successfully!', {variant: 'success'});
+                handleCloseRevisionModal();
+                
+                // Refresh deliveries and revision requests
+                if (requestData?.id) {
+                    fetchDesignDeliveries(requestData.id);
+                    fetchRevisionRequests(requestData.id);
+                    
+                    // Fetch latest request data from API instead of manually updating
+                    try {
+                        const latestResponse = await getDesignRequestDetailForSchool(requestData.id);
+                        if (latestResponse && latestResponse.status === 200) {
+                            const updatedRequest = latestResponse.data.body;
+                            if (updatedRequest) {
+                                setRequestData(updatedRequest);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error fetching latest request data:', error);
+                    }
+                }
+            } else {
+                enqueueSnackbar('Failed to submit revision request. Please try again.', {variant: 'error'});
+            }
+        } catch (error) {
+            console.error('Error submitting revision request:', error);
+            enqueueSnackbar('Error submitting revision request. Please try again.', {variant: 'error'});
+        }
     };
 
     return (
         <Box sx={{
-            height: '100%',
+            height: 'max-content',
             backgroundColor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             p: {xs: 2, md: 4}
         }}>
-            <Container maxWidth="xl">
+            <Container maxWidth="xl" sx={{height: 'max-content'}}>
                 <Box sx={{display: 'flex', flexDirection: 'column', height: '100%'}}>
 
                     {/* Header Section */}
@@ -900,11 +1465,12 @@ export default function DesignChat() {
                                     View Design Details
                                 </Button>
                                 <Chip
-                                    label="PAID"
-                                    color="success"
+                                    label={requestData?.status?.toUpperCase() || 'UNKNOWN'}
+                                    color={requestData?.status === 'completed' ? 'default' : 'success'}
                                     size="large"
                                     style={{
-                                        backgroundColor: '#52c41a',
+                                        backgroundColor: requestData?.status === 'completed' ? '#1890ff' : '#52c41a',
+                                        color: 'white',
                                         fontSize: '14px',
                                         fontWeight: 600,
                                         padding: '8px 16px'
@@ -915,23 +1481,26 @@ export default function DesignChat() {
                     </Box>
 
                     {/* Main Content */}
-                    <Box sx={{display: 'flex', gap: 3, flex: 1, minHeight: 0, height: '90vh'}}>
+                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 3, flex: 1, minHeight: 0, height: '90vh'}}>
 
-                        {/* Left Half - Designer Chat */}
-                        <Paper
-                            elevation={0}
-                            sx={{
-                                flex: 1,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                backgroundColor: 'white',
-                                borderRadius: 4,
-                                border: '2px solid #1976d2',
-                                overflow: 'hidden',
-                                boxShadow: '0 8px 32px rgba(25, 118, 210, 0.15)',
-                                position: 'relative'
-                            }}
-                        >
+                        {/* Top Row - Chat and Deliveries */}
+                        <Box sx={{display: 'flex', gap: 3, flex: 2}}>
+
+                            {/* Left Half - Designer Chat */}
+                            <Paper
+                                elevation={0}
+                                sx={{
+                                    flex: 1,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    backgroundColor: 'white',
+                                    borderRadius: 4,
+                                    border: '2px solid #1976d2',
+                                    overflow: 'hidden',
+                                    boxShadow: '0 8px 32px rgba(25, 118, 210, 0.15)',
+                                    position: 'relative'
+                                }}
+                            >
                             {/* Chat Header */}
                             <Box sx={{
                                 py: 2,
@@ -973,7 +1542,9 @@ export default function DesignChat() {
                                 p: 3,
                                 overflowY: 'auto',
                                 backgroundColor: '#f8fafc',
-                                maxHeight: '70vh'
+                                maxHeight: '70vh',
+                                opacity: isFinalDesignSet ? 0.6 : 1,
+                                pointerEvents: isFinalDesignSet ? 'none' : 'auto'
                             }}>
                                 {chatMessages.length === 0 ? (
                                     <Box sx={{
@@ -1065,7 +1636,9 @@ export default function DesignChat() {
                                 py: 2,
                                 px: 2,
                                 borderTop: '2px solid #e2e8f0',
-                                backgroundColor: 'linear-gradient(135deg, #f8fafc 0%, #e3f2fd 100%)'
+                                backgroundColor: 'linear-gradient(135deg, #f8fafc 0%, #e3f2fd 100%)',
+                                opacity: isFinalDesignSet ? 0.6 : 1,
+                                pointerEvents: isFinalDesignSet ? 'none' : 'auto'
                             }}>
                                 <Box sx={{display: 'flex', gap: 3, alignItems: 'flex-end'}}>
                                     <Box sx={{flex: 1, position: 'relative'}}>
@@ -1171,14 +1744,14 @@ export default function DesignChat() {
                             </Box>
                         </Paper>
 
-                        {/* Right Half - Deliveries and Final Container */}
-                        <Box sx={{flex: 1, display: 'flex', flexDirection: 'column', gap: 3}}>
+                            {/* Right Half - Deliveries and Revision Container */}
+                            <Box sx={{flex: 1, display: 'flex', flexDirection: 'column', gap: 3, maxHeight: '100vh'}}>
 
                             {/* Design Deliveries Section */}
                             <Paper
                                 elevation={0}
                                 sx={{
-                                    flex: 2,
+                                    flex: 1,
                                     display: 'flex',
                                     flexDirection: 'column',
                                     backgroundColor: 'white',
@@ -1213,10 +1786,18 @@ export default function DesignChat() {
                                             }}>
                                                 <FileTextOutlined/>
                                             </Box>
-                                            <Typography.Title level={4}
-                                                              style={{margin: 0, color: '#1e293b', fontWeight: 600}}>
-                                                Design Deliveries
-                                            </Typography.Title>
+                                            <Box>
+                                                <Typography.Title level={4}
+                                                                  style={{margin: 0, color: '#1e293b', fontWeight: 600}}>
+                                                    Design Deliveries
+                                                </Typography.Title>
+                                                <Typography.Text type="secondary" style={{fontSize: '12px', color: '#64748b'}}>
+                                                    Revisions: {requestData?.revisionTime === 9999 ? 'Unlimited' : (requestData?.revisionTime || 0)} remaining
+                                                    {requestData?.revisionTime === 0 && (
+                                                        <span style={{color: '#dc2626', fontWeight: 600}}> - No revisions left</span>
+                                                    )}
+                                                </Typography.Text>
+                                            </Box>
                                         </Box>
                                         <Box sx={{
                                             display: 'flex',
@@ -1240,108 +1821,150 @@ export default function DesignChat() {
 
                                 {/* Deliveries List */}
                                 <Box sx={{flex: 1, p: 2, overflowY: 'auto'}}>
-                                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 1.5}}>
-                                        {designDeliveries.map(item => (
-                                            <Paper
-                                                key={item.id}
-                                                elevation={0}
-                                                sx={{
-                                                    p: 2,
-                                                    border: '1px solid #e2e8f0',
-                                                    borderRadius: 2,
-                                                    backgroundColor: 'white',
-                                                    transition: 'all 0.3s ease',
-                                                    '&:hover': {
-                                                        borderColor: '#1976d2',
-                                                        boxShadow: '0 2px 8px rgba(25, 118, 210, 0.1)'
-                                                    }
-                                                }}
-                                            >
+                                    {loadingDeliveries ? (
+                                        <Box sx={{
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            height: '100%',
+                                            flexDirection: 'column',
+                                            gap: 2
+                                        }}>
+                                            <Typography.Text type="secondary" style={{fontSize: '14px'}}>
+                                                Loading deliveries...
+                                            </Typography.Text>
+                                        </Box>
+                                    ) : (
+                                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 1.5}}>
+                                            {designDeliveries.length === 0 ? (
                                                 <Box sx={{
                                                     display: 'flex',
-                                                    justifyContent: 'space-between',
-                                                    alignItems: 'flex-start',
-                                                    mb: 1.5
+                                                    justifyContent: 'center',
+                                                    alignItems: 'center',
+                                                    height: '100%',
+                                                    flexDirection: 'column',
+                                                    gap: 2,
+                                                    color: '#64748b'
                                                 }}>
-                                                    <Box>
-                                                        <Typography.Title level={5}
-                                                                          style={{margin: 0, color: '#1e293b'}}>
-                                                            {item.name}
-                                                        </Typography.Title>
-                                                        <Typography.Text type="secondary" style={{fontSize: '12px'}}>
-                                                            Delivered: {item.date}
-                                                        </Typography.Text>
-                                                    </Box>
+                                                    <FileTextOutlined style={{fontSize: '48px', opacity: 0.5}}/>
+                                                    <Typography.Text type="secondary" style={{fontSize: '14px'}}>
+                                                        No deliveries yet. Designer will add deliveries here.
+                                                    </Typography.Text>
                                                 </Box>
-
-                                                <Box sx={{display: 'flex', gap: 1, justifyContent: 'space-between'}}>
-                                                    <Button
-                                                        size="small"
-                                                        icon={<EyeOutlined/>}
-                                                        style={{borderRadius: '6px', flex: 1}}
+                                            ) : (
+                                                designDeliveries.map(item => (
+                                                    <Paper
+                                                        key={item.id}
+                                                        elevation={0}
+                                                        sx={{
+                                                            p: 2,
+                                                            border: '1px solid #e2e8f0',
+                                                            borderRadius: 2,
+                                                            backgroundColor: 'white',
+                                                            transition: 'all 0.3s ease',
+                                                            '&:hover': {
+                                                                borderColor: '#1976d2',
+                                                                boxShadow: '0 2px 8px rgba(25, 118, 210, 0.1)'
+                                                            }
+                                                        }}
                                                     >
-                                                        View
-                                                    </Button>
-                                                    {!isFinalDesignSet && (
-                                                        <>
+                                                        <Box sx={{
+                                                            display: 'flex',
+                                                            justifyContent: 'space-between',
+                                                            alignItems: 'flex-start',
+                                                            mb: 1.5
+                                                        }}>
+                                                            <Box sx={{flex: 1}}>
+                                                                <Typography.Title level={5}
+                                                                                  style={{margin: 0, color: '#1e293b'}}>
+                                                                    {item.name}
+                                                                </Typography.Title>
+                                                                <Typography.Text type="secondary" style={{fontSize: '12px'}}>
+                                                                    {new Date(item.submitDate).toLocaleDateString('vi-VN', {
+                                                                        day: '2-digit',
+                                                                        month: '2-digit',
+                                                                        year: 'numeric'
+                                                                    })}
+                                                                </Typography.Text>
+                                                            </Box>
+                                                            <Tag color="blue" style={{margin: 0}}>
+                                                                {parseID(item.id, 'dd')}
+                                                            </Tag>
+                                                        </Box>
+
+                                                        <Box sx={{display: 'flex', gap: 1, justifyContent: 'space-between'}}>
                                                             <Button
                                                                 size="small"
-                                                                icon={<EditOutlined/>}
-                                                                onClick={() => handleOpenRevisionModal(item.id)}
-                                                                style={{
-                                                                    borderRadius: '6px',
-                                                                    backgroundColor: '#722ed1',
-                                                                    borderColor: '#722ed1',
-                                                                    color: 'white',
-                                                                    flex: 1
-                                                                }}
+                                                                icon={<EyeOutlined/>}
+                                                                onClick={() => handleOpenDeliveryDetailModal(item)}
+                                                                style={{borderRadius: '6px', flex: 1}}
                                                             >
-                                                                Revision
+                                                                View Details
                                                             </Button>
-                                                            <Button
-                                                                size="small"
-                                                                icon={<CheckCircleOutlined/>}
-                                                                onClick={() => handleMakeFinal(item)}
-                                                                style={{
-                                                                    borderRadius: '6px',
-                                                                    backgroundColor: '#52c41a',
-                                                                    borderColor: '#52c41a',
-                                                                    color: 'white',
-                                                                    flex: 1
-                                                                }}
-                                                            >
-                                                                Make final
-                                                            </Button>
-                                                        </>
-                                                    )}
-                                                </Box>
-                                            </Paper>
-                                        ))}
-                                    </Box>
+                                                            {!isFinalDesignSet && (
+                                                                <>
+                                                                    {requestData?.revisionTime > 0 && (
+                                                                        <Button
+                                                                            size="small"
+                                                                            icon={<EditOutlined/>}
+                                                                            onClick={() => handleOpenRevisionModal(item.id)}
+                                                                            style={{
+                                                                                borderRadius: '6px',
+                                                                                backgroundColor: '#722ed1',
+                                                                                borderColor: '#722ed1',
+                                                                                color: 'white',
+                                                                                flex: 1
+                                                                            }}
+                                                                        >
+                                                                            Revision
+                                                                        </Button>
+                                                                    )}
+                                                                    <Button
+                                                                        size="small"
+                                                                        icon={<CheckCircleOutlined/>}
+                                                                        onClick={() => handleMakeFinal(item)}
+                                                                        style={{
+                                                                            borderRadius: '6px',
+                                                                            backgroundColor: '#52c41a',
+                                                                            borderColor: '#52c41a',
+                                                                            color: 'white',
+                                                                            flex: 1
+                                                                        }}
+                                                                    >
+                                                                        Make final
+                                                                    </Button>
+                                                                </>
+                                                            )}
+                                                        </Box>
+                                                    </Paper>
+                                                ))
+                                            )}
+                                        </Box>
+                                    )}
                                 </Box>
                             </Paper>
 
-                            {/* Final Delivery Section */}
+                            {/* Revision Requests Section */}
                             <Paper
                                 elevation={0}
                                 sx={{
-                                    flex: 1,
                                     display: 'flex',
                                     flexDirection: 'column',
                                     backgroundColor: 'white',
                                     borderRadius: 4,
-                                    border: '2px solid #52c41a',
+                                    border: '2px solid #ff6b35',
                                     overflow: 'hidden',
-                                    boxShadow: '0 8px 32px rgba(82, 196, 26, 0.15)',
-                                    position: 'relative'
+                                    boxShadow: '0 8px 32px rgba(255, 107, 53, 0.15)',
+                                    position: 'relative',
+                                    height: 'max-content'
                                 }}
                             >
-                                {/* Final Delivery Header */}
+                                {/* Revision Requests Header */}
                                 <Box sx={{
                                     py: 2,
                                     px: 3,
                                     borderBottom: '2px solid #e2e8f0',
-                                    backgroundColor: 'linear-gradient(135deg, #f6ffed 0%, #d9f7be 100%)',
+                                    backgroundColor: 'linear-gradient(135deg, #fff5f0 0%, #ffe4d6 100%)',
                                     position: 'relative'
                                 }}>
                                     <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
@@ -1349,60 +1972,246 @@ export default function DesignChat() {
                                             width: 32,
                                             height: 32,
                                             borderRadius: '50%',
-                                            background: 'linear-gradient(135deg, #52c41a, #73d13d)',
+                                            background: 'linear-gradient(135deg, #ff6b35, #ff8c42)',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             color: 'white',
                                             fontSize: '14px',
-                                            boxShadow: '0 4px 12px rgba(82, 196, 26, 0.3)'
+                                            boxShadow: '0 4px 12px rgba(255, 107, 53, 0.3)'
                                         }}>
-                                            <CheckCircleOutlined/>
+                                            <EditOutlined/>
                                         </Box>
                                         <Typography.Title level={5}
-                                                          style={{margin: 0, color: '#52c41a', fontWeight: 600}}>
-                                            Final Delivery
+                                                          style={{margin: 0, color: '#ff6b35', fontWeight: 600}}>
+                                            Revision Requests
                                         </Typography.Title>
                                     </Box>
                                 </Box>
 
-                                {/* Final Delivery Content */}
+                                {/* Revision Requests Content */}
                                 <Box sx={{
-                                    p: 2,
+                                    p: 3,
                                     flex: 1,
                                     display: 'flex',
                                     flexDirection: 'column',
                                     justifyContent: 'center',
+                                    alignItems: 'center',
                                     marginBottom: '2vh'
                                 }}>
-                                    <Typography.Title level={5} style={{margin: '0 0 8px 0', color: '#1e293b'}}>
-                                        {finalDelivery.name}
-                                    </Typography.Title>
-                                    <Typography.Text type="secondary"
-                                                     style={{fontSize: '12px', display: 'block', mb: 1}}>
-                                        {finalDelivery.description}
-                                    </Typography.Text>
-                                    <Button
-                                        type="primary"
-                                        icon={<EyeOutlined/>}
-                                        href={finalDelivery.link}
-                                        target="_blank"
-                                        size="small"
-                                        style={{
-                                            backgroundColor: '#52c41a',
-                                            borderColor: '#52c41a',
-                                            borderRadius: '6px',
-                                            height: '32px',
-                                            fontSize: '12px',
-                                            fontWeight: 600,
-                                            marginTop: '8px'
-                                        }}
-                                    >
-                                        View Final Design
-                                    </Button>
+                                    {loadingRevisionRequests ? (
+                                        <Box sx={{
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            height: '100%',
+                                            flexDirection: 'column',
+                                            gap: 2
+                                        }}>
+                                            <Typography.Text type="secondary" style={{fontSize: '14px'}}>
+                                                Loading revision requests...
+                                            </Typography.Text>
+                                        </Box>
+                                    ) : revisionRequests.length > 0 ? (
+                                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 2, width: '100%'}}>
+                                            {revisionRequests.map((revision, index) => (
+                                                <Paper
+                                                    key={revision.id}
+                                                    elevation={0}
+                                                    sx={{
+                                                        p: 2,
+                                                        border: '1px solid #e2e8f0',
+                                                        borderRadius: 2,
+                                                        backgroundColor: 'white',
+                                                        transition: 'all 0.3s ease',
+                                                        '&:hover': {
+                                                            borderColor: '#ff6b35',
+                                                            boxShadow: '0 2px 8px rgba(255, 107, 53, 0.1)'
+                                                        }
+                                                    }}
+                                                >
+                                                    <Box sx={{
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        alignItems: 'flex-start',
+                                                        mb: 1.5
+                                                    }}>
+                                                        <Box sx={{flex: 1}}>
+                                                            <Typography.Title level={5}
+                                                                              style={{margin: 0, color: '#1e293b'}}>
+                                                                Revision #{index + 1}
+                                                            </Typography.Title>
+                                                            <Typography.Text type="secondary" style={{fontSize: '12px'}}>
+                                                                {new Date(revision.requestDate).toLocaleDateString('vi-VN', {
+                                                                    day: '2-digit',
+                                                                    month: '2-digit',
+                                                                    year: 'numeric'
+                                                                })}
+                                                            </Typography.Text>
+                                                        </Box>
+                                                        <Tag color="orange" style={{margin: 0}}>
+                                                            {parseID(revision.deliveryId, 'rr')}
+                                                        </Tag>
+                                                    </Box>
+                                                    <Typography.Text style={{fontSize: '13px', color: '#475569', lineHeight: 1.5}}>
+                                                        {revision.note}
+                                                    </Typography.Text>
+                                                    <Box sx={{display: 'flex', gap: 1, justifyContent: 'flex-end', mt: 1.5}}>
+                                                        <Button
+                                                            size="small"
+                                                            icon={<EyeOutlined/>}
+                                                            onClick={() => {
+                                                                const delivery = designDeliveries.find(d => d.id === revision.deliveryId);
+                                                                if (delivery) {
+                                                                    handleOpenDeliveryDetailModal(delivery);
+                                                                }
+                                                            }}
+                                                            style={{borderRadius: '6px'}}
+                                                        >
+                                                            View Delivery
+                                                        </Button>
+                                                    </Box>
+                                                </Paper>
+                                            ))}
+                                        </Box>
+                                    ) : (
+                                        <Box sx={{
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            height: '100%',
+                                            flexDirection: 'column',
+                                            gap: 2,
+                                            color: '#64748b'
+                                        }}>
+                                            <EditOutlined style={{fontSize: '48px', opacity: 0.5}}/>
+                                            <Typography.Text type="secondary" style={{fontSize: '14px'}}>
+                                                {requestData?.revisionTime === 0 ? 'No revisions left' : 'No revision requests'}
+                                            </Typography.Text>
+                                            {requestData?.revisionTime === 0 && (
+                                                <Typography.Text type="secondary" style={{fontSize: '12px', color: '#dc2626'}}>
+                                                    You have used all available revisions
+                                                </Typography.Text>
+                                            )}
+                                        </Box>
+                                    )}
                                 </Box>
                             </Paper>
+
+
                         </Box>
+                        </Box>
+
+                        {/* Bottom Row - Final Delivery */}
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                width: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                backgroundColor: 'white',
+                                borderRadius: 4,
+                                border: '2px solid #52c41a',
+                                overflow: 'hidden',
+                                boxShadow: '0 8px 32px rgba(82, 196, 26, 0.15)',
+                                position: 'relative',
+                                height: 'max-content',
+                                flex: 1
+                            }}
+                        >
+                            {/* Final Delivery Header */}
+                            <Box sx={{
+                                py: 2,
+                                px: 3,
+                                borderBottom: '2px solid #e2e8f0',
+                                backgroundColor: 'linear-gradient(135deg, #f6ffed 0%, #d9f7be 100%)',
+                                position: 'relative'
+                            }}>
+                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                    <Box sx={{
+                                        width: 32,
+                                        height: 32,
+                                        borderRadius: '50%',
+                                        background: 'linear-gradient(135deg, #52c41a, #73d13d)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: 'white',
+                                        fontSize: '14px',
+                                        boxShadow: '0 4px 12px rgba(82, 196, 26, 0.3)'
+                                    }}>
+                                        <CheckCircleOutlined/>
+                                    </Box>
+                                    <Typography.Title level={5}
+                                                      style={{margin: 0, color: '#52c41a', fontWeight: 600}}>
+                                        Final Delivery
+                                    </Typography.Title>
+                                </Box>
+                            </Box>
+
+                            {/* Final Delivery Content */}
+                            <Box sx={{
+                                p: 3,
+                                flex: 1,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                height: 'max-content'
+                            }}>
+                                {finalDelivery ? (
+                                    <>
+                                        <Typography.Title level={5} style={{margin: '0 0 8px 0', color: '#1e293b'}}>
+                                            {finalDelivery.name}
+                                        </Typography.Title>
+                                        <Typography.Text type="secondary"
+                                                         style={{fontSize: '12px', display: 'block', mb: 1}}>
+                                            {finalDelivery.note || 'Final delivery selected'}
+                                        </Typography.Text>
+                                        <Typography.Text type="secondary"
+                                                         style={{fontSize: '11px', display: 'block', mb: 2}}>
+                                            {new Date(finalDelivery.submitDate).toLocaleDateString('vi-VN', {
+                                                day: '2-digit',
+                                                month: '2-digit',
+                                                year: 'numeric'
+                                            })}
+                                        </Typography.Text>
+                                        <Button
+                                            type="primary"
+                                            icon={<EyeOutlined/>}
+                                            onClick={() => handleOpenDeliveryDetailModal(finalDelivery)}
+                                            size="small"
+                                            style={{
+                                                backgroundColor: '#52c41a',
+                                                borderColor: '#52c41a',
+                                                borderRadius: '6px',
+                                                height: '32px',
+                                                fontSize: '12px',
+                                                fontWeight: 600,
+                                                marginTop: '8px'
+                                            }}
+                                        >
+                                            View Details
+                                        </Button>
+                                    </>
+                                ) : (
+                                    <Box sx={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        height: '100%',
+                                        flexDirection: 'column',
+                                        gap: 2,
+                                        color: '#64748b'
+                                    }}>
+                                        <FileTextOutlined style={{fontSize: '48px', opacity: 0.5}}/>
+                                        <Typography.Text type="secondary" style={{fontSize: '14px'}}>
+                                            No data
+                                        </Typography.Text>
+                                    </Box>
+                                )}
+                            </Box>
+                        </Paper>
                     </Box>
                 </Box>
             </Container>
@@ -1412,12 +2221,19 @@ export default function DesignChat() {
                 onCancel={handleCloseRevisionModal}
                 onSubmit={handleRevisionSubmit}
                 selectedDeliveryId={selectedDeliveryIdForRevision}
+                remainingRevisions={requestData?.revisionTime || 0}
             />
 
             <DesignDetailDialog
                 visible={isDesignDetailModalVisible}
                 onCancel={() => setIsDesignDetailModalVisible(false)}
                 request={requestData}
+            />
+
+            <DeliveryDetailModal
+                visible={isDeliveryDetailModalVisible}
+                onCancel={handleCloseDeliveryDetailModal}
+                delivery={selectedDelivery}
             />
 
             <Modal
