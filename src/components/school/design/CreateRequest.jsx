@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import {useEffect, useState} from 'react';
 import {
     Box,
     Button,
     Checkbox,
+    CircularProgress,
     Dialog,
     DialogActions,
     DialogContent,
@@ -11,21 +12,17 @@ import {
     FormControl,
     FormControlLabel,
     FormLabel,
-    InputLabel,
     MenuItem,
-    Paper,
     Radio,
     RadioGroup,
     Select,
-    Stack,
     TextField,
     Typography
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { ColorPicker } from 'antd';
-import { enqueueSnackbar } from "notistack";
-import { createDesignRequest, getFabrics } from "../../../services/DesignService.jsx";
-import axios from "axios";
+import {ColorPicker} from 'antd';
+import {enqueueSnackbar} from "notistack";
+import {createDesignRequest, getFabrics} from "../../../services/DesignService.jsx";
 import {uploadCloudinary} from "../../../services/UploadImageService.jsx";
 
 
@@ -39,7 +36,7 @@ export default function CreateRequest() {
         uniformTypes: {
             regular: {
                 selected: false,
-                genders: { boy: false, girl: false },
+                genders: {boy: false, girl: false},
                 details: {
                     boy: {
                         shirt: {
@@ -89,7 +86,7 @@ export default function CreateRequest() {
             },
             physicalEducation: {
                 selected: false,
-                genders: { boy: false, girl: false },
+                genders: {boy: false, girl: false},
                 details: {
                     boy: {
                         shirt: {
@@ -133,6 +130,7 @@ export default function CreateRequest() {
     });
 
     const [isLogoImagePopupOpen, setIsLogoImagePopupOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const MAX_IMAGES = 4;
     const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
@@ -158,23 +156,23 @@ export default function CreateRequest() {
             const pPants = physical.pants
 
             for (const cloth of rShirt) {
-                fabrics.push({ id: cloth.id, name: cloth.name, type: 'shirt', category: 'regular' })
+                fabrics.push({id: cloth.id, name: cloth.name, type: 'shirt', category: 'regular'})
             }
 
             for (const cloth of rPants) {
-                fabrics.push({ id: cloth.id, name: cloth.name, type: 'pants', category: 'regular' })
+                fabrics.push({id: cloth.id, name: cloth.name, type: 'pants', category: 'regular'})
             }
 
             for (const cloth of rSkirt) {
-                fabrics.push({ id: cloth.id, name: cloth.name, type: 'skirt', category: 'regular' })
+                fabrics.push({id: cloth.id, name: cloth.name, type: 'skirt', category: 'regular'})
             }
 
             for (const cloth of pShirt) {
-                fabrics.push({ id: cloth.id, name: cloth.name, type: 'shirt', category: 'pe' })
+                fabrics.push({id: cloth.id, name: cloth.name, type: 'shirt', category: 'pe'})
             }
 
             for (const cloth of pPants) {
-                fabrics.push({ id: cloth.id, name: cloth.name, type: 'pants', category: 'pe' })
+                fabrics.push({id: cloth.id, name: cloth.name, type: 'pants', category: 'pe'})
             }
             setUniformFabrics(fabrics)
         });
@@ -185,7 +183,7 @@ export default function CreateRequest() {
         if (file) {
             setDesignRequest((prev) => ({
                 ...prev,
-                logo: { file: file, preview: URL.createObjectURL(file) }
+                logo: {file: file, preview: URL.createObjectURL(file)}
             }));
         }
     };
@@ -224,11 +222,11 @@ export default function CreateRequest() {
         const validFiles = files.filter(file => {
             const ext = file.name.split('.').pop().toLowerCase();
             if (!ALLOWED_EXTENSIONS.includes(ext)) {
-                enqueueSnackbar('Only JPG, JPEG, PNG, GIF files are allowed.', { variant: 'error' });
+                enqueueSnackbar('Only JPG, JPEG, PNG, GIF files are allowed.', {variant: 'error'});
                 return false;
             }
             if (file.size > MAX_IMAGE_SIZE) {
-                enqueueSnackbar('Each image must be less than 2MB.', { variant: 'error' });
+                enqueueSnackbar('Each image must be less than 2MB.', {variant: 'error'});
                 return false;
             }
             return true;
@@ -238,7 +236,7 @@ export default function CreateRequest() {
         setDesignRequest(prev => {
             const currentImages = prev.uniformTypes[uniformType].details[gender][itemType].images;
             if (currentImages.length + validFiles.length > MAX_IMAGES) {
-                enqueueSnackbar(`You can upload up to ${MAX_IMAGES} images.`, { variant: 'error' });
+                enqueueSnackbar(`You can upload up to ${MAX_IMAGES} images.`, {variant: 'error'});
                 return prev; // Return previous state if limit exceeded
             }
             return {
@@ -295,7 +293,7 @@ export default function CreateRequest() {
         for (const img of images) {
             const response = await uploadCloudinary(img)
             if (response) {
-                resultImage.push({ url: response })
+                resultImage.push({url: response})
             }
         }
 
@@ -303,23 +301,29 @@ export default function CreateRequest() {
     }
 
     const handleSubmit = async () => {
+        setIsSubmitting(true);
+        
         if (!designRequest.designName.trim()) {
-            enqueueSnackbar('Design Name is required.', { variant: 'error' });
+            enqueueSnackbar('Design Name is required.', {variant: 'error'});
+            setIsSubmitting(false);
             return;
         }
 
         if (!designRequest.uniformTypes.regular.selected && !designRequest.uniformTypes.physicalEducation.selected) {
-            enqueueSnackbar('Please select at least one Uniform Type.', { variant: 'error' });
+            enqueueSnackbar('Please select at least one Uniform Type.', {variant: 'error'});
+            setIsSubmitting(false);
             return;
         }
 
         if (designRequest.uniformTypes.regular.selected && (!designRequest.uniformTypes.regular.genders.boy && !designRequest.uniformTypes.regular.genders.girl)) {
-            enqueueSnackbar('Please select at least one gender for Regular Uniform.', { variant: 'error' });
+            enqueueSnackbar('Please select at least one gender for Regular Uniform.', {variant: 'error'});
+            setIsSubmitting(false);
             return;
         }
 
         if (designRequest.uniformTypes.physicalEducation.selected && (!designRequest.uniformTypes.physicalEducation.genders.boy && !designRequest.uniformTypes.physicalEducation.genders.girl)) {
-            enqueueSnackbar('Please select at least one gender for Physical Education Uniform.', { variant: 'error' });
+            enqueueSnackbar('Please select at least one gender for Physical Education Uniform.', {variant: 'error'});
+            setIsSubmitting(false);
             return;
         }
 
@@ -327,21 +331,25 @@ export default function CreateRequest() {
         if (designRequest.uniformTypes.regular.selected) {
             if (designRequest.uniformTypes.regular.genders.boy) {
                 if (!designRequest.uniformTypes.regular.details.boy.shirt.fabric) {
-                    enqueueSnackbar('Boy Shirt Fabric for Regular Uniform is required.', { variant: 'error' });
+                    enqueueSnackbar('Boy Shirt Fabric for Regular Uniform is required.', {variant: 'error'});
+                    setIsSubmitting(false);
                     return;
                 }
                 if (!designRequest.uniformTypes.regular.details.boy.pants.fabric) {
-                    enqueueSnackbar('Boy Pants Fabric for Regular Uniform is required.', { variant: 'error' });
+                    enqueueSnackbar('Boy Pants Fabric for Regular Uniform is required.', {variant: 'error'});
+                    setIsSubmitting(false);
                     return;
                 }
                 if (!designRequest.uniformTypes.regular.details.boy.shirt.logoPlacement) {
-                    enqueueSnackbar('Boy Shirt Logo Placement for Regular Uniform is required.', { variant: 'error' });
+                    enqueueSnackbar('Boy Shirt Logo Placement for Regular Uniform is required.', {variant: 'error'});
+                    setIsSubmitting(false);
                     return;
                 }
             }
             if (designRequest.uniformTypes.regular.genders.girl) {
                 if (!designRequest.uniformTypes.regular.details.girl.shirt.fabric) {
-                    enqueueSnackbar('Girl Shirt Fabric for Regular Uniform is required.', { variant: 'error' });
+                    enqueueSnackbar('Girl Shirt Fabric for Regular Uniform is required.', {variant: 'error'});
+                    setIsSubmitting(false);
                     return;
                 }
                 const bottomType = designRequest.uniformTypes.regular.details.girl.bottomType;
@@ -349,15 +357,18 @@ export default function CreateRequest() {
                     ? designRequest.uniformTypes.regular.details.girl.skirt.fabric
                     : designRequest.uniformTypes.regular.details.girl.pants.fabric;
                 if (!bottomFabric) {
-                    enqueueSnackbar('Girl Pants/Skirt Fabric for Regular Uniform is required.', { variant: 'error' });
+                    enqueueSnackbar('Girl Pants/Skirt Fabric for Regular Uniform is required.', {variant: 'error'});
+                    setIsSubmitting(false);
                     return;
                 }
                 if (!designRequest.uniformTypes.regular.details.girl.bottomType) {
-                    enqueueSnackbar('Bottom Type for Regular Uniform Girl is required.', { variant: 'error' });
+                    enqueueSnackbar('Bottom Type for Regular Uniform Girl is required.', {variant: 'error'});
+                    setIsSubmitting(false);
                     return;
                 }
                 if (!designRequest.uniformTypes.regular.details.girl.shirt.logoPlacement) {
-                    enqueueSnackbar('Girl Shirt Logo Placement for Regular Uniform is required.', { variant: 'error' });
+                    enqueueSnackbar('Girl Shirt Logo Placement for Regular Uniform is required.', {variant: 'error'});
+                    setIsSubmitting(false);
                     return;
                 }
             }
@@ -367,29 +378,35 @@ export default function CreateRequest() {
         if (designRequest.uniformTypes.physicalEducation.selected) {
             if (designRequest.uniformTypes.physicalEducation.genders.boy) {
                 if (!designRequest.uniformTypes.physicalEducation.details.boy.shirt.fabric) {
-                    enqueueSnackbar('Boy Shirt Fabric for Physical Education Uniform is required.', { variant: 'error' });
+                    enqueueSnackbar('Boy Shirt Fabric for Physical Education Uniform is required.', {variant: 'error'});
+                    setIsSubmitting(false);
                     return;
                 }
                 if (!designRequest.uniformTypes.physicalEducation.details.boy.pants.fabric) {
-                    enqueueSnackbar('Boy Pants Fabric for Physical Education Uniform is required.', { variant: 'error' });
+                    enqueueSnackbar('Boy Pants Fabric for Physical Education Uniform is required.', {variant: 'error'});
+                    setIsSubmitting(false);
                     return;
                 }
                 if (!designRequest.uniformTypes.physicalEducation.details.boy.shirt.logoPlacement) {
-                    enqueueSnackbar('Boy Shirt Logo Placement for Physical Education Uniform is required.', { variant: 'error' });
+                    enqueueSnackbar('Boy Shirt Logo Placement for Physical Education Uniform is required.', {variant: 'error'});
+                    setIsSubmitting(false);
                     return;
                 }
             }
             if (designRequest.uniformTypes.physicalEducation.genders.girl) {
                 if (!designRequest.uniformTypes.physicalEducation.details.girl.shirt.fabric) {
-                    enqueueSnackbar('Girl Shirt Fabric for Physical Education Uniform is required.', { variant: 'error' });
+                    enqueueSnackbar('Girl Shirt Fabric for Physical Education Uniform is required.', {variant: 'error'});
+                    setIsSubmitting(false);
                     return;
                 }
                 if (!designRequest.uniformTypes.physicalEducation.details.girl.pants.fabric) {
-                    enqueueSnackbar('Girl Pants/Skirt Fabric for Physical Education Uniform is required.', { variant: 'error' });
+                    enqueueSnackbar('Girl Pants/Skirt Fabric for Physical Education Uniform is required.', {variant: 'error'});
+                    setIsSubmitting(false);
                     return;
                 }
                 if (!designRequest.uniformTypes.physicalEducation.details.girl.shirt.logoPlacement) {
-                    enqueueSnackbar('Girl Shirt Logo Placement for Physical Education Uniform is required.', { variant: 'error' });
+                    enqueueSnackbar('Girl Shirt Logo Placement for Physical Education Uniform is required.', {variant: 'error'});
+                    setIsSubmitting(false);
                     return;
                 }
             }
@@ -580,13 +597,15 @@ export default function CreateRequest() {
 
         const createResponse = await createDesignRequest(request)
         if (createResponse && createResponse.status === 201) {
-            enqueueSnackbar(createResponse.data.message, { variant: 'success', autoHideDuration: 1000 })
+            enqueueSnackbar(createResponse.data.message, {variant: 'success', autoHideDuration: 1000})
             setTimeout(() => {
                 window.location.href = '/school/pending/request'; // Go to PendingRequest.jsx after submission
             }, 1000)
         } else {
-            enqueueSnackbar("Fail to create design request", { variant: 'error' })
+            enqueueSnackbar("Fail to create design request", {variant: 'error'})
+            setIsSubmitting(false);
         }
+        setIsSubmitting(false);
     };
 
     const renderBoyUniformDetails = (uniformType) => {
@@ -658,10 +677,10 @@ export default function CreateRequest() {
                         👕 Shirt Configuration
                     </Typography>
 
-                    <Box sx={{ display: 'grid', gap: 3 }}>
+                    <Box sx={{display: 'grid', gap: 3}}>
                         {/* Create Type Selection */}
                         <Box>
-                            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Design Type *
                             </Typography>
                             <FormControl fullWidth size="small">
@@ -676,15 +695,13 @@ export default function CreateRequest() {
 
                                         const options = {
                                             'new': 'New Design - Create from scratch',
-                                            'template': 'Template - Use existing template',
                                             'upload': 'Upload Image - Provide reference images',
                                         };
 
                                         return options[selected];
                                     }}
-                                >
+                                    variant='outlined'>
                                     <MenuItem value="new">New Design - Create from scratch</MenuItem>
-                                    <MenuItem value="template">Template - Use existing template</MenuItem>
                                     <MenuItem value="upload">Upload Image - Provide reference images</MenuItem>
                                 </Select>
                             </FormControl>
@@ -693,7 +710,7 @@ export default function CreateRequest() {
                         {/* Image Upload for upload type */}
                         {shirtCreateType === 'upload' && (
                             <Box>
-                                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                                <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                     Reference Images (Max 4)
                                 </Typography>
                                 <Box sx={{
@@ -706,8 +723,8 @@ export default function CreateRequest() {
                                     <Button
                                         variant="outlined"
                                         component="label"
-                                        sx={{ mb: 2 }}
-                                        startIcon={<CloudUploadIcon />}
+                                        sx={{mb: 2}}
+                                        startIcon={<CloudUploadIcon/>}
                                     >
                                         Upload Shirt Images
                                         <input
@@ -718,12 +735,12 @@ export default function CreateRequest() {
                                             onChange={e => handleImageUpload(e, uniformType, 'boy', 'shirt')}
                                         />
                                     </Button>
-                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                    <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
                                         JPG, PNG, GIF up to 2MB each
                                     </Typography>
 
                                     {shirtImages.length > 0 && (
-                                        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
+                                        <Box sx={{display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center'}}>
                                             {shirtImages.map((file, idx) => (
                                                 <Box key={idx} sx={{
                                                     position: 'relative',
@@ -770,7 +787,7 @@ export default function CreateRequest() {
 
                         {/* Fabric Selection */}
                         <Box>
-                            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Fabric Type *
                             </Typography>
                             <FormControl fullWidth size="small">
@@ -800,10 +817,10 @@ export default function CreateRequest() {
                                     displayEmpty
                                     renderValue={(selected) => {
                                         if (!selected) return <em>Select fabric type</em>;
-                                        const fabric = uniformFabrics.find(f => f.id == selected);
+                                        const fabric = uniformFabrics.find(f => f.id === selected);
                                         return fabric ? fabric.name : '';
                                     }}
-                                >
+                                    variant='outlined'>
                                     {uniformFabrics
                                         .filter(fabric => fabric.type === 'shirt' && fabric.category === 'regular')
                                         .map((fabric, index) => (
@@ -817,7 +834,7 @@ export default function CreateRequest() {
 
                         {/* Color Selection */}
                         <Box>
-                            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Color *
                             </Typography>
                             <Box sx={{
@@ -885,13 +902,13 @@ export default function CreateRequest() {
                         🏷️ Logo Placement
                     </Typography>
 
-                    <Box sx={{ display: 'grid', gap: 2 }}>
-                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                    <Box sx={{display: 'grid', gap: 2}}>
+                        <Box sx={{display: 'flex', gap: 2, alignItems: 'center'}}>
                             <Button
                                 variant="outlined"
                                 size="small"
                                 onClick={() => setIsLogoImagePopupOpen(true)}
-                                sx={{ whiteSpace: 'nowrap' }}
+                                sx={{whiteSpace: 'nowrap'}}
                             >
                                 📋 View Guide
                             </Button>
@@ -901,7 +918,7 @@ export default function CreateRequest() {
                         </Box>
 
                         <Box>
-                            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Placement Position *
                             </Typography>
                             <FormControl fullWidth size="small">
@@ -930,7 +947,7 @@ export default function CreateRequest() {
                                     }}
                                     displayEmpty
                                     renderValue={(selected) => selected || 'Select logo placement'}
-                                >
+                                    variant='outlined'>
                                     <MenuItem value="">
                                         <em>No logo placement</em>
                                     </MenuItem>
@@ -985,11 +1002,11 @@ export default function CreateRequest() {
                             />
                         </Box>
                     </DialogContent>
-                    <DialogActions sx={{ p: 2, justifyContent: 'center' }}>
+                    <DialogActions sx={{p: 2, justifyContent: 'center'}}>
                         <Button
                             onClick={() => setIsLogoImagePopupOpen(false)}
                             variant="contained"
-                            sx={{ px: 4 }}
+                            sx={{px: 4}}
                         >
                             Got it
                         </Button>
@@ -1045,7 +1062,7 @@ export default function CreateRequest() {
                     />
                 </Box>
 
-                <Divider sx={{ my: 4, borderColor: '#ddd' }} />
+                <Divider sx={{my: 4, borderColor: '#ddd'}}/>
 
                 {/* Pants Configuration */}
                 <Box sx={{
@@ -1067,7 +1084,7 @@ export default function CreateRequest() {
                     </Typography>
                     {/* Create Type Selection */}
                     <Box>
-                        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                        <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                             Design Type *
                         </Typography>
                         <FormControl fullWidth size="small">
@@ -1082,15 +1099,13 @@ export default function CreateRequest() {
 
                                     const options = {
                                         'new': 'New Design - Create from scratch',
-                                        'template': 'Template - Use existing template',
                                         'upload': 'Upload Image - Provide reference images',
                                     };
 
                                     return options[selected];
                                 }}
-                            >
+                                variant='outlined'>
                                 <MenuItem value="new">New Design - Create from scratch</MenuItem>
-                                <MenuItem value="template">Template - Use existing template</MenuItem>
                                 <MenuItem value="upload">Upload Image - Provide reference images</MenuItem>
                             </Select>
                         </FormControl>
@@ -1099,7 +1114,7 @@ export default function CreateRequest() {
                     {/* Image Upload for upload type */}
                     {pantsCreateType === 'upload' && (
                         <Box>
-                            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Reference Images (Max 4)
                             </Typography>
                             <Box sx={{
@@ -1112,8 +1127,8 @@ export default function CreateRequest() {
                                 <Button
                                     variant="outlined"
                                     component="label"
-                                    sx={{ mb: 2 }}
-                                    startIcon={<CloudUploadIcon />}
+                                    sx={{mb: 2}}
+                                    startIcon={<CloudUploadIcon/>}
                                 >
                                     Upload Pants Images
                                     <input
@@ -1124,12 +1139,12 @@ export default function CreateRequest() {
                                         onChange={e => handleImageUpload(e, uniformType, 'boy', 'pants')}
                                     />
                                 </Button>
-                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
                                     JPG, PNG, GIF up to 2MB each
                                 </Typography>
 
                                 {pantsImages.length > 0 && (
-                                    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
+                                    <Box sx={{display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center'}}>
                                         {pantsImages.map((file, idx) => (
                                             <Box key={idx} sx={{
                                                 position: 'relative',
@@ -1173,10 +1188,10 @@ export default function CreateRequest() {
                             </Box>
                         </Box>
                     )}
-                    <Box sx={{ display: 'grid', gap: 3 }}>
+                    <Box sx={{display: 'grid', gap: 3}}>
                         {/* Fabric Selection */}
                         <Box>
-                            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Fabric Type *
                             </Typography>
                             <FormControl fullWidth size="small">
@@ -1206,10 +1221,10 @@ export default function CreateRequest() {
                                     displayEmpty
                                     renderValue={(selected) => {
                                         if (!selected) return <em>Select fabric type</em>;
-                                        const fabric = uniformFabrics.find(f => f.id == selected);
+                                        const fabric = uniformFabrics.find(f => f.id === selected);
                                         return fabric ? fabric.name : '';
                                     }}
-                                >
+                                    variant='outlined'>
                                     {uniformFabrics
                                         .filter(fabric => (fabric.type === 'pants' || fabric.type === 'skirt') && fabric.category === 'regular')
                                         .map((fabric, index) => (
@@ -1223,7 +1238,7 @@ export default function CreateRequest() {
 
                         {/* Color Selection */}
                         <Box>
-                            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Color *
                             </Typography>
                             <Box sx={{
@@ -1394,10 +1409,10 @@ export default function CreateRequest() {
                         👕 Shirt Configuration
                     </Typography>
 
-                    <Box sx={{ display: 'grid', gap: 3 }}>
+                    <Box sx={{display: 'grid', gap: 3}}>
                         {/* Create Type Selection */}
                         <Box>
-                            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Design Type *
                             </Typography>
                             <FormControl fullWidth size="small">
@@ -1412,15 +1427,13 @@ export default function CreateRequest() {
 
                                         const options = {
                                             'new': 'New Design - Create from scratch',
-                                            'template': 'Template - Use existing template',
                                             'upload': 'Upload Image - Provide reference images',
                                         };
 
                                         return options[selected];
                                     }}
-                                >
+                                    variant='outlined'>
                                     <MenuItem value="new">New Design - Create from scratch</MenuItem>
-                                    <MenuItem value="template">Template - Use existing template</MenuItem>
                                     <MenuItem value="upload">Upload Image - Provide reference images</MenuItem>
                                 </Select>
                             </FormControl>
@@ -1429,7 +1442,7 @@ export default function CreateRequest() {
                         {/* Image Upload for upload type */}
                         {shirtCreateType === 'upload' && (
                             <Box>
-                                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                                <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                     Reference Images (Max 4)
                                 </Typography>
                                 <Box sx={{
@@ -1442,8 +1455,8 @@ export default function CreateRequest() {
                                     <Button
                                         variant="outlined"
                                         component="label"
-                                        sx={{ mb: 2 }}
-                                        startIcon={<CloudUploadIcon />}
+                                        sx={{mb: 2}}
+                                        startIcon={<CloudUploadIcon/>}
                                     >
                                         Upload Shirt Images
                                         <input
@@ -1454,12 +1467,12 @@ export default function CreateRequest() {
                                             onChange={e => handleImageUpload(e, uniformType, 'girl', 'shirt')}
                                         />
                                     </Button>
-                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                    <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
                                         JPG, PNG, GIF up to 2MB each
                                     </Typography>
 
                                     {shirtImages.length > 0 && (
-                                        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
+                                        <Box sx={{display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center'}}>
                                             {shirtImages.map((file, idx) => (
                                                 <Box key={idx} sx={{
                                                     position: 'relative',
@@ -1506,7 +1519,7 @@ export default function CreateRequest() {
 
                         {/* Fabric Selection */}
                         <Box>
-                            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Fabric Type *
                             </Typography>
                             <FormControl fullWidth size="small">
@@ -1536,10 +1549,10 @@ export default function CreateRequest() {
                                     displayEmpty
                                     renderValue={(selected) => {
                                         if (!selected) return <em>Select fabric type</em>;
-                                        const fabric = uniformFabrics.find(f => f.id == selected);
+                                        const fabric = uniformFabrics.find(f => f.id === selected);
                                         return fabric ? fabric.name : '';
                                     }}
-                                >
+                                    variant='outlined'>
                                     {uniformFabrics
                                         .filter(fabric => fabric.type === 'shirt' && fabric.category === (uniformType === 'regular' ? 'regular' : 'pe'))
                                         .map((fabric, index) => (
@@ -1553,7 +1566,7 @@ export default function CreateRequest() {
 
                         {/* Color Selection */}
                         <Box>
-                            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Color *
                             </Typography>
                             <Box sx={{
@@ -1622,13 +1635,13 @@ export default function CreateRequest() {
                         🏷️ Logo Placement
                     </Typography>
 
-                    <Box sx={{ display: 'grid', gap: 2 }}>
-                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                    <Box sx={{display: 'grid', gap: 2}}>
+                        <Box sx={{display: 'flex', gap: 2, alignItems: 'center'}}>
                             <Button
                                 variant="outlined"
                                 size="small"
                                 onClick={() => setIsLogoImagePopupOpen(true)}
-                                sx={{ whiteSpace: 'nowrap' }}
+                                sx={{whiteSpace: 'nowrap'}}
                             >
                                 📋 View Guide
                             </Button>
@@ -1638,7 +1651,7 @@ export default function CreateRequest() {
                         </Box>
 
                         <Box>
-                            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Placement Position *
                             </Typography>
                             <FormControl fullWidth size="small">
@@ -1667,7 +1680,7 @@ export default function CreateRequest() {
                                     }}
                                     displayEmpty
                                     renderValue={(selected) => selected || 'Select logo placement'}
-                                >
+                                    variant='outlined'>
                                     <MenuItem value="">
                                         <em>No logo placement</em>
                                     </MenuItem>
@@ -1722,11 +1735,11 @@ export default function CreateRequest() {
                             />
                         </Box>
                     </DialogContent>
-                    <DialogActions sx={{ p: 2, justifyContent: 'center' }}>
+                    <DialogActions sx={{p: 2, justifyContent: 'center'}}>
                         <Button
                             onClick={() => setIsLogoImagePopupOpen(false)}
                             variant="contained"
-                            sx={{ px: 4 }}
+                            sx={{px: 4}}
                         >
                             Got it
                         </Button>
@@ -1782,7 +1795,7 @@ export default function CreateRequest() {
                     />
                 </Box>
 
-                <Divider sx={{ my: 4, borderColor: '#ddd' }} />
+                <Divider sx={{my: 4, borderColor: '#ddd'}}/>
 
                 {/* Bottom Type Selection (for Regular Uniform) */}
                 {uniformType === "regular" && (
@@ -1804,7 +1817,7 @@ export default function CreateRequest() {
                             👗 Bottom Type Selection
                         </Typography>
                         <FormControl component="fieldset" fullWidth>
-                            <FormLabel component="legend" sx={{ mb: 1, fontWeight: '600' }}>
+                            <FormLabel component="legend" sx={{mb: 1, fontWeight: '600'}}>
                                 Choose Bottom Type *
                             </FormLabel>
                             <RadioGroup
@@ -1830,8 +1843,8 @@ export default function CreateRequest() {
                                     }));
                                 }}
                             >
-                                <FormControlLabel value="pants" control={<Radio />} label="Pants" />
-                                <FormControlLabel value="skirt" control={<Radio />} label="Skirt" />
+                                <FormControlLabel value="pants" control={<Radio/>} label="Pants"/>
+                                <FormControlLabel value="skirt" control={<Radio/>} label="Skirt"/>
                             </RadioGroup>
                         </FormControl>
                     </Box>
@@ -1856,10 +1869,10 @@ export default function CreateRequest() {
                         {uniformType === "regular" && designRequest.uniformTypes.regular.details.girl.bottomType === "skirt" ? "👗" : "👖"} {uniformType === "regular" && designRequest.uniformTypes.regular.details.girl.bottomType === "skirt" ? "Skirt" : "Pants"} Configuration
                     </Typography>
 
-                    <Box sx={{ display: 'grid', gap: 3 }}>
+                    <Box sx={{display: 'grid', gap: 3}}>
                         {/* Create Type Selection */}
                         <Box>
-                            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Design Type *
                             </Typography>
                             <FormControl fullWidth size="small">
@@ -1874,15 +1887,13 @@ export default function CreateRequest() {
 
                                         const options = {
                                             'new': 'New Design - Create from scratch',
-                                            'template': 'Template - Use existing template',
                                             'upload': 'Upload Image - Provide reference images',
                                         };
 
                                         return options[selected];
                                     }}
-                                >
+                                    variant='outlined'>
                                     <MenuItem value="new">New Design - Create from scratch</MenuItem>
-                                    <MenuItem value="template">Template - Use existing template</MenuItem>
                                     <MenuItem value="upload">Upload Image - Provide reference images</MenuItem>
                                 </Select>
                             </FormControl>
@@ -1891,7 +1902,7 @@ export default function CreateRequest() {
                         {/* Image Upload for upload type */}
                         {bottomCreateType === 'upload' && (
                             <Box>
-                                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                                <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                     Reference Images (Max 4)
                                 </Typography>
                                 <Box sx={{
@@ -1904,8 +1915,8 @@ export default function CreateRequest() {
                                     <Button
                                         variant="outlined"
                                         component="label"
-                                        sx={{ mb: 2 }}
-                                        startIcon={<CloudUploadIcon />}
+                                        sx={{mb: 2}}
+                                        startIcon={<CloudUploadIcon/>}
                                     >
                                         Upload {uniformType === "regular" && designRequest.uniformTypes.regular.details.girl.bottomType === "skirt" ? "Skirt" : "Pants"} Images
                                         <input
@@ -1916,12 +1927,12 @@ export default function CreateRequest() {
                                             onChange={e => handleImageUpload(e, uniformType, 'girl', bottomType)}
                                         />
                                     </Button>
-                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                    <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
                                         JPG, PNG, GIF up to 2MB each
                                     </Typography>
 
                                     {bottomImages.length > 0 && (
-                                        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
+                                        <Box sx={{display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center'}}>
                                             {bottomImages.map((file, idx) => (
                                                 <Box key={idx} sx={{
                                                     position: 'relative',
@@ -1968,7 +1979,7 @@ export default function CreateRequest() {
 
                         {/* Fabric Selection */}
                         <Box>
-                            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Fabric Type *
                             </Typography>
                             <FormControl fullWidth size="small">
@@ -2004,10 +2015,10 @@ export default function CreateRequest() {
                                     displayEmpty
                                     renderValue={(selected) => {
                                         if (!selected) return <em>Select fabric type</em>;
-                                        const fabric = uniformFabrics.find(f => f.id == selected);
+                                        const fabric = uniformFabrics.find(f => f.id === selected);
                                         return fabric ? fabric.name : '';
                                     }}
-                                >
+                                    variant='outlined'>
                                     {uniformFabrics
                                         .filter(fabric => {
                                             if (uniformType === "regular" && designRequest.uniformTypes.regular.details.girl.bottomType === "skirt") {
@@ -2027,7 +2038,7 @@ export default function CreateRequest() {
 
                         {/* Color Selection */}
                         <Box>
-                            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Color *
                             </Typography>
                             <Box sx={{
@@ -2077,8 +2088,8 @@ export default function CreateRequest() {
                                 />
                                 <Typography variant="body2" color="text.secondary">
                                     Selected: {uniformType === "regular" && designRequest.uniformTypes.regular.details.girl.bottomType === "skirt"
-                                        ? designRequest.uniformTypes[uniformType].details.girl.skirt.color
-                                        : designRequest.uniformTypes[uniformType].details.girl.pants.color}
+                                    ? designRequest.uniformTypes[uniformType].details.girl.skirt.color
+                                    : designRequest.uniformTypes[uniformType].details.girl.pants.color}
                                 </Typography>
                             </Box>
                         </Box>
@@ -2101,7 +2112,8 @@ export default function CreateRequest() {
                         alignItems: 'center',
                         gap: 1
                     }}>
-                        💭 Additional Notes ({uniformType === "regular" && designRequest.uniformTypes.regular.details.girl.bottomType === "skirt" ? "Skirt" : "Pants"})
+                        💭 Additional Notes
+                        ({uniformType === "regular" && designRequest.uniformTypes.regular.details.girl.bottomType === "skirt" ? "Skirt" : "Pants"})
                     </Typography>
                     <TextField
                         placeholder={`Any special requirements or instructions for the ${uniformType === "regular" && designRequest.uniformTypes.regular.details.girl.bottomType === "skirt" ? "skirt" : "pants"} design...`}
@@ -2186,7 +2198,7 @@ export default function CreateRequest() {
                     boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                 }}>
                     {/* Design Information */}
-                    <Box sx={{ mb: 4 }}>
+                    <Box sx={{mb: 4}}>
                         <Typography variant="h6" sx={{
                             color: '#333',
                             mb: 2,
@@ -2200,7 +2212,7 @@ export default function CreateRequest() {
                             label="Design Name"
                             placeholder="Enter a name for your uniform design"
                             value={designRequest.designName}
-                            onChange={(e) => setDesignRequest(prev => ({ ...prev, designName: e.target.value }))}
+                            onChange={(e) => setDesignRequest(prev => ({...prev, designName: e.target.value}))}
                             variant="outlined"
                             fullWidth
                             size="medium"
@@ -2210,13 +2222,13 @@ export default function CreateRequest() {
                     <Box
                         component="form"
                         sx={{
-                            '& .MuiTextField-root': { my: 1, mx: 0, width: '100%' },
+                            '& .MuiTextField-root': {my: 1, mx: 0, width: '100%'},
                         }}
                         noValidate
                         autoComplete="off"
                     >
                         {/* Logo Upload */}
-                        <Box sx={{ mb: 4 }}>
+                        <Box sx={{mb: 4}}>
                             <Typography variant="h6" sx={{
                                 color: '#333',
                                 mb: 2,
@@ -2233,7 +2245,7 @@ export default function CreateRequest() {
                             }}>
                                 <input
                                     accept="image/*"
-                                    style={{ display: 'none' }}
+                                    style={{display: 'none'}}
                                     id="raised-button-file"
                                     type="file"
                                     onChange={handleFileChange}
@@ -2242,8 +2254,8 @@ export default function CreateRequest() {
                                     <Button
                                         variant="contained"
                                         component="span"
-                                        startIcon={<CloudUploadIcon />}
-                                        sx={{ mb: 2 }}
+                                        startIcon={<CloudUploadIcon/>}
+                                        sx={{mb: 2}}
                                     >
                                         Upload Logo
                                     </Button>
@@ -2252,7 +2264,7 @@ export default function CreateRequest() {
                                     Supported formats: JPG, PNG, GIF (Max 5MB)
                                 </Typography>
                                 {designRequest.logo.preview && (
-                                    <Box sx={{ mt: 2 }}>
+                                    <Box sx={{mt: 2}}>
                                         <img
                                             src={designRequest.logo.preview}
                                             alt="Logo Preview"
@@ -2269,7 +2281,7 @@ export default function CreateRequest() {
                         </Box>
 
                         {/* Uniform Type */}
-                        <Box sx={{ mb: 4 }}>
+                        <Box sx={{mb: 4}}>
                             <Typography variant="h6" sx={{
                                 color: '#333',
                                 mb: 2,
@@ -2307,8 +2319,8 @@ export default function CreateRequest() {
                                             pointerEvents: 'none' // Disable checkbox direct clicks
                                         }}
                                     />
-                                    <Box sx={{ flex: 1, pointerEvents: 'none' }}>
-                                        <Typography variant="body1" sx={{ fontWeight: '600', mb: 0.5 }}>
+                                    <Box sx={{flex: 1, pointerEvents: 'none'}}>
+                                        <Typography variant="body1" sx={{fontWeight: '600', mb: 0.5}}>
                                             Regular Uniform
                                         </Typography>
                                         <Typography variant="body2" color="text.secondary">
@@ -2348,8 +2360,8 @@ export default function CreateRequest() {
                                             pointerEvents: 'none'
                                         }}
                                     />
-                                    <Box sx={{ flex: 1, pointerEvents: 'none' }}>
-                                        <Typography variant="body1" sx={{ fontWeight: '600', mb: 0.5 }}>
+                                    <Box sx={{flex: 1, pointerEvents: 'none'}}>
+                                        <Typography variant="body1" sx={{fontWeight: '600', mb: 0.5}}>
                                             Physical Education Uniform
                                         </Typography>
                                         <Typography variant="body2" color="text.secondary">
@@ -2369,7 +2381,7 @@ export default function CreateRequest() {
 
                         {designRequest.uniformTypes.regular.selected && (
                             <>
-                                <Box sx={{ mb: 4 }}>
+                                <Box sx={{mb: 4}}>
                                     <Typography variant="h6" sx={{
                                         color: '#333',
                                         mb: 2,
@@ -2410,8 +2422,8 @@ export default function CreateRequest() {
                                                         pointerEvents: 'none'
                                                     }}
                                                 />
-                                                <Box sx={{ flex: 1, pointerEvents: 'none' }}>
-                                                    <Typography variant="body1" sx={{ fontWeight: '600', mb: 0.5 }}>
+                                                <Box sx={{flex: 1, pointerEvents: 'none'}}>
+                                                    <Typography variant="body1" sx={{fontWeight: '600', mb: 0.5}}>
                                                         Boy
                                                     </Typography>
                                                     <Typography variant="body2" color="text.secondary">
@@ -2438,7 +2450,10 @@ export default function CreateRequest() {
                                                                 ...prev.uniformTypes.regular,
                                                                 details: {
                                                                     ...prev.uniformTypes.regular.details,
-                                                                    boy: { ...prev.uniformTypes.regular.details.boy, showForm: true }
+                                                                    boy: {
+                                                                        ...prev.uniformTypes.regular.details.boy,
+                                                                        showForm: true
+                                                                    }
                                                                 }
                                                             }
                                                         }
@@ -2483,8 +2498,8 @@ export default function CreateRequest() {
                                                         pointerEvents: 'none'
                                                     }}
                                                 />
-                                                <Box sx={{ flex: 1, pointerEvents: 'none' }}>
-                                                    <Typography variant="body1" sx={{ fontWeight: '600', mb: 0.5 }}>
+                                                <Box sx={{flex: 1, pointerEvents: 'none'}}>
+                                                    <Typography variant="body1" sx={{fontWeight: '600', mb: 0.5}}>
                                                         Girl
                                                     </Typography>
                                                     <Typography variant="body2" color="text.secondary">
@@ -2534,19 +2549,19 @@ export default function CreateRequest() {
                                     </Box>
                                 </Box>
                                 <Dialog open={designRequest.uniformTypes.regular.details.boy.showForm}
-                                    onClose={() => setDesignRequest(prev => ({
-                                        ...prev,
-                                        uniformTypes: {
-                                            ...prev.uniformTypes,
-                                            regular: {
-                                                ...prev.uniformTypes.regular,
-                                                details: {
-                                                    ...prev.uniformTypes.regular.details,
-                                                    boy: { ...prev.uniformTypes.regular.details.boy, showForm: false }
+                                        onClose={() => setDesignRequest(prev => ({
+                                            ...prev,
+                                            uniformTypes: {
+                                                ...prev.uniformTypes,
+                                                regular: {
+                                                    ...prev.uniformTypes.regular,
+                                                    details: {
+                                                        ...prev.uniformTypes.regular.details,
+                                                        boy: {...prev.uniformTypes.regular.details.boy, showForm: false}
+                                                    }
                                                 }
                                             }
-                                        }
-                                    }))} maxWidth="md" fullWidth>
+                                        }))} maxWidth="md" fullWidth>
                                     <DialogTitle>Regular Uniform Details (Boy)</DialogTitle>
                                     <DialogContent>
                                         {renderBoyUniformDetails("regular")}
@@ -2560,7 +2575,7 @@ export default function CreateRequest() {
                                                     ...prev.uniformTypes.regular,
                                                     details: {
                                                         ...prev.uniformTypes.regular.details,
-                                                        boy: { ...prev.uniformTypes.regular.details.boy, showForm: false }
+                                                        boy: {...prev.uniformTypes.regular.details.boy, showForm: false}
                                                     }
                                                 }
                                             }
@@ -2568,19 +2583,22 @@ export default function CreateRequest() {
                                     </DialogActions>
                                 </Dialog>
                                 <Dialog open={designRequest.uniformTypes.regular.details.girl.showForm}
-                                    onClose={() => setDesignRequest(prev => ({
-                                        ...prev,
-                                        uniformTypes: {
-                                            ...prev.uniformTypes,
-                                            regular: {
-                                                ...prev.uniformTypes.regular,
-                                                details: {
-                                                    ...prev.uniformTypes.regular.details,
-                                                    girl: { ...prev.uniformTypes.regular.details.girl, showForm: false }
+                                        onClose={() => setDesignRequest(prev => ({
+                                            ...prev,
+                                            uniformTypes: {
+                                                ...prev.uniformTypes,
+                                                regular: {
+                                                    ...prev.uniformTypes.regular,
+                                                    details: {
+                                                        ...prev.uniformTypes.regular.details,
+                                                        girl: {
+                                                            ...prev.uniformTypes.regular.details.girl,
+                                                            showForm: false
+                                                        }
+                                                    }
                                                 }
                                             }
-                                        }
-                                    }))} maxWidth="md" fullWidth>
+                                        }))} maxWidth="md" fullWidth>
                                     <DialogTitle>Regular Uniform Details (Girl)</DialogTitle>
                                     <DialogContent>
                                         {renderGirlUniformDetails("regular")}
@@ -2594,7 +2612,10 @@ export default function CreateRequest() {
                                                     ...prev.uniformTypes.regular,
                                                     details: {
                                                         ...prev.uniformTypes.regular.details,
-                                                        girl: { ...prev.uniformTypes.regular.details.girl, showForm: false }
+                                                        girl: {
+                                                            ...prev.uniformTypes.regular.details.girl,
+                                                            showForm: false
+                                                        }
                                                     }
                                                 }
                                             }
@@ -2606,7 +2627,7 @@ export default function CreateRequest() {
 
                         {designRequest.uniformTypes.physicalEducation.selected && (
                             <>
-                                <Box sx={{ mb: 4 }}>
+                                <Box sx={{mb: 4}}>
                                     <Typography variant="h6" sx={{
                                         color: '#333',
                                         mb: 2,
@@ -2647,8 +2668,8 @@ export default function CreateRequest() {
                                                         pointerEvents: 'none'
                                                     }}
                                                 />
-                                                <Box sx={{ flex: 1, pointerEvents: 'none' }}>
-                                                    <Typography variant="body1" sx={{ fontWeight: '600', mb: 0.5 }}>
+                                                <Box sx={{flex: 1, pointerEvents: 'none'}}>
+                                                    <Typography variant="body1" sx={{fontWeight: '600', mb: 0.5}}>
                                                         Boy
                                                     </Typography>
                                                     <Typography variant="body2" color="text.secondary">
@@ -2723,8 +2744,8 @@ export default function CreateRequest() {
                                                         pointerEvents: 'none'
                                                     }}
                                                 />
-                                                <Box sx={{ flex: 1, pointerEvents: 'none' }}>
-                                                    <Typography variant="body1" sx={{ fontWeight: '600', mb: 0.5 }}>
+                                                <Box sx={{flex: 1, pointerEvents: 'none'}}>
+                                                    <Typography variant="body1" sx={{fontWeight: '600', mb: 0.5}}>
                                                         Girl
                                                     </Typography>
                                                     <Typography variant="body2" color="text.secondary">
@@ -2774,22 +2795,22 @@ export default function CreateRequest() {
                                     </Box>
                                 </Box>
                                 <Dialog open={designRequest.uniformTypes.physicalEducation.details.boy.showForm}
-                                    onClose={() => setDesignRequest(prev => ({
-                                        ...prev,
-                                        uniformTypes: {
-                                            ...prev.uniformTypes,
-                                            physicalEducation: {
-                                                ...prev.uniformTypes.physicalEducation,
-                                                details: {
-                                                    ...prev.uniformTypes.physicalEducation.details,
-                                                    boy: {
-                                                        ...prev.uniformTypes.physicalEducation.details.boy,
-                                                        showForm: false
+                                        onClose={() => setDesignRequest(prev => ({
+                                            ...prev,
+                                            uniformTypes: {
+                                                ...prev.uniformTypes,
+                                                physicalEducation: {
+                                                    ...prev.uniformTypes.physicalEducation,
+                                                    details: {
+                                                        ...prev.uniformTypes.physicalEducation.details,
+                                                        boy: {
+                                                            ...prev.uniformTypes.physicalEducation.details.boy,
+                                                            showForm: false
+                                                        }
                                                     }
                                                 }
                                             }
-                                        }
-                                    }))} maxWidth="md" fullWidth>
+                                        }))} maxWidth="md" fullWidth>
                                     <DialogTitle>Physical Education Uniform Details (Boy)</DialogTitle>
                                     <DialogContent>
                                         {renderBoyUniformDetails("physicalEducation")}
@@ -2814,22 +2835,22 @@ export default function CreateRequest() {
                                     </DialogActions>
                                 </Dialog>
                                 <Dialog open={designRequest.uniformTypes.physicalEducation.details.girl.showForm}
-                                    onClose={() => setDesignRequest(prev => ({
-                                        ...prev,
-                                        uniformTypes: {
-                                            ...prev.uniformTypes,
-                                            physicalEducation: {
-                                                ...prev.uniformTypes.physicalEducation,
-                                                details: {
-                                                    ...prev.uniformTypes.physicalEducation.details,
-                                                    girl: {
-                                                        ...prev.uniformTypes.physicalEducation.details.girl,
-                                                        showForm: false
+                                        onClose={() => setDesignRequest(prev => ({
+                                            ...prev,
+                                            uniformTypes: {
+                                                ...prev.uniformTypes,
+                                                physicalEducation: {
+                                                    ...prev.uniformTypes.physicalEducation,
+                                                    details: {
+                                                        ...prev.uniformTypes.physicalEducation.details,
+                                                        girl: {
+                                                            ...prev.uniformTypes.physicalEducation.details.girl,
+                                                            showForm: false
+                                                        }
                                                     }
                                                 }
                                             }
-                                        }
-                                    }))} maxWidth="md" fullWidth>
+                                        }))} maxWidth="md" fullWidth>
                                     <DialogTitle>Physical Education Uniform Details (Girl)</DialogTitle>
                                     <DialogContent>
                                         {renderGirlUniformDetails("physicalEducation")}
@@ -2877,8 +2898,10 @@ export default function CreateRequest() {
                             variant="contained"
                             size="large"
                             color="primary"
+                            disabled={isSubmitting}
+                            startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : null}
                         >
-                            Submit Request
+                            {isSubmitting ? 'Submitting...' : 'Submit Request'}
                         </Button>
                     </Box>
                 </Box>

@@ -26,7 +26,6 @@ import {
     DesignServices,
     Info as InfoIcon,
     Person as PersonIcon,
-    Schedule as ScheduleIcon,
     School as SchoolIcon,
     SportsEsports as SportsIcon,
     Star as StarIcon,
@@ -43,33 +42,19 @@ import DisplayImage from "../ui/DisplayImage.jsx";
 const StatusChip = ({status}) => {
     const getStatusConfig = (status) => {
         switch (status) {
-            case 'created':
+            case 'pending':
                 return {
                     color: '#1976d2',
                     bgColor: '#e3f2fd',
                     icon: <AssignmentIcon sx={{fontSize: 16}}/>,
-                    label: 'Created'
+                    label: 'Pending'
                 };
-            case 'paid':
-                return {
-                    color: '#2e7d32',
-                    bgColor: '#e8f5e8',
-                    icon: <CheckCircleIcon sx={{fontSize: 16}}/>,
-                    label: 'Paid'
-                };
-            case 'unpaid':
-                return {
-                    color: '#f57c00',
-                    bgColor: '#fff3e0',
-                    icon: <CancelIcon sx={{fontSize: 16}}/>,
-                    label: 'Unpaid'
-                };
-            case 'progressing':
+            case 'processing':
                 return {
                     color: '#9c27b0',
                     bgColor: '#f3e5f5',
                     icon: <TrendingUpIcon sx={{fontSize: 16}}/>,
-                    label: 'In Progress'
+                    label: 'Processing'
                 };
             case 'completed':
                 return {
@@ -78,12 +63,12 @@ const StatusChip = ({status}) => {
                     icon: <CheckCircleIcon sx={{fontSize: 16}}/>,
                     label: 'Completed'
                 };
-            case 'rejected':
+            case 'canceled':
                 return {
                     color: '#d32f2f',
                     bgColor: '#ffebee',
                     icon: <CancelIcon sx={{fontSize: 16}}/>,
-                    label: 'Rejected'
+                    label: 'Cancelled'
                 };
             default:
                 return {
@@ -274,20 +259,20 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
         });
     };
 
-
-
-    const formatValidityDate = (dateString) => {
-        if (!dateString) return '';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
+    const calculateDaysFromRequest = (dateString) => {
+        const requestDate = new Date(dateString);
+        const today = new Date();
+        
+        // Reset time to start of day for accurate calculation
+        requestDate.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+        
+        const timeDiff = today.getTime() - requestDate.getTime();
+        const daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
+        
+        return daysDiff;
     };
-
-    // Use existing request data
+// Use existing request data
     const mergedRequestData = request;
 
     // Helper function to get items by category
@@ -303,15 +288,17 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                 onClose={onCancel}
                 maxWidth="lg"
                 fullWidth
-                PaperProps={{
-                    sx: {
-                        borderRadius: 3,
-                        maxHeight: '90vh',
-                        overflow: 'hidden',
-                        background: 'rgba(255, 255, 255, 0.95)',
-                        backdropFilter: 'blur(20px)',
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+                slotProps={{
+                    paper: {
+                        sx: {
+                            borderRadius: 3,
+                            maxHeight: '90vh',
+                            overflow: 'hidden',
+                            background: 'rgba(255, 255, 255, 0.95)',
+                            backdropFilter: 'blur(20px)',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+                        }
                     }
                 }}
             >
@@ -327,7 +314,7 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                 }}>
                     <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                         <Avatar sx={{
-                            bgcolor: 'rgba(255, 255, 255, 0.2)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
                             width: 48,
                             height: 48
                         }}>
@@ -461,6 +448,25 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                     }}>
                                                         {formatDate(mergedRequestData.date || mergedRequestData.creationDate)}
                                                     </Typography>
+                                                    <Typography variant="caption" sx={{
+                                                        color: '#667eea',
+                                                        fontWeight: 600,
+                                                        display: 'block',
+                                                        mt: 0.5
+                                                    }}>
+                                                        {(() => {
+                                                            const days = calculateDaysFromRequest(mergedRequestData.date || mergedRequestData.creationDate);
+                                                            if (days === 0) {
+                                                                return 'Today';
+                                                            } else if (days === 1) {
+                                                                return '1 day ago';
+                                                            } else if (days > 1) {
+                                                                return `${days} days ago`;
+                                                            } else {
+                                                                return `${Math.abs(days)} days from now`;
+                                                            }
+                                                        })()}
+                                                    </Typography>
                                                 </Box>
                                             </Grid>
 
@@ -587,6 +593,7 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                             <Grid sx={{flex: 1}}>
                                                 <Box sx={{
                                                     p: 2,
+                                                    mt: 2,
                                                     background: 'rgba(248, 249, 250, 0.8)',
                                                     borderRadius: 2,
                                                     border: '1px solid rgba(233, 236, 239, 0.5)',
@@ -605,7 +612,7 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                         transition: 'all 0.3s ease',
                                                         width: '100%'
                                                     }}>
-                                                        Clothing Items:
+                                                        Design Items:
                                                     </Typography>
 
                                                     {/* Uniform Type Buttons */}
@@ -754,8 +761,8 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                         size="small"
                                                         fullWidth
                                                         placeholder="Enter price in VND (e.g., 1,000,000)"
-                                                        inputProps={{
-                                                            min: 0
+                                                        slotProps={{
+                                                            htmlInput: {min: 0}
                                                         }}
                                                         sx={{
                                                             '& .MuiOutlinedInput-root': {
@@ -797,8 +804,8 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                         size="small"
                                                         fullWidth
                                                         placeholder="Enter delivery time in days"
-                                                        inputProps={{
-                                                            min: 1
+                                                        slotProps={{
+                                                            htmlInput: {min: 1}
                                                         }}
                                                         sx={{
                                                             '& .MuiOutlinedInput-root': {
@@ -847,9 +854,8 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                         size="small"
                                                         fullWidth
                                                         placeholder="Enter number of revisions (max: 9999)"
-                                                        inputProps={{
-                                                            min: 0,
-                                                            max: 9999
+                                                        slotProps={{
+                                                            htmlInput: {min: 0, max: 9999}
                                                         }}
                                                         sx={{
                                                             '& .MuiOutlinedInput-root': {
@@ -895,8 +901,8 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                         size="small"
                                                         fullWidth
                                                         placeholder="Enter extra revision price (e.g., 500,000)"
-                                                        inputProps={{
-                                                            min: 0
+                                                        slotProps={{
+                                                            htmlInput: {min: 0}
                                                         }}
                                                         sx={{
                                                             '& .MuiOutlinedInput-root': {
@@ -937,8 +943,8 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                         })}
                                                         size="small"
                                                         fullWidth
-                                                        inputProps={{
-                                                            min: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                                                        slotProps={{
+                                                            htmlInput: {min: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
                                                         }}
                                                         sx={{
                                                             '& .MuiOutlinedInput-root': {
@@ -1286,13 +1292,15 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                 onClose={() => setRegularDialogOpen(false)}
                 maxWidth="lg"
                 fullWidth
-                PaperProps={{
-                    sx: {
-                        borderRadius: 4,
-                        background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-                        border: '1px solid rgba(102, 126, 234, 0.1)',
-                        boxShadow: '0 32px 64px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(102, 126, 234, 0.05)',
-                        overflow: 'hidden'
+                slotProps={{
+                    paper: {
+                        sx: {
+                            borderRadius: 4,
+                            background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                            border: '1px solid rgba(102, 126, 234, 0.1)',
+                            boxShadow: '0 32px 64px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(102, 126, 234, 0.05)',
+                            overflow: 'hidden'
+                        }
                     }
                 }}
             >
@@ -1577,13 +1585,15 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                 onClose={() => setPhysicalDialogOpen(false)}
                 maxWidth="lg"
                 fullWidth
-                PaperProps={{
-                    sx: {
-                        borderRadius: 4,
-                        background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-                        border: '1px solid rgba(5, 150, 105, 0.1)',
-                        boxShadow: '0 32px 64px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(5, 150, 105, 0.05)',
-                        overflow: 'hidden'
+                slotProps={{
+                    paper: {
+                        sx: {
+                            borderRadius: 4,
+                            background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                            border: '1px solid rgba(5, 150, 105, 0.1)',
+                            boxShadow: '0 32px 64px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(5, 150, 105, 0.05)',
+                            overflow: 'hidden'
+                        }
                     }
                 }}
             >

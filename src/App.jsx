@@ -24,6 +24,9 @@ import ProtectedRoute from "./configs/ProtectedRoute.jsx";
 import DesignerChat from "./components/designer/DesignerChat.jsx";
 import AppliedRequestList from "./components/designer/AppliedRequestList.jsx";
 import AppliedRequestDetail from "./components/designer/AppliedRequestDetail.jsx";
+import SchoolProfile from "./components/school/profile/SchoolProfile.jsx";
+import DesignerProfile from "./components/designer/profile/DesignerProfile.jsx";
+import SchoolOrderList from "./components/school/order/SchoolOrderList.jsx";
 
 const router = createBrowserRouter([
     {
@@ -97,6 +100,14 @@ const router = createBrowserRouter([
                     {
                         path: 'payment/result',
                         element: <PaymentResult />  
+                    },
+                    {
+                        path: 'profile',
+                        element: <SchoolProfile/>
+                    },
+                    {
+                        path: 'order',
+                        element: <SchoolOrderList/>
                     }
                 ]
             }
@@ -135,6 +146,10 @@ const router = createBrowserRouter([
             {
                 path: 'applied/detail',
                 element: <AppliedRequestDetail/>
+            },
+            {
+                path: 'profile',
+                element: <DesignerProfile/>
             }
         ]
     }

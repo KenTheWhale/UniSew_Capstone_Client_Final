@@ -52,7 +52,7 @@ function Navbar({school, enqueueSnackbar}) {
                 {
                     title: "Order History",
                     icon: <History/>,
-                    path: "/school/order/history"
+                    path: "/school/order"
                 },
                 {
                     title: "Quotation Order",
@@ -68,7 +68,7 @@ function Navbar({school, enqueueSnackbar}) {
                 {
                     title: "Profile Setting",
                     icon: <Settings/>,
-                    path: "/school/profile/settings"
+                    path: "/school/profile"
                 }
             ]
         }

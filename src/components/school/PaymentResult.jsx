@@ -29,7 +29,6 @@ export default function PaymentResult() {
     const urlParams = new URLSearchParams(queryString);
 
     const vnpResponseCode = urlParams.get('vnp_ResponseCode');
-    const vnpTransactionStatus = urlParams.get('vnp_TransactionStatus');
     const vnpAmount = urlParams.get('vnp_Amount');
     const vnpOrderInfo = urlParams.get('vnp_OrderInfo');
     const vnpTxnRef = urlParams.get('vnp_TxnRef');
@@ -455,10 +454,10 @@ export default function PaymentResult() {
 
                                 <Divider style={{ margin: '16px 0' }} />
 
-                                {/* Quotation Details */}
+                                {/* Payment Details */}
                                 <Box>
                                     <Typography.Title level={5} style={{ margin: '0 0 16px 0', color: '#475569' }}>
-                                        Quotation Details
+                                        Payment Details
                                     </Typography.Title>
                                     
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -474,7 +473,7 @@ export default function PaymentResult() {
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                                 <DollarOutlined style={{ color: '#fa8c16', fontSize: '16px' }} />
                                                 <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
-                                                    <strong>Quotation Price:</strong>
+                                                    <strong>Payment Amount:</strong>
                                                 </Typography.Text>
                                             </Box>
                                             <Typography.Title level={4} style={{ margin: 0, color: '#fa8c16', fontWeight: 700 }}>
