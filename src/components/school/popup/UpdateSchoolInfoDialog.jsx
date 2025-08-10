@@ -8,40 +8,40 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
-    TextField,
-    Typography,
-    Grid,
     FormControl,
+    Grid,
     InputLabel,
+    MenuItem,
     Select,
-    MenuItem
+    TextField,
+    Typography
 } from '@mui/material';
 import {Business, LocationOn, Phone, Receipt} from '@mui/icons-material';
 import {vietnamProvinces} from '../../../configs/FixedVariables.jsx';
 
-export default function UpdateSchoolInfoDialog({ open, onClose, onUpdate, initialData }) {
+export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initialData}) {
     // Parse address from initialData if available
     const parseAddress = (address) => {
-        if (!address || address === 'N/A') return { province: '', district: '', street: '' };
-        
+        if (!address || address === 'N/A') return {province: '', district: '', street: ''};
+
         // Try to parse address format: "street, district, province"
         const parts = address.split(',').map(part => part.trim());
         if (parts.length >= 3) {
             const street = parts[0];
             const district = parts[1];
             const province = parts[2];
-            
+
             // Find province by name
-            const foundProvince = vietnamProvinces.find(p => 
+            const foundProvince = vietnamProvinces.find(p =>
                 p.name.toLowerCase() === province.toLowerCase()
             );
-            
+
             if (foundProvince) {
                 // Find district by name
-                const foundDistrict = foundProvince.districts.find(d => 
+                const foundDistrict = foundProvince.districts.find(d =>
                     d.name.toLowerCase() === district.toLowerCase()
                 );
-                
+
                 if (foundDistrict) {
                     return {
                         province: foundProvince.id,
@@ -51,12 +51,12 @@ export default function UpdateSchoolInfoDialog({ open, onClose, onUpdate, initia
                 }
             }
         }
-        
-        return { province: '', district: '', street: '' };
+
+        return {province: '', district: '', street: ''};
     };
 
     const parsedAddress = parseAddress(initialData?.address);
-    
+
     const [formData, setFormData] = useState({
         business: initialData?.business || '',
         province: parsedAddress.province,
@@ -114,22 +114,22 @@ export default function UpdateSchoolInfoDialog({ open, onClose, onUpdate, initia
     };
 
     const handleInputChange = (field, value) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
-        
+        setFormData(prev => ({...prev, [field]: value}));
+
         // Reset district when province changes
         if (field === 'province') {
-            setFormData(prev => ({ ...prev, district: '', street: '' }));
-            setErrors(prev => ({ ...prev, district: '', street: '' }));
+            setFormData(prev => ({...prev, district: "", street: ""}));
+            setErrors(prev => ({...prev, district: '', street: ''}));
         }
-        
+
         // Reset street when district changes
         if (field === 'district') {
-            setFormData(prev => ({ ...prev, street: '' }));
-            setErrors(prev => ({ ...prev, street: '' }));
+            setFormData(prev => ({...prev, street: ''}));
+            setErrors(prev => ({...prev, street: ''}));
         }
-        
+
         const error = validateField(field, value);
-        setErrors(prev => ({ ...prev, [field]: error }));
+        setErrors(prev => ({...prev, [field]: error}));
     };
 
     const handleSubmit = async () => {
@@ -147,7 +147,7 @@ export default function UpdateSchoolInfoDialog({ open, onClose, onUpdate, initia
 
         const selectedProvince = vietnamProvinces.find(p => p.id === formData.province);
         const selectedDistrict = selectedProvince?.districts.find(d => d.id === formData.district);
-        
+
         const fullAddress = `${formData.street}, ${selectedDistrict?.name}, ${selectedProvince?.name}`;
 
         const updateData = {
@@ -175,12 +175,10 @@ export default function UpdateSchoolInfoDialog({ open, onClose, onUpdate, initia
             return value && value.trim() !== '' && value !== 'N/A';
         });
 
-        const hasNoErrors = Object.keys(errors).length === 0 || 
+        const hasNoErrors = Object.keys(errors).length === 0 ||
             Object.keys(errors).every(field => !errors[field]);
-        
-        const isValid = allFieldsHaveValue && hasNoErrors;
-        
-        return isValid;
+
+        return allFieldsHaveValue && hasNoErrors;
     };
 
     return (
@@ -189,32 +187,34 @@ export default function UpdateSchoolInfoDialog({ open, onClose, onUpdate, initia
             onClose={onClose}
             maxWidth="md"
             fullWidth
-            PaperProps={{
-                sx: {
-                    borderRadius: 2,
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+            slotProps={{
+                paper: {
+                    sx: {
+                        borderRadius: 2,
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+                    }
                 }
             }}
         >
             <DialogTitle sx={{
                 pb: 1,
                 borderBottom: '1px solid #e0e0e0',
-                bgcolor: '#f8f9fa'
+                backgroundColor: '#f8f9fa'
             }}>
-                <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b' }}>
+                <Typography variant="h6" sx={{fontWeight: 600, color: '#1e293b'}}>
                     Update school information
                 </Typography>
-                <Typography variant="body2" sx={{ color: '#64748b', mt: 1 }}>
+                <Typography variant="body2" sx={{color: '#64748b', mt: 1}}>
                     Please update all school information to continue using the system
                 </Typography>
             </DialogTitle>
 
-            <DialogContent sx={{ pt: 3 }}>
-                <Alert severity="info" sx={{ mb: 3 }}>
+            <DialogContent sx={{pt: 3}}>
+                <Alert severity="info" sx={{mb: 3}}>
                     To ensure accuracy and security, please update all school information.
                 </Alert>
 
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
                     <TextField
                         fullWidth
                         label="School name"
@@ -222,17 +222,19 @@ export default function UpdateSchoolInfoDialog({ open, onClose, onUpdate, initia
                         onChange={(e) => handleInputChange('business', e.target.value)}
                         error={!!errors.business}
                         helperText={errors.business}
-                        InputProps={{
-                            startAdornment: <Business sx={{ mr: 1, color: 'text.secondary' }} />
+                        slotProps={{
+                            input: {
+                                startAdornment: <Business sx={{mr: 1, color: 'text.secondary'}}/>
+                            }
                         }}
                         placeholder="Enter school name"
                     />
 
                     {/* Address Section */}
-                    <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1e293b', mt: 1 }}>
+                    <Typography variant="subtitle2" sx={{fontWeight: 600, color: '#1e293b', mt: 1}}>
                         Address Information
                     </Typography>
-                    
+
                     <Grid container spacing={2}>
                         <Grid item xs={12} md={6}>
                             <FormControl fullWidth error={!!errors.province}>
@@ -241,7 +243,7 @@ export default function UpdateSchoolInfoDialog({ open, onClose, onUpdate, initia
                                     value={formData.province}
                                     onChange={(e) => handleInputChange('province', e.target.value)}
                                     label="Province"
-                                >
+                                    variant='outlined'>
                                     {vietnamProvinces.map((province) => (
                                         <MenuItem key={province.id} value={province.id}>
                                             {province.name}
@@ -249,13 +251,13 @@ export default function UpdateSchoolInfoDialog({ open, onClose, onUpdate, initia
                                     ))}
                                 </Select>
                                 {errors.province && (
-                                    <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>
+                                    <Typography variant="caption" color="error" sx={{mt: 0.5}}>
                                         {errors.province}
                                     </Typography>
                                 )}
                             </FormControl>
                         </Grid>
-                        
+
                         <Grid item xs={12} md={6}>
                             <FormControl fullWidth error={!!errors.district} disabled={!formData.province}>
                                 <InputLabel>District</InputLabel>
@@ -263,25 +265,25 @@ export default function UpdateSchoolInfoDialog({ open, onClose, onUpdate, initia
                                     value={formData.district}
                                     onChange={(e) => handleInputChange('district', e.target.value)}
                                     label="District"
-                                >
-                                    {formData.province && 
+                                    variant='outlined'>
+                                    {formData.province &&
                                         vietnamProvinces
                                             .find(p => p.id === formData.province)
                                             ?.districts.map((district) => (
-                                                <MenuItem key={district.id} value={district.id}>
-                                                    {district.name}
-                                                </MenuItem>
-                                            ))
+                                            <MenuItem key={district.id} value={district.id}>
+                                                {district.name}
+                                            </MenuItem>
+                                        ))
                                     }
                                 </Select>
                                 {errors.district && (
-                                    <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>
+                                    <Typography variant="caption" color="error" sx={{mt: 0.5}}>
                                         {errors.district}
                                     </Typography>
                                 )}
                             </FormControl>
                         </Grid>
-                        
+
                         <Grid item xs={12}>
                             <TextField
                                 fullWidth
@@ -290,8 +292,10 @@ export default function UpdateSchoolInfoDialog({ open, onClose, onUpdate, initia
                                 onChange={(e) => handleInputChange('street', e.target.value)}
                                 error={!!errors.street}
                                 helperText={errors.street || 'Enter detailed street address'}
-                                InputProps={{
-                                    startAdornment: <LocationOn sx={{ mr: 1, color: 'text.secondary' }} />
+                                slotProps={{
+                                    input: {
+                                        startAdornment: <LocationOn sx={{mr: 1, color: 'text.secondary'}}/>
+                                    }
                                 }}
                                 placeholder="Enter street address (e.g., 123 Nguyen Hue Street)"
                                 disabled={!formData.district}
@@ -306,8 +310,10 @@ export default function UpdateSchoolInfoDialog({ open, onClose, onUpdate, initia
                         onChange={(e) => handleInputChange('taxCode', e.target.value)}
                         error={!!errors.taxCode}
                         helperText={errors.taxCode}
-                        InputProps={{
-                            startAdornment: <Receipt sx={{ mr: 1, color: 'text.secondary' }} />
+                        slotProps={{
+                            input: {
+                                startAdornment: <Receipt sx={{mr: 1, color: 'text.secondary'}}/>
+                            }
                         }}
                         placeholder="Enter tax code (10-13 digits)"
                     />
@@ -319,21 +325,23 @@ export default function UpdateSchoolInfoDialog({ open, onClose, onUpdate, initia
                         onChange={(e) => handleInputChange('phone', e.target.value)}
                         error={!!errors.phone}
                         helperText={errors.phone}
-                        InputProps={{
-                            startAdornment: <Phone sx={{ mr: 1, color: 'text.secondary' }} />
+                        slotProps={{
+                            input: {
+                                startAdornment: <Phone sx={{mr: 1, color: 'text.secondary'}}/>
+                            }
                         }}
                         placeholder="Enter phone number (10 digits)"
                     />
                 </Box>
             </DialogContent>
 
-            <DialogActions sx={{ p: 3, pt: 1 }}>
+            <DialogActions sx={{p: 3, pt: 1}}>
                 <Button
                     onClick={onClose}
                     disabled={loading}
                     sx={{
                         color: '#64748b',
-                        '&:hover': { bgcolor: '#f1f5f9' }
+                        '&:hover': {backgroundColor: '#f1f5f9'}
                     }}
                 >
                     Cancel
@@ -343,11 +351,11 @@ export default function UpdateSchoolInfoDialog({ open, onClose, onUpdate, initia
                     disabled={!isFormValid() || loading}
                     variant="contained"
                     sx={{
-                        bgcolor: '#1976d2',
-                        '&:hover': { bgcolor: '#1565c0' },
-                        '&:disabled': { bgcolor: '#e0e0e0' }
+                        backgroundColor: '#1976d2',
+                        '&:hover': {backgroundColor: '#1565c0'},
+                        '&:disabled': {backgroundColor: '#e0e0e0'}
                     }}
-                    startIcon={loading ? <CircularProgress size={16} /> : null}
+                    startIcon={loading ? <CircularProgress size={16}/> : null}
                 >
                     {loading ? 'Updating...' : 'Update information'}
                 </Button>

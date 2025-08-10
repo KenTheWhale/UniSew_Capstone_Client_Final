@@ -167,7 +167,7 @@ export default function Login() {
                         Terms of Service
                     </Link>
                     <span> and </span>
-                    <Link href="/policy/privacy" color="primary" sx={{ml: 0.5, textDecoration: 'none'}}>
+                    <Link href={'/policy/privacy'} color="primary" sx={{ml: 0.5, textDecoration: 'none'}}>
                         Privacy Policy
                     </Link>.
                 </Typography>

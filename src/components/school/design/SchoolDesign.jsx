@@ -71,14 +71,14 @@ export default function SchoolDesign() {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedRequest, setSelectedRequest] = useState(null);
     
-    const filteredDesignRequests = designRequests.filter(request => request.status !== 'created' && request.status !== 'unpaid');
+    const filteredDesignRequests = designRequests.filter(request => request.status !== 'pending');
 
     // Calculate statistics
     const stats = {
         total: filteredDesignRequests.length,
         completed: filteredDesignRequests.filter(req => req.status === 'completed').length,
-        paid: filteredDesignRequests.filter(req => req.status === 'paid').length,
-        rejected: filteredDesignRequests.filter(req => req.status === 'rejected').length
+        processing: filteredDesignRequests.filter(req => req.status === 'processing').length,
+        canceled: filteredDesignRequests.filter(req => req.status === 'canceled').length
     };
 
     const handleViewDetail = (id) => {
@@ -373,10 +373,10 @@ export default function SchoolDesign() {
                                     <PendingIcon sx={{ color: "#f57c00", fontSize: 30 }} />
                                 </Box>
                                 <Typography variant="h4" sx={{ fontWeight: 700, color: "#f57c00", mb: 1 }}>
-                                    {stats.paid}
+                                    {stats.processing}
                                 </Typography>
                                 <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
-                                    Paid
+                                    Processing
                                 </Typography>
                             </CardContent>
                         </Card>
@@ -415,10 +415,10 @@ export default function SchoolDesign() {
                                     </Typography>
                                 </Box>
                                 <Typography variant="h4" sx={{ fontWeight: 700, color: "#d32f2f", mb: 1 }}>
-                                    {stats.rejected}
+                                    {stats.canceled}
                                 </Typography>
                                 <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
-                                    Rejected
+                                    Cancelled
                                 </Typography>
                             </CardContent>
                         </Card>

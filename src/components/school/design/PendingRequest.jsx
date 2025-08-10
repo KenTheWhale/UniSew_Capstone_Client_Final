@@ -1,23 +1,8 @@
 import React, {useEffect, useState} from 'react';
-import {
-    Box,
-    Typography,
-    Button,
-    IconButton,
-    Tooltip,
-    Container,
-    Paper,
-    Grid,
-    Card,
-    CardContent,
-    Chip
-} from "@mui/material";
+import {Box, Chip, Container, Grid, IconButton, Paper, Tooltip, Typography} from "@mui/material";
 import InfoIcon from '@mui/icons-material/Info';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import AssignmentIcon from '@mui/icons-material/Assignment';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import {Table, Space} from 'antd';
+import {Space, Table} from 'antd';
 import 'antd/dist/reset.css';
 import RequestDesignerPopup, {statusTag} from '../popup/RequestDesignerPopup';
 import DesignPaymentPopup from '../popup/DesignPaymentPopup';
@@ -67,7 +52,7 @@ export default function PendingRequest() {
     }, []);
 
     const pendingRequests = pendingRequestsData.filter(request =>
-        request.status === 'created'
+        request.status === 'pending'
     );
 
     // Calculate statistics
@@ -90,8 +75,8 @@ export default function PendingRequest() {
         const request = pendingRequestsData.find(req => req.id === id);
         setSelectedRequest(request);
 
-        // Only open RequestDesignerPopup for 'created' status
-        if (request.status === 'created') {
+        // Only open RequestDesignerPopup for 'pending' status
+        if (request.status === 'pending') {
             setPaymentRequestDetails(null);
             setIsPaymentModalVisible(false);
             setIsModalVisible(true);

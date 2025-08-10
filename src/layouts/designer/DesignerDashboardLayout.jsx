@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Outlet, useLocation} from 'react-router-dom';
 import {
     AppBar,
@@ -15,17 +15,7 @@ import {
     Toolbar,
     Typography
 } from '@mui/material';
-import {
-    AccountCircle,
-    DesignServices,
-    Logout,
-    People,
-    TableChart,
-    Timeline,
-    Visibility,
-    Inventory,
-    Assignment
-} from '@mui/icons-material';
+import {AccountCircle, Assignment, DesignServices, Logout} from '@mui/icons-material';
 import {Tag} from 'antd';
 import {signout} from "../../services/AccountService.jsx";
 import {enqueueSnackbar} from "notistack";
@@ -205,30 +195,31 @@ export default function DesignerDashboardLayout() {
                         </Typography>
                         <List sx={{mb: 3}}>
                             <ListItem disablePadding>
-                                <ListItemButton sx={{
-                                    borderRadius: 2,
-                                    mx: 1,
-                                    my: 0.5,
-                                    background: activeMenu === 'requests'
-                                        ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                                        : 'transparent',
-                                    color: activeMenu === 'requests' ? 'white' : '#495057',
-                                    boxShadow: activeMenu === 'requests'
-                                        ? '0 4px 12px rgba(102, 126, 234, 0.3)'
-                                        : 'none',
-                                    '&:hover': {
+                                <ListItemButton
+                                    sx={{
+                                        borderRadius: 2,
+                                        mx: 1,
+                                        my: 0.5,
                                         background: activeMenu === 'requests'
-                                            ? 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)'
-                                            : 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
-                                        color: activeMenu === 'requests' ? 'white' : '#1976d2',
-                                        transform: 'translateY(-1px)',
+                                            ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                                            : 'transparent',
+                                        color: activeMenu === 'requests' ? 'white' : '#495057',
                                         boxShadow: activeMenu === 'requests'
-                                            ? '0 6px 16px rgba(102, 126, 234, 0.4)'
-                                            : '0 4px 12px rgba(25, 118, 210, 0.2)'
-                                    },
-                                    transition: 'all 0.3s ease'
-                                }}
-                                                onClick={() => window.location.href = '/designer/requests'}
+                                            ? '0 4px 12px rgba(102, 126, 234, 0.3)'
+                                            : 'none',
+                                        '&:hover': {
+                                            background: activeMenu === 'requests'
+                                                ? 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)'
+                                                : 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
+                                            color: activeMenu === 'requests' ? 'white' : '#1976d2',
+                                            transform: 'translateY(-1px)',
+                                            boxShadow: activeMenu === 'requests'
+                                                ? '0 6px 16px rgba(102, 126, 234, 0.4)'
+                                                : '0 4px 12px rgba(25, 118, 210, 0.2)'
+                                        },
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                    onClick={() => window.location.href = '/designer/requests'}
                                 >
                                     <ListItemIcon sx={{color: activeMenu === 'requests' ? 'white' : 'inherit'}}>
                                         <DesignServices/>
@@ -279,7 +270,7 @@ export default function DesignerDashboardLayout() {
 
                         <Divider sx={{my: 3, borderColor: '#e9ecef'}}/>
 
-                        {/* Analytics Section */}
+                        {/* Account Management Section */}
                         <Typography
                             variant="overline"
                             sx={{
@@ -291,7 +282,7 @@ export default function DesignerDashboardLayout() {
                                 letterSpacing: '1px'
                             }}
                         >
-                            ANALYTICS
+                            ACCOUNT MANAGEMENT
                         </Typography>
                         <List sx={{mb: 3}}>
                             <ListItem disablePadding>
@@ -306,87 +297,13 @@ export default function DesignerDashboardLayout() {
                                         transform: 'translateY(-1px)'
                                     },
                                     transition: 'all 0.3s ease'
-                                }}>
+                                }}
+                                                onClick={() => window.location.href = '/designer/profile'}
+                                >
                                     <ListItemIcon sx={{color: 'inherit'}}>
-                                        <Visibility/>
+                                        <AccountCircle/>
                                     </ListItemIcon>
-                                    <ListItemText primary="Statistics"/>
-                                </ListItemButton>
-                            </ListItem>
-                            <ListItem disablePadding>
-                                <ListItemButton sx={{
-                                    borderRadius: 2,
-                                    mx: 1,
-                                    my: 0.5,
-                                    color: '#495057',
-                                    '&:hover': {
-                                        background: 'linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%)',
-                                        color: '#2e7d32',
-                                        transform: 'translateY(-1px)'
-                                    },
-                                    transition: 'all 0.3s ease'
-                                }}>
-                                    <ListItemIcon sx={{color: 'inherit'}}>
-                                        <TableChart/>
-                                    </ListItemIcon>
-                                    <ListItemText primary="Data"/>
-                                </ListItemButton>
-                            </ListItem>
-                            <ListItem disablePadding>
-                                <ListItemButton sx={{
-                                    borderRadius: 2,
-                                    mx: 1,
-                                    my: 0.5,
-                                    color: '#495057',
-                                    '&:hover': {
-                                        background: 'linear-gradient(135deg, #fff3e0 0%, #ffcc02 100%)',
-                                        color: '#f57c00',
-                                        transform: 'translateY(-1px)'
-                                    },
-                                    transition: 'all 0.3s ease'
-                                }}>
-                                    <ListItemIcon sx={{color: 'inherit'}}>
-                                        <Timeline/>
-                                    </ListItemIcon>
-                                    <ListItemText primary="Chart"/>
-                                </ListItemButton>
-                            </ListItem>
-                        </List>
-
-                        <Divider sx={{my: 3, borderColor: '#e9ecef'}}/>
-
-                        {/* Management Section */}
-                        <Typography
-                            variant="overline"
-                            sx={{
-                                px: 2,
-                                pb: 1,
-                                color: '#6c757d',
-                                fontWeight: 700,
-                                fontSize: '0.75rem',
-                                letterSpacing: '1px'
-                            }}
-                        >
-                            MANAGEMENT
-                        </Typography>
-                        <List sx={{mb: 3}}>
-                            <ListItem disablePadding>
-                                <ListItemButton sx={{
-                                    borderRadius: 2,
-                                    mx: 1,
-                                    my: 0.5,
-                                    color: '#495057',
-                                    '&:hover': {
-                                        background: 'linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%)',
-                                        color: '#c2185b',
-                                        transform: 'translateY(-1px)'
-                                    },
-                                    transition: 'all 0.3s ease'
-                                }}>
-                                    <ListItemIcon sx={{color: 'inherit'}}>
-                                        <People/>
-                                    </ListItemIcon>
-                                    <ListItemText primary="Users"/>
+                                    <ListItemText primary="Profile Setting"/>
                                 </ListItemButton>
                             </ListItem>
                         </List>

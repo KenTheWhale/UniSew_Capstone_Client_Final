@@ -51,7 +51,7 @@ import EmojiPicker from 'emoji-picker-react';
 import {useSnackbar} from 'notistack';
 import {parseID} from '../../../utils/ParseIDUtil.jsx';
 import {addDoc, collection, onSnapshot, query, serverTimestamp, where} from 'firebase/firestore';
-import {auth, db} from "../../../configs/firebase-config.jsx";
+import {auth, db} from "../../../configs/FirebaseConfig.jsx";
 import {
     createRevisionRequest,
     getDesignDeliveries,
@@ -67,40 +67,24 @@ const {TextArea} = Input;
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function statusTag(status) {
-    let color = '';
+    let color;
     let icon = null;
     switch (status) {
-        case 'created':
+        case 'pending':
             color = 'blue';
-            icon = <FileTextOutlinedIcon/>;
+            icon = <ClockCircleOutlined/>;
             break;
-        case 'paid':
+        case 'processing':
             color = 'green';
-            icon = <CheckCircleOutlinedIcon/>;
-            break;
-        case 'unpaid':
-            color = 'orange';
-            icon = <CloseCircleOutlined/>;
-            break;
-        case 'progressing':
-            color = 'purple';
             icon = <SyncOutlined/>;
             break;
         case 'completed':
             color = 'cyan';
             icon = <CheckCircleOutlinedIcon/>;
             break;
-        case 'rejected':
+        case 'canceled':
             color = 'red';
             icon = <CloseCircleOutlined/>;
-            break;
-        case 'pending':
-            color = 'processing';
-            icon = <ClockCircleOutlined/>;
-            break;
-        case 'selected':
-            color = 'green';
-            icon = <CheckCircleOutlinedIcon/>;
             break;
         default:
             color = 'default';
@@ -161,11 +145,13 @@ function DesignDetailDialog({visible, onCancel, request}) {
             onClose={onCancel}
             maxWidth="lg"
             fullWidth
-            PaperProps={{
-                sx: {
-                    borderRadius: 3,
-                    boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
-                    maxHeight: '85vh'
+            slotProps={{
+                paper: {
+                    sx: {
+                        borderRadius: 3,
+                        boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                        maxHeight: '85vh'
+                    }
                 }
             }}
         >
@@ -631,12 +617,14 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
             onClose={onCancel}
             maxWidth="xl"
             fullWidth
-            PaperProps={{
-                sx: {
-                    borderRadius: 4,
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
-                    maxHeight: '90vh',
-                    overflow: 'hidden'
+            slotProps={{
+                paper: {
+                    sx: {
+                        borderRadius: 4,
+                        boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+                        maxHeight: '90vh',
+                        overflow: 'hidden'
+                    }
                 }
             }}
         >

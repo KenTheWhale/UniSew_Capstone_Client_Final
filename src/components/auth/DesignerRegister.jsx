@@ -202,8 +202,10 @@ export default function DesignerRegister() {
                                 onChange={(e) => handleInputChange('email', e.target.value)}
                                 error={!!errors.email}
                                 helperText={errors.email}
-                                InputProps={{
-                                    startAdornment: <EmailIcon sx={{mr: 1, color: 'text.secondary'}}/>
+                                slotProps={{
+                                    input: {
+                                        startAdornment: <EmailIcon sx={{mr: 1, color: 'text.secondary'}}/>
+                                    }
                                 }}
                             />
                         </Grid>
@@ -215,8 +217,10 @@ export default function DesignerRegister() {
                                 onChange={(e) => handleInputChange('phone', e.target.value)}
                                 error={!!errors.phone}
                                 helperText={errors.phone || 'Example: 09123456788'}
-                                InputProps={{
-                                    startAdornment: <PhoneIcon sx={{mr: 1, color: 'text.secondary'}}/>
+                                slotProps={{
+                                    input: {
+                                        startAdornment: <PhoneIcon sx={{mr: 1, color: 'text.secondary'}}/>
+                                    }
                                 }}
                             />
                         </Grid>
@@ -232,7 +236,7 @@ export default function DesignerRegister() {
                                     value={formData.province}
                                     onChange={(e) => handleInputChange('province', e.target.value)}
                                     label="Province/City"
-                                >
+                                    variant='outlined'>
                                     {vietnamProvinces.map((province) => (
                                         <MenuItem key={province.id} value={province.id}>
                                             {province.name}
@@ -253,7 +257,7 @@ export default function DesignerRegister() {
                                     value={formData.district}
                                     onChange={(e) => handleInputChange('district', e.target.value)}
                                     label="District/County"
-                                >
+                                    variant='outlined'>
                                     {availableDistricts.map((district) => (
                                         <MenuItem key={district.id} value={district.id}>
                                             {district.name}
@@ -275,8 +279,10 @@ export default function DesignerRegister() {
                                 onChange={(e) => handleInputChange('street', e.target.value)}
                                 error={!!errors.street}
                                 helperText={errors.street || 'Example: 123 Nguyen Hue'}
-                                InputProps={{
-                                    startAdornment: <LocationIcon sx={{mr: 1, color: 'text.secondary'}}/>
+                                slotProps={{
+                                    input: {
+                                        startAdornment: <LocationIcon sx={{mr: 1, color: 'text.secondary'}}/>
+                                    }
                                 }}
                                 disabled={!formData.district}
                             />
@@ -294,8 +300,10 @@ export default function DesignerRegister() {
                                 onChange={(e) => handleInputChange('taxCode', e.target.value)}
                                 error={!!errors.taxCode}
                                 helperText={errors.taxCode || 'Enter business tax code (10-13 digits)'}
-                                InputProps={{
-                                    startAdornment: <BusinessIcon sx={{mr: 1, color: 'text.secondary'}}/>
+                                slotProps={{
+                                    input: {
+                                        startAdornment: <BusinessIcon sx={{mr: 1, color: 'text.secondary'}}/>
+                                    }
                                 }}
                             />
                         </Grid>

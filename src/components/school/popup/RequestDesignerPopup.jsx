@@ -1,4 +1,4 @@
-import {Button, Modal, Spin, Tag, Typography, InputNumber} from 'antd';
+import {Button, InputNumber, Modal, Spin, Tag, Typography} from 'antd';
 import {
     CalendarOutlined as CalendarIcon,
     CheckCircleOutlined,
@@ -19,50 +19,28 @@ import {parseID} from "../../../utils/ParseIDUtil.jsx";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function statusTag(status) {
-    let color = '';
+    let color;
     let icon = null;
     let text = '';
     switch (status) {
-        case 'Created':
-        case 'created':
+        case 'pending':
             color = 'blue';
             icon = <FileTextOutlined/>;
             text = 'Finding designer';
             break;
-        case 'Paid':
-        case 'paid':
-            color = 'green';
-            icon = <CheckCircleOutlined/>;
-            text = status;
-            break;
-        case 'Unpaid':
-        case 'unpaid':
-            color = 'orange';
-            icon = <CloseCircleOutlined/>;
-            text = status;
-            break;
-        case 'Progressing':
-        case 'progressing':
+        case 'processing':
             color = 'purple';
             icon = <SyncOutlined/>;
             text = status;
             break;
-        case 'Completed':
         case 'completed':
             color = 'cyan';
             icon = <CheckCircleOutlined/>;
             text = status;
             break;
-        case 'Rejected':
-        case 'rejected':
+        case 'canceled':
             color = 'red';
             icon = <CloseCircleOutlined/>;
-            text = status;
-            break;
-        case 'Waiting for Designer':
-        case 'waiting for designer':
-            color = 'volcano';
-            icon = <InfoCircleOutlined/>;
             text = status;
             break;
         default:
@@ -124,7 +102,7 @@ export default function RequestDesignerPopup({visible, onCancel, request}) {
 
     const getFooterButtons = (status) => {
         switch (status) {
-            case 'created':
+            case 'pending':
                 return [
                     <Button
                         key="cancel"
@@ -157,6 +135,7 @@ export default function RequestDesignerPopup({visible, onCancel, request}) {
                         icon={<CheckCircleOutlined/>}
                         style={{
                             backgroundColor: '#1976d2',
+                            color: 'white',
                             borderColor: '#1976d2'
                         }}
                     >
@@ -201,7 +180,7 @@ export default function RequestDesignerPopup({visible, onCancel, request}) {
             }}
             footer={getFooterButtons(request.status)}
         >
-            {request.status === 'created' && (
+            {request.status === 'pending' && (
                 <Box sx={{width: '100%'}}>
                     {/* Header Section */}
                     <Box sx={{

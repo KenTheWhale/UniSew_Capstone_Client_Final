@@ -1,38 +1,38 @@
 import React, {useEffect, useState} from 'react';
-import {Avatar, Button, Form, Input, Typography, Select, Radio, Card, Space, Tag, Row, Col, Divider, Rate} from 'antd';
+import {Avatar, Button, Card, Col, Divider, Form, Input, Radio, Row, Select, Space, Tag, Typography} from 'antd';
 import {
+    BankOutlined,
     CheckCircleOutlined,
+    ClockCircleOutlined,
+    DollarOutlined,
+    EditOutlined,
+    EnvironmentOutlined,
     EyeOutlined,
     FileTextOutlined,
+    InfoCircleOutlined,
     MessageOutlined,
-    BankOutlined,
+    PhoneOutlined,
+    PictureOutlined,
     SendOutlined,
+    ShopOutlined,
     SmileOutlined,
     UploadOutlined,
-    UserOutlined,
-    InfoCircleOutlined,
-    DollarOutlined,
-    ClockCircleOutlined,
-    PictureOutlined,
-    PhoneOutlined,
-    EnvironmentOutlined,
-    ShopOutlined,
-    EditOutlined
+    UserOutlined
 } from '@ant-design/icons';
-import {Box, Chip, Container, Paper, Dialog, DialogTitle, DialogContent, DialogActions} from '@mui/material';
+import {Box, Chip, Container, Dialog, DialogActions, DialogContent, DialogTitle, Paper} from '@mui/material';
 import EmojiPicker from 'emoji-picker-react';
 import {useSnackbar} from 'notistack';
 import {parseID} from '../../utils/ParseIDUtil.jsx';
 import {addDoc, collection, onSnapshot, query, serverTimestamp, where} from 'firebase/firestore';
-import {auth, db} from "../../configs/firebase-config.jsx";
-import {PiShirtFoldedFill, PiPantsFill} from "react-icons/pi";
+import {auth, db} from "../../configs/FirebaseConfig.jsx";
+import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
 import {GiSkirt} from "react-icons/gi";
 import DisplayImage from '../ui/DisplayImage.jsx';
 import {
-    getDesignDeliveries,
     createDesignDelivery,
-    getUndoneRevisionRequests,
-    getDesignRequestDetailForDesigner
+    getDesignDeliveries,
+    getDesignRequestDetailForDesigner,
+    getUndoneRevisionRequests
 } from "../../services/DesignService.jsx";
 import {uploadCloudinary} from "../../services/UploadImageService.jsx";
 
@@ -40,7 +40,7 @@ const {TextArea} = Input;
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function statusTag(status) {
-    let color = '';
+    let color;
     let icon = null;
     switch (status) {
         case 'created':
@@ -152,18 +152,8 @@ function DesignDetailDialog({visible, onCancel, request}) {
     };
 
     const formatCurrency = (amount) => {
-        return amount.toLocaleString('vi-VN');
+        return amount.toLocaleString("vi-VN");
     };
-
-    const formatDeadline = (deadlineString) => {
-        const date = new Date(deadlineString);
-        return date.toLocaleDateString('vi-VN', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
-    };
-
     return (
         <>
             <Dialog
@@ -171,11 +161,13 @@ function DesignDetailDialog({visible, onCancel, request}) {
                 onClose={onCancel}
                 maxWidth="lg"
                 fullWidth
-                PaperProps={{
-                    sx: {
-                        borderRadius: 3,
-                        boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
-                        maxHeight: '85vh'
+                slotProps={{
+                    paper: {
+                        sx: {
+                            borderRadius: 3,
+                            boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                            maxHeight: '85vh'
+                        }
                     }
                 }}
             >
@@ -701,12 +693,14 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
             onClose={onCancel}
             maxWidth="xl"
             fullWidth
-            PaperProps={{
-                sx: {
-                    borderRadius: 4,
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
-                    maxHeight: '90vh',
-                    overflow: 'hidden'
+            slotProps={{
+                paper: {
+                    sx: {
+                        borderRadius: 4,
+                        boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+                        maxHeight: '90vh',
+                        overflow: 'hidden'
+                    }
                 }
             }}
         >
@@ -1120,19 +1114,21 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
     );
 }
 
-function DeliverySubmissionModal({visible, onCancel, onSubmit, designDeliveries, requestData}) {
+function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, designDeliveries}) {
     const [form] = Form.useForm();
     const [deliveryType, setDeliveryType] = useState('normal');
     const [uploading, setUploading] = useState(false);
     const [uploadedFiles, setUploadedFiles] = useState({});
     const [revisionRequests, setRevisionRequests] = useState([]);
     const [loadingRevisions, setLoadingRevisions] = useState(false);
+    const {enqueueSnackbar} = useSnackbar();
 
     useEffect(() => {
         if (!visible) {
             form.resetFields();
             setDeliveryType('normal');
             setUploadedFiles({});
+            setRevisionRequests([]);
         }
     }, [visible, form]);
 
@@ -1143,12 +1139,63 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, designDeliveries,
         }
     }, [visible, requestData?.id]);
 
+    // Clear revision field when delivery type changes
+    useEffect(() => {
+        if (deliveryType === 'normal') {
+            form.setFieldsValue({ revisionOf: undefined });
+            form.setFieldsValue({ itemList: [] });
+            setUploadedFiles({});
+        }
+    }, [deliveryType, form]);
+
+    // Auto-fill form data when revision is selected
+    useEffect(() => {
+        if (deliveryType === 'revision' && form.getFieldValue('revisionOf') && designDeliveries && Array.isArray(designDeliveries)) {
+            const selectedRevisionId = form.getFieldValue('revisionOf');
+            const selectedRevision = revisionRequests.find(r => r.id === selectedRevisionId);
+            
+            if (selectedRevision) {
+                // Find the delivery that matches the revision's deliveryId
+                const previousDelivery = designDeliveries.find(d => d.id === selectedRevision.deliveryId);
+                
+                if (previousDelivery && previousDelivery.deliveryItems) {
+                    // Auto-fill the form with previous delivery data
+                    const itemListData = previousDelivery.deliveryItems.map(item => ({
+                        designItemId: item.designItem?.id,
+                        logoHeight: item.baseLogoHeight || 0,
+                        logoWidth: item.baseLogoWidth || 0,
+                        frontUrl: item.frontImageUrl,
+                        backUrl: item.backImageUrl
+                    }));
+                    
+                    form.setFieldsValue({
+                        itemList: itemListData
+                    });
+                    
+                    // Update uploaded files state to show the previous images
+                    const uploadedFilesData = {};
+                    previousDelivery.deliveryItems.forEach((item, index) => {
+                        if (item.frontImageUrl) {
+                            // Extract filename from URL
+                            const frontFileName = item.frontImageUrl.split('/').pop().split('?')[0];
+                            uploadedFilesData[`front-${index}`] = frontFileName || 'Front Design';
+                        }
+                        if (item.backImageUrl) {
+                            // Extract filename from URL
+                            const backFileName = item.backImageUrl.split('/').pop().split('?')[0];
+                            uploadedFilesData[`back-${index}`] = backFileName || 'Back Design';
+                        }
+                    });
+                    setUploadedFiles(uploadedFilesData);
+                }
+            }
+        }
+    }, [deliveryType, form.getFieldValue('revisionOf'), revisionRequests, designDeliveries]);
+
     const fetchRevisionRequests = async () => {
         try {
             setLoadingRevisions(true);
-            console.log("Fetching revision requests for requestId:", requestData.id);
             const response = await getUndoneRevisionRequests({requestId: requestData.id});
-            console.log("Revision requests response:", response);
 
             // Check different possible response formats
             let revisions = [];
@@ -1160,19 +1207,23 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, designDeliveries,
                 revisions = response;
             }
 
-            console.log("Processed revision requests:", revisions);
             setRevisionRequests(revisions);
         } catch (err) {
-            console.error("Error fetching revision requests:", err);
             setRevisionRequests([]);
+            enqueueSnackbar('Failed to load revision requests. Please try again.', {
+                variant: 'error',
+                autoHideDuration: 3000,
+                anchorOrigin: {
+                    vertical: 'top',
+                    horizontal: 'right',
+                }
+            });
         } finally {
             setLoadingRevisions(false);
         }
     };
 
     // Check if there are existing deliveries to allow revision type
-    const hasExistingDeliveries = designDeliveries && designDeliveries.length > 0;
-
     const handleOk = async () => {
         try {
             const values = await form.validateFields();
@@ -1189,7 +1240,27 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, designDeliveries,
 
             onSubmit(deliveryData);
         } catch (info) {
-            console.log('Validate Failed:', info);
+            // Show error message using enqueueSnackbar
+            if (info.errorFields && info.errorFields.length > 0) {
+                const errorMessages = info.errorFields.map(field => field.errors[0]).join(', ');
+                enqueueSnackbar(`Please fix the following errors: ${errorMessages}`, {
+                    variant: 'error',
+                    autoHideDuration: 5000,
+                    anchorOrigin: {
+                        vertical: 'top',
+                        horizontal: 'right',
+                    }
+                });
+            } else {
+                enqueueSnackbar('Please check your input and try again.', {
+                    variant: 'error',
+                    autoHideDuration: 3000,
+                    anchorOrigin: {
+                        vertical: 'top',
+                        horizontal: 'right',
+                    }
+                });
+            }
         }
     };
 
@@ -1199,11 +1270,13 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, designDeliveries,
             onClose={onCancel}
             maxWidth="sm"
             fullWidth
-            PaperProps={{
-                sx: {
-                    borderRadius: 3,
-                    boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
-                    maxHeight: '85vh'
+            slotProps={{
+                paper: {
+                    sx: {
+                        borderRadius: 3,
+                        boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                        maxHeight: '85vh'
+                    }
                 }
             }}
         >
@@ -1236,7 +1309,6 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, designDeliveries,
                         <Radio.Group
                             value={deliveryType}
                             onChange={(e) => {
-                                console.log("Delivery type changed to:", e.target.value);
                                 setDeliveryType(e.target.value);
                             }}
                             disabled={revisionRequests.length === 0}
@@ -1255,35 +1327,116 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, designDeliveries,
                         )}
                     </Form.Item>
 
-                    {/* Revision Selection - Only show if revision type is selected */}
+                                        {/* Revision Selection - Only show if revision type is selected */}
                     {deliveryType === 'revision' && (
                         <>
                             <Form.Item
                                 name="revisionOf"
                                 label="Revision Request:"
-                                rules={[{required: true, message: 'Please select a revision request ID!'}]}
+                                rules={[
+                                    {
+                                        validator: (_, value) => {
+                                            if (deliveryType === 'revision' && (!value || value === '')) {
+                                                return Promise.reject(new Error('Please select a revision request ID!'));
+                                            }
+                                            return Promise.resolve();
+                                        }
+                                    }
+                                ]}
                             >
-                                <Select
-                                    placeholder={loadingRevisions ? "Loading revision requests..." : "Select a revision request ID..."}
-                                    style={{borderRadius: '8px'}}
-                                    loading={loadingRevisions}
-                                    disabled={loadingRevisions || revisionRequests.length === 0}
-                                    allowClear
-                                    dropdownStyle={{zIndex: 9999}}
-                                    onChange={(value) => console.log("Selected revision ID:", value)}
-                                >
-                                    {revisionRequests.length > 0 ? (
-                                        revisionRequests.map(revision => (
-                                            <Select.Option key={revision.id} value={revision.id}>
-                                                #{revision.id}
+                                <Box sx={{display: 'flex', flexDirection: 'column', gap: 1}}>
+                                    <Select
+                                        name="revisionOf"
+                                        placeholder={loadingRevisions ? "Loading revision requests..." : "Select a revision request ID..."}
+                                        style={{borderRadius: '8px'}}
+                                        loading={loadingRevisions}
+                                        disabled={loadingRevisions || revisionRequests.length === 0}
+                                        allowClear
+                                        styles={{
+                                            popup: {
+                                                root: {zIndex: 9999}
+                                            }
+                                        }}
+                                        onChange={(value) => {
+                                            // Set the form field value
+                                            form.setFieldsValue({ revisionOf: value });
+                                            
+                                            if (value && designDeliveries && Array.isArray(designDeliveries)) {
+                                                const selectedRevision = revisionRequests.find(r => r.id === value);
+                                                if (selectedRevision) {
+                                                    const previousDelivery = designDeliveries.find(d => d.id === selectedRevision.deliveryId);
+                                                    if (previousDelivery && previousDelivery.deliveryItems) {
+                                                        // Auto-fill the form with previous delivery data
+                                                        const itemListData = previousDelivery.deliveryItems.map(item => ({
+                                                            designItemId: item.designItem?.id,
+                                                            logoHeight: item.baseLogoHeight || 0,
+                                                            logoWidth: item.baseLogoWidth || 0,
+                                                            frontUrl: item.frontImageUrl,
+                                                            backUrl: item.backImageUrl
+                                                        }));
+                                                        
+                                                        form.setFieldsValue({
+                                                            itemList: itemListData
+                                                        });
+                                                        
+                                                        // Update uploaded files state to show the previous images
+                                                        const uploadedFilesData = {};
+                                                        previousDelivery.deliveryItems.forEach((item, index) => {
+                                                            if (item.frontImageUrl) {
+                                                                // Extract filename from URL
+                                                                const frontFileName = item.frontImageUrl.split('/').pop().split('?')[0];
+                                                                uploadedFilesData[`front-${index}`] = frontFileName || 'Front Design';
+                                                            }
+                                                            if (item.backImageUrl) {
+                                                                // Extract filename from URL
+                                                                const backFileName = item.backImageUrl.split('/').pop().split('?')[0];
+                                                                uploadedFilesData[`back-${index}`] = backFileName || 'Back Design';
+                                                            }
+                                                        });
+                                                        setUploadedFiles(uploadedFilesData);
+                                                    }
+                                                }
+                                            } else {
+                                                // Clear form when no revision is selected
+                                                form.setFieldsValue({
+                                                    itemList: []
+                                                });
+                                                setUploadedFiles({});
+                                            }
+                                        }}
+                                    >
+                                        {revisionRequests.length > 0 ? (
+                                            revisionRequests.map(revision => {
+                                                const relatedDelivery = designDeliveries && Array.isArray(designDeliveries) 
+                                                    ? designDeliveries.find(d => d.id === revision.deliveryId)
+                                                    : null;
+                                                return (
+                                                    <Select.Option key={revision.id} value={revision.id}>
+                                                        Revision #{revision.id} - {relatedDelivery?.name || `Delivery ${revision.deliveryId}`}
+                                                    </Select.Option>
+                                                );
+                                            })
+                                        ) : (
+                                            <Select.Option value="" disabled>
+                                                No revision requests available
                                             </Select.Option>
-                                        ))
-                                    ) : (
-                                        <Select.Option value="" disabled>
-                                            No revision requests available
-                                        </Select.Option>
+                                        )}
+                                    </Select>
+                                    {form.getFieldValue('revisionOf') && (
+                                        <Box sx={{
+                                            p: 1.5,
+                                            backgroundColor: '#e6f7ff',
+                                            borderRadius: 4,
+                                            border: '1px solid #91d5ff',
+                                            fontSize: '12px',
+                                            color: '#1890ff'
+                                        }}>
+                                            <Typography.Text style={{fontSize: '12px', color: '#1890ff'}}>
+                                                💡 Data from the previous delivery has been auto-filled. You can modify the values as needed.
+                                            </Typography.Text>
+                                        </Box>
                                     )}
-                                </Select>
+                                </Box>
                             </Form.Item>
                         </>
                     )}
@@ -1454,7 +1607,14 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, designDeliveries,
                                                                 [`front-${index}`]: file.name
                                                             }));
                                                         } catch (error) {
-                                                            console.error('Upload failed:', error);
+                                                            enqueueSnackbar('Failed to upload front design image. Please try again.', {
+                                                                variant: 'error',
+                                                                autoHideDuration: 3000,
+                                                                anchorOrigin: {
+                                                                    vertical: 'top',
+                                                                    horizontal: 'right',
+                                                                }
+                                                            });
                                                         } finally {
                                                             setUploading(false);
                                                         }
@@ -1545,7 +1705,14 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, designDeliveries,
                                                                 [`back-${index}`]: file.name
                                                             }));
                                                         } catch (error) {
-                                                            console.error('Upload failed:', error);
+                                                            enqueueSnackbar('Failed to upload back design image. Please try again.', {
+                                                                variant: 'error',
+                                                                autoHideDuration: 3000,
+                                                                anchorOrigin: {
+                                                                    vertical: 'top',
+                                                                    horizontal: 'right',
+                                                                }
+                                                            });
                                                         } finally {
                                                             setUploading(false);
                                                         }
@@ -1657,17 +1824,12 @@ export default function DesignerChat() {
             setLoadingDeliveries(true);
             const response = await getDesignDeliveries(designRequestId);
             if (response && response.status === 200) {
-                console.log("Design deliveries: ", response.data.body);
                 const deliveries = response.data.body || [];
                 setDesignDeliveries(deliveries);
-
-
             } else {
-                console.log("No deliveries found or error occurred");
                 setDesignDeliveries([]);
             }
         } catch (err) {
-            console.error("Error fetching design deliveries:", err);
             setDesignDeliveries([]);
         } finally {
             setLoadingDeliveries(false);
@@ -1680,14 +1842,11 @@ export default function DesignerChat() {
             setLoadingRevisionRequests(true);
             const response = await getUndoneRevisionRequests({requestId: requestId});
             if (response && response.status === 200) {
-                console.log("Revision requests: ", response.data.body);
                 setRevisionRequests(response.data.body || []);
             } else {
-                console.log("No revision requests found or error occurred");
                 setRevisionRequests([]);
             }
         } catch (err) {
-            console.error("Error fetching revision requests:", err);
             setRevisionRequests([]);
         } finally {
             setLoadingRevisionRequests(false);
@@ -1699,7 +1858,6 @@ export default function DesignerChat() {
         try {
             const response = await getDesignRequestDetailForDesigner(requestId);
             if (response && response.status === 200) {
-                console.log("Request details: ", response.data.body);
                 const request = response.data.body;
 
                 if (request) {
@@ -1717,47 +1875,17 @@ export default function DesignerChat() {
                         await fetchRevisionRequests(request.id);
                     }
                 } else {
-                    console.error("Failed to fetch request details");
                     window.location.href = '/designer/requests';
                 }
             } else {
-                console.error("Failed to fetch request details");
                 window.location.href = '/designer/requests';
             }
         } catch (error) {
-            console.error("Error fetching request details:", error);
             window.location.href = '/designer/requests';
         }
     };
 
     // Fetch updated request data from API
-    const fetchUpdatedRequestData = async () => {
-        try {
-            if (requestData?.id) {
-                const response = await getDesignRequestDetailForDesigner(requestData.id);
-                if (response && response.status === 200) {
-                    console.log("Updated request data: ", response.data.body);
-                    const currentRequest = response.data.body;
-
-                    if (currentRequest) {
-                        // Check if request status is completed - redirect to applied requests
-                        if (currentRequest.status === 'completed') {
-                            window.location.href = '/designer/applied/requests';
-                            return null;
-                        }
-
-                        setRequestData(currentRequest);
-                        return currentRequest;
-                    }
-                }
-            }
-        } catch (err) {
-            console.error("Error fetching updated request data:", err);
-        }
-        return null;
-    };
-
-
     useEffect(() => {
         const storedRequestId = localStorage.getItem('currentDesignRequestId');
         if (storedRequestId) {
@@ -1825,7 +1953,7 @@ export default function DesignerChat() {
                     }
                 }
             } catch (error) {
-                console.error('Error fetching latest request data:', error);
+                // Error fetching latest request data
             }
         }
         setIsDeliveryModalVisible(true);
@@ -1857,8 +1985,6 @@ export default function DesignerChat() {
 
     const handleDeliverySubmit = async (deliveryData) => {
         try {
-            console.log('Delivery Submission:', deliveryData);
-
             // Call createDesignDelivery API
             const response = await createDesignDelivery(deliveryData);
 
@@ -1886,14 +2012,13 @@ export default function DesignerChat() {
                             }
                         }
                     } catch (error) {
-                        console.error('Error fetching latest request data:', error);
+                        // Error fetching latest request data
                     }
                 }
             } else {
                 enqueueSnackbar('Failed to submit delivery. Please try again.', {variant: 'error'});
             }
         } catch (error) {
-            console.error('Error submitting delivery:', error);
             enqueueSnackbar('Error submitting delivery. Please try again.', {variant: 'error'});
         }
     };

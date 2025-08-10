@@ -53,23 +53,20 @@ export default function DesignerRequestList() {
         fetchDesignRequests();
     }, []);
 
-    const filteredDesignRequests = designRequests.filter(request => request.status === 'created');
+    const filteredDesignRequests = designRequests.filter(request => request.status === 'pending');
 
     // Calculate statistics
-    const stats = {
-        total: filteredDesignRequests.length,
-        thisWeek: filteredDesignRequests.filter(req => {
-            const requestDate = new Date(req.creationDate);
-            const now = new Date();
-            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-            return requestDate >= weekAgo;
-        }).length,
-        thisMonth: filteredDesignRequests.filter(req => {
-            const requestDate = new Date(req.creationDate);
-            const now = new Date();
-            return requestDate.getMonth() === now.getMonth() && requestDate.getFullYear() === now.getFullYear();
-        }).length
-    };
+    filteredDesignRequests.filter(req => {
+        const requestDate = new Date(req.creationDate);
+        const now = new Date();
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        return requestDate >= weekAgo;
+    }).length;
+    filteredDesignRequests.filter(req => {
+        const requestDate = new Date(req.creationDate);
+        const now = new Date();
+        return requestDate.getMonth() === now.getMonth() && requestDate.getFullYear() === now.getFullYear();
+    }).length;
 
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedRequest, setSelectedRequest] = useState(null);

@@ -1,53 +1,37 @@
 import React, {useState} from 'react';
-import {Button, Space, Spin, Tag, Typography, Card, Row, Col, Avatar, Divider, InputNumber, Rate} from 'antd';
-import {Dialog, DialogTitle, DialogContent, DialogActions} from '@mui/material';
+import {Avatar, Button, Card, Col, InputNumber, Rate, Row, Space, Spin, Tag, Typography} from 'antd';
+import {Box, Dialog, DialogActions, DialogContent, DialogTitle} from '@mui/material';
 import {
-    CalendarOutlined,
     CheckCircleOutlined,
+    ClockCircleOutlined,
     CloseCircleOutlined,
+    DollarOutlined,
+    EditOutlined,
+    EnvironmentOutlined,
+    EyeOutlined,
     FileTextOutlined,
     InfoCircleOutlined,
-    SyncOutlined,
-    UserOutlined,
-    DollarOutlined,
-    ClockCircleOutlined,
-    EditOutlined,
-    PictureOutlined,
-    BankOutlined,
-    GiftOutlined,
-    StarOutlined,
     PhoneOutlined,
-    MailOutlined,
-    EnvironmentOutlined,
+    PictureOutlined,
     ShopOutlined,
-    EyeOutlined
+    SyncOutlined,
+    UserOutlined
 } from '@ant-design/icons';
-import {DesignServices} from '@mui/icons-material';
-import {useNavigate} from 'react-router-dom';
 import {parseID} from "../../../utils/ParseIDUtil.jsx";
-import {Box, Chip} from '@mui/material';
-import {PiShirtFoldedFill, PiPantsFill} from "react-icons/pi";
+import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
 import {GiSkirt} from "react-icons/gi";
 import DisplayImage from '../../ui/DisplayImage.jsx';
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function statusTag(status) {
-    let color = '';
+    let color;
     let icon = null;
     switch (status) {
-        case 'created':
-            color = 'blue';
-            icon = <FileTextOutlined/>;
+        case 'pending':
+            color = 'processing';
+            icon = <ClockCircleOutlined/>;
             break;
-        case 'paid':
-            color = 'green';
-            icon = <CheckCircleOutlined/>;
-            break;
-        case 'unpaid':
-            color = 'orange';
-            icon = <CloseCircleOutlined/>;
-            break;
-        case 'progressing':
+        case 'processing':
             color = 'purple';
             icon = <SyncOutlined/>;
             break;
@@ -55,17 +39,9 @@ export function statusTag(status) {
             color = 'cyan';
             icon = <CheckCircleOutlined/>;
             break;
-        case 'rejected':
+        case 'canceled':
             color = 'red';
             icon = <CloseCircleOutlined/>;
-            break;
-        case 'pending':
-            color = 'processing';
-            icon = <ClockCircleOutlined/>;
-            break;
-        case 'selected':
-            color = 'green';
-            icon = <CheckCircleOutlined/>;
             break;
         default:
             color = 'default';
@@ -93,7 +69,7 @@ const getItemIcon = (itemType) => {
 function ResultDeliveryModal({visible, onCancel, resultDelivery}) {
     if (!resultDelivery) return null;
 
-    const {Text, Title} = Typography;
+    const {Text} = Typography;
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -110,11 +86,13 @@ function ResultDeliveryModal({visible, onCancel, resultDelivery}) {
             onClose={onCancel}
             maxWidth="xl"
             fullWidth
-            PaperProps={{
-                sx: {
-                    borderRadius: 3,
-                    boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
-                    maxHeight: '90vh'
+            slotProps={{
+                paper: {
+                    sx: {
+                        borderRadius: 3,
+                        boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                        maxHeight: '90vh'
+                    }
                 }
             }}
         >
@@ -400,7 +378,7 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
         let buttons = [];
 
         switch (status) {
-            case 'created':
+            case 'pending':
                 buttons.push(
                     <Button key="action" type="primary" onClick={onCancel}>
                         Submit design request
@@ -432,14 +410,7 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                     );
                 }
                 break;
-            case 'unpaid':
-                buttons.push(
-                    <Button key="payment" type="primary" onClick={() => setShowExtraRevisionModal(true)}>
-                        Make Payment
-                    </Button>
-                );
-                break;
-            case 'paid':
+            case 'processing':
                 buttons.push(
                     <Button key="chat" type="primary" onClick={() => {
                         // Store only the request ID
@@ -470,18 +441,8 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
     };
 
     const formatCurrency = (amount) => {
-        return amount.toLocaleString('vi-VN');
+        return amount.toLocaleString("vi-VN");
     };
-
-    const formatDeadline = (deadlineString) => {
-        const date = new Date(deadlineString);
-        return date.toLocaleDateString('vi-VN', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
-    };
-
     return (
         <>
             <Dialog
@@ -489,11 +450,13 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                 onClose={onCancel}
                 maxWidth="lg"
                 fullWidth
-                PaperProps={{
-                    sx: {
-                        borderRadius: 3,
-                        boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
-                        maxHeight: '85vh'
+                slotProps={{
+                    paper: {
+                        sx: {
+                            borderRadius: 3,
+                            boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                            maxHeight: '85vh'
+                        }
                     }
                 }}
             >
@@ -638,7 +601,18 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                                             <ClockCircleOutlined
                                                                 style={{color: '#1976d2', fontSize: '12px'}}/>
                                                             <Text style={{fontSize: '12px', color: '#64748b'}}>
-                                                                {request.finalDesignQuotation.designer.startTime} - {request.finalDesignQuotation.designer.endTime}
+                                                                {(() => {
+                                                                    const formatTime = (timeString) => {
+                                                                        if (!timeString) return 'N/A';
+                                                                        const time = new Date(`2000-01-01T${timeString}`);
+                                                                        return time.toLocaleTimeString('vi-VN', {
+                                                                            hour: '2-digit',
+                                                                            minute: '2-digit',
+                                                                            hour12: false
+                                                                        });
+                                                                    };
+                                                                    return `${formatTime(request.finalDesignQuotation.designer.startTime)} - ${formatTime(request.finalDesignQuotation.designer.endTime)}`;
+                                                                })()}
                                                             </Text>
                                                         </Space>
                                                     </Space>
@@ -987,10 +961,12 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                 onClose={() => setShowExtraRevisionModal(false)}
                 maxWidth="sm"
                 fullWidth
-                PaperProps={{
-                    sx: {
-                        borderRadius: 2,
-                        boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+                slotProps={{
+                    paper: {
+                        sx: {
+                            borderRadius: 2,
+                            boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+                        }
                     }
                 }}
             >

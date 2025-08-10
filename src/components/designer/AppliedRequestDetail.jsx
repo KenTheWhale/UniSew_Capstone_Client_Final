@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {Button, Card, Col, Row, Space, Spin, Tag, Typography} from 'antd';
 import {Avatar, Box, Dialog, DialogActions, DialogContent, DialogTitle} from '@mui/material';
 import {
@@ -22,22 +22,14 @@ import DisplayImage from '../ui/DisplayImage.jsx';
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function statusTag(status) {
-    let color = '';
+    let color;
     let icon = null;
     switch (status) {
-        case 'created':
-            color = 'blue';
-            icon = <FileTextOutlined/>;
+        case 'pending':
+            color = 'processing';
+            icon = <ClockCircleOutlined/>;
             break;
-        case 'paid':
-            color = 'green';
-            icon = <CheckCircleOutlined/>;
-            break;
-        case 'unpaid':
-            color = 'orange';
-            icon = <CloseCircleOutlined/>;
-            break;
-        case 'progressing':
+        case 'processing':
             color = 'purple';
             icon = <SyncOutlined/>;
             break;
@@ -45,17 +37,9 @@ export function statusTag(status) {
             color = 'cyan';
             icon = <CheckCircleOutlined/>;
             break;
-        case 'rejected':
+        case 'canceled':
             color = 'red';
             icon = <CloseCircleOutlined/>;
-            break;
-        case 'pending':
-            color = 'processing';
-            icon = <ClockCircleOutlined/>;
-            break;
-        case 'selected':
-            color = 'green';
-            icon = <CheckCircleOutlined/>;
             break;
         default:
             color = 'default';
@@ -80,8 +64,6 @@ const getItemIcon = (itemType) => {
 };
 
 export default function AppliedRequestDetail({visible, onCancel, request}) {
-    const [showChatModal, setShowChatModal] = useState(false);
-
     if (!request) {
         return (
             <Dialog open={visible} onClose={onCancel} maxWidth="md" fullWidth>
@@ -101,16 +83,8 @@ export default function AppliedRequestDetail({visible, onCancel, request}) {
         let buttonAction;
 
         switch (status) {
-            case 'paid':
+            case 'processing':
                 buttonText = 'Start Chat with School';
-                buttonAction = () => {
-                    localStorage.setItem('currentDesignRequestId', request.id);
-                    onCancel();
-                    window.location.href = '/designer/chat';
-                };
-                break;
-            case 'progressing':
-                buttonText = 'Continue Working';
                 buttonAction = () => {
                     localStorage.setItem('currentDesignRequestId', request.id);
                     onCancel();
@@ -121,7 +95,7 @@ export default function AppliedRequestDetail({visible, onCancel, request}) {
                 buttonText = 'View Final Design';
                 buttonAction = onCancel;
                 break;
-            case 'rejected':
+            case 'canceled':
                 return null;
             default:
                 return null;
@@ -163,11 +137,13 @@ export default function AppliedRequestDetail({visible, onCancel, request}) {
                 onClose={onCancel}
                 maxWidth="lg"
                 fullWidth
-                PaperProps={{
-                    sx: {
-                        borderRadius: 3,
-                        boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
-                        maxHeight: '85vh'
+                slotProps={{
+                    paper: {
+                        sx: {
+                            borderRadius: 3,
+                            boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                            maxHeight: '85vh'
+                        }
                     }
                 }}
             >
