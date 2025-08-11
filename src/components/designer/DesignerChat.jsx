@@ -23,7 +23,7 @@ import {Box, Chip, Container, Dialog, DialogActions, DialogContent, DialogTitle,
 import EmojiPicker from 'emoji-picker-react';
 import {useSnackbar} from 'notistack';
 import {parseID} from '../../utils/ParseIDUtil.jsx';
-import {addDoc, collection, onSnapshot, query, serverTimestamp, where} from 'firebase/firestore';
+import {addDoc, collection, onSnapshot, query, serverTimestamp, where,doc,setDoc} from 'firebase/firestore';
 import {auth, db} from "../../configs/FirebaseConfig.jsx";
 import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
 import {GiSkirt} from "react-icons/gi";
@@ -650,19 +650,16 @@ function DesignDetailDialog({visible, onCancel, request}) {
     );
 }
 
-export function useDesignerChatMessages(roomId) {
+export function UseDesignerChatMessages(roomId) {
     const [chatMessages, setChatMessages] = useState([]);
 
     useEffect(() => {
         if (!roomId) return;
         const messageRef = collection(db, "messages");
         const queryMessages = query(messageRef, where("room", "==", roomId));
-
         const unsubscribe = onSnapshot(queryMessages, (snapshot) => {
-            let messages = [];
-            snapshot.forEach(doc => {
-                messages.push({...doc.data(), id: doc.id});
-            });
+            const messages = [];
+            snapshot.forEach((d) => messages.push({ ...d.data(), id: d.id }));
             messages.sort((a, b) => a.createdAt?.seconds - b.createdAt?.seconds);
             setChatMessages(messages);
         });
@@ -672,15 +669,29 @@ export function useDesignerChatMessages(roomId) {
     const sendMessage = async (text) => {
         if (!text) return;
         const messageRef = collection(db, "messages");
+        const email = auth.currentUser?.email || "designer@unknown";
+        const displayName = auth.currentUser?.displayName || "Designer";
+
         await addDoc(messageRef, {
             text,
             createdAt: serverTimestamp(),
-            user: auth.currentUser?.displayName || "Designer",
+            user: displayName,
+            senderEmail: email,
             room: roomId,
         });
+
+        const roomDocRef = doc(db, "chatRooms", roomId);
+        await setDoc(
+            roomDocRef,
+            {
+                lastMessage: text,
+                updatedAt: serverTimestamp(),
+            },
+            { merge: true }
+        );
     };
 
-    return {chatMessages, sendMessage};
+    return { chatMessages, sendMessage };
 }
 
 // New DeliverySubmissionModal component for designers
@@ -1815,7 +1826,7 @@ export default function DesignerChat() {
     const [revisionRequests, setRevisionRequests] = useState([]);
     const [loadingRevisionRequests, setLoadingRevisionRequests] = useState(false);
     const roomId = requestData?.id;
-    const {chatMessages, sendMessage} = useDesignerChatMessages(roomId);
+    const {chatMessages, sendMessage} = UseDesignerChatMessages(roomId);
     const [newMessage, setNewMessage] = useState('');
 
     // Fetch design deliveries from API
@@ -1861,11 +1872,6 @@ export default function DesignerChat() {
                 const request = response.data.body;
 
                 if (request) {
-                    // Check if request status is completed - redirect to applied requests
-                    if (request.status === 'completed') {
-                        window.location.href = '/designer/applied/requests';
-                        return;
-                    }
 
                     setRequestData(request);
 
