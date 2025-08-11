@@ -72,3 +72,8 @@ export const makeDesignFinal = async (data) => {
     const response = await axiosClient.post("/design/school/request/final", data)
     return response || null
 }
+
+export const getSchoolDesign = async () => {
+    const response = await axiosClient.post("/design/final/designs")
+    return response || null
+}

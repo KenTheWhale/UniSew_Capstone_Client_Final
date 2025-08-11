@@ -27,6 +27,7 @@ import AppliedRequestDetail from "./components/designer/AppliedRequestDetail.jsx
 import SchoolProfile from "./components/school/profile/SchoolProfile.jsx";
 import DesignerProfile from "./components/designer/profile/DesignerProfile.jsx";
 import SchoolOrderList from "./components/school/order/SchoolOrderList.jsx";
+import CreateOrder from "./components/school/order/CreateOrder.jsx";
 
 const router = createBrowserRouter([
     {
@@ -108,6 +109,10 @@ const router = createBrowserRouter([
                     {
                         path: 'order',
                         element: <SchoolOrderList/>
+                    },
+                    {
+                        path: 'order/create',
+                        element: <CreateOrder/>
                     }
                 ]
             }

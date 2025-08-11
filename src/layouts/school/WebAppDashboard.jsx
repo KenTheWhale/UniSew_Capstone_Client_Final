@@ -79,13 +79,14 @@ function Navbar({school, enqueueSnackbar}) {
             elevation={0}
             sx={{
                 width: "100%",
-                bgcolor: "white",
-                minHeight: "100vh",
+                backgroundColor: "white",
+                height: "100%",
                 display: 'flex',
                 flexDirection: 'column',
                 borderRight: "2px solid #f0f4f8",
                 borderRadius: 0,
-                overflow: 'hidden'
+                overflowY: 'auto',
+                overflowX: 'hidden'
             }}
         >
 
@@ -268,10 +269,10 @@ function Content() {
         <Box
             sx={{
                 display: 'flex',
-                flexDirection: 'column',
                 flex: 1,
-                height: 'max-content',
+                maxHeight: '100%',
                 overflowY: 'auto',
+                overflowX: 'hidden',
                 backgroundColor: '#fafafa'
             }}
         >
@@ -288,7 +289,7 @@ export default function WebAppDashboard() {
 
     const schoolString = localStorage.getItem('user')
     if (!schoolString) {
-        // window.location.href = '/login'
+        window.location.href = '/login'
     }
 
     const user = JSON.parse(schoolString)
@@ -355,7 +356,7 @@ export default function WebAppDashboard() {
     };
 
     return (
-        <Box sx={{display: 'flex', minHeight: '100vh', bgcolor: '#fafafa', overflow: 'hidden'}}>
+        <Box sx={{display: 'flex', maxHeight: '120vh', backgroundColor: '#fafafa', overflow: 'hidden'}}>
             <Box sx={{width: 280, flexShrink: 0}}>
                 <Navbar school={user} enqueueSnackbar={enqueueSnackbar}/>
             </Box>
