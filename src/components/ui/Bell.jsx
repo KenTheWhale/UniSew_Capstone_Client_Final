@@ -191,7 +191,6 @@ export default function Bell() {
                             </Typography>
                             <div style={{maxHeight: 400, overflowY: 'auto'}}>
                                 {notifications
-                                    // Sort by newest first (fallback if Firebase ordering doesn't work)
                                     .sort((a, b) => {
                                         const dateA = formatFirebaseDate(a.creation_date);
                                         const dateB = formatFirebaseDate(b.creation_date);
