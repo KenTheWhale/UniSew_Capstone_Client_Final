@@ -28,6 +28,9 @@ import SchoolProfile from "./components/school/profile/SchoolProfile.jsx";
 import DesignerProfile from "./components/designer/profile/DesignerProfile.jsx";
 import SchoolOrderList from "./components/school/order/SchoolOrderList.jsx";
 import CreateOrder from "./components/school/order/CreateOrder.jsx";
+import GarmentDashboardLayout from "./layouts/garment/GarmentDashboardLayout.jsx";
+import GarmentOrderList from "./components/garment/GarmentOrderList.jsx";
+import GarmentOrderDetail from "./components/garment/GarmentOrderDetail.jsx";
 
 const router = createBrowserRouter([
     {
@@ -155,6 +158,24 @@ const router = createBrowserRouter([
             {
                 path: 'profile',
                 element: <DesignerProfile/>
+            }
+        ]
+    },
+    {
+        path: 'garment',
+        element: <GarmentDashboardLayout />,
+        children: [
+            {
+                index: true,
+                element: <Navigate to={'/garment/orders'} />
+            },
+            {
+                path: 'order/detail',
+                element: <GarmentOrderDetail />
+            },
+            {
+                path: 'orders',
+                element: <GarmentOrderList />
             }
         ]
     }

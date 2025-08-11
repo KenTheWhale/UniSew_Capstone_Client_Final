@@ -26,8 +26,11 @@ export default function Login() {
                     case 'designer':
                         window.location.href = '/designer/requests';
                         break;
+                    case 'garment':
+                        window.location.href = '/garment/orders';
+                        break;
                     default:
-                        window.location.href = '/garment/dashboard';
+                        window.location.href = '/home';
                         break;
                 }
             }, 1000)
