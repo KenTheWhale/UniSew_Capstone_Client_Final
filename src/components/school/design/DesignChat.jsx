@@ -574,7 +574,7 @@ function DesignDetailDialog({visible, onCancel, request}) {
     );
 }
 
-export function useDesignChatMessages(roomId) {
+export function UseDesignChatMessages(roomId) {
     const [chatMessages, setChatMessages] = useState([]);
 
     useEffect(() => {
@@ -604,7 +604,7 @@ export function useDesignChatMessages(roomId) {
         });
     };
 
-    return {chatMessages, sendMessage};
+    return {chatMessages, sendMessage, setChatMessages};
 }
 
 // New RevisionRequestModal component
@@ -1146,7 +1146,7 @@ export default function DesignChat() {
     const [revisionRequests, setRevisionRequests] = useState([]);
     const [loadingRevisionRequests, setLoadingRevisionRequests] = useState(false);
     const roomId = requestData?.id;
-    const {chatMessages, sendMessage} = useDesignChatMessages(roomId);
+    const {chatMessages, sendMessage, setChatMessages} = UseDesignChatMessages(roomId);
     const [newMessage, setNewMessage] = useState('');
 
     // Fetch design deliveries from API
@@ -1184,6 +1184,13 @@ export default function DesignChat() {
             if (response && response.status === 200) {
                 console.log("Request details: ", response.data.body);
                 const request = response.data.body;
+                
+                // Check if status is completed, redirect to design page
+                if (request.status === 'completed') {
+                    window.location.href = '/school/design';
+                    return;
+                }
+                
                 setRequestData(request);
                 // Fetch deliveries and revision requests for this request
                 if (request.id) {
@@ -1327,6 +1334,11 @@ export default function DesignChat() {
                         if (latestResponse && latestResponse.status === 200) {
                             const updatedRequest = latestResponse.data.body;
                             if (updatedRequest) {
+                                // Check if status is completed, redirect to design page
+                                if (updatedRequest.status === 'completed') {
+                                    window.location.href = '/school/design';
+                                    return;
+                                }
                                 setRequestData(updatedRequest);
                             }
                         }
@@ -1375,6 +1387,11 @@ export default function DesignChat() {
                         if (latestResponse && latestResponse.status === 200) {
                             const updatedRequest = latestResponse.data.body;
                             if (updatedRequest) {
+                                // Check if status is completed, redirect to design page
+                                if (updatedRequest.status === 'completed') {
+                                    window.location.href = '/school/design';
+                                    return;
+                                }
                                 setRequestData(updatedRequest);
                             }
                         }
