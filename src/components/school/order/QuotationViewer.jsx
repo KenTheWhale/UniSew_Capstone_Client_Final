@@ -37,6 +37,8 @@ import {
 } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
 import { viewQuotation, approveQuotation } from '../../../services/OrderService.jsx';
+import { getPaymentUrl } from '../../../services/PaymentService.jsx';
+import QuotationSummaryPopup from '../popup/QuotationSummaryPopup.jsx';
 
 // Status chip component for quotations
 const QuotationStatusChip = ({ status }) => {
@@ -97,6 +99,8 @@ export default function QuotationViewer({ visible, onCancel, orderId }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [approvingQuotationId, setApprovingQuotationId] = useState(null);
+    const [showSummaryPopup, setShowSummaryPopup] = useState(false);
+    const [selectedQuotationForPayment, setSelectedQuotationForPayment] = useState(null);
     const { enqueueSnackbar } = useSnackbar();
 
     useEffect(() => {
@@ -143,29 +147,53 @@ export default function QuotationViewer({ visible, onCancel, orderId }) {
         }).format(amount);
     };
 
-    const handleAcceptQuotation = async (quotationId) => {
+    const handleAcceptQuotation = (quotationId) => {
+        // Find the selected quotation and show summary popup
+        const selectedQuotation = quotations.find(q => q.id === quotationId);
+        if (selectedQuotation) {
+            setSelectedQuotationForPayment(selectedQuotation);
+            setShowSummaryPopup(true);
+        }
+    };
+
+    const handlePayment = async (quotation) => {
         try {
-            setApprovingQuotationId(quotationId);
+            setApprovingQuotationId(quotation.id);
             
-            const response = await approveQuotation(quotationId);
+            // Step 1: Approve the quotation
+            const approveResponse = await approveQuotation(quotation.id);
             
-            if (response && response.status === 200) {
-                // Update the quotation status locally
-                setQuotations(prev => prev.map(quotation => 
-                    quotation.id === quotationId 
-                        ? { ...quotation, status: 'GARMENT_QUOTATION_ACCEPTED' }
-                        : quotation
-                ));
-                enqueueSnackbar('Quotation accepted successfully!', { variant: 'success' });
+            if (approveResponse && approveResponse.status === 200) {
+                // Step 2: Get payment URL
+                const amount = quotation.price;
+                const description = `Thanh toan don hang tu ${quotation.garmentName}`;
+                const orderType = 'order';
+                const returnUrl = `/school/payment/result?orderType=order&quotationId=${quotation.id}`;
+                
+                const paymentResponse = await getPaymentUrl(amount, description, orderType, returnUrl);
+                
+                if (paymentResponse && paymentResponse.status === 200 && paymentResponse.data.body) {
+                    // Redirect to payment URL
+                    window.location.href = paymentResponse.data.body.url;
+                } else {
+                    enqueueSnackbar('Failed to get payment URL. Please try again.', { variant: 'error' });
+                }
+                
+                setShowSummaryPopup(false);
             } else {
                 enqueueSnackbar('Failed to accept quotation. Please try again.', { variant: 'error' });
             }
         } catch (error) {
-            console.error('Error accepting quotation:', error);
-            enqueueSnackbar('An error occurred while accepting the quotation.', { variant: 'error' });
+            console.error('Error processing payment:', error);
+            enqueueSnackbar('An error occurred while processing payment.', { variant: 'error' });
         } finally {
             setApprovingQuotationId(null);
         }
+    };
+
+    const handleCloseSummaryPopup = () => {
+        setShowSummaryPopup(false);
+        setSelectedQuotationForPayment(null);
     };
 
     if (!visible) return null;
@@ -387,8 +415,7 @@ export default function QuotationViewer({ visible, onCancel, orderId }) {
                                                             variant="contained"
                                                             fullWidth
                                                             onClick={() => handleAcceptQuotation(quotation.id)}
-                                                            disabled={approvingQuotationId === quotation.id}
-                                                            startIcon={approvingQuotationId === quotation.id ? <CircularProgress size={16} sx={{ color: 'white' }} /> : <CheckCircleIcon />}
+                                                            startIcon={<CheckCircleIcon />}
                                                             sx={{
                                                                 backgroundColor: '#10b981',
                                                                 py: 1.5,
@@ -399,14 +426,10 @@ export default function QuotationViewer({ visible, onCancel, orderId }) {
                                                                     transform: 'translateY(-2px)',
                                                                     boxShadow: '0 6px 20px rgba(16, 185, 129, 0.4)'
                                                                 },
-                                                                '&:disabled': {
-                                                                    backgroundColor: '#9ca3af',
-                                                                    color: 'white'
-                                                                },
                                                                 transition: 'all 0.3s ease'
                                                             }}
                                                         >
-                                                            {approvingQuotationId === quotation.id ? 'Accepting...' : 'Accept Quotation'}
+                                                            Accept Quotation
                                                         </Button>
                                                     </Box>
                                                 )}
@@ -419,6 +442,15 @@ export default function QuotationViewer({ visible, onCancel, orderId }) {
                     </Box>
                 )}
             </DialogContent>
+
+            {/* Quotation Summary Popup */}
+            <QuotationSummaryPopup
+                visible={showSummaryPopup}
+                onCancel={handleCloseSummaryPopup}
+                quotation={selectedQuotationForPayment}
+                onPayment={handlePayment}
+                isProcessing={approvingQuotationId === selectedQuotationForPayment?.id}
+            />
         </Dialog>
     );
 } 

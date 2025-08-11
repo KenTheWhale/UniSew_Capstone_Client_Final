@@ -61,7 +61,7 @@ export default function RequestDesignerPopup({visible, onCancel, request}) {
 
     useEffect(() => {
         setSelectedQuotation(null);
-        setPaymentDetails(null);
+            setPaymentDetails(null);
         setShowDesigners(false);
 
         if (request && request.designQuotations) {
@@ -80,9 +80,9 @@ export default function RequestDesignerPopup({visible, onCancel, request}) {
     }
     const handleQuotationSelect = (designerId) => {
         const quotation = appliedDesigners.find(d => d.id === designerId);
-        if (quotation) {
+            if (quotation) {
             setSelectedQuotation({designerId, quotationId: designerId});
-            setPaymentDetails({quotation, request});
+                setPaymentDetails({quotation, request});
             
             // Reset extra revision if the selected quotation has unlimited revisions
             if (quotation.revisionTime === 9999) {
