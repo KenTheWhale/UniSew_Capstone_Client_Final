@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {
     Alert,
     Box,
@@ -19,15 +19,41 @@ import {statusTag} from '../school/popup/RequestDetailPopup';
 import AppliedRequestDetail from './AppliedRequestDetail';
 import {parseID} from "../../utils/ParseIDUtil.jsx";
 import {getAppliedDesignerDesignRequests} from "../../services/DesignService.jsx";
+import { useLocation, useNavigate } from 'react-router-dom';
+
+
 
 export default function AppliedRequestList() {
-    useEffect(() => {
-        localStorage.removeItem('currentDesignRequest');
-    }, []);
-
     const [designRequests, setDesignRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+
+
+    const location = useLocation();
+    const navigate = useNavigate();
+    const openIdParam = useMemo(
+        () => new URLSearchParams(location.search).get('openId'),
+        [location.search]
+    );
+
+    const openedRef = useRef(false);
+
+    useEffect(() => {
+        if (loading) return;
+        if (!openIdParam || openedRef.current) return;
+
+        const id = Number(openIdParam);
+        const target = designRequests.find(req => Number(req.id) === id);
+
+        if (target) {
+            handleViewDetail(id);
+            openedRef.current = true;
+
+            navigate('/designer/applied/requests', { replace: true });
+        }
+    }, [loading, openIdParam, designRequests, navigate]);
+
+
 
     // Fetch applied design requests from API
     const fetchDesignRequests = async () => {
