@@ -31,6 +31,7 @@ import FactoryIcon from '@mui/icons-material/Factory';
 import DesignServicesIcon from '@mui/icons-material/DesignServices';
 import {signout} from "../../services/AccountService.jsx";
 import {enqueueSnackbar} from "notistack";
+import Bell from "../../components/ui/Bell.jsx";
 
 function TopBar() {
     const [anchorEl, setAnchorEl] = React.useState(null);
@@ -278,10 +279,12 @@ function MainHeader() {
                     </Box>
                     {/* User Menu Button */}
                     <Box sx={{position: 'relative'}}>
+                        {isSignedIn ? <Bell/> : null}
                         <Button
                             variant="contained"
                             sx={{
                                 background: 'linear-gradient(90deg, #1976d2 0%, #42a5f5 100%)',
+                                marginLeft: '1vw',
                                 color: 'white',
                                 fontWeight: 700,
                                 borderRadius: 3,
@@ -308,14 +311,28 @@ function MainHeader() {
                                 onClose={handleUserMenuClose}
                                 anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
                                 transformOrigin={{vertical: 'top', horizontal: 'right'}}
-                                PaperProps={{
-                                    sx: {
-                                        borderRadius: 2,
-                                        boxShadow: '0 6px 24px rgba(25, 118, 210, 0.15)',
-                                        minWidth: 200,
-                                        mt: 1,
-                                        p: 0.5,
-                                        bgcolor: 'white',
+
+                                disableScrollLock={true}
+                                slotProps={{
+                                    paper: {
+                                        style: {
+                                            maxHeight: '80vh',
+                                            overflow: 'visible'
+                                        },
+                                        sx: {
+                                            borderRadius: 2,
+                                            boxShadow: '0 6px 24px rgba(25, 118, 210, 0.15)',
+                                            minWidth: 200,
+                                            mt: 1,
+                                            p: 0.5,
+                                            bgcolor: 'white'
+                                        }
+                                    }
+                                }}
+                                sx={{
+                                    '& .MuiPopover-paper': {
+                                        boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                                        border: '1px solid rgba(0,0,0,0.12)'
                                     }
                                 }}
                             >
