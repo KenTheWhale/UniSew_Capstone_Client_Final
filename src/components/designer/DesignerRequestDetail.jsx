@@ -229,8 +229,8 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                 return;
             }
 
-            if (parseFloat(quotationData.price) <= 0) {
-                enqueueSnackbar('Price must be greater than 0', {variant: 'error'});
+            if (parseFloat(quotationData.price) < 10000) {
+                enqueueSnackbar('Price must be at least 10.000 VND', {variant: 'error'});
                 return;
             }
 
@@ -241,6 +241,12 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
 
             if (parseInt(quotationData.revisionTime) < 0) {
                 enqueueSnackbar('Revision time cannot be negative', {variant: 'error'});
+                return;
+            }
+
+            // Validate extra revision price when not unlimited
+            if (!isUnlimitedRevisions && parseFloat(quotationData.extraRevisionPrice) < 0) {
+                enqueueSnackbar('Extra revision price cannot be negative', {variant: 'error'});
                 return;
             }
 
@@ -760,9 +766,9 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                         }}
                                                         size="small"
                                                         fullWidth
-                                                        placeholder="Enter price in VND (e.g., 1,000,000)"
+                                                        placeholder="Enter price in VND (min: 10,000)"
                                                         slotProps={{
-                                                            htmlInput: {min: 0}
+                                                            htmlInput: {min: 10000}
                                                         }}
                                                         sx={{
                                                             '& .MuiOutlinedInput-root': {
