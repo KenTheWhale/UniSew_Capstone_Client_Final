@@ -119,8 +119,8 @@ export default function About() {
                                     fontSize: "1.1rem"
                                 }}
                             >
-                                <strong>Tầm nhìn:</strong> Trở thành nhà lãnh đạo toàn cầu trong giải pháp đồng phục
-                                giáo dục, nơi mọi học sinh trên thế giới đều có thể tiếp cận đồng phục thoải mái, bền bỉ
+                                <strong>Tầm nhìn:</strong> Trở thành nhà lãnh đạo hàng đầu tại Việt Nam trong giải pháp đồng phục
+                                giáo dục, nơi mọi học sinh Việt Nam đều có thể tiếp cận đồng phục thoải mái, bền bỉ
                                 và phản ánh bản sắc, giúp nâng cao trải nghiệm học tập.
                             </Typography>
                             <Box sx={{display: "flex", gap: 2, flexWrap: "wrap"}}>
@@ -133,7 +133,7 @@ export default function About() {
                                 <Box sx={{display: "flex", alignItems: "center", gap: 1}}>
                                     <CheckCircleOutline sx={{color: "#22c55e", fontSize: 20}}/>
                                     <Typography variant="body2" sx={{color: "#475569", fontWeight: 500}}>
-                                        Phạm Vi Toàn Cầu
+                                        Phạm Vi Toàn Quốc
                                     </Typography>
                                 </Box>
                                 <Box sx={{display: "flex", alignItems: "center", gap: 1}}>
@@ -497,7 +497,7 @@ export default function About() {
                 <Container maxWidth="lg">
                     <Grid container spacing={4} sx={{textAlign: "center"}} justifyContent="center" alignItems="center">
                         {[
-                            {number: "500+", label: "Trường học đã tham gia", sublabel: "Trên nhiều quốc gia"},
+                            {number: "500+", label: "Trường học đã tham gia", sublabel: "Trên toàn quốc"},
                             {number: "50k+", label: "Đồng phục đã giao", sublabel: "Sản phẩm chất lượng cao"},
                             {number: "98%", label: "Tỷ lệ hài lòng", sublabel: "Sự chấp thuận của khách hàng"},
                             {number: "24/7", label: "Hỗ trợ có sẵn", sublabel: "Luôn sẵn sàng hỗ trợ"}
@@ -565,7 +565,7 @@ export default function About() {
                             lineHeight: 1.6
                         }}
                     >
-                        Tham gia hàng trăm trường học trên toàn thế giới tin tưởng UniSew cho nhu cầu đồng phục.
+                        Tham gia hàng trăm trường học trên toàn quốc tin tưởng UniSew cho nhu cầu đồng phục.
                         Bắt đầu ngay hôm nay và trải nghiệm sự khác biệt mà dịch vụ chuyên nghiệp mang lại.
                     </Typography>
                     <Box sx={{display: "flex", gap: 2, justifyContent: "center", flexWrap: "wrap"}}>

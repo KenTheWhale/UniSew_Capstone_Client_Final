@@ -142,8 +142,8 @@ export default function Contact() {
                                         </Typography>
                                         <Typography variant="body2" sx={{color: "#475569", lineHeight: 1.6}}>
                                             123 Đường Đổi Mới<br/>
-                                            Quận Công Nghệ, San Francisco<br/>
-                                            CA 94102, Hoa Kỳ
+                                            Quận 1, TP. Hồ Chí Minh<br/>
+                                            Việt Nam
                                         </Typography>
                                     </CardContent>
                                 </Card>

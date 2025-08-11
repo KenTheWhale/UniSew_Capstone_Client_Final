@@ -637,7 +637,7 @@ export default function Homepage() {
                   fontSize: { xs: "1rem", md: "1.1rem" },
                 }}
               >
-                              Tham gia hàng trăm trường học đã tin tưởng UniSew cho nhu cầu đồng phục của họ
+                              Tham gia hàng trăm trường học trên toàn quốc đã tin tưởng UniSew cho nhu cầu đồng phục của họ
               </Typography>
               <Button
                 variant="contained"
