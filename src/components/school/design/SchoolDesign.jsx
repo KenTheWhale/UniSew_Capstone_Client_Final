@@ -181,7 +181,7 @@ export default function SchoolDesign() {
     ];
 
     return (
-        <Box sx={{ backgroundColor: '#fafafa', minHeight: '100vh' }}>
+        <Box sx={{ backgroundColor: '#fafafa', height: 'max-content', overflowY: 'scroll', flex: 1}}>
             {/* Hero Section */}
             <Box
                 sx={{
@@ -189,7 +189,6 @@ export default function SchoolDesign() {
                     py: { xs: 6, md: 8 },
                     color: "white",
                     position: "relative",
-                    overflow: "hidden",
                     "&::before": {
                         content: '""',
                         position: "absolute",
@@ -433,7 +432,7 @@ export default function SchoolDesign() {
                     sx={{
                         borderRadius: 4,
                         border: "1px solid #e2e8f0",
-                        overflow: "hidden"
+                        overflow: "auto"
                     }}
                 >
                     <Box sx={{ p: { xs: 3, md: 4 }, backgroundColor: "white" }}>
