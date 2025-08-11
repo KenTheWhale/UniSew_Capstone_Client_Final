@@ -269,16 +269,19 @@ function Content() {
         <Box
             sx={{
                 display: 'flex',
+                flexDirection: 'column',
                 flex: 1,
-                maxHeight: '100%',
-                overflowY: 'auto',
+                height: 'max-content',
+                overflowY: 'hidden',
                 overflowX: 'hidden',
                 backgroundColor: '#fafafa'
             }}
         >
-            <Outlet/>
+            <Box sx={{ flex: 1 }}>
+                <Outlet />
+            </Box>
         </Box>
-    )
+    );
 }
 
 export default function WebAppDashboard() {
@@ -356,7 +359,7 @@ export default function WebAppDashboard() {
     };
 
     return (
-        <Box sx={{display: 'flex', maxHeight: '120vh', backgroundColor: '#fafafa', overflow: 'hidden'}}>
+        <Box sx={{display: 'flex', height: 'max-content', backgroundColor: '#fafafa', overflow: 'hidden'}}>
             <Box sx={{width: 280, flexShrink: 0}}>
                 <Navbar school={user} enqueueSnackbar={enqueueSnackbar}/>
             </Box>

@@ -1235,6 +1235,13 @@ export default function DesignChat() {
             if (response && response.status === 200) {
                 console.log("Request details: ", response.data.body);
                 const request = response.data.body;
+                
+                // Check if status is completed, redirect to design page
+                if (request.status === 'completed') {
+                    window.location.href = '/school/design';
+                    return;
+                }
+                
                 setRequestData(request);
                 // Fetch deliveries and revision requests for this request
                 if (request.id) {
@@ -1378,6 +1385,11 @@ export default function DesignChat() {
                         if (latestResponse && latestResponse.status === 200) {
                             const updatedRequest = latestResponse.data.body;
                             if (updatedRequest) {
+                                // Check if status is completed, redirect to design page
+                                if (updatedRequest.status === 'completed') {
+                                    window.location.href = '/school/design';
+                                    return;
+                                }
                                 setRequestData(updatedRequest);
                             }
                         }
@@ -1426,6 +1438,11 @@ export default function DesignChat() {
                         if (latestResponse && latestResponse.status === 200) {
                             const updatedRequest = latestResponse.data.body;
                             if (updatedRequest) {
+                                // Check if status is completed, redirect to design page
+                                if (updatedRequest.status === 'completed') {
+                                    window.location.href = '/school/design';
+                                    return;
+                                }
                                 setRequestData(updatedRequest);
                             }
                         }

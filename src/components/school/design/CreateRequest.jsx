@@ -181,6 +181,20 @@ export default function CreateRequest() {
     const handleFileChange = (event) => {
         const file = event.target.files[0];
         if (file) {
+            // Validate file type
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (!ALLOWED_EXTENSIONS.includes(ext)) {
+                enqueueSnackbar('Only JPG, JPEG, PNG, GIF files are allowed for logo.', {variant: 'error'});
+                return;
+            }
+            
+            // Validate file size (5MB for logo)
+            const MAX_LOGO_SIZE = 5 * 1024 * 1024; // 5MB
+            if (file.size > MAX_LOGO_SIZE) {
+                enqueueSnackbar('Logo file must be less than 5MB.', {variant: 'error'});
+                return;
+            }
+            
             setDesignRequest((prev) => ({
                 ...prev,
                 logo: {file: file, preview: URL.createObjectURL(file)}
@@ -415,9 +429,22 @@ export default function CreateRequest() {
         //Design name
         const designName = designRequest.designName
 
+        //Logo image validation
+        if (!designRequest.logo.file) {
+            enqueueSnackbar('School Logo is required.', {variant: 'error'});
+            setIsSubmitting(false);
+            return;
+        }
+
         //Logo image
         const logoFile = designRequest.logo.file
         const logo = await uploadCloudinary(logoFile)
+        
+        if (!logo) {
+            enqueueSnackbar('Failed to upload logo image. Please try again.', {variant: 'error'});
+            setIsSubmitting(false);
+            return;
+        }
 
         // Design item list
         const designItems = []
@@ -595,17 +622,22 @@ export default function CreateRequest() {
             designItem: designItems
         }
 
-        const createResponse = await createDesignRequest(request)
-        if (createResponse && createResponse.status === 201) {
-            enqueueSnackbar(createResponse.data.message, {variant: 'success', autoHideDuration: 1000})
-            setTimeout(() => {
-                window.location.href = '/school/pending/request'; // Go to PendingRequest.jsx after submission
-            }, 1000)
-        } else {
-            enqueueSnackbar("Fail to create design request", {variant: 'error'})
+        try {
+            const createResponse = await createDesignRequest(request)
+            if (createResponse && createResponse.status === 201) {
+                enqueueSnackbar(createResponse.data.message, {variant: 'success', autoHideDuration: 1000})
+                setTimeout(() => {
+                    window.location.href = '/school/pending/request'; // Go to PendingRequest.jsx after submission
+                }, 1000)
+            } else {
+                enqueueSnackbar("Fail to create design request", {variant: 'error'})
+            }
+        } catch (error) {
+            console.error('Error creating design request:', error);
+            enqueueSnackbar("An error occurred while creating the design request", {variant: 'error'})
+        } finally {
             setIsSubmitting(false);
         }
-        setIsSubmitting(false);
     };
 
     const renderBoyUniformDetails = (uniformType) => {
@@ -2160,6 +2192,7 @@ export default function CreateRequest() {
         <Box sx={{
             minHeight: '100vh',
             backgroundColor: '#f5f5f5',
+            flex: 1,
             py: 3
         }}>
             <Box sx={{
