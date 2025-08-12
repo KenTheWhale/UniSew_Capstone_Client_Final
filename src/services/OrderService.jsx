@@ -47,7 +47,7 @@ export const assignMilestone = async (data) => {
 }
 
 export const updateMilestoneStatus = async (data) => {
-    const response = await axiosClient.get(`/order/milestone`, data)
+    const response = await axiosClient.put(`/order/milestone`, data)
     return response || null
 }
 
