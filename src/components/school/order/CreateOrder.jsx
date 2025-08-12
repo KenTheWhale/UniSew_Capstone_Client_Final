@@ -32,11 +32,12 @@ import {
 import {Card, Col, DatePicker, Row, Space, Typography as AntTypography} from 'antd';
 import 'antd/dist/reset.css';
 import {getSchoolDesign} from '../../../services/DesignService.jsx';
-import {getSizes} from '../../../services/OrderService.jsx';
+import {getSizes, createOrder} from '../../../services/OrderService.jsx';
 import DisplayImage from '../../ui/DisplayImage.jsx';
 import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
 import {GiSkirt} from "react-icons/gi";
 import dayjs from 'dayjs';
+import {enqueueSnackbar} from "notistack";
 
 const {Text, Title} = AntTypography;
 
@@ -52,11 +53,13 @@ export default function CreateOrder() {
     const [selectedUniformSizes, setSelectedUniformSizes] = useState({});
     const [selectedUniformSizeQuantities, setSelectedUniformSizeQuantities] = useState({});
 
-    const [selectedItem, setSelectedItem] = useState(null);
     const [showItemDialog, setShowItemDialog] = useState(false);
     const [showSizeSpecsDialog, setShowSizeSpecsDialog] = useState(false);
     const [selectedSizeSpecs, setSelectedSizeSpecs] = useState(null);
     const [selectedUniform, setSelectedUniform] = useState(null);
+    const [orderNote, setOrderNote] = useState('');
+    const [validationErrors, setValidationErrors] = useState({});
+    const [isCreatingOrder, setIsCreatingOrder] = useState(false);
 
     // Fetch school designs from API
     const fetchSchoolDesigns = async () => {
@@ -103,6 +106,8 @@ export default function CreateOrder() {
         setSelectedSizes({}); // Reset selected sizes
         setSelectedUniformSizes({}); // Reset selected uniform sizes
         setSelectedUniformSizeQuantities({}); // Reset selected uniform size quantities
+        setOrderNote(''); // Reset order note when changing design
+        setValidationErrors({}); // Reset validation errors when changing design
 
         // Automatically load the selected design details
         if (designId) {
@@ -117,21 +122,145 @@ export default function CreateOrder() {
 
     const handleDeadlineChange = (date) => {
         setDeadline(date);
+        // Clear deadline error when user selects a date
+        if (date && validationErrors.deadline) {
+            setValidationErrors(prev => {
+                const newErrors = {...prev};
+                delete newErrors.deadline;
+                return newErrors;
+            });
+        }
     };
 
-
-    const handleSizeChange = (designItemId, size) => {
-        setSelectedSizes(prev => ({
-            ...prev,
-            [designItemId]: size
-        }));
+    const handleOrderNoteChange = (event) => {
+        setOrderNote(event.target.value);
     };
 
-    const handleUniformSizeChange = (uniformKey, size) => {
-        setSelectedUniformSizes(prev => ({
-            ...prev,
-            [uniformKey]: size
-        }));
+    // Calculate total quantity across all uniforms
+    const getTotalQuantity = () => {
+        return Object.values(selectedUniformSizeQuantities).reduce((sum, quantity) => sum + quantity, 0);
+    };
+
+    // Validate order data
+    const validateOrder = () => {
+        const errors = {};
+        
+        // Check if deadline is selected
+        if (!deadline) {
+            errors.deadline = 'Please select a delivery deadline';
+        }
+        
+        // Check if at least one item is selected
+        const totalQuantity = getTotalQuantity();
+        if (totalQuantity < 1) {
+            errors.quantity = 'Please select at least 1 item to order';
+        }
+        
+        setValidationErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    // Format order details from selected sizes
+    const formatOrderDetails = () => {
+        const orderDetails = [];
+        
+        Object.entries(selectedUniformSizeQuantities).forEach(([key, quantity]) => {
+            if (quantity > 0) {
+                // Parse the key format: uniformKey_size
+                const parts = key.split('_');
+                const sizeLabel = parts[parts.length - 1]; // Get the last part as size label
+                const uniformKey = parts.slice(0, -1).join('_'); // Get everything before the size
+                
+                // Find the corresponding uniform and its delivery items
+                const uniforms = groupItemsByUniform(selectedDesign.delivery?.designItems || []);
+                const uniform = uniforms[uniformKey];
+                
+                if (uniform) {
+                    // Helper function to find enumName for a specific type, gender, and size
+                    const findEnumName = (type, gender) => {
+                        const sizeData = sizes.find(s => 
+                            s.type === type && 
+                            s.gender === gender && 
+                            s.size === sizeLabel
+                        );
+                        return sizeData ? sizeData.enumName : sizeLabel;
+                    };
+                    
+                    const gender = uniform.gender === 'boy' ? 'male' : 'female';
+                    
+                    // Add delivery items for this uniform
+                    if (uniform.shirt) {
+                        orderDetails.push({
+                            deliveryItemId: uniform.shirt.id,
+                            size: findEnumName('shirt', gender),
+                            quantity: quantity
+                        });
+                    }
+                    if (uniform.pants) {
+                        orderDetails.push({
+                            deliveryItemId: uniform.pants.id,
+                            size: findEnumName('pants', gender),
+                            quantity: quantity
+                        });
+                    }
+                    if (uniform.skirt) {
+                        orderDetails.push({
+                            deliveryItemId: uniform.skirt.id,
+                            size: findEnumName('skirt', gender),
+                            quantity: quantity
+                        });
+                    }
+                }
+            }
+        });
+        
+        return orderDetails;
+    };
+
+    // Handle create order
+    const handleCreateOrder = async () => {
+        if (!validateOrder()) {
+            return;
+        }
+
+        try {
+            setIsCreatingOrder(true);
+            
+            const orderData = {
+                deliveryId: selectedDesign.delivery.id,
+                deadline: deadline.format('YYYY-MM-DD'),
+                note: orderNote || '',
+                orderDetails: formatOrderDetails()
+            };
+
+            console.log('Creating order with data:', orderData);
+            console.log('Available sizes:', sizes);
+            console.log('Formatted order details:', orderData.orderDetails);
+            
+            const response = await createOrder(orderData);
+            
+            if (response && response.status === 201) {
+                enqueueSnackbar('Order created successfully!', { variant: 'success' });
+                
+                // Reset form
+                setSelectedDesignId('');
+                setSelectedDesign(null);
+                setDeadline(null);
+                setOrderNote('');
+                setSelectedUniformSizeQuantities({});
+                setValidationErrors({});
+                
+                // You might want to redirect to order list
+                window.location.href = '/school/order';
+            } else {
+                enqueueSnackbar('Failed to create order. Please try again.', { variant: 'error' });
+            }
+        } catch (error) {
+            console.error('Error creating order:', error);
+            enqueueSnackbar('An error occurred while creating the order. Please try again.', { variant: 'error' });
+        } finally {
+            setIsCreatingOrder(false);
+        }
     };
 
     const handleUniformSizeQuantityChange = (uniformKey, size, quantity) => {
@@ -139,13 +268,15 @@ export default function CreateOrder() {
             ...prev,
             [`${uniformKey}_${size}`]: quantity
         }));
-    };
-
-    const handleAddSizeToUniform = (uniformKey, size) => {
-        setSelectedUniformSizeQuantities(prev => ({
-            ...prev,
-            [`${uniformKey}_${size}`]: 1
-        }));
+        
+        // Clear quantity error when user adds items
+        if (quantity > 0 && validationErrors.quantity) {
+            setValidationErrors(prev => {
+                const newErrors = {...prev};
+                delete newErrors.quantity;
+                return newErrors;
+            });
+        }
     };
 
     const handleRemoveSizeFromUniform = (uniformKey, size) => {
@@ -223,10 +354,6 @@ export default function CreateOrder() {
         setSelectedUniform(null);
     };
 
-    const handleOpenSizeSpecs = () => {
-        setShowSizeSpecsDialog(true);
-    };
-
     const handleCloseSizeSpecs = () => {
         setShowSizeSpecsDialog(false);
         setSelectedSizeSpecs(null);
@@ -238,19 +365,6 @@ export default function CreateOrder() {
             gender: designItem.designItem.gender === 'boy' ? 'male' : 'female'
         });
         setShowSizeSpecsDialog(true);
-    };
-
-    const getItemTypeIcon = (type) => {
-        switch (type) {
-            case 'shirt':
-                return <PiShirtFoldedFill style={{fontSize: '20px'}}/>;
-            case 'pants':
-                return <PiPantsFill style={{fontSize: '20px'}}/>;
-            case 'skirt':
-                return <GiSkirt style={{fontSize: '20px'}}/>;
-            default:
-                return <PiShirtFoldedFill style={{fontSize: '20px'}}/>;
-        }
     };
 
     const getCategoryColor = (category) => {
@@ -443,25 +557,109 @@ export default function CreateOrder() {
                                                 Step 2: Set Delivery Deadline
                                             </Typography>
                                         </Box>
-                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 3}}>
-                                            <Typography variant="body1" sx={{fontWeight: 500, minWidth: '120px'}}>
-                                                Expected Delivery:
+                                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 3}}>
+                                                <Typography variant="body1" sx={{fontWeight: 500, minWidth: '120px'}}>
+                                                    Expected Delivery:
+                                                </Typography>
+                                                <DatePicker
+                                                    value={deadline}
+                                                    onChange={handleDeadlineChange}
+                                                    placeholder="Select delivery date (minimum 2 weeks from today)"
+                                                    format="DD/MM/YYYY"
+                                                    style={{
+                                                        width: 280,
+                                                        height: '48px',
+                                                        borderRadius: '8px',
+                                                        border: '1px solid #e0e0e0'
+                                                    }}
+                                                    disabledDate={(current) => {
+                                                        // Minimum date is 2 weeks (14 days) from today
+                                                        const minDate = dayjs().add(14, 'day').startOf('day');
+                                                        return current && current < minDate;
+                                                    }}
+                                                    status={validationErrors.deadline ? 'error' : ''}
+                                                />
+                                            </Box>
+                                            {validationErrors.deadline && (
+                                                <Typography variant="body2" sx={{
+                                                    color: '#d32f2f', 
+                                                    fontSize: '13px',
+                                                    fontWeight: 500,
+                                                    ml: '120px',
+                                                    mt: 0.5
+                                                }}>
+                                                    ⚠ {validationErrors.deadline}
+                                                </Typography>
+                                            )}
+                                            <Typography variant="body2" sx={{
+                                                color: '#64748b', 
+                                                fontSize: '13px',
+                                                fontStyle: 'italic',
+                                                ml: '120px'
+                                            }}>
+                                                * Minimum delivery time is 2 weeks from today ({dayjs().add(14, 'day').format('DD/MM/YYYY')})
                                             </Typography>
-                                            <DatePicker
-                                                value={deadline}
-                                                onChange={handleDeadlineChange}
-                                                placeholder="Select your preferred delivery date"
-                                                format="DD/MM/YYYY"
-                                                style={{
-                                                    width: 280,
-                                                    height: '48px',
-                                                    borderRadius: '8px',
-                                                    border: '1px solid #e0e0e0'
-                                                }}
-                                                disabledDate={(current) => {
-                                                    return current && current < dayjs().startOf('day');
+                                        </Box>
+                                    </Box>
+                                )}
+
+                                {/* Order Note Section */}
+                                {selectedDesignId && (
+                                    <Box sx={{
+                                        p: 3,
+                                        borderRadius: 3,
+                                        background: 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)',
+                                        border: '1px solid #ffcc02',
+                                        mt: 3
+                                    }}>
+                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                            <InfoIcon sx={{color: '#f57c00'}}/>
+                                            <Typography variant="h6" sx={{fontWeight: 600, color: '#e65100'}}>
+                                                Step 3: Additional Notes (Optional)
+                                            </Typography>
+                                        </Box>
+                                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                                            <Typography variant="body1" sx={{fontWeight: 500, color: '#bf360c'}}>
+                                                Order Notes:
+                                            </Typography>
+                                            <TextField
+                                                multiline
+                                                rows={4}
+                                                value={orderNote}
+                                                onChange={handleOrderNoteChange}
+                                                placeholder="Enter any additional notes or special requirements for your order..."
+                                                variant="outlined"
+                                                sx={{
+                                                    width: '100%',
+                                                    '& .MuiOutlinedInput-root': {
+                                                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                                        borderRadius: 2,
+                                                        '&:hover fieldset': {
+                                                            borderColor: '#f57c00',
+                                                        },
+                                                        '&.Mui-focused fieldset': {
+                                                            borderColor: '#f57c00',
+                                                            borderWidth: '2px',
+                                                        },
+                                                    },
+                                                    '& .MuiInputBase-input': {
+                                                        fontSize: '14px',
+                                                        color: '#424242',
+                                                    },
+                                                    '& .MuiInputBase-input::placeholder': {
+                                                        color: '#9e9e9e',
+                                                        opacity: 1,
+                                                    }
                                                 }}
                                             />
+                                            <Typography variant="body2" sx={{
+                                                color: '#8d6e63', 
+                                                fontSize: '12px',
+                                                fontStyle: 'italic'
+                                            }}>
+                                                * This field is optional. You can include special delivery instructions, size modifications, or any other requirements.
+                                            </Typography>
                                         </Box>
                                     </Box>
                                 )}
@@ -973,6 +1171,42 @@ export default function CreateOrder() {
                                     </Row>
                                 </CardContent>
                             </MuiCard>
+                        )}
+                        
+                        {/* Create Order Button */}
+                        {selectedDesignId && selectedDesign && (
+                            <Box sx={{ mt: 4, textAlign: 'right' }}>
+                                <Button
+                                    variant="contained"
+                                    size="large"
+                                    onClick={handleCreateOrder}
+                                    disabled={!deadline || getTotalQuantity() < 1 || isCreatingOrder}
+                                    sx={{
+                                        px: 6,
+                                        py: 2,
+                                        fontSize: '16px',
+                                        fontWeight: 600,
+                                        borderRadius: 3,
+                                        backgroundColor: '#4caf50',
+                                        '&:hover': {
+                                            backgroundColor: '#45a049'
+                                        },
+                                        '&:disabled': {
+                                            backgroundColor: '#bdbdbd'
+                                        }
+                                    }}
+                                >
+                                    {isCreatingOrder ? (
+                                        <>
+                                            <CircularProgress size={20} sx={{ mr: 1, color: 'white' }} />
+                                            Creating Order...
+                                        </>
+                                    ) : (
+                                        `Create Order (${getTotalQuantity()} items)`
+                                    )}
+                                </Button>
+                                
+                            </Box>
                         )}
                     </Box>
                 )}
@@ -1735,7 +1969,7 @@ export default function CreateOrder() {
                 }}>
                     <TableChartIcon style={{color: 'white', fontSize: '18px'}}/>
                     <span style={{fontWeight: 600, fontSize: '16px'}}>
-                        Size Specifications - {selectedSizeSpecs?.gender === 'male' ? 'Boys' : 'Girls'} {selectedSizeSpecs?.type?.charAt(0).toUpperCase() + selectedSizeSpecs?.type?.slice(1)}
+                        Size Specifications - {selectedSizeSpecs?.gender === 'male' ? 'Boys' : 'Girls'}
                     </span>
                 </DialogTitle>
 
@@ -1749,7 +1983,7 @@ export default function CreateOrder() {
                                         <span style={{
                                             fontWeight: 600,
                                             fontSize: '16px'
-                                        }}>{selectedSizeSpecs.gender === 'male' ? 'Boys' : 'Girls'} {selectedSizeSpecs.type.charAt(0).toUpperCase() + selectedSizeSpecs.type.slice(1)} Sizes</span>
+                                        }}>{selectedSizeSpecs.gender === 'male' ? 'Boys' : 'Girls'} Sizes</span>
                                     </Space>
                                 }
                                 style={{
