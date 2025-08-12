@@ -51,7 +51,7 @@ const QuotationStatusChip = ({ status }) => {
                     bgColor: '#f59e0b',
                     icon: <PendingIcon sx={{ fontSize: 14 }} />
                 };
-            case 'garment_quotation_accepted':
+            case 'garment_quotation_approved':
                 return {
                     label: 'Accepted',
                     color: '#fff',
