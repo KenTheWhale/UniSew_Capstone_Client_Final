@@ -34,18 +34,18 @@ const features = [
     icon: <DesignServices sx={{ fontSize: 40, color: "#6C63FF" }} />,
     title: "Custom Design Studio",
     description:
-      "Create unique uniform style with our intuitive online design tools.",
+      "Finding suitable designer for each schools' requirement",
   },
   {
     icon: <CheckCircle sx={{ fontSize: 40, color: "#6C63FF" }} />,
     title: "Quality Assurance",
     description:
-      "Premium materials and strict quality control for every uniform order.",
+      "Premium materials and strict quality control.",
   },
   {
     icon: <EmojiEvents sx={{ fontSize: 40, color: "#6C63FF" }} />,
     title: "Best Pricing",
-    description: "Competitive prices with bulk discounts for schools.",
+    description: "Reasonable prices for schools.",
   },
 ];
 
@@ -55,14 +55,14 @@ const testimonials = [
     role: "Principal, Green Valley School",
     avatar: "https://randomuser.me/api/portraits/women/32.jpg",
     content:
-      "UniSew transformed our uniform ordering process. The design tools are intuitive and the quality is outstanding.",
+      "UniSew transformed our uniform ordering process. Easy to interact with my favourite designer",
   },
   {
     name: "Michael Chen",
     role: "Head Teacher, Sunrise Academy",
     avatar: "https://randomuser.me/api/portraits/men/44.jpg",
     content:
-      "Excellent service and support. The online platform makes it so easy to manage our uniform needs.",
+      "Excellent service and interaction with designer. The online platform makes it so easy to manage our uniform needs.",
   },
   {
     name: "Emily Rodriguez",
@@ -237,9 +237,9 @@ export default function Homepage() {
                 component="ul"
                 sx={{ pl: 3, mb: 3, color: "#444", fontSize: "1.1rem" }}
               >
-                <li>Easy online design studio</li>
-                <li>Premium materials</li>
-                <li>Fast, reliable delivery</li>
+                <li>Collaborate with our expert designers through our simple online platform. Share your vision, upload ideas, and watch your concepts come to life without endless back-and-forth emails.</li>
+                <li>Every project is uniquely crafted to reflect your brand identity and goals.</li>
+                <li>From concept sketches to final production, our designers ensure every element is flawless.</li>
               </Box>
               <Button
                 variant="contained"
@@ -442,7 +442,7 @@ export default function Homepage() {
                 step: "01",
                 title: "Design Your Uniform",
                 description:
-                  "Use our intuitive design studio to create your school's unique uniform style",
+                  "Finding suitable designer and quality design templates",
               },
               {
                 step: "02",

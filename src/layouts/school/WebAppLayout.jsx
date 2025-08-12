@@ -471,7 +471,7 @@ function Footer() {
                             CONTACT US
                         </Typography>
                         <Typography variant="body2" sx={{mb: 1, color: 'rgba(255,255,255,0.9)'}}>
-                            PO Box No 4455, 3844 Point Street,<br/>Chicago, IL 60620. USA
+                            7 Đ. D1, Long Thạnh Mỹ, Thủ Đức, Hồ Chí Minh<br/>VietNam
                         </Typography>
                         <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mb: 0.5}}>
                             <PhoneIcon sx={{fontSize: 18, color: 'rgba(255,255,255,0.8)'}}/>
@@ -484,24 +484,6 @@ function Footer() {
                         <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mb: 1}}>
                             <EmailIcon sx={{fontSize: 18, color: 'rgba(255,255,255,0.8)'}}/>
                             <Typography variant="body2">rockybd1995@gmail.com</Typography>
-                        </Box>
-                        <Box sx={{display: 'flex', gap: 1, mt: 1}}>
-                            <IconButton color="inherit" size="small" sx={{
-                                bgcolor: '#1976d2',
-                                '&:hover': {bgcolor: '#1565c0'}
-                            }}><TwitterIcon/></IconButton>
-                            <IconButton color="inherit" size="small" sx={{
-                                bgcolor: '#1976d2',
-                                '&:hover': {bgcolor: '#1565c0'}
-                            }}><FacebookIcon/></IconButton>
-                            <IconButton color="inherit" size="small" sx={{
-                                bgcolor: '#1976d2',
-                                '&:hover': {bgcolor: '#1565c0'}
-                            }}><InstagramIcon/></IconButton>
-                            <IconButton color="inherit" size="small" sx={{
-                                bgcolor: '#1976d2',
-                                '&:hover': {bgcolor: '#1565c0'}
-                            }}><MenuIcon/></IconButton>
                         </Box>
                     </Grid>
 
@@ -519,12 +501,12 @@ function Footer() {
                         }}>
                             <div><a href="/policy/privacy" style={{color: 'inherit', textDecoration: 'none'}}>Privacy
                                 Policy</a></div>
-                            <div><a href="#" style={{color: 'inherit', textDecoration: 'none'}}>Terms of Service</a>
+                            <div><a href="/tos" style={{color: 'inherit', textDecoration: 'none'}}>Terms of Service</a>
                             </div>
-                            <div><a href="#" style={{color: 'inherit', textDecoration: 'none'}}>Return Policy</a></div>
-                            <div><a href="#" style={{color: 'inherit', textDecoration: 'none'}}>Shipping Information</a>
-                            </div>
-                            <div><a href="#" style={{color: 'inherit', textDecoration: 'none'}}>FAQ</a></div>
+                            {/*<div><a href="#" style={{color: 'inherit', textDecoration: 'none'}}>Return Policy</a></div>*/}
+                            {/*<div><a href="#" style={{color: 'inherit', textDecoration: 'none'}}>Shipping Information</a>*/}
+                            {/*</div>*/}
+                            <div><a href="/faq" style={{color: 'inherit', textDecoration: 'none'}}>FAQ</a></div>
                         </Box>
                     </Grid>
 
