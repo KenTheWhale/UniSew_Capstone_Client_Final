@@ -97,7 +97,7 @@ function TopBar() {
                         }}
                         onClick={handleRegisterClick}
                     >
-                        Đăng Ký Trở Thành Đối Tác
+                        Register to Become a Partner
                     </Button>
                     <Menu
                         anchorEl={anchorEl}
@@ -131,7 +131,7 @@ function TopBar() {
                                 transition: 'background 0.2s, color 0.2s',
                             }}
                         >
-                            <FactoryIcon sx={{color: '#1976d2', mr: 1}}/> Xưởng May
+                            <FactoryIcon sx={{color: '#1976d2', mr: 1}}/> Garment Factory
                         </MenuItem>
                         <MenuItem
                             onClick={() => handleRegister('designer')}
@@ -148,7 +148,7 @@ function TopBar() {
                                 transition: 'background 0.2s, color 0.2s',
                             }}
                         >
-                            <DesignServicesIcon sx={{color: '#1976d2', mr: 1}}/> Nhà Thiết Kế
+                            <DesignServicesIcon sx={{color: '#1976d2', mr: 1}}/> Designer
                         </MenuItem>
                     </Menu>
                 </Box>
@@ -186,7 +186,7 @@ function MainHeader() {
 
     // Button text and action logic
     const isSignedIn = typeof window !== 'undefined' && localStorage.getItem('user');
-    const buttonText = isSignedIn ? 'Khám Phá UniSew' : 'Đăng Nhập';
+    const buttonText = isSignedIn ? 'Explore UniSew' : 'Sign In';
 
     const handleButtonClick = (event) => {
         if (!isSignedIn) {
@@ -235,7 +235,7 @@ function MainHeader() {
                             }}
                             onClick={() => window.location.href = '/home'}
                         >
-                            Trang Chủ
+                            Home
                         </Button>
                         <Button
                             color="inherit"
@@ -248,7 +248,7 @@ function MainHeader() {
                             }}
                             onClick={() => window.location.href = '/tutorial'}
                         >
-                            Quy Trình Hoạt Động
+                            How It Works
                         </Button>
                         <Button
                             color="inherit"
@@ -261,7 +261,7 @@ function MainHeader() {
                             }}
                             onClick={() => window.location.href = '/about'}
                         >
-                            Về Chúng Tôi
+                            About
                         </Button>
                         <Button
                             color="inherit"
@@ -274,7 +274,7 @@ function MainHeader() {
                             }}
                             onClick={() => window.location.href = '/contact'}
                         >
-                            Liên Hệ
+                            Contact
                         </Button>
                     </Box>
                     {/* User Menu Button */}
@@ -362,7 +362,7 @@ function MainHeader() {
                                         transition: 'background 0.2s, color 0.2s',
                                     }}
                                 >
-                                    <DashboardIcon sx={{color: '#1976d2', mr: 1}}/> Bảng Điều Khiển
+                                    <DashboardIcon sx={{color: '#1976d2', mr: 1}}/> Dashboard
                                 </MenuItem>
                                 <MenuItem
                                     onClick={() => {
@@ -382,7 +382,7 @@ function MainHeader() {
                                         transition: 'background 0.2s, color 0.2s',
                                     }}
                                 >
-                                    <LogoutIcon sx={{color: '#dc3545', mr: 1}}/> Đăng Xuất
+                                    <LogoutIcon sx={{color: '#dc3545', mr: 1}}/> Logout
                                 </MenuItem>
                             </Menu>
                         )}
@@ -406,25 +406,25 @@ function MainHeader() {
                     }}>
                         <List>
                             <ListItem onClick={() => window.location.href = '/home'}>
-                                <ListItemText primary="Trang Chủ" sx={{color: '#1976d2', fontWeight: 600}}/>
+                                <ListItemText primary="Home" sx={{color: '#1976d2', fontWeight: 600}}/>
                             </ListItem>
                             <ListItem onClick={() => window.location.href = '/tutorial'}>
-                                <ListItemText primary="Quy Trình Hoạt Động" sx={{color: '#333', fontWeight: 600}}/>
+                                <ListItemText primary="How It Works" sx={{color: '#333', fontWeight: 600}}/>
                             </ListItem>
                             <ListItem onClick={() => window.location.href = '/about'}>
-                                <ListItemText primary="Về Chúng Tôi" sx={{color: '#333', fontWeight: 600}}/>
+                                <ListItemText primary="About" sx={{color: '#333', fontWeight: 600}}/>
                             </ListItem>
                             <ListItem onClick={() => window.location.href = '/contact'}>
-                                <ListItemText primary="Liên Hệ" sx={{color: '#333', fontWeight: 600}}/>
+                                <ListItemText primary="Contact" sx={{color: '#333', fontWeight: 600}}/>
                             </ListItem>
                             {isSignedIn && (
                                 <>
                                     <Divider sx={{my: 1}}/>
                                     <ListItem onClick={() => window.location.href = '/school/design'}>
-                                        <ListItemText primary="Bảng Điều Khiển" sx={{color: '#1976d2', fontWeight: 600}}/>
+                                        <ListItemText primary="Dashboard" sx={{color: '#1976d2', fontWeight: 600}}/>
                                     </ListItem>
                                     <ListItem onClick={handleLogout}>
-                                        <ListItemText primary="Đăng Xuất" sx={{color: '#dc3545', fontWeight: 600}}/>
+                                        <ListItemText primary="Logout" sx={{color: '#dc3545', fontWeight: 600}}/>
                                     </ListItem>
                                 </>
                             )}
@@ -449,7 +449,7 @@ function Footer() {
                     {/* Location */}
                     <Grid>
                         <Typography variant="h6" sx={{fontWeight: 700, mb: 2, color: 'white'}}>
-                            ĐỊA CHỈ
+                            LOCATION
                         </Typography>
                         <Box sx={{borderRadius: 2, overflow: 'hidden', boxShadow: 2, mb: 1}}>
                             <iframe
@@ -468,10 +468,10 @@ function Footer() {
                     {/* Contact Us */}
                     <Grid>
                         <Typography variant="h6" sx={{fontWeight: 700, mb: 2, color: 'white'}}>
-                            LIÊN HỆ CHÚNG TÔI
+                            CONTACT US
                         </Typography>
                         <Typography variant="body2" sx={{mb: 1, color: 'rgba(255,255,255,0.9)'}}>
-                            Hòm thư 4455, 3844 Đường Point,<br/>Quận 1, TP. Hồ Chí Minh, Việt Nam
+                            PO Box No 4455, 3844 Point Street,<br/>Chicago, IL 60620. USA
                         </Typography>
                         <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mb: 0.5}}>
                             <PhoneIcon sx={{fontSize: 18, color: 'rgba(255,255,255,0.8)'}}/>
@@ -508,7 +508,7 @@ function Footer() {
                     {/* Opening Hours */}
                     <Grid>
                         <Typography variant="h6" sx={{fontWeight: 700, mb: 2, color: 'white'}}>
-                            CHÍNH SÁCH CỦA CHÚNG TÔI
+                            OUR POLICIES
                         </Typography>
                         <Box sx={{
                             color: 'rgba(255,255,255,0.9)',
@@ -517,20 +517,21 @@ function Footer() {
                             flexDirection: 'column',
                             gap: 1
                         }}>
-                            <div><a href="/policy/privacy" style={{color: 'inherit', textDecoration: 'none'}}>Chính Sách Bảo Mật</a></div>
-                            <div><a href="#" style={{color: 'inherit', textDecoration: 'none'}}>Điều Khoản Dịch Vụ</a>
+                            <div><a href="/policy/privacy" style={{color: 'inherit', textDecoration: 'none'}}>Privacy
+                                Policy</a></div>
+                            <div><a href="#" style={{color: 'inherit', textDecoration: 'none'}}>Terms of Service</a>
                             </div>
-                            <div><a href="#" style={{color: 'inherit', textDecoration: 'none'}}>Chính Sách Hoàn Trả</a></div>
-                            <div><a href="#" style={{color: 'inherit', textDecoration: 'none'}}>Thông Tin Vận Chuyển</a>
+                            <div><a href="#" style={{color: 'inherit', textDecoration: 'none'}}>Return Policy</a></div>
+                            <div><a href="#" style={{color: 'inherit', textDecoration: 'none'}}>Shipping Information</a>
                             </div>
-                            <div><a href="#" style={{color: 'inherit', textDecoration: 'none'}}>Câu Hỏi Thường Gặp</a></div>
+                            <div><a href="#" style={{color: 'inherit', textDecoration: 'none'}}>FAQ</a></div>
                         </Box>
                     </Grid>
 
                     {/* Payment Acceptance */}
                     <Grid>
                         <Typography variant="h6" sx={{fontWeight: 700, mb: 2, color: 'white'}}>
-                            PHƯƠNG THỨC THANH TOÁN
+                            PAYMENT ACCEPTANCE
                         </Typography>
                         <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2}}>
                             <Box component="img"
@@ -557,7 +558,7 @@ function Footer() {
                     gap: 2
                 }}>
                     <Typography variant="body2" align="center" sx={{color: 'rgba(255,255,255,0.7)'}}>
-                        © {new Date().getFullYear()} UniSew. Tất cả quyền được bảo lưu. | Được thiết kế với ❤️ cho giáo dục
+                        © {new Date().getFullYear()} UniSew. All rights reserved. | Designed with ❤️ for education
                     </Typography>
                 </Box>
             </Container>
