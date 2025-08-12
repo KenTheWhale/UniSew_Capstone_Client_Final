@@ -13,6 +13,7 @@ import {Box, Chip, Paper} from '@mui/material';
 import {parseID} from "../../../utils/ParseIDUtil.jsx";
 import {getPaymentUrl} from "../../../services/PaymentService.jsx";
 import {enqueueSnackbar} from "notistack";
+import {serviceFee} from "../../../configs/FixedVariables.jsx";
 
 export default function DesignPaymentPopup({ visible, onCancel, selectedQuotationDetails }) {
 
@@ -38,7 +39,9 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
             sessionStorage.setItem('paymentQuotationDetails', JSON.stringify(quotationDetailsToStore));
             
             const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
-            const totalAmount = quotation.price + (extraRevision * (quotation.extraRevisionPrice || 0));
+            const subtotal = quotation.price + (extraRevision * (quotation.extraRevisionPrice || 0));
+            const fee = serviceFee(subtotal);
+            const totalAmount = subtotal + fee;
             
             const response = await getPaymentUrl(
                 totalAmount,
@@ -276,6 +279,62 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
                     </Box>
                 </Paper>
 
+                {/* Service Fee */}
+                <Paper 
+                    elevation={0}
+                    sx={{ 
+                        p: 3, 
+                        mb: 3, 
+                        border: '1px solid #e2e8f0',
+                        borderRadius: 3,
+                        backgroundColor: 'white'
+                    }}
+                >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                        <Box sx={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: '50%',
+                            backgroundColor: '#fff3e0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#f57c00'
+                        }}>
+                            <DollarOutlined style={{ fontSize: '18px' }} />
+                        </Box>
+                        <Box>
+                            <Typography.Title level={5} style={{ margin: 0, color: '#1e293b' }}>
+                                Service Fee
+                            </Typography.Title>
+                            <Typography.Text type="secondary" style={{ fontSize: '14px' }}>
+                                Platform service charge
+                            </Typography.Text>
+                        </Box>
+                    </Box>
+
+                    <Box sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center',
+                        p: 2,
+                        backgroundColor: '#fff3e0',
+                        borderRadius: 2
+                    }}>
+                        <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
+                            <strong>Service Fee:</strong>
+                        </Typography.Text>
+                        <Typography.Title level={4} style={{ margin: 0, color: '#f57c00' }}>
+                            {(() => {
+                                const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
+                                const subtotal = quotation.price + (extraRevision * (quotation.extraRevisionPrice || 0));
+                                const fee = serviceFee(subtotal);
+                                return fee.toLocaleString('vi-VN') + ' VND';
+                            })()}
+                        </Typography.Title>
+                    </Box>
+                </Paper>
+
                 {/* Security & Payment Info */}
                 <Paper 
                     elevation={0}
@@ -318,7 +377,9 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
                         <Typography.Title level={3} style={{ margin: 0, color: '#1976d2', fontWeight: 'bold' }}>
                             {(() => {
                                 const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
-                                const totalAmount = quotation.price + (extraRevision * (quotation.extraRevisionPrice || 0));
+                                const subtotal = quotation.price + (extraRevision * (quotation.extraRevisionPrice || 0));
+                                const fee = serviceFee(subtotal);
+                                const totalAmount = subtotal + fee;
                                 return totalAmount.toLocaleString('vi-VN') + ' VND';
                             })()}
                         </Typography.Title>
