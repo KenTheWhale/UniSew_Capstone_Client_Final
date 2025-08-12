@@ -18,7 +18,7 @@ export default function Login() {
             setTimeout(() => {
                 switch (role) {
                     case 'admin':
-                        window.location.href = '/login';
+                        window.location.href = '/admin/dashboard';
                         break;
                     case 'school':
                         window.location.href = '/home';
@@ -71,109 +71,256 @@ export default function Login() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                bgcolor: "#e0f7fa", // Light blue background
-                background: "linear-gradient(135deg, #e0f7fa 0%, #bbdefb 100%)", // Subtle gradient
-                py: 4,
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                position: "relative",
+                overflow: "hidden",
+                "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: "url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><defs><pattern id=\"grain\" width=\"100\" height=\"100\" patternUnits=\"userSpaceOnUse\"><circle cx=\"50\" cy=\"50\" r=\"1\" fill=\"rgba(255,255,255,0.1)\"/></pattern></defs><rect width=\"100\" height=\"100\" fill=\"url(%23grain)\"/></svg>')",
+                    opacity: 0.3,
+                }
             }}
         >
-            <Paper
-                elevation={10} // Stronger shadow for depth
+            {/* Animated background elements */}
+            <Box
                 sx={{
-                    p: {xs: 4, sm: 6, md: 8}, // Responsive padding
-                    borderRadius: 3, // Slightly more rounded corners
+                    position: "absolute",
+                    top: "10%",
+                    left: "10%",
+                    width: 200,
+                    height: 200,
+                    background: "rgba(255, 255, 255, 0.1)",
+                    borderRadius: "50%",
+                    animation: "float 6s ease-in-out infinite",
+                    "@keyframes float": {
+                        "0%, 100%": { transform: "translateY(0px) rotate(0deg)" },
+                        "50%": { transform: "translateY(-20px) rotate(180deg)" }
+                    }
+                }}
+            />
+            <Box
+                sx={{
+                    position: "absolute",
+                    bottom: "20%",
+                    right: "15%",
+                    width: 150,
+                    height: 150,
+                    background: "rgba(255, 255, 255, 0.08)",
+                    borderRadius: "50%",
+                    animation: "float 8s ease-in-out infinite reverse",
+                }}
+            />
+
+            <Paper
+                elevation={24}
+                sx={{
+                    p: {xs: 3, sm: 4, md: 5},
+                    borderRadius: 4,
                     textAlign: "center",
-                    maxWidth: 500, // Increased max width for a more substantial card
-                    width: "100%",
-                    boxShadow: "0 15px 35px rgba(0,0,0,0.15)", // Refined shadow
+                    maxWidth: 420,
+                    width: "90%",
+                    background: "rgba(255, 255, 255, 0.95)",
+                    backdropFilter: "blur(20px)",
+                    border: "1px solid rgba(255, 255, 255, 0.2)",
+                    boxShadow: "0 25px 50px rgba(0,0,0,0.25)",
                     position: "relative",
-                    overflow: "hidden",
-                    "&::before": {
-                        content: '""',
-                        position: "absolute",
-                        top: -50,
-                        left: -50,
-                        width: 150,
-                        height: 150,
-                        background: "rgba(25, 118, 210, 0.1)",
-                        borderRadius: "50%",
-                        transform: "rotate(30deg)",
+                    zIndex: 1,
+                    "&:hover": {
+                        transform: "translateY(-5px)",
+                        boxShadow: "0 35px 60px rgba(0,0,0,0.3)",
+                        transition: "all 0.3s ease"
                     },
-                    "&::after": {
-                        content: '""',
-                        position: "absolute",
-                        bottom: -50,
-                        right: -50,
-                        width: 120,
-                        height: 120,
-                        background: "rgba(66, 165, 245, 0.1)",
-                        borderRadius: "50%",
-                        transform: "rotate(-45deg)",
-                    },
+                    transition: "all 0.3s ease"
                 }}
             >
-                {/* Logo */}
-                <Box sx={{mb: 4}}>
+                {/* Logo Section */}
+                <Box sx={{mb: 4, position: "relative"}}>
                     <Box
-                        component="img"
-                        src="/logo.png"
-                        alt="UniSew Logo"
                         sx={{
-                            height: 70,
-                            width: 70,
-                            borderRadius: "50%", // Keep it circular for a friendly feel
-                            boxShadow: "0 4px 15px rgba(25,118,210,0.3)", // Subtle shadow for the logo
+                            position: "relative",
+                            display: "inline-block",
+                            mb: 2
                         }}
-                    />
-                    <Typography variant="h4" sx={{mt: 2, fontWeight: 700, color: "#1976d2"}}>
+                    >
+                        <Box
+                            component="img"
+                            src="/logo.png"
+                            alt="UniSew Logo"
+                            sx={{
+                                height: 65,
+                                width: 65,
+                                borderRadius: "50%",
+                                boxShadow: "0 8px 25px rgba(102, 126, 234, 0.4)",
+                                border: "3px solid rgba(255, 255, 255, 0.8)",
+                                transition: "all 0.3s ease",
+                                "&:hover": {
+                                    transform: "scale(1.05)",
+                                    boxShadow: "0 12px 35px rgba(102, 126, 234, 0.6)"
+                                }
+                            }}
+                        />
+                        <Box
+                            sx={{
+                                position: "absolute",
+                                top: -5,
+                                right: -5,
+                                width: 20,
+                                height: 20,
+                                background: "linear-gradient(45deg, #667eea, #764ba2)",
+                                borderRadius: "50%",
+                                animation: "pulse 2s infinite"
+                            }}
+                        />
+                    </Box>
+                    <Typography 
+                        variant="h4" 
+                        sx={{
+                            fontWeight: 800,
+                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                            backgroundClip: "text",
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent",
+                            letterSpacing: "-0.5px",
+                            mb: 0.5
+                        }}
+                    >
                         UniSew
+                    </Typography>
+                    <Typography 
+                        variant="caption" 
+                        sx={{
+                            color: "#666",
+                            fontWeight: 500,
+                            letterSpacing: "1px",
+                            textTransform: "uppercase",
+                            fontSize: "0.75rem"
+                        }}
+                    >
+                        Smart Uniform Management Platform
                     </Typography>
                 </Box>
 
-                <Typography variant="h5" sx={{mb: 1, fontWeight: 600, color: "#333"}}>
-                    Welcome Back!
-                </Typography>
-                <Typography variant="body1" sx={{mb: 4, color: "#666"}}>
-                    Sign in to your account with Google.
-                </Typography>
+                {/* Welcome Text */}
+                <Box sx={{mb: 4}}>
+                    <Typography 
+                        variant="h5" 
+                        sx={{
+                            mb: 1.5,
+                            fontWeight: 700,
+                            color: "#2c3e50",
+                            letterSpacing: "-0.5px"
+                        }}
+                    >
+                        Welcome Back
+                    </Typography>
+                    <Typography 
+                        variant="body2" 
+                        sx={{
+                            color: "#7f8c8d",
+                            fontSize: "0.95rem",
+                            lineHeight: 1.5,
+                            maxWidth: 280,
+                            mx: "auto"
+                        }}
+                    >
+                        Sign in to access your dashboard and manage your projects
+                    </Typography>
+                </Box>
 
                 {/* Google Login Button */}
                 <Box sx={{mb: 4}}>
                     <Button
                         variant="contained"
                         size="large"
-                        startIcon={<GoogleIcon/>}
-                        onClick={() => login()} // Call the login function from the hook
+                        startIcon={<GoogleIcon sx={{ fontSize: 20 }} />}
+                        onClick={() => login()}
                         sx={{
-                            background: 'linear-gradient(90deg, #d32f2f 0%, #ef5350 100%)', // Red gradient
+                            background: "linear-gradient(135deg, #d32f2f 0%, #f44336 100%)",
                             color: 'white',
-                            fontWeight: 700,
-                            px: 4, // Decreased horizontal padding
+                            fontWeight: 600,
+                            px: 5,
                             py: 1.5,
                             fontSize: "1rem",
                             borderRadius: 3,
-                            boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+                            boxShadow: "0 8px 25px rgba(211, 47, 47, 0.4)",
                             textTransform: "none",
-                            width: "80%", // Adjusted width to be 80%
-                            "&:hover": {
-                                background: 'linear-gradient(90deg, #c62828 0%, #d32f2f 100%)', // Darker red on hover
-                                boxShadow: "0 6px 16px rgba(0,0,0,0.4)",
+                            width: "100%",
+                            maxWidth: 300,
+                            position: "relative",
+                            overflow: "hidden",
+                            "&::before": {
+                                content: '""',
+                                position: "absolute",
+                                top: 0,
+                                left: "-100%",
+                                width: "100%",
+                                height: "100%",
+                                background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
+                                transition: "left 0.5s"
                             },
+                            "&:hover": {
+                                background: "linear-gradient(135deg, #c62828 0%, #d32f2f 100%)",
+                                boxShadow: "0 12px 35px rgba(211, 47, 47, 0.6)",
+                                transform: "translateY(-2px)",
+                                "&::before": {
+                                    left: "100%"
+                                }
+                            },
+                            "&:active": {
+                                transform: "translateY(0px)"
+                            },
+                            transition: "all 0.3s ease"
                         }}
                     >
-                        Sign in with Google
+                        Continue with Google
                     </Button>
                 </Box>
 
-                <Typography variant="body2" sx={{color: "#888", mb: 2}}>
-                    By signing in, you agree to our
-                    <Link href="#" color="primary" sx={{ml: 0.5, textDecoration: 'none'}}>
-                        Terms of Service
-                    </Link>
-                    <span> and </span>
-                    <Link href={'/policy/privacy'} color="primary" sx={{ml: 0.5, textDecoration: 'none'}}>
-                        Privacy Policy
-                    </Link>.
-                </Typography>
+                {/* Footer Links */}
+                <Box sx={{borderTop: "1px solid rgba(0,0,0,0.1)", pt: 2.5}}>
+                    <Typography 
+                        variant="caption" 
+                        sx={{
+                            color: "#95a5a6",
+                            lineHeight: 1.5,
+                            fontSize: "0.75rem"
+                        }}
+                    >
+                        By signing in, you agree to our{" "}
+                        <Link 
+                            href="#" 
+                            sx={{
+                                color: "#667eea",
+                                textDecoration: "none",
+                                fontWeight: 600,
+                                "&:hover": {
+                                    textDecoration: "underline"
+                                }
+                            }}
+                        >
+                            Terms of Service
+                        </Link>
+                        {" "}and{" "}
+                        <Link 
+                            href="/policy/privacy" 
+                            sx={{
+                                color: "#667eea",
+                                textDecoration: "none",
+                                fontWeight: 600,
+                                "&:hover": {
+                                    textDecoration: "underline"
+                                }
+                            }}
+                        >
+                            Privacy Policy
+                        </Link>
+                    </Typography>
+                </Box>
             </Paper>
         </Box>
     );

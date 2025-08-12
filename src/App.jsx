@@ -5,7 +5,7 @@ import Homepage from "./components/auth/Homepage.jsx";
 import About from "./components/auth/About.jsx";
 import Login from "./components/auth/Login.jsx";
 import {GoogleOAuthProvider} from "@react-oauth/google"; // Import GoogleOAuthProvider
-import SchoolDesign from "./components/school/design/SchoolDesign.jsx";
+import SchoolDesignManagement from "./components/school/design/SchoolDesignManagement.jsx";
 import WebAppDashboard from "./layouts/school/WebAppDashboard.jsx";
 import Contact from "./components/auth/Contact.jsx";
 import {SnackbarProvider} from 'notistack';
@@ -26,56 +26,60 @@ import AppliedRequestList from "./components/designer/AppliedRequestList.jsx";
 import AppliedRequestDetail from "./components/designer/AppliedRequestDetail.jsx";
 import SchoolProfile from "./components/school/profile/SchoolProfile.jsx";
 import DesignerProfile from "./components/designer/profile/DesignerProfile.jsx";
-import SchoolOrderList from "./components/school/order/SchoolOrderList.jsx";
+import SchoolOrderManagement from "./components/school/order/SchoolOrderManagement.jsx";
 import CreateOrder from "./components/school/order/CreateOrder.jsx";
 import GarmentDashboardLayout from "./layouts/garment/GarmentDashboardLayout.jsx";
 import GarmentOrderList from "./components/garment/GarmentOrderList.jsx";
 import GarmentOrderDetail from "./components/garment/GarmentOrderDetail.jsx";
 import GarmentOrderProduction from "./components/garment/GarmentOrderProduction.jsx";
+import AdminDashboard from "./components/admin/AdminDashboard.jsx";
+import AdminAccount from "./components/admin/AdminAccount.jsx";
+import AdminTransaction from "./components/admin/AdminTransaction.jsx";
+import AdminDashboardLayout from "./layouts/admin/AdminDashboardLayout.jsx";
 
 // Create theme with Tinos font
 const theme = createTheme({
   typography: {
-    fontFamily: '"Tinos", serif',
+    fontFamily: '"Open Sans", serif',
     h1: {
-      fontFamily: '"Tinos", serif',
+      fontFamily: '"Open Sans", serif',
     },
     h2: {
-      fontFamily: '"Tinos", serif',
+      fontFamily: '"Open Sans", serif',
     },
     h3: {
-      fontFamily: '"Tinos", serif',
+      fontFamily: '"Open Sans", serif',
     },
     h4: {
-      fontFamily: '"Tinos", serif',
+      fontFamily: '"Open Sans", serif',
     },
     h5: {
-      fontFamily: '"Tinos", serif',
+      fontFamily: '"Open Sans", serif',
     },
     h6: {
-      fontFamily: '"Tinos", serif',
+      fontFamily: '"Open Sans", serif',
     },
     body1: {
-      fontFamily: '"Tinos", serif',
+      fontFamily: '"Open Sans", serif',
     },
     body2: {
-      fontFamily: '"Tinos", serif',
+      fontFamily: '"Open Sans", serif',
     },
     button: {
-      fontFamily: '"Tinos", serif',
+      fontFamily: '"Open Sans", serif',
     },
     caption: {
-      fontFamily: '"Tinos", serif',
+      fontFamily: '"Open Sans", serif',
     },
     overline: {
-      fontFamily: '"Tinos", serif',
+      fontFamily: '"Open Sans", serif',
     },
   },
   components: {
     MuiCssBaseline: {
       styleOverrides: {
         body: {
-          fontFamily: '"Tinos", serif',
+          fontFamily: '"Open Sans", serif',
         },
       },
     },
@@ -137,7 +141,7 @@ const router = createBrowserRouter([
                     },
                     {
                         path: 'design',
-                        element: <SchoolDesign />
+                        element: <SchoolDesignManagement />
                     },
                     {
                         path: 'chat',
@@ -161,7 +165,7 @@ const router = createBrowserRouter([
                     },
                     {
                         path: 'order',
-                        element: <SchoolOrderList/>
+                        element: <SchoolOrderManagement/>
                     },
                     {
                         path: 'order/create',
@@ -173,11 +177,27 @@ const router = createBrowserRouter([
     },
     {
         path: 'admin',
-        element: <DesignerDashboardLayout />,
+        element: (
+            <ProtectedRoute allowRoles={['admin']}>
+                <AdminDashboardLayout />
+            </ProtectedRoute>
+        ),
         children: [
             {
                 index: true,
                 element: <Navigate to={'/admin/dashboard'} />
+            },
+            {
+                path: 'dashboard',
+                element: <AdminDashboard/>
+            },
+            {
+                path: 'accounts',
+                element: <AdminAccount/>
+            },
+            {
+                path: 'transactions',
+                element: <AdminTransaction/>
             }
         ]
     },

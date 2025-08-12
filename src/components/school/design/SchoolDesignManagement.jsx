@@ -25,7 +25,7 @@ import { useNavigate } from 'react-router-dom';
 import {getSchoolDesignRequests} from "../../../services/DesignService.jsx";
 import { parseID } from "../../../utils/ParseIDUtil.jsx";
 
-export default function SchoolDesign() {
+export default function SchoolDesignManagement() {
     useEffect(() => {
         localStorage.removeItem('currentDesignRequest');
     }, []);
