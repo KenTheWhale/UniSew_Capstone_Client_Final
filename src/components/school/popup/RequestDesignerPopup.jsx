@@ -72,17 +72,20 @@ export default function RequestDesignerPopup({visible, onCancel, request}) {
     if (!request) {
         return (
             <Modal open={visible} onCancel={onCancel} footer={null} centered>
-                <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4}}>
-                    <Spin size="large" tip="Loading request details..."/>
+                <Box sx={{display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', py: 4, gap: 2}}>
+                    <Spin size="large" />
+                    <Typography.Text style={{ color: '#64748b' }}>
+                        Loading request details...
+                    </Typography.Text>
                 </Box>
             </Modal>
         );
     }
     const handleQuotationSelect = (designerId) => {
         const quotation = appliedDesigners.find(d => d.id === designerId);
-            if (quotation) {
+        if (quotation) {
             setSelectedQuotation({designerId, quotationId: designerId});
-                setPaymentDetails({quotation, request});
+            setPaymentDetails({quotation, request});
             
             // Reset extra revision if the selected quotation has unlimited revisions
             if (quotation.revisionTime === 9999) {
@@ -97,7 +100,8 @@ export default function RequestDesignerPopup({visible, onCancel, request}) {
 
     const handleClosePaymentModal = () => {
         setIsPaymentModalVisible(false);
-        setPaymentDetails(null);
+        // Don't reset paymentDetails to null to avoid loading issue
+        // setPaymentDetails(null);
     };
 
     const getFooterButtons = (status) => {

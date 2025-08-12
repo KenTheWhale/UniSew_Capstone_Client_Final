@@ -16,6 +16,7 @@ import {
 import {parseID} from "../../utils/ParseIDUtil.jsx";
 import {pickQuotation} from "../../services/DesignService.jsx";
 import {approveQuotation} from "../../services/OrderService.jsx";
+import {serviceFee} from "../../configs/FixedVariables.jsx";
 import {useEffect, useState} from 'react';
 
 export default function PaymentResult() {
@@ -39,7 +40,7 @@ export default function PaymentResult() {
 
     // Check if we have valid payment data
     const hasDesignPayment = sessionStorage.getItem('paymentQuotationDetails');
-    const hasOrderPayment = isOrderPayment;
+    const hasOrderPayment = isOrderPayment && sessionStorage.getItem('orderPaymentDetails');
 
     if (!hasDesignPayment && !hasOrderPayment) {
         window.location.href = '/school/design';
@@ -50,17 +51,16 @@ export default function PaymentResult() {
         if (success && vnpOrderInfo) {
             try {
                 if (isOrderPayment) {
-                    // For order payments, we'll get order details from URL or session
-                    orderDetails = {
-                        type: 'order',
-                        description: vnpOrderInfo,
-                        amount: vnpAmount
-                    };
+                    // For order payments, get from session storage
+                    const storedOrderDetails = sessionStorage.getItem('orderPaymentDetails');
+                    if (storedOrderDetails) {
+                        orderDetails = JSON.parse(storedOrderDetails);
+                    }
                 } else {
                     // For design payments, get from session storage
-                const storedQuotationDetails = sessionStorage.getItem('paymentQuotationDetails');
-                if (storedQuotationDetails) {
-                    quotationDetails = JSON.parse(storedQuotationDetails);
+                    const storedQuotationDetails = sessionStorage.getItem('paymentQuotationDetails');
+                    if (storedQuotationDetails) {
+                        quotationDetails = JSON.parse(storedQuotationDetails);
                     }
                 }
             } catch (error) {
@@ -71,7 +71,7 @@ export default function PaymentResult() {
         window.location.href = isOrderPayment ? '/school/order' : '/school/design';
     }
 
-    const { quotation, request } = quotationDetails || {};
+    const { quotation, request, serviceFee: designServiceFee, subtotal, totalAmount } = quotationDetails || {};
     const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
 
     // Call appropriate API when payment is successful
@@ -80,23 +80,45 @@ export default function PaymentResult() {
             if (success && !hasProcessed && !isProcessing) {
                 setIsProcessing(true);
                 try {
-                    if (isOrderPayment && quotationId) {
-                        // For order payment: approve quotation
-                        const response = await approveQuotation(parseInt(quotationId));
+                    if (isOrderPayment && quotationId && orderDetails) {
+                        // For order payment: approve quotation with transaction details
+                        const data = {
+                            quotationId: parseInt(quotationId),
+                            createTransactionRequest: {
+                                type: "order",
+                                receiverId: orderDetails.quotation.garmentId,
+                                itemId: orderDetails.orderId,
+                                totalPrice: parseInt(vnpAmount) / 100,
+                                gatewayCode: vnpResponseCode,
+                                serviceFee: orderDetails.serviceFee,
+                                payFromWallet: false
+                            }
+                        };
+                        const response = await approveQuotation(data);
                         if (response && response.status === 200) {
                             console.log('Order quotation approved successfully');
                         } else {
                             console.error('Failed to approve order quotation');
                         }
                     } else if (quotationDetails) {
-                        // For design payment: pick quotation
-                    const data = {
-                        designQuotationId: quotation.id,
-                        designRequestId: request.id,
-                        extraRevision: extraRevision
-                    };
-                    
-                    const response = await pickQuotation(data);
+                        // For design payment: pick quotation with transaction details
+                        const data = {
+                            designQuotationId: quotation.id,
+                            designRequestId: request.id,
+                            extraRevision: extraRevision,
+                            serviceFee: designServiceFee || 0,
+                            createTransactionRequest: {
+                                type: "design",
+                                receiverId: quotation.designer.id,
+                                itemId: request.id,
+                                totalPrice: parseInt(vnpAmount) / 100,
+                                gatewayCode: vnpResponseCode,
+                                serviceFee: designServiceFee || 0,
+                                payFromWallet: false
+                            }
+                        };
+                        
+                        const response = await pickQuotation(data);
                     if (response && response.status === 200) {
                             console.log('Design quotation picked successfully');
                     } else {
@@ -532,7 +554,7 @@ export default function PaymentResult() {
 
                                 {/* Payment Details */}
                                 <Box>
-                                    <Typography.Title level={5} style={{ margin: '0 0 16px 0', color: '#475569' }}>
+                                    <Typography.Title level={4} style={{ margin: '0 0 16px 0', color: '#475569', fontSize: '16px' }}>
                                         Payment Details
                                     </Typography.Title>
                                     
@@ -560,58 +582,127 @@ export default function PaymentResult() {
                                             </Typography.Title>
                                         </Box>
 
+                                        {isOrderPayment && (
+                                            <>
+                                                {/* Service Fee */}
+                                                <Box sx={{ 
+                                                    display: 'flex', 
+                                                    justifyContent: 'space-between', 
+                                                    alignItems: 'center',
+                                                    p: 2,
+                                                    backgroundColor: '#f0f9ff',
+                                                    borderRadius: 2,
+                                                    border: '1px solid #bae6fd'
+                                                }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                        <FileTextOutlined style={{ color: '#0284c7', fontSize: '16px' }} />
+                                                        <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
+                                                            <strong>Service Fee:</strong>
+                                                        </Typography.Text>
+                                                    </Box>
+                                                    <Typography.Text style={{ color: '#0284c7', fontSize: '14px', fontWeight: 600 }}>
+                                                        {serviceFee(parseInt(vnpAmount) / 100).toLocaleString('vi-VN')} VND
+                                                    </Typography.Text>
+                                                </Box>
+
+                                                {/* Net Amount */}
+                                                <Box sx={{ 
+                                                    display: 'flex', 
+                                                    justifyContent: 'space-between', 
+                                                    alignItems: 'center',
+                                                    p: 2,
+                                                    backgroundColor: '#f0fdf4',
+                                                    borderRadius: 2,
+                                                    border: '1px solid #bbf7d0'
+                                                }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                        <CheckCircleOutlined style={{ color: '#16a34a', fontSize: '16px' }} />
+                                                        <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
+                                                            <strong>Net Amount (After Service Fee):</strong>
+                                                        </Typography.Text>
+                                                    </Box>
+                                                    <Typography.Title level={5} style={{ margin: 0, color: '#16a34a', fontWeight: 700 }}>
+                                                        {((parseInt(vnpAmount) / 100) - serviceFee(parseInt(vnpAmount) / 100)).toLocaleString('vi-VN')} VND
+                                                    </Typography.Title>
+                                                </Box>
+                                            </>
+                                        )}
+
                                         {!isOrderPayment && (
                                             <>
-                                        <Box sx={{ display: 'flex', gap: 2 }}>
-                                            <Box sx={{ 
-                                                flex: 1, 
-                                                p: 2, 
-                                                backgroundColor: '#f8fafc', 
-                                                borderRadius: 2,
-                                                textAlign: 'center'
-                                            }}>
-                                                <CalendarOutlined style={{ color: '#1976d2', fontSize: '20px', marginBottom: '8px' }} />
-                                                <Typography.Text style={{ color: '#475569', fontSize: '13px', display: 'block' }}>
-                                                    <strong>Design Time</strong>
-                                                </Typography.Text>
-                                                <Typography.Text style={{ color: '#1e293b', fontSize: '16px', fontWeight: 'bold' }}>
+                                                {/* Service Fee for Design Payment */}
+                                                {designServiceFee && (
+                                                    <Box sx={{ 
+                                                        display: 'flex', 
+                                                        justifyContent: 'space-between', 
+                                                        alignItems: 'center',
+                                                        p: 2,
+                                                        backgroundColor: '#f0f9ff',
+                                                        borderRadius: 2,
+                                                        border: '1px solid #bae6fd'
+                                                    }}>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                            <FileTextOutlined style={{ color: '#0284c7', fontSize: '16px' }} />
+                                                            <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
+                                                                <strong>Service Fee:</strong>
+                                                            </Typography.Text>
+                                                        </Box>
+                                                        <Typography.Text style={{ color: '#0284c7', fontSize: '14px', fontWeight: 600 }}>
+                                                            {designServiceFee.toLocaleString('vi-VN')} VND
+                                                        </Typography.Text>
+                                                    </Box>
+                                                )}
+
+                                                <Box sx={{ display: 'flex', gap: 2 }}>
+                                                    <Box sx={{ 
+                                                        flex: 1, 
+                                                        p: 2, 
+                                                        backgroundColor: '#f8fafc', 
+                                                        borderRadius: 2,
+                                                        textAlign: 'center'
+                                                    }}>
+                                                        <CalendarOutlined style={{ color: '#1976d2', fontSize: '20px', marginBottom: '8px' }} />
+                                                        <Typography.Text style={{ color: '#475569', fontSize: '13px', display: 'block' }}>
+                                                            <strong>Design Time</strong>
+                                                        </Typography.Text>
+                                                        <Typography.Text style={{ color: '#1e293b', fontSize: '16px', fontWeight: 'bold' }}>
                                                             {quotation?.deliveryWithIn} days
-                                                </Typography.Text>
-                                            </Box>
+                                                        </Typography.Text>
+                                                    </Box>
 
-                                            <Box sx={{ 
-                                                flex: 1, 
-                                                p: 2, 
-                                                backgroundColor: '#f8fafc', 
-                                                borderRadius: 2,
-                                                textAlign: 'center'
-                                            }}>
-                                                <EditOutlined style={{ color: '#1976d2', fontSize: '20px', marginBottom: '8px' }} />
-                                                <Typography.Text style={{ color: '#475569', fontSize: '13px', display: 'block' }}>
-                                                    <strong>Max Revisions</strong>
-                                                </Typography.Text>
-                                                <Typography.Text style={{ color: '#1e293b', fontSize: '16px', fontWeight: 'bold' }}>
+                                                    <Box sx={{ 
+                                                        flex: 1, 
+                                                        p: 2, 
+                                                        backgroundColor: '#f8fafc', 
+                                                        borderRadius: 2,
+                                                        textAlign: 'center'
+                                                    }}>
+                                                        <EditOutlined style={{ color: '#1976d2', fontSize: '20px', marginBottom: '8px' }} />
+                                                        <Typography.Text style={{ color: '#475569', fontSize: '13px', display: 'block' }}>
+                                                            <strong>Max Revisions</strong>
+                                                        </Typography.Text>
+                                                        <Typography.Text style={{ color: '#1e293b', fontSize: '16px', fontWeight: 'bold' }}>
                                                             {quotation?.revisionTime === 9999 ? 'Unlimited' : quotation?.revisionTime}
-                                                </Typography.Text>
-                                            </Box>
-                                        </Box>
+                                                        </Typography.Text>
+                                                    </Box>
+                                                </Box>
 
-                                        {extraRevision > 0 && (
-                                            <Box sx={{ 
-                                                p: 2, 
-                                                backgroundColor: '#fff7e6', 
-                                                borderRadius: 2,
-                                                border: '1px solid #ffd591',
-                                                textAlign: 'center'
-                                            }}>
-                                                <PlusOutlined style={{ color: '#fa8c16', fontSize: '20px', marginBottom: '8px' }} />
-                                                <Typography.Text style={{ color: '#475569', fontSize: '13px', display: 'block' }}>
-                                                    <strong>Extra Revisions Purchased</strong>
-                                                </Typography.Text>
-                                                <Typography.Text style={{ color: '#fa8c16', fontSize: '16px', fontWeight: 'bold' }}>
+                                                {extraRevision > 0 && (
+                                                    <Box sx={{ 
+                                                        p: 2, 
+                                                        backgroundColor: '#fff7e6', 
+                                                        borderRadius: 2,
+                                                        border: '1px solid #ffd591',
+                                                        textAlign: 'center'
+                                                    }}>
+                                                        <PlusOutlined style={{ color: '#fa8c16', fontSize: '20px', marginBottom: '8px' }} />
+                                                        <Typography.Text style={{ color: '#475569', fontSize: '13px', display: 'block' }}>
+                                                            <strong>Extra Revisions Purchased</strong>
+                                                        </Typography.Text>
+                                                        <Typography.Text style={{ color: '#fa8c16', fontSize: '16px', fontWeight: 'bold' }}>
                                                             {extraRevision} additional revisions - {(extraRevision * (quotation?.extraRevisionPrice || 0)).toLocaleString('vi-VN')} VND
-                                                </Typography.Text>
-                                            </Box>
+                                                        </Typography.Text>
+                                                    </Box>
                                                 )}
                                             </>
                                         )}
@@ -635,10 +726,12 @@ export default function PaymentResult() {
                                 borderColor: '#1976d2'
                             }}
                             onClick={() => {
-                                // Clear sessionStorage after successful processing
+                                                                // Clear sessionStorage after successful processing
                                 if (!isOrderPayment) {
-                                sessionStorage.removeItem('paymentQuotationDetails');
-                                sessionStorage.removeItem('extraRevision');
+                                    sessionStorage.removeItem('paymentQuotationDetails');
+                                    sessionStorage.removeItem('extraRevision');
+                                } else {
+                                    sessionStorage.removeItem('orderPaymentDetails');
                                 }
                                 window.location.href = isOrderPayment ? '/school/order' : '/school/design'
                             }}

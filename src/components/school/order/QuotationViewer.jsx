@@ -38,6 +38,7 @@ import {
 import { useSnackbar } from 'notistack';
 import { viewQuotation, approveQuotation } from '../../../services/OrderService.jsx';
 import { getPaymentUrl } from '../../../services/PaymentService.jsx';
+import { serviceFee } from '../../../configs/FixedVariables.jsx';
 import QuotationSummaryPopup from '../popup/QuotationSummaryPopup.jsx';
 
 // Status chip component for quotations
@@ -159,6 +160,18 @@ export default function QuotationViewer({ visible, onCancel, orderId }) {
     const handlePayment = async (quotation) => {
         try {
             setApprovingQuotationId(quotation.id);
+            
+            // Calculate service fee
+            const fee = serviceFee(quotation.price);
+            
+            // Store order payment details in sessionStorage
+            const orderPaymentDetails = {
+                quotation: quotation,
+                orderId: orderId, // from props
+                serviceFee: fee,
+                totalAmount: quotation.price + fee
+            };
+            sessionStorage.setItem('orderPaymentDetails', JSON.stringify(orderPaymentDetails));
             
             // Step 1: Approve the quotation
             const approveResponse = await approveQuotation(quotation.id);
