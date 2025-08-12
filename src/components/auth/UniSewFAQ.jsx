@@ -65,7 +65,7 @@ const UniSewFAQ = () => {
                             <Typography component="li" variant="body2">Free design consultation</Typography>
                             <Typography component="li" variant="body2">Color, logo, and slogan customization</Typography>
                             <Typography component="li" variant="body2">Multiple design versions for selection</Typography>
-                            <Typography component="li" variant="body2">3D preview before production</Typography>
+
                         </Box>
                     </Box>
                 )
@@ -83,12 +83,6 @@ const UniSewFAQ = () => {
                             </Typography>
                             <Typography component="li" variant="body2">
                                 <strong>Detailed design files:</strong> Technical drawings with complete specifications
-                            </Typography>
-                            <Typography component="li" variant="body2">
-                                <strong>Physical samples:</strong> Create actual samples at reasonable cost (refundable for large orders)
-                            </Typography>
-                            <Typography component="li" variant="body2">
-                                <strong>Demonstration videos:</strong> 360° videos to view details from every angle
                             </Typography>
                         </Box>
                     </Box>
@@ -152,8 +146,6 @@ const UniSewFAQ = () => {
                         <Box component="ul" sx={{ pl: 2 }}>
                             <Typography component="li" variant="body2"><strong>Material inspection:</strong> Every meter of fabric is checked before use</Typography>
                             <Typography component="li" variant="body2"><strong>Production monitoring:</strong> Close supervision of every process</Typography>
-                            <Typography component="li" variant="body2"><strong>Finished product inspection:</strong> 100% of products are checked before shipping</Typography>
-                            <Typography component="li" variant="body2"><strong>Quality warranty:</strong> 6-month warranty for manufacturing defects</Typography>
                             <Typography component="li" variant="body2"><strong>Certification:</strong> Products meet child safety standards</Typography>
                         </Box>
                     </Box>
@@ -169,8 +161,6 @@ const UniSewFAQ = () => {
                         <Box component="ul" sx={{ pl: 2 }}>
                             <Typography component="li" variant="body2"><strong>Fade-resistant fabric:</strong> Using premium dyeing technology, colors remain vibrant after multiple washes</Typography>
                             <Typography component="li" variant="body2"><strong>Strong stitching:</strong> Using high-quality thread, double-needle stitching for durability</Typography>
-                            <Typography component="li" variant="body2"><strong>Durability testing:</strong> All products undergo wash testing before shipment</Typography>
-                            <Typography component="li" variant="body2"><strong>Guarantee:</strong> 6-month warranty on color and shape retention under normal use</Typography>
                         </Box>
                     </Box>
                 )
@@ -188,7 +178,6 @@ const UniSewFAQ = () => {
                             <Typography component="li" variant="body2"><strong>Step 1:</strong> Contact for consultation via hotline 0939-674-767 or email</Typography>
                             <Typography component="li" variant="body2"><strong>Step 2:</strong> Discuss design, materials, and quantities</Typography>
                             <Typography component="li" variant="body2"><strong>Step 3:</strong> Receive detailed quotation and production timeline</Typography>
-                            <Typography component="li" variant="body2"><strong>Step 4:</strong> Sign contract and pay 50% deposit</Typography>
                             <Typography component="li" variant="body2"><strong>Step 5:</strong> Confirm sample and begin production</Typography>
                             <Typography component="li" variant="body2"><strong>Step 6:</strong> Pay remaining balance upon delivery</Typography>
                         </Box>
@@ -203,10 +192,10 @@ const UniSewFAQ = () => {
                             Timeline depends on order quantity and complexity:
                         </Typography>
                         <Box component="ul" sx={{ pl: 2 }}>
-                            <Typography component="li" variant="body2"><strong>50-200 pieces:</strong> 7-10 business days</Typography>
-                            <Typography component="li" variant="body2"><strong>200-500 pieces:</strong> 10-15 business days</Typography>
-                            <Typography component="li" variant="body2"><strong>500-1000 pieces:</strong> 15-20 business days</Typography>
-                            <Typography component="li" variant="body2"><strong>Over 1000 pieces:</strong> 20-25 business days</Typography>
+                            <Typography component="li" variant="body2"><strong>50-200 pieces:</strong> 7-10 business days (estimated)</Typography>
+                            <Typography component="li" variant="body2"><strong>200-500 pieces:</strong> 10-15 business days (estimated)</Typography>
+                            <Typography component="li" variant="body2"><strong>500-1000 pieces:</strong> 15-20 business days (estimated)</Typography>
+                            <Typography component="li" variant="body2"><strong>Over 1000 pieces:</strong> 20-25 business days (estimated)</Typography>
                         </Box>
                         <Typography variant="body1" sx={{ mt: 2 }}>
                             <strong>Delivery:</strong> Free nationwide delivery for orders over 100 pieces. Express delivery within 1-3 days.
@@ -240,15 +229,14 @@ const UniSewFAQ = () => {
                             Exchange and Return Policy:
                         </Typography>
                         <Box component="ul" sx={{ pl: 2, mb: 2 }}>
-                            <Typography component="li" variant="body2">Free size exchange within 7 days if sizing is incorrect</Typography>
-                            <Typography component="li" variant="body2">Exchange for manufacturing defects within 30 days</Typography>
+                            <Typography component="li" variant="body2">Free size exchange if sizing is incorrect</Typography>
+                            <Typography component="li" variant="body2">Exchange for manufacturing defects </Typography>
                             <Typography component="li" variant="body2">Size adjustment support for growing students (reasonable fee applies)</Typography>
                         </Box>
                         <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
                             Warranty:
                         </Typography>
                         <Box component="ul" sx={{ pl: 2 }}>
-                            <Typography component="li" variant="body2">6-month warranty for manufacturing defects</Typography>
                             <Typography component="li" variant="body2">Repair support at preferential rates</Typography>
                             <Typography component="li" variant="body2">Care consultation to maintain uniform longevity</Typography>
                         </Box>
@@ -263,14 +251,10 @@ const UniSewFAQ = () => {
                             UniSew supports various convenient payment methods:
                         </Typography>
                         <Box component="ul" sx={{ pl: 2 }}>
-                            <Typography component="li" variant="body2"><strong>Bank transfer:</strong> Major banks (Vietcombank, BIDV, Techcombank, etc.)</Typography>
+                            <Typography component="li" variant="body2"><strong>Bank transfer:</strong> VNPAY</Typography>
                             <Typography component="li" variant="body2"><strong>Cash on delivery (COD):</strong> For small orders under 50 pieces</Typography>
-                            <Typography component="li" variant="body2"><strong>E-wallets:</strong> MoMo, ZaloPay, VNPay</Typography>
                             <Typography component="li" variant="body2"><strong>Cash:</strong> At showroom or upon delivery</Typography>
                         </Box>
-                        <Typography variant="body1" sx={{ mt: 2 }}>
-                            <strong>Terms:</strong> 50% deposit upon contract signing, remaining balance upon delivery.
-                        </Typography>
                     </Box>
                 )
             }
