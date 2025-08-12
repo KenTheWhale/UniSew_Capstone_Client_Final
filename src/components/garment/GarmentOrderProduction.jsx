@@ -47,7 +47,7 @@ import {
     Verified as VerifiedIcon
 } from '@mui/icons-material';
 import {enqueueSnackbar} from 'notistack';
-import {getOrdersByGarment} from '../../services/OrderService';
+import {getOrdersByGarment, updateMilestoneStatus} from '../../services/OrderService';
 import dayjs from "dayjs";
 
 // Production status configuration
@@ -174,11 +174,11 @@ export default function GarmentOrderProduction() {
 
     const fetchProductionHistory = async (orderId) => {
         try {
-            setHistoryLoading(true);
-            const response = await getOrderProductionHistory(orderId);
-            if (response && response.data) {
-                setProductionHistory(response.data.body || []);
-            }
+            setHistoryLoading(false);
+            // const response = await getOrderProductionHistory(orderId);
+            // if (response && response.data) {
+            //     setProductionHistory(response.data.body || []);
+            // }
         } catch (error) {
             console.error('Error fetching production history:', error);
             // Fallback to empty array if API not available
@@ -193,20 +193,23 @@ export default function GarmentOrderProduction() {
 
         try {
             setUpdating(true);
-            const data = {
-                orderId: selectedOrder.id,
-                status: newStatus
-            };
-
-            if (response && response.status === 200) {
-                enqueueSnackbar('Production status updated successfully', { variant: 'success' });
-                setUpdateDialogOpen(false);
-                setNewStatus('');
-                setSelectedOrder(null);
-                fetchOrders(); // Refresh orders
-            } else {
-                enqueueSnackbar('Failed to update production status', { variant: 'error' });
-            }
+            // const data = {
+            //     orderId: selectedOrder.id,
+            //     status: newStatus
+            // };
+            //
+            // const response = await updateMilestoneStatus(data)
+            //
+            // if (response && response.status === 200) {
+            //     enqueueSnackbar('Production status updated successfully', { variant: 'success' });
+            //     setUpdateDialogOpen(false);
+            //     setNewStatus('');
+            //     setSelectedOrder(null);
+            //     fetchOrders(); // Refresh orders
+            // } else {
+            //     enqueueSnackbar('Failed to update production status', { variant: 'error' });
+            // }
+            fetchOrders(); // Refresh orders
         } catch (error) {
             console.error('Error updating production status:', error);
             enqueueSnackbar('Failed to update production status', { variant: 'error' });
@@ -255,7 +258,7 @@ export default function GarmentOrderProduction() {
     }
 
     return (
-        <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box sx={{ py: 4, px: 3 }}>
             {/* Header */}
             <Box sx={{ mb: 4 }}>
                 <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1e293b', mb: 1 }}>
@@ -394,13 +397,22 @@ export default function GarmentOrderProduction() {
             </Grid>
 
             {/* Orders Grid */}
-            <Grid container spacing={3}>
+            <Box sx={{ 
+                display: 'flex', 
+                flexWrap: 'wrap', 
+                gap: 3,
+                width: '100%'
+            }}>
                 {orders.map((order) => {
                     const currentStatus = getStatusInfo(order.status || 'fabric_preparation');
                     const statusIndex = getStatusIndex(order.status || 'fabric_preparation');
                     
                     return (
-                        <Grid item xs={12} md={6} lg={4} key={order.id}>
+                        <Box sx={{ 
+                            flex: '1 1 300px',
+                            minWidth: '300px',
+                            maxWidth: '400px'
+                        }} key={order.id}>
                             <Card elevation={0} sx={{ 
                                 borderRadius: 3, 
                                 border: '1px solid #e2e8f0',
@@ -412,111 +424,110 @@ export default function GarmentOrderProduction() {
                             }}>
                                 <CardContent sx={{ p: 3 }}>
                                     {/* Order Header */}
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
                                         <Avatar sx={{ 
                                             bgcolor: currentStatus.bgColor, 
                                             color: currentStatus.color,
-                                            width: 48,
-                                            height: 48
+                                            width: 36,
+                                            height: 36
                                         }}>
-                                            <currentStatus.icon />
+                                            <currentStatus.icon sx={{ fontSize: 18 }} />
                                         </Avatar>
-                                        <Box sx={{ flex: 1 }}>
-                                            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
-                                                Order #{order.id}
+                                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                                            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#1e293b', fontSize: '0.9rem' }}>
+                                                #{order.id}
                                             </Typography>
-                                            <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                            <Typography variant="caption" sx={{ color: '#64748b', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                 {order.school?.business || 'Unknown School'}
                                             </Typography>
                                         </Box>
                                         <Chip 
                                             label={currentStatus.label}
+                                            size="small"
                                             sx={{ 
                                                 backgroundColor: currentStatus.bgColor,
                                                 color: currentStatus.color,
-                                                fontWeight: 'bold'
+                                                fontWeight: 'bold',
+                                                fontSize: '0.7rem',
+                                                height: 20
                                             }}
                                         />
                                     </Box>
 
                                     {/* Order Details */}
-                                    <Box sx={{ mb: 3 }}>
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                            <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                    <Box sx={{ mb: 2 }}>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                                            <Typography variant="caption" sx={{ color: '#64748b' }}>
                                                 Deadline:
                                             </Typography>
-                                            <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
-                                                {formatDate(order.deadline)}
+                                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                                {dayjs(order.deadline).format('DD/MM')}
                                             </Typography>
                                         </Box>
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                            <Typography variant="body2" sx={{ color: '#64748b' }}>
-                                                Total Items:
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                                            <Typography variant="caption" sx={{ color: '#64748b' }}>
+                                                Items:
                                             </Typography>
-                                            <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
                                                 {order.orderDetails?.reduce((sum, item) => sum + item.quantity, 0) || 0}
                                             </Typography>
                                         </Box>
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <Typography variant="body2" sx={{ color: '#64748b' }}>
-                                                Order Date:
+                                            <Typography variant="caption" sx={{ color: '#64748b' }}>
+                                                Order:
                                             </Typography>
-                                            <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
-                                                {formatDate(order.orderDate)}
+                                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                                {dayjs(order.orderDate).format('DD/MM')}
                                             </Typography>
                                         </Box>
                                     </Box>
 
-                                    {/* Progress Stepper */}
+                                    {/* Progress Indicator */}
                                     <Box sx={{ mb: 3 }}>
-                                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 2, color: '#475569' }}>
-                                            Production Progress
-                                        </Typography>
-                                        <Stepper activeStep={statusIndex} orientation="vertical" sx={{ 
-                                            '& .MuiStepConnector-line': { minHeight: '20px' }
+                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#475569' }}>
+                                                Progress
+                                            </Typography>
+                                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: currentStatus.color }}>
+                                                {Math.round(((statusIndex + 1) / PRODUCTION_STATUSES.length) * 100)}%
+                                            </Typography>
+                                        </Box>
+                                        <Box sx={{
+                                            width: '100%',
+                                            height: 6,
+                                            backgroundColor: '#e2e8f0',
+                                            borderRadius: 3,
+                                            overflow: 'hidden'
                                         }}>
-                                            {PRODUCTION_STATUSES.slice(0, statusIndex + 1).map((status, index) => (
-                                                <Step key={status.key} active={index <= statusIndex} completed={index < statusIndex}>
-                                                    <StepLabel 
-                                                        StepIconComponent={() => (
-                                                            <Box sx={{
-                                                                width: 24,
-                                                                height: 24,
-                                                                borderRadius: '50%',
-                                                                backgroundColor: index < statusIndex ? '#10b981' : currentStatus.color,
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                color: 'white',
-                                                                fontSize: '12px'
-                                                            }}>
-                                                                {index < statusIndex ? <CheckCircleIcon sx={{ fontSize: 16 }} /> : index + 1}
-                                                            </Box>
-                                                        )}
-                                                    >
-                                                        <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
-                                                            {status.label}
-                                                        </Typography>
-                                                    </StepLabel>
-                                                </Step>
-                                            ))}
-                                        </Stepper>
+                                            <Box sx={{
+                                                width: `${((statusIndex + 1) / PRODUCTION_STATUSES.length) * 100}%`,
+                                                height: '100%',
+                                                background: `linear-gradient(90deg, ${currentStatus.color} 0%, ${currentStatus.color}80 100%)`,
+                                                borderRadius: 3,
+                                                transition: 'width 0.3s ease'
+                                            }} />
+                                        </Box>
+                                        <Typography variant="caption" sx={{ color: '#64748b', mt: 0.5, display: 'block' }}>
+                                            {currentStatus.label}
+                                        </Typography>
                                     </Box>
 
                                     {/* Action Button */}
                                     <Button
                                         variant="contained"
                                         fullWidth
+                                        size="small"
                                         onClick={() => openUpdateDialog(order)}
                                         sx={{
                                             background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
                                             color: 'white',
                                             fontWeight: 'bold',
-                                            py: 1.5,
+                                            py: 1,
+                                            fontSize: '0.8rem',
                                             '&:hover': {
                                                 background: 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
-                                                transform: 'translateY(-2px)',
-                                                boxShadow: '0 8px 25px rgba(59, 130, 246, 0.4)'
+                                                transform: 'translateY(-1px)',
+                                                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
                                             },
                                             transition: 'all 0.3s ease'
                                         }}
@@ -525,10 +536,10 @@ export default function GarmentOrderProduction() {
                                     </Button>
                                 </CardContent>
                             </Card>
-                        </Grid>
+                        </Box>
                     );
                 })}
-            </Grid>
+            </Box>
 
             {/* No Orders Message */}
             {orders.length === 0 && !loading && (
@@ -858,6 +869,6 @@ export default function GarmentOrderProduction() {
             >
                 <RefreshIcon />
             </Fab>
-        </Container>
+        </Box>
     );
 }

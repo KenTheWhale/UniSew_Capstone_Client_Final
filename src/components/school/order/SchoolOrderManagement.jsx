@@ -155,11 +155,11 @@ export default function SchoolOrderList() {
     const getStatusColor = (status) => {
         switch (status) {
             case 'pending':
-                return { color: '#f57c00', bgColor: '#fff3e0' };
+                return { color: '#ff9800', bgColor: 'rgba(255, 152, 0, 0.1)' };
             case 'processing':
                 return { color: '#1976d2', bgColor: '#e3f2fd' };
             case 'completed':
-                return { color: '#2e7d32', bgColor: '#e8f5e8' };
+                return { color: '#2e7d32', bgColor: 'rgba(46, 125, 50, 0.1)' };
             case 'cancelled':
                 return { color: '#d32f2f', bgColor: '#ffebee' };
             default:
@@ -191,7 +191,7 @@ export default function SchoolOrderList() {
             width: 120,
             fixed: 'left',
             render: (text) => (
-                <Typography variant="body2" sx={{ fontWeight: 600, color: '#1976d2' }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, color: '#2e7d32' }}>
                     {parseID(text, 'ord')}
                 </Typography>
             ),
@@ -283,9 +283,9 @@ export default function SchoolOrderList() {
                         <IconButton
                             onClick={() => handleViewDetail(record)}
                             sx={{
-                                color: '#1976d2',
+                                color: '#2e7d32',
                                 '&:hover': {
-                                    backgroundColor: '#e3f2fd',
+                                    backgroundColor: 'rgba(46, 125, 50, 0.1)',
                                     transform: 'scale(1.1)'
                                 },
                                 transition: 'all 0.2s ease'
@@ -298,20 +298,20 @@ export default function SchoolOrderList() {
                     {record.status === 'pending' && (
                         <>
                             <Tooltip title="View Quotations">
-                                <IconButton
-                                    onClick={() => handleViewQuotations(record)}
-                                    sx={{
-                                        color: '#2e7d32',
-                                        '&:hover': {
-                                            backgroundColor: '#e8f5e8',
-                                            transform: 'scale(1.1)'
-                                        },
-                                        transition: 'all 0.2s ease'
-                                    }}
-                                    size="small"
-                                >
-                                    <TrendingUpIcon />
-                                </IconButton>
+                                                        <IconButton
+                            onClick={() => handleViewQuotations(record)}
+                            sx={{
+                                color: '#ff9800',
+                                '&:hover': {
+                                    backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                                    transform: 'scale(1.1)'
+                                },
+                                transition: 'all 0.2s ease'
+                            }}
+                            size="small"
+                        >
+                            <TrendingUpIcon />
+                        </IconButton>
                             </Tooltip>
                             <Tooltip title="Cancel Order">
                                 <IconButton
@@ -359,15 +359,16 @@ export default function SchoolOrderList() {
     ];
 
     return (
-        <Box sx={{ backgroundColor: '#fafafa', minHeight: '100vh' }}>
-            {/* Hero Section */}
-            <Box
-                sx={{
-                    background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
-                    py: { xs: 6, md: 8 },
-                    color: "white",
+        <Box sx={{ height: '100%', overflowY: 'auto' }}>
+            {/* Header Section */}
+            <Box 
+                sx={{ 
+                    mb: 4,
                     position: "relative",
-                    overflow: "hidden",
+                    p: 4,
+                    borderRadius: 3,
+                    background: "linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(27, 94, 32, 0.08) 100%)",
+                    border: "1px solid rgba(46, 125, 50, 0.1)",
                     "&::before": {
                         content: '""',
                         position: "absolute",
@@ -376,286 +377,274 @@ export default function SchoolOrderList() {
                         right: 0,
                         bottom: 0,
                         background: "url('/unisew.jpg') center/cover",
-                        opacity: 0.1,
-                        zIndex: 0
+                        opacity: 0.15,
+                        borderRadius: 3,
+                        zIndex: -1
                     }
                 }}
             >
-                <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
-                    <Grid container spacing={4} alignItems="center">
-                        <Grid item xs={12} md={8}>
-                            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                                <ShoppingCartIcon sx={{ fontSize: 48, mr: 2, opacity: 0.9 }} />
-                                <Typography
-                                    variant="h2"
-                                    sx={{
-                                        fontWeight: 800,
-                                        fontSize: { xs: "2rem", md: "2.8rem" },
-                                        letterSpacing: "-0.02em"
-                                    }}
-                                >
-                                    Order Management
-                                </Typography>
-                            </Box>
-                            <Typography
-                                variant="h6"
-                                sx={{
-                                    opacity: 0.95,
-                                    fontSize: { xs: "1rem", md: "1.2rem" },
-                                    lineHeight: 1.6,
-                                    mb: 3
-                                }}
-                            >
-                                Manage and track your school's uniform orders with ease. From creation to delivery.
-                            </Typography>
-                            <Button
-                                variant="contained"
-                                size="large"
-                                startIcon={<AddIcon />}
-                                onClick={handleCreateOrder}
-                                sx={{
-                                    backgroundColor: "white",
-                                    color: "#1976d2",
-                                    px: 4,
-                                    py: 1.5,
-                                    fontSize: "1.1rem",
-                                    fontWeight: 600,
-                                    borderRadius: "50px",
-                                    textTransform: "none",
-                                    boxShadow: "0 4px 15px rgba(255,255,255,0.3)",
-                                    "&:hover": {
-                                        backgroundColor: "#f5f5f5",
-                                        transform: "translateY(-2px)",
-                                        boxShadow: "0 8px 25px rgba(255,255,255,0.4)"
-                                    }
-                                }}
-                            >
-                                Create New Order
-                            </Button>
-                        </Grid>
-                    </Grid>
-                </Container>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                    <ShoppingCartIcon sx={{ fontSize: 32, mr: 2, color: "#2e7d32" }} />
+                    <Typography
+                        variant="h4"
+                        sx={{
+                            fontWeight: 700,
+                            color: "#1e293b",
+                            fontSize: { xs: "1.5rem", md: "2rem" }
+                        }}
+                    >
+                        Order Management
+                    </Typography>
+                </Box>
+                <Typography
+                    variant="body1"
+                    sx={{
+                        color: "#64748b",
+                        fontSize: "1rem",
+                        lineHeight: 1.6,
+                        mb: 3
+                    }}
+                >
+                    Manage and track your school's uniform orders with ease. From creation to delivery.
+                </Typography>
+                <Button
+                    variant="contained"
+                    size="large"
+                    startIcon={<AddIcon />}
+                    onClick={handleCreateOrder}
+                    sx={{
+                        background: "linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)",
+                        color: "white",
+                        px: 4,
+                        py: 1.5,
+                        fontSize: "1rem",
+                        fontWeight: 600,
+                        borderRadius: 2,
+                        textTransform: "none",
+                        boxShadow: "0 4px 15px rgba(46, 125, 50, 0.3)",
+                        "&:hover": {
+                            background: "linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%)",
+                            transform: "translateY(-2px)",
+                            boxShadow: "0 8px 25px rgba(46, 125, 50, 0.4)"
+                        }
+                    }}
+                >
+                    Create New Order
+                </Button>
             </Box>
 
             {/* Statistics Section */}
-            <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-                <Grid container spacing={3}>
-                    <Grid item xs={6} sm={3}>
-                        <Card
-                            elevation={0}
-                            sx={{
-                                border: "1px solid #e2e8f0",
-                                borderRadius: 3,
-                                transition: "all 0.3s ease",
-                                "&:hover": {
-                                    borderColor: "#1976d2",
-                                    transform: "translateY(-4px)",
-                                    boxShadow: "0 8px 25px rgba(25, 118, 210, 0.15)"
-                                }
-                            }}
-                        >
-                            <CardContent sx={{ textAlign: "center", p: 3 }}>
-                                <Box
-                                    sx={{
-                                        width: 60,
-                                        height: 60,
-                                        borderRadius: "50%",
-                                        backgroundColor: "#e3f2fd",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        mx: "auto",
-                                        mb: 2
-                                    }}
-                                >
-                                    <TrendingUpIcon sx={{ color: "#1976d2", fontSize: 30 }} />
-                                </Box>
-                                <Typography variant="h4" sx={{ fontWeight: 700, color: "#1976d2", mb: 1 }}>
-                                    {stats.total}
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
-                                    Total Orders
-                                </Typography>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-
-                    <Grid item xs={6} sm={3}>
-                        <Card
-                            elevation={0}
-                            sx={{
-                                border: "1px solid #e2e8f0",
-                                borderRadius: 3,
-                                transition: "all 0.3s ease",
-                                "&:hover": {
-                                    borderColor: "#f57c00",
-                                    transform: "translateY(-4px)",
-                                    boxShadow: "0 8px 25px rgba(245, 124, 0, 0.15)"
-                                }
-                            }}
-                        >
-                            <CardContent sx={{ textAlign: "center", p: 3 }}>
-                                <Box
-                                    sx={{
-                                        width: 60,
-                                        height: 60,
-                                        borderRadius: "50%",
-                                        backgroundColor: "#fff3e0",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        mx: "auto",
-                                        mb: 2
-                                    }}
-                                >
-                                    <PendingIcon sx={{ color: "#f57c00", fontSize: 30 }} />
-                                </Box>
-                                <Typography variant="h4" sx={{ fontWeight: 700, color: "#f57c00", mb: 1 }}>
-                                    {stats.pending}
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
-                                    Pending
-                                </Typography>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-
-                    <Grid item xs={6} sm={3}>
-                        <Card
-                            elevation={0}
-                            sx={{
-                                border: "1px solid #e2e8f0",
-                                borderRadius: 3,
-                                transition: "all 0.3s ease",
-                                "&:hover": {
-                                    borderColor: "#1976d2",
-                                    transform: "translateY(-4px)",
-                                    boxShadow: "0 8px 25px rgba(25, 118, 210, 0.15)"
-                                }
-                            }}
-                        >
-                            <CardContent sx={{ textAlign: "center", p: 3 }}>
-                                <Box
-                                    sx={{
-                                        width: 60,
-                                        height: 60,
-                                        borderRadius: "50%",
-                                        backgroundColor: "#e3f2fd",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        mx: "auto",
-                                        mb: 2
-                                    }}
-                                >
-                                    <LocalShippingIcon sx={{ color: "#1976d2", fontSize: 30 }} />
-                                </Box>
-                                <Typography variant="h4" sx={{ fontWeight: 700, color: "#1976d2", mb: 1 }}>
-                                    {stats.processing}
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
-                                    Processing
-                                </Typography>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-
-                    <Grid item xs={6} sm={3}>
-                        <Card
-                            elevation={0}
-                            sx={{
-                                border: "1px solid #e2e8f0",
-                                borderRadius: 3,
-                                transition: "all 0.3s ease",
-                                "&:hover": {
-                                    borderColor: "#2e7d32",
-                                    transform: "translateY(-4px)",
-                                    boxShadow: "0 8px 25px rgba(46, 125, 50, 0.15)"
-                                }
-                            }}
-                        >
-                            <CardContent sx={{ textAlign: "center", p: 3 }}>
-                                <Box
-                                    sx={{
-                                        width: 60,
-                                        height: 60,
-                                        borderRadius: "50%",
-                                        backgroundColor: "#e8f5e8",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        mx: "auto",
-                                        mb: 2
-                                    }}
-                                >
-                                    <CheckCircleIcon sx={{ color: "#2e7d32", fontSize: 30 }} />
-                                </Box>
-                                <Typography variant="h4" sx={{ fontWeight: 700, color: "#2e7d32", mb: 1 }}>
-                                    {stats.completed}
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
-                                    Completed
-                                </Typography>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-                </Grid>
-            </Container>
-
-            {/* Table Section */}
-            <Container maxWidth="lg" sx={{ pb: { xs: 4, md: 6 } }}>
-                <Paper
-                    elevation={0}
-                    sx={{
-                        borderRadius: 4,
-                        border: "1px solid #e2e8f0",
-                        overflow: "auto"
-                    }}
-                >
-                    <Box sx={{ p: { xs: 3, md: 4 }, backgroundColor: "white" }}>
-                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-                            <Typography
-                                variant="h5"
+            <Box sx={{ mb: 4 }}>
+                <Box sx={{ display: 'flex', gap: 3 }}>
+                    <Card
+                        elevation={0}
+                        sx={{
+                            flex: 1,
+                            border: "1px solid #e2e8f0",
+                            borderRadius: 2,
+                            transition: "all 0.3s ease",
+                            "&:hover": {
+                                borderColor: "#2e7d32",
+                                transform: "translateY(-2px)",
+                                boxShadow: "0 4px 15px rgba(46, 125, 50, 0.2)"
+                            }
+                        }}
+                    >
+                        <CardContent sx={{ textAlign: "center", p: 2 }}>
+                            <Box
                                 sx={{
-                                    fontWeight: 700,
-                                    color: "#1e293b",
-                                    fontSize: { xs: "1.3rem", md: "1.5rem" }
+                                    width: 50,
+                                    height: 50,
+                                    borderRadius: "50%",
+                                    backgroundColor: "rgba(46, 125, 50, 0.1)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    mx: "auto",
+                                    mb: 1.5
                                 }}
                             >
-                                Recent Orders
+                                <TrendingUpIcon sx={{ color: "#2e7d32", fontSize: 24 }} />
+                            </Box>
+                            <Typography variant="h5" sx={{ fontWeight: 700, color: "#2e7d32", mb: 0.5 }}>
+                                {stats.total}
                             </Typography>
-                            <Chip
-                                label={`${stats.total} Total`}
-                                sx={{
-                                    backgroundColor: "#e3f2fd",
-                                    color: "#1976d2",
-                                    fontWeight: 600
-                                }}
-                            />
-                        </Box>
+                            <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
+                                Total Orders
+                            </Typography>
+                        </CardContent>
+                    </Card>
 
-                        <Table
-                            columns={columns}
-                            dataSource={orders}
-                            rowKey="id"
-                            loading={loading}
-                            pagination={{
-                                defaultPageSize: 5,
-                                pageSizeOptions: ['5', '8', '10', '15'],
-                                showSizeChanger: true,
-                                showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total} orders`,
-                                style: { marginTop: 16 }
+                    <Card
+                        elevation={0}
+                        sx={{
+                            flex: 1,
+                            border: "1px solid #e2e8f0",
+                            borderRadius: 2,
+                            transition: "all 0.3s ease",
+                            "&:hover": {
+                                borderColor: "#ff9800",
+                                transform: "translateY(-2px)",
+                                boxShadow: "0 4px 15px rgba(255, 152, 0, 0.2)"
+                            }
+                        }}
+                    >
+                        <CardContent sx={{ textAlign: "center", p: 2 }}>
+                            <Box
+                                sx={{
+                                    width: 50,
+                                    height: 50,
+                                    borderRadius: "50%",
+                                    backgroundColor: "rgba(255, 152, 0, 0.1)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    mx: "auto",
+                                    mb: 1.5
+                                }}
+                            >
+                                <PendingIcon sx={{ color: "#ff9800", fontSize: 24 }} />
+                            </Box>
+                            <Typography variant="h5" sx={{ fontWeight: 700, color: "#ff9800", mb: 0.5 }}>
+                                {stats.pending}
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
+                                Pending
+                            </Typography>
+                        </CardContent>
+                    </Card>
+
+                    <Card
+                        elevation={0}
+                        sx={{
+                            flex: 1,
+                            border: "1px solid #e2e8f0",
+                            borderRadius: 2,
+                            transition: "all 0.3s ease",
+                            "&:hover": {
+                                borderColor: "#1976d2",
+                                transform: "translateY(-2px)",
+                                boxShadow: "0 4px 15px rgba(25, 118, 210, 0.2)"
+                            }
+                        }}
+                    >
+                        <CardContent sx={{ textAlign: "center", p: 2 }}>
+                            <Box
+                                sx={{
+                                    width: 50,
+                                    height: 50,
+                                    borderRadius: "50%",
+                                    backgroundColor: "#e3f2fd",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    mx: "auto",
+                                    mb: 1.5
+                                }}
+                            >
+                                <LocalShippingIcon sx={{ color: "#1976d2", fontSize: 24 }} />
+                            </Box>
+                            <Typography variant="h5" sx={{ fontWeight: 700, color: "#1976d2", mb: 0.5 }}>
+                                {stats.processing}
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
+                                Processing
+                            </Typography>
+                        </CardContent>
+                    </Card>
+
+                    <Card
+                        elevation={0}
+                        sx={{
+                            flex: 1,
+                            border: "1px solid #e2e8f0",
+                            borderRadius: 2,
+                            transition: "all 0.3s ease",
+                            "&:hover": {
+                                borderColor: "#2e7d32",
+                                transform: "translateY(-2px)",
+                                boxShadow: "0 4px 15px rgba(46, 125, 50, 0.2)"
+                            }
+                        }}
+                    >
+                        <CardContent sx={{ textAlign: "center", p: 2 }}>
+                            <Box
+                                sx={{
+                                    width: 50,
+                                    height: 50,
+                                    borderRadius: "50%",
+                                    backgroundColor: "#e8f5e8",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    mx: "auto",
+                                    mb: 1.5
+                                }}
+                            >
+                                <CheckCircleIcon sx={{ color: "#2e7d32", fontSize: 24 }} />
+                            </Box>
+                            <Typography variant="h5" sx={{ fontWeight: 700, color: "#2e7d32", mb: 0.5 }}>
+                                {stats.completed}
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
+                                Completed
+                            </Typography>
+                        </CardContent>
+                    </Card>
+                </Box>
+            </Box>
+
+            {/* Table Section */}
+            <Paper
+                elevation={0}
+                sx={{
+                    borderRadius: 2,
+                    border: "1px solid #e2e8f0",
+                    overflow: "hidden"
+                }}
+            >
+                <Box sx={{ p: 3, backgroundColor: "white" }}>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                        <Typography
+                            variant="h6"
+                            sx={{
+                                fontWeight: 700,
+                                color: "#1e293b"
                             }}
-                            scroll={{ x: 'max-content' }}
-                            style={{
-                                backgroundColor: 'white',
-                                borderRadius: '8px'
+                        >
+                            Recent Orders
+                        </Typography>
+                        <Chip
+                            label={`${stats.total} Total`}
+                            sx={{
+                                backgroundColor: "#e8f5e8",
+                                color: "#2e7d32",
+                                fontWeight: 600
                             }}
-                            rowHoverColor="#f8fafc"
                         />
                     </Box>
-                </Paper>
-            </Container>
+
+                    <Table
+                        columns={columns}
+                        dataSource={orders}
+                        rowKey="id"
+                        loading={loading}
+                        pagination={{
+                            defaultPageSize: 5,
+                            pageSizeOptions: ['5', '10'],
+                            showSizeChanger: true,
+                            showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total} orders`,
+                            style: { marginTop: 16 }
+                        }}
+                        scroll={{ x: 'max-content' }}
+                        style={{
+                            backgroundColor: 'white',
+                            borderRadius: '8px'
+                        }}
+                        rowHoverColor="#f8fafc"
+                    />
+                </Box>
+            </Paper>
 
             {/* Modals */}
             {isDetailDialogOpen && (

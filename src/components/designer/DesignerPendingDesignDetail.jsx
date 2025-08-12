@@ -106,7 +106,7 @@ const StatusChip = ({status}) => {
     );
 };
 
-export default function DesignerRequestDetail({visible, onCancel, request}) {
+export default function DesignerPendingDesignDetail({visible, onCancel, request}) {
     const [regularDialogOpen, setRegularDialogOpen] = React.useState(false);
     const [physicalDialogOpen, setPhysicalDialogOpen] = React.useState(false);
     const [showQuotationForm, setShowQuotationForm] = React.useState(false);
@@ -176,11 +176,11 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                 fullWidth
             >
                 <DialogContent sx={{textAlign: 'center', py: 4}}>
-                    <CircularProgress size={40} sx={{color: '#667eea', mb: 2}}/>
-                    <Typography variant="h6" sx={{color: '#2c3e50', fontWeight: 700, mb: 1}}>
+                    <CircularProgress size={40} sx={{color: '#7c3aed', mb: 2}}/>
+                    <Typography variant="h6" sx={{color: '#1e293b', fontWeight: 700, mb: 1}}>
                         Loading Request Details...
                     </Typography>
-                    <Typography variant="body2" sx={{color: '#7f8c8d'}}>
+                    <Typography variant="body2" sx={{color: '#64748b'}}>
                         Please wait while we fetch the request information
                     </Typography>
                 </DialogContent>
@@ -210,6 +210,8 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                 enqueueSnackbar(res.data.message, {variant: "success", autoHideDuration: 1000})
                 setTimeout(() => {
                     onCancel()
+                    // Reload the page after successful quotation creation
+                    window.location.reload()
                 }, 1000)
             }
         }).catch((e) => {
@@ -234,23 +236,43 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                 return;
             }
 
+            if (parseFloat(quotationData.price) > 10000000) {
+                enqueueSnackbar('Price cannot exceed 10.000.000 VND', {variant: 'error'});
+                return;
+            }
+
             if (parseInt(quotationData.deliveryWithIn) <= 0) {
                 enqueueSnackbar('Delivery time must be greater than 0', {variant: 'error'});
                 return;
             }
 
-            if (parseInt(quotationData.revisionTime) < 0) {
-                enqueueSnackbar('Revision time cannot be negative', {variant: 'error'});
+            if (parseInt(quotationData.deliveryWithIn) >= 100) {
+                enqueueSnackbar('Delivery time must be less than 100 days', {variant: 'error'});
+                return;
+            }
+
+            if (parseInt(quotationData.revisionTime) <= 0) {
+                enqueueSnackbar('Revision time must be greater than 0', {variant: 'error'});
+                return;
+            }
+
+            if (parseInt(quotationData.revisionTime) >= 10000) {
+                enqueueSnackbar('Revision time must be less than 10,000', {variant: 'error'});
                 return;
             }
 
             // Validate extra revision price when not unlimited
-            if (!isUnlimitedRevisions && parseFloat(quotationData.extraRevisionPrice) < 0) {
-                enqueueSnackbar('Extra revision price cannot be negative', {variant: 'error'});
-                return;
+            if (!isUnlimitedRevisions) {
+                if (parseFloat(quotationData.extraRevisionPrice) < 10000) {
+                    enqueueSnackbar('Extra revision price must be at least 10.000 VND', {variant: 'error'});
+                    return;
+                }
+                
+                if (parseFloat(quotationData.extraRevisionPrice) > 10000000) {
+                    enqueueSnackbar('Extra revision price cannot exceed 10.000.000 VND', {variant: 'error'});
+                    return;
+                }
             }
-
-
 
             handleAcceptRequest();
         }
@@ -310,7 +332,7 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
             >
                 {/* Header */}
                 <Box sx={{
-                    background: '#667eea',
+                    background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
                     color: 'white',
                     p: 3,
                     borderRadius: '12px 12px 0 0',
@@ -360,7 +382,7 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                     }
                                 }}>
                                     <Box sx={{
-                                        background: '#bbdefb',
+                                        background: 'rgba(124, 58, 237, 0.1)',
                                         p: 1.5,
                                         display: 'flex',
                                         alignItems: 'center',
@@ -368,9 +390,9 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                         borderBottom: '1px solid #e0e0e0',
                                         transition: 'all 0.3s ease'
                                     }}>
-                                        <StarIcon sx={{color: '#1565c0', fontSize: 18, transition: 'all 0.3s ease'}}/>
+                                        <StarIcon sx={{color: '#7c3aed', fontSize: 18, transition: 'all 0.3s ease'}}/>
                                         <Typography variant="h6" sx={{
-                                            color: '#1565c0',
+                                            color: '#7c3aed',
                                             fontWeight: 600,
                                             transition: 'all 0.3s ease'
                                         }}>
@@ -496,7 +518,7 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                     }
                                 }}>
                                     <Box sx={{
-                                        background: '#e1bee7',
+                                        background: 'rgba(124, 58, 237, 0.1)',
                                         p: 1.5,
                                         display: 'flex',
                                         alignItems: 'center',
@@ -505,9 +527,9 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                         transition: 'all 0.3s ease'
                                     }}>
                                         <BusinessIcon
-                                            sx={{color: '#7b1fa2', fontSize: 18, transition: 'all 0.3s ease'}}/>
+                                            sx={{color: '#7c3aed', fontSize: 18, transition: 'all 0.3s ease'}}/>
                                         <Typography variant="h6" sx={{
-                                            color: '#7b1fa2',
+                                            color: '#7c3aed',
                                             fontWeight: 600,
                                             transition: 'all 0.3s ease'
                                         }}>
@@ -630,7 +652,7 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                                 flex: 1,
                                                                 height: 120,
                                                                 borderRadius: 3,
-                                                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                                                background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
                                                                 color: 'white',
                                                                 display: 'flex',
                                                                 flexDirection: 'column',
@@ -638,7 +660,7 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                                 transition: 'all 0.3s ease',
                                                                 '&:hover': {
                                                                     transform: 'translateY(-3px)',
-                                                                    boxShadow: '0 8px 25px rgba(102, 126, 234, 0.4)'
+                                                                    boxShadow: '0 8px 25px rgba(124, 58, 237, 0.4)'
                                                                 }
                                                             }}
                                                         >
@@ -655,7 +677,7 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                                 flex: 1,
                                                                 height: 120,
                                                                 borderRadius: 3,
-                                                                background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                                                                background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
                                                                 color: 'white',
                                                                 display: 'flex',
                                                                 flexDirection: 'column',
@@ -663,7 +685,7 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                                 transition: 'all 0.3s ease',
                                                                 '&:hover': {
                                                                     transform: 'translateY(-3px)',
-                                                                    boxShadow: '0 8px 25px rgba(5, 150, 105, 0.4)'
+                                                                    boxShadow: '0 8px 25px rgba(124, 58, 237, 0.4)'
                                                                 }
                                                             }}
                                                         >
@@ -689,10 +711,10 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                     borderRadius: 2,
                                     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
                                     backdropFilter: 'blur(10px)',
-                                    border: '1px solid rgba(102, 126, 234, 0.15)'
+                                    border: '1px solid rgba(124, 58, 237, 0.15)'
                                 }}>
                                     <Box sx={{
-                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                        background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
                                         p: 2,
                                         borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
                                         transition: 'all 0.3s ease',
@@ -725,18 +747,22 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                     startIcon={<CheckCircleIcon/>}
                                                     onClick={handleAcceptRequest}
                                                     sx={{
-                                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                                        background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
                                                         color: 'white',
-                                                        border: '1px solid rgba(102, 126, 234, 0.3)',
+                                                        border: '1px solid rgba(124, 58, 237, 0.3)',
                                                         py: 1.5,
                                                         fontSize: '1rem',
                                                         fontWeight: 600,
                                                         borderRadius: 2,
                                                         transition: 'all 0.3s ease',
                                                         '&:hover': {
-                                                            background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                                                            background: 'linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%)',
                                                             transform: 'translateY(-2px)',
-                                                            boxShadow: '0 6px 20px rgba(102, 126, 234, 0.3)'
+                                                            boxShadow: '0 6px 20px rgba(124, 58, 237, 0.3)'
+                                                        },
+                                                        '&:disabled': {
+                                                            background: 'rgba(124, 58, 237, 0.3)',
+                                                            color: 'rgba(255, 255, 255, 0.5)'
                                                         }
                                                     }}
                                                 >
@@ -766,22 +792,19 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                         }}
                                                         size="small"
                                                         fullWidth
-                                                        placeholder="Enter price in VND (min: 10,000)"
-                                                        slotProps={{
-                                                            htmlInput: {min: 10000}
-                                                        }}
+                                                        placeholder="Enter price in VND (min: 10,000, max: 10,000,000)"
                                                         sx={{
                                                             '& .MuiOutlinedInput-root': {
                                                                 background: 'rgba(255, 255, 255, 0.9)',
                                                                 color: '#1e293b',
                                                                 '& fieldset': {
-                                                                    borderColor: 'rgba(102, 126, 234, 0.3)'
+                                                                    borderColor: 'rgba(124, 58, 237, 0.3)'
                                                                 },
                                                                 '&:hover fieldset': {
-                                                                    borderColor: 'rgba(102, 126, 234, 0.5)'
+                                                                    borderColor: 'rgba(124, 58, 237, 0.5)'
                                                                 },
                                                                 '&:focus fieldset': {
-                                                                    borderColor: '#667eea'
+                                                                    borderColor: '#7c3aed'
                                                                 },
                                                                 '& input': {
                                                                     color: '#1e293b'
@@ -809,22 +832,19 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                         })}
                                                         size="small"
                                                         fullWidth
-                                                        placeholder="Enter delivery time in days"
-                                                        slotProps={{
-                                                            htmlInput: {min: 1}
-                                                        }}
+                                                        placeholder="Enter delivery time in days (1-99)"
                                                         sx={{
                                                             '& .MuiOutlinedInput-root': {
                                                                 background: 'rgba(255, 255, 255, 0.9)',
                                                                 color: '#1e293b',
                                                                 '& fieldset': {
-                                                                    borderColor: 'rgba(102, 126, 234, 0.3)'
+                                                                    borderColor: 'rgba(124, 58, 237, 0.3)'
                                                                 },
                                                                 '&:hover fieldset': {
-                                                                    borderColor: 'rgba(102, 126, 234, 0.5)'
+                                                                    borderColor: 'rgba(124, 58, 237, 0.5)'
                                                                 },
                                                                 '&:focus fieldset': {
-                                                                    borderColor: '#667eea'
+                                                                    borderColor: '#7c3aed'
                                                                 },
                                                                 '& input': {
                                                                     color: '#1e293b'
@@ -859,22 +879,19 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                         }}
                                                         size="small"
                                                         fullWidth
-                                                        placeholder="Enter number of revisions (max: 9999)"
-                                                        slotProps={{
-                                                            htmlInput: {min: 0, max: 9999}
-                                                        }}
+                                                        placeholder="Enter number of revisions (1-9999)"
                                                         sx={{
                                                             '& .MuiOutlinedInput-root': {
                                                                 background: 'rgba(255, 255, 255, 0.9)',
                                                                 color: '#1e293b',
                                                                 '& fieldset': {
-                                                                    borderColor: 'rgba(102, 126, 234, 0.3)'
+                                                                    borderColor: 'rgba(124, 58, 237, 0.3)'
                                                                 },
                                                                 '&:hover fieldset': {
-                                                                    borderColor: 'rgba(102, 126, 234, 0.5)'
+                                                                    borderColor: 'rgba(124, 58, 237, 0.5)'
                                                                 },
                                                                 '&:focus fieldset': {
-                                                                    borderColor: '#667eea'
+                                                                    borderColor: '#7c3aed'
                                                                 },
                                                                 '& input': {
                                                                     color: '#1e293b'
@@ -906,22 +923,19 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                         disabled={parseInt(quotationData.revisionTime) === 9999}
                                                         size="small"
                                                         fullWidth
-                                                        placeholder="Enter extra revision price (e.g., 500,000)"
-                                                        slotProps={{
-                                                            htmlInput: {min: 0}
-                                                        }}
+                                                        placeholder="Enter extra revision price (min: 10,000, max: 10,000,000)"
                                                         sx={{
                                                             '& .MuiOutlinedInput-root': {
                                                                 background: 'rgba(255, 255, 255, 0.9)',
                                                                 color: '#1e293b',
                                                                 '& fieldset': {
-                                                                    borderColor: 'rgba(102, 126, 234, 0.3)'
+                                                                    borderColor: 'rgba(124, 58, 237, 0.3)'
                                                                 },
                                                                 '&:hover fieldset': {
-                                                                    borderColor: 'rgba(102, 126, 234, 0.5)'
+                                                                    borderColor: 'rgba(124, 58, 237, 0.5)'
                                                                 },
                                                                 '&:focus fieldset': {
-                                                                    borderColor: '#667eea'
+                                                                    borderColor: '#7c3aed'
                                                                 },
                                                                 '& input': {
                                                                     color: '#1e293b'
@@ -957,13 +971,13 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                                 background: 'rgba(255, 255, 255, 0.9)',
                                                                 color: '#1e293b',
                                                                 '& fieldset': {
-                                                                    borderColor: 'rgba(102, 126, 234, 0.3)'
+                                                                    borderColor: 'rgba(124, 58, 237, 0.3)'
                                                                 },
                                                                 '&:hover fieldset': {
-                                                                    borderColor: 'rgba(102, 126, 234, 0.5)'
+                                                                    borderColor: 'rgba(124, 58, 237, 0.5)'
                                                                 },
                                                                 '&:focus fieldset': {
-                                                                    borderColor: '#667eea'
+                                                                    borderColor: '#7c3aed'
                                                                 },
                                                                 '& input': {
                                                                     color: '#1e293b'
@@ -1002,13 +1016,13 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                                 background: 'rgba(255, 255, 255, 0.9)',
                                                                 color: '#1e293b',
                                                                 '& fieldset': {
-                                                                    borderColor: 'rgba(102, 126, 234, 0.3)'
+                                                                    borderColor: 'rgba(124, 58, 237, 0.3)'
                                                                 },
                                                                 '&:hover fieldset': {
-                                                                    borderColor: 'rgba(102, 126, 234, 0.5)'
+                                                                    borderColor: 'rgba(124, 58, 237, 0.5)'
                                                                 },
                                                                 '&:focus fieldset': {
-                                                                    borderColor: '#667eea'
+                                                                    borderColor: '#7c3aed'
                                                                 },
                                                                 '& textarea': {
                                                                     color: '#1e293b'
@@ -1021,9 +1035,9 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                 {/* Quotation Summary */}
                                                 <Box sx={{
                                                     p: 2.5,
-                                                    background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.03) 0%, rgba(118, 75, 162, 0.03) 100%)',
+                                                    background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.03) 0%, rgba(91, 33, 182, 0.03) 100%)',
                                                     borderRadius: 2,
-                                                    border: '1px solid rgba(102, 126, 234, 0.15)',
+                                                    border: '1px solid rgba(124, 58, 237, 0.15)',
                                                     backdropFilter: 'blur(10px)',
                                                     position: 'relative',
                                                     overflow: 'hidden'
@@ -1036,7 +1050,7 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                         width: 60,
                                                         height: 60,
                                                         borderRadius: '50%',
-                                                        background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
+                                                        background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(91, 33, 182, 0.1) 100%)',
                                                         filter: 'blur(20px)'
                                                     }}/>
                                                     <Typography variant="body2" sx={{
@@ -1062,9 +1076,9 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                             justifyContent: 'space-between',
                                                             alignItems: 'center',
                                                             p: 1.5,
-                                                            background: 'rgba(102, 126, 234, 0.05)',
+                                                            background: 'rgba(124, 58, 237, 0.05)',
                                                             borderRadius: 1,
-                                                            border: '1px solid rgba(102, 126, 234, 0.1)'
+                                                            border: '1px solid rgba(124, 58, 237, 0.1)'
                                                         }}>
                                                             <Typography variant="caption" sx={{
                                                                 color: '#64748b',
@@ -1073,7 +1087,7 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                                 Price:
                                                             </Typography>
                                                             <Typography variant="caption" sx={{
-                                                                color: '#667eea',
+                                                                color: '#7c3aed',
                                                                 fontWeight: 700
                                                             }}>
                                                                 {quotationData.price ? `${parseFloat(quotationData.price).toLocaleString('vi-VN')} ₫` : 'N/A'}
@@ -1085,9 +1099,9 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                             justifyContent: 'space-between',
                                                             alignItems: 'center',
                                                             p: 1.5,
-                                                            background: 'rgba(102, 126, 234, 0.05)',
+                                                            background: 'rgba(124, 58, 237, 0.05)',
                                                             borderRadius: 1,
-                                                            border: '1px solid rgba(102, 126, 234, 0.1)'
+                                                            border: '1px solid rgba(124, 58, 237, 0.1)'
                                                         }}>
                                                             <Typography variant="caption" sx={{
                                                                 color: '#64748b',
@@ -1096,7 +1110,7 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                                 Delivery Time:
                                                             </Typography>
                                                             <Typography variant="caption" sx={{
-                                                                color: '#667eea',
+                                                                color: '#7c3aed',
                                                                 fontWeight: 700
                                                             }}>
                                                                 {quotationData.deliveryWithIn ? `${quotationData.deliveryWithIn} day(s)` : 'N/A'}
@@ -1108,9 +1122,9 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                             justifyContent: 'space-between',
                                                             alignItems: 'center',
                                                             p: 1.5,
-                                                            background: 'rgba(102, 126, 234, 0.05)',
+                                                            background: 'rgba(124, 58, 237, 0.05)',
                                                             borderRadius: 1,
-                                                            border: '1px solid rgba(102, 126, 234, 0.1)'
+                                                            border: '1px solid rgba(124, 58, 237, 0.1)'
                                                         }}>
                                                             <Typography variant="caption" sx={{
                                                                 color: '#64748b',
@@ -1119,10 +1133,10 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                                 Revisions:
                                                             </Typography>
                                                             <Typography variant="caption" sx={{
-                                                                color: '#667eea',
+                                                                color: '#7c3aed',
                                                                 fontWeight: 700
                                                             }}>
-                                                                                                                                    {quotationData.revisionTime ? (parseInt(quotationData.revisionTime) === 9999 ? 'Unlimited' : `${quotationData.revisionTime} time(s)`) : 'N/A'}
+                                                                {quotationData.revisionTime ? (parseInt(quotationData.revisionTime) === 9999 ? 'Unlimited' : `${quotationData.revisionTime} time(s)`) : 'N/A'}
                                                             </Typography>
                                                         </Box>
 
@@ -1131,9 +1145,9 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                             justifyContent: 'space-between',
                                                             alignItems: 'center',
                                                             p: 1.5,
-                                                            background: 'rgba(102, 126, 234, 0.05)',
+                                                            background: 'rgba(124, 58, 237, 0.05)',
                                                             borderRadius: 1,
-                                                            border: '1px solid rgba(102, 126, 234, 0.1)'
+                                                            border: '1px solid rgba(124, 58, 237, 0.1)'
                                                         }}>
                                                             <Typography variant="caption" sx={{
                                                                 color: '#64748b',
@@ -1142,7 +1156,7 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                                 Extra Revision Price:
                                                             </Typography>
                                                             <Typography variant="caption" sx={{
-                                                                color: '#667eea',
+                                                                color: '#7c3aed',
                                                                 fontWeight: 700
                                                             }}>
                                                                 {quotationData.extraRevisionPrice ? `${parseFloat(quotationData.extraRevisionPrice).toLocaleString('vi-VN')} ₫` : 'N/A'}
@@ -1154,9 +1168,9 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                             justifyContent: 'space-between',
                                                             alignItems: 'center',
                                                             p: 1.5,
-                                                            background: 'rgba(102, 126, 234, 0.05)',
+                                                            background: 'rgba(124, 58, 237, 0.05)',
                                                             borderRadius: 1,
-                                                            border: '1px solid rgba(102, 126, 234, 0.1)'
+                                                            border: '1px solid rgba(124, 58, 237, 0.1)'
                                                         }}>
                                                             <Typography variant="caption" sx={{
                                                                 color: '#64748b',
@@ -1165,10 +1179,10 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                                 Acceptance Deadline:
                                                             </Typography>
                                                             <Typography variant="caption" sx={{
-                                                                color: '#667eea',
+                                                                color: '#7c3aed',
                                                                 fontWeight: 700
                                                             }}>
-                                                                                                                                    {quotationData.acceptanceDeadline ? formatDate(quotationData.acceptanceDeadline) : 'N/A'}
+                                                                {quotationData.acceptanceDeadline ? formatDate(quotationData.acceptanceDeadline) : 'N/A'}
                                                             </Typography>
                                                         </Box>
 
@@ -1176,9 +1190,9 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                             <Box sx={{
                                                                 mt: 1.5,
                                                                 p: 1.5,
-                                                                background: 'rgba(102, 126, 234, 0.08)',
+                                                                background: 'rgba(124, 58, 237, 0.08)',
                                                                 borderRadius: 1.5,
-                                                                border: '1px solid rgba(102, 126, 234, 0.2)'
+                                                                border: '1px solid rgba(124, 58, 237, 0.2)'
                                                             }}>
                                                                 <Typography variant="caption" sx={{
                                                                     color: '#64748b',
@@ -1213,20 +1227,20 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                             return !quotationData.price || !quotationData.deliveryWithIn || !quotationData.revisionTime || !quotationData.acceptanceDeadline || (!isUnlimitedRevisions && !quotationData.extraRevisionPrice);
                                                         })()}
                                                         sx={{
-                                                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                                            background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
                                                             color: 'white',
-                                                            border: '1px solid rgba(102, 126, 234, 0.3)',
+                                                            border: '1px solid rgba(124, 58, 237, 0.3)',
                                                             py: 1.5,
                                                             fontSize: '1rem',
                                                             fontWeight: 600,
                                                             borderRadius: 2,
                                                             transition: 'all 0.3s ease',
                                                             '&:hover': {
-                                                                background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
-                                                                boxShadow: '0 6px 20px rgba(102, 126, 234, 0.3)'
+                                                                background: 'linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%)',
+                                                                boxShadow: '0 6px 20px rgba(124, 58, 237, 0.3)'
                                                             },
                                                             '&:disabled': {
-                                                                background: 'rgba(102, 126, 234, 0.3)',
+                                                                background: 'rgba(124, 58, 237, 0.3)',
                                                                 color: 'rgba(255, 255, 255, 0.5)'
                                                             }
                                                         }}
@@ -1240,16 +1254,16 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                         startIcon={<CancelIcon/>}
                                                         onClick={() => setShowQuotationForm(false)}
                                                         sx={{
-                                                            borderColor: '#667eea',
-                                                            color: '#667eea',
+                                                            borderColor: '#7c3aed',
+                                                            color: '#7c3aed',
                                                             py: 1.5,
                                                             fontSize: '1rem',
                                                             fontWeight: 600,
                                                             borderRadius: 2,
                                                             transition: 'all 0.3s ease',
                                                             '&:hover': {
-                                                                borderColor: '#5a6fd8',
-                                                                background: 'rgba(102, 126, 234, 0.05)'
+                                                                borderColor: '#6d28d9',
+                                                                background: 'rgba(124, 58, 237, 0.05)'
                                                             }
                                                         }}
                                                     >
@@ -1271,8 +1285,8 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                         variant="outlined"
                         onClick={onCancel}
                         sx={{
-                            borderColor: '#667eea',
-                            color: '#667eea',
+                            borderColor: '#7c3aed',
+                            color: '#7c3aed',
                             px: 3,
                             py: 1,
                             fontSize: '0.9rem',
@@ -1280,10 +1294,10 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                             borderRadius: 2,
                             transition: 'all 0.3s ease',
                             '&:hover': {
-                                borderColor: '#5a6fd8',
-                                backgroundColor: 'rgba(102, 126, 234, 0.04)',
+                                borderColor: '#6d28d9',
+                                backgroundColor: 'rgba(124, 58, 237, 0.04)',
                                 transform: 'translateY(-2px)',
-                                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.2)'
+                                boxShadow: '0 4px 12px rgba(124, 58, 237, 0.2)'
                             }
                         }}
                     >
@@ -1303,8 +1317,8 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                         sx: {
                             borderRadius: 4,
                             background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-                            border: '1px solid rgba(102, 126, 234, 0.1)',
-                            boxShadow: '0 32px 64px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(102, 126, 234, 0.05)',
+                            border: '1px solid rgba(124, 58, 237, 0.1)',
+                            boxShadow: '0 32px 64px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(124, 58, 237, 0.05)',
                             overflow: 'hidden'
                         }
                     }
@@ -1312,7 +1326,7 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
             >
                 {/* Header */}
                 <Box sx={{
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
                     color: 'white',
                     p: 3,
                     position: 'relative',
@@ -1360,16 +1374,16 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                         <Grid key={index} sx={{flex: 1}}>
                                             <Card sx={{
                                                 background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-                                                border: '2px solid rgba(102, 126, 234, 0.15)',
+                                                border: '2px solid rgba(124, 58, 237, 0.15)',
                                                 borderRadius: 4,
-                                                boxShadow: '0 8px 32px rgba(102, 126, 234, 0.12)',
+                                                boxShadow: '0 8px 32px rgba(124, 58, 237, 0.12)',
                                                 transition: 'all 0.3s ease',
                                                 position: 'relative',
                                                 overflow: 'hidden',
                                                 '&:hover': {
                                                     transform: 'translateY(-6px)',
-                                                    boxShadow: '0 12px 40px rgba(102, 126, 234, 0.25)',
-                                                    borderColor: 'rgba(102, 126, 234, 0.3)'
+                                                    boxShadow: '0 12px 40px rgba(124, 58, 237, 0.25)',
+                                                    borderColor: 'rgba(124, 58, 237, 0.3)'
                                                 },
                                                 '&::before': {
                                                     content: '""',
@@ -1378,7 +1392,7 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                     left: 0,
                                                     right: 0,
                                                     height: '4px',
-                                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                                                    background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)'
                                                 }
                                             }}>
                                                 <CardContent sx={{p: 4}}>
@@ -1386,9 +1400,9 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                         <Box sx={{
                                                             p: 1.5,
                                                             borderRadius: 3,
-                                                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                                            background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
                                                             color: 'white',
-                                                            boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
+                                                            boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
                                                         }}>
                                                             {getItemIcon(item.type)}
                                                         </Box>
@@ -1405,19 +1419,19 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                     </Box>
 
                                                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 1.5}}>
-                                                        {renderColorWithPicker(item.color, '#667eea')}
+                                                        {renderColorWithPicker(item.color, '#7c3aed')}
 
                                                         <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                                                             <Box sx={{
                                                                 width: 8,
                                                                 height: 8,
                                                                 borderRadius: '50%',
-                                                                background: '#667eea'
+                                                                background: '#7c3aed'
                                                             }}/>
                                                             <Typography variant="body2"
                                                                         sx={{fontWeight: 600, color: '#374151'}}>
                                                                 Fabric: <span style={{
-                                                                color: '#667eea',
+                                                                color: '#7c3aed',
                                                                 fontWeight: 500
                                                             }}>{item.fabricName || 'N/A'}</span>
                                                             </Typography>
@@ -1429,12 +1443,12 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                                     width: 8,
                                                                     height: 8,
                                                                     borderRadius: '50%',
-                                                                    background: '#667eea'
+                                                                    background: '#7c3aed'
                                                                 }}/>
                                                                 <Typography variant="body2"
                                                                             sx={{fontWeight: 600, color: '#374151'}}>
                                                                     Logo Position: <span style={{
-                                                                    color: '#667eea',
+                                                                    color: '#7c3aed',
                                                                     fontWeight: 500
                                                                 }}>{item.logoPosition}</span>
                                                                 </Typography>
@@ -1445,9 +1459,9 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                             <Box sx={{
                                                                 mt: 2,
                                                                 p: 2,
-                                                                background: 'rgba(102, 126, 234, 0.05)',
+                                                                background: 'rgba(124, 58, 237, 0.05)',
                                                                 borderRadius: 2,
-                                                                border: '1px solid rgba(102, 126, 234, 0.1)'
+                                                                border: '1px solid rgba(124, 58, 237, 0.1)'
                                                             }}>
                                                                 <Typography variant="body2" sx={{
                                                                     fontStyle: 'italic',
@@ -1464,9 +1478,9 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                             <Box sx={{
                                                                 mt: 2,
                                                                 p: 2,
-                                                                background: 'rgba(102, 126, 234, 0.03)',
+                                                                background: 'rgba(124, 58, 237, 0.03)',
                                                                 borderRadius: 2,
-                                                                border: '1px solid rgba(102, 126, 234, 0.08)',
+                                                                border: '1px solid rgba(124, 58, 237, 0.08)',
                                                                 textAlign: 'left'
                                                             }}>
                                                                 <Typography variant="body2" sx={{
@@ -1495,9 +1509,9 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                             <Box sx={{
                                                                 mt: 2,
                                                                 p: 2,
-                                                                background: 'rgba(102, 126, 234, 0.03)',
+                                                                background: 'rgba(124, 58, 237, 0.03)',
                                                                 borderRadius: 2,
-                                                                border: '1px solid rgba(102, 126, 234, 0.08)'
+                                                                border: '1px solid rgba(124, 58, 237, 0.08)'
                                                             }}>
                                                                 <Typography variant="body2" sx={{
                                                                     color: '#64748b',
@@ -1540,11 +1554,11 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                             <Box sx={{
                                 textAlign: 'center',
                                 py: 6,
-                                background: 'rgba(102, 126, 234, 0.02)',
+                                background: 'rgba(124, 58, 237, 0.02)',
                                 borderRadius: 3,
-                                border: '2px dashed rgba(102, 126, 234, 0.2)'
+                                border: '2px dashed rgba(124, 58, 237, 0.2)'
                             }}>
-                                <SchoolIcon sx={{fontSize: 48, color: '#667eea', mb: 2, opacity: 0.6}}/>
+                                <SchoolIcon sx={{fontSize: 48, color: '#7c3aed', mb: 2, opacity: 0.6}}/>
                                 <Typography variant="h6" sx={{color: '#64748b', fontWeight: 600, mb: 1}}>
                                     No Regular Uniform Data
                                 </Typography>
@@ -1560,22 +1574,22 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                 <DialogActions sx={{
                     p: 3,
                     background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
-                    borderTop: '1px solid rgba(102, 126, 234, 0.08)'
+                    borderTop: '1px solid rgba(124, 58, 237, 0.08)'
                 }}>
                     <Button
                         onClick={() => setRegularDialogOpen(false)}
                         variant="outlined"
                         size="large"
                         sx={{
-                            borderColor: '#667eea',
-                            color: '#667eea',
+                            borderColor: '#7c3aed',
+                            color: '#7c3aed',
                             fontWeight: 600,
                             px: 4,
                             py: 1.5,
                             borderRadius: 2,
                             '&:hover': {
-                                borderColor: '#5a6fd8',
-                                backgroundColor: 'rgba(102, 126, 234, 0.04)',
+                                borderColor: '#6d28d9',
+                                backgroundColor: 'rgba(124, 58, 237, 0.04)',
                                 transform: 'translateY(-1px)'
                             }
                         }}
@@ -1596,8 +1610,8 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                         sx: {
                             borderRadius: 4,
                             background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-                            border: '1px solid rgba(5, 150, 105, 0.1)',
-                            boxShadow: '0 32px 64px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(5, 150, 105, 0.05)',
+                            border: '1px solid rgba(124, 58, 237, 0.1)',
+                            boxShadow: '0 32px 64px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(124, 58, 237, 0.05)',
                             overflow: 'hidden'
                         }
                     }
@@ -1605,7 +1619,7 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
             >
                 {/* Header */}
                 <Box sx={{
-                    background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                    background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
                     color: 'white',
                     p: 3,
                     position: 'relative',
@@ -1653,16 +1667,16 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                         <Grid key={index} sx={{flex: 1}}>
                                             <Card sx={{
                                                 background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-                                                border: '2px solid rgba(5, 150, 105, 0.15)',
+                                                border: '2px solid rgba(124, 58, 237, 0.15)',
                                                 borderRadius: 4,
-                                                boxShadow: '0 8px 32px rgba(5, 150, 105, 0.12)',
+                                                boxShadow: '0 8px 32px rgba(124, 58, 237, 0.12)',
                                                 transition: 'all 0.3s ease',
                                                 position: 'relative',
                                                 overflow: 'hidden',
                                                 '&:hover': {
                                                     transform: 'translateY(-6px)',
-                                                    boxShadow: '0 12px 40px rgba(5, 150, 105, 0.25)',
-                                                    borderColor: 'rgba(5, 150, 105, 0.3)'
+                                                    boxShadow: '0 12px 40px rgba(124, 58, 237, 0.25)',
+                                                    borderColor: 'rgba(124, 58, 237, 0.3)'
                                                 },
                                                 '&::before': {
                                                     content: '""',
@@ -1671,7 +1685,7 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                     left: 0,
                                                     right: 0,
                                                     height: '4px',
-                                                    background: 'linear-gradient(135deg, #059669 0%, #047857 100%)'
+                                                    background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)'
                                                 }
                                             }}>
                                                 <CardContent sx={{p: 4}}>
@@ -1679,9 +1693,9 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                         <Box sx={{
                                                             p: 1.5,
                                                             borderRadius: 3,
-                                                            background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                                                            background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
                                                             color: 'white',
-                                                            boxShadow: '0 4px 12px rgba(5, 150, 105, 0.3)'
+                                                            boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
                                                         }}>
                                                             {getItemIcon(item.type)}
                                                         </Box>
@@ -1698,19 +1712,19 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                     </Box>
 
                                                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 1.5}}>
-                                                        {renderColorWithPicker(item.color, '#059669')}
+                                                        {renderColorWithPicker(item.color, '#7c3aed')}
 
                                                         <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                                                             <Box sx={{
                                                                 width: 8,
                                                                 height: 8,
                                                                 borderRadius: '50%',
-                                                                background: '#059669'
+                                                                background: '#7c3aed'
                                                             }}/>
                                                             <Typography variant="body2"
                                                                         sx={{fontWeight: 600, color: '#374151'}}>
                                                                 Fabric: <span style={{
-                                                                color: '#059669',
+                                                                color: '#7c3aed',
                                                                 fontWeight: 500
                                                             }}>{item.fabricName || 'N/A'}</span>
                                                             </Typography>
@@ -1722,12 +1736,12 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                                     width: 8,
                                                                     height: 8,
                                                                     borderRadius: '50%',
-                                                                    background: '#059669'
+                                                                    background: '#7c3aed'
                                                                 }}/>
                                                                 <Typography variant="body2"
                                                                             sx={{fontWeight: 600, color: '#374151'}}>
                                                                     Logo Position: <span style={{
-                                                                    color: '#059669',
+                                                                    color: '#7c3aed',
                                                                     fontWeight: 500
                                                                 }}>{item.logoPosition}</span>
                                                                 </Typography>
@@ -1738,9 +1752,9 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                             <Box sx={{
                                                                 mt: 2,
                                                                 p: 2,
-                                                                background: 'rgba(5, 150, 105, 0.05)',
+                                                                background: 'rgba(124, 58, 237, 0.05)',
                                                                 borderRadius: 2,
-                                                                border: '1px solid rgba(5, 150, 105, 0.1)'
+                                                                border: '1px solid rgba(124, 58, 237, 0.1)'
                                                             }}>
                                                                 <Typography variant="body2" sx={{
                                                                     fontStyle: 'italic',
@@ -1757,9 +1771,9 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                             <Box sx={{
                                                                 mt: 2,
                                                                 p: 2,
-                                                                background: 'rgba(102, 126, 234, 0.03)',
+                                                                background: 'rgba(124, 58, 237, 0.03)',
                                                                 borderRadius: 2,
-                                                                border: '1px solid rgba(102, 126, 234, 0.08)',
+                                                                border: '1px solid rgba(124, 58, 237, 0.08)',
                                                                 textAlign: 'left'
                                                             }}>
                                                                 <Typography variant="body2" sx={{
@@ -1788,9 +1802,9 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                             <Box sx={{
                                                                 mt: 2,
                                                                 p: 2,
-                                                                background: 'rgba(5, 150, 105, 0.03)',
+                                                                background: 'rgba(124, 58, 237, 0.03)',
                                                                 borderRadius: 2,
-                                                                border: '1px solid rgba(5, 150, 105, 0.08)',
+                                                                border: '1px solid rgba(124, 58, 237, 0.08)',
                                                                 textAlign: 'left'
                                                             }}>
                                                                 <Typography variant="body2" sx={{
@@ -1819,9 +1833,9 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                                                             <Box sx={{
                                                                 mt: 2,
                                                                 p: 2,
-                                                                background: 'rgba(5, 150, 105, 0.03)',
+                                                                background: 'rgba(124, 58, 237, 0.03)',
                                                                 borderRadius: 2,
-                                                                border: '1px solid rgba(5, 150, 105, 0.08)'
+                                                                border: '1px solid rgba(124, 58, 237, 0.08)'
                                                             }}>
                                                                 <Typography variant="body2" sx={{
                                                                     color: '#64748b',
@@ -1864,11 +1878,11 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                             <Box sx={{
                                 textAlign: 'center',
                                 py: 6,
-                                background: 'rgba(5, 150, 105, 0.02)',
+                                background: 'rgba(124, 58, 237, 0.02)',
                                 borderRadius: 3,
-                                border: '2px dashed rgba(5, 150, 105, 0.2)'
+                                border: '2px dashed rgba(124, 58, 237, 0.2)'
                             }}>
-                                <PersonIcon sx={{fontSize: 48, color: '#059669', mb: 2, opacity: 0.6}}/>
+                                <PersonIcon sx={{fontSize: 48, color: '#7c3aed', mb: 2, opacity: 0.6}}/>
                                 <Typography variant="h6" sx={{color: '#64748b', fontWeight: 600, mb: 1}}>
                                     No Physical Education Uniform Data
                                 </Typography>
@@ -1884,22 +1898,22 @@ export default function DesignerRequestDetail({visible, onCancel, request}) {
                 <DialogActions sx={{
                     p: 3,
                     background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
-                    borderTop: '1px solid rgba(5, 150, 105, 0.08)'
+                    borderTop: '1px solid rgba(124, 58, 237, 0.08)'
                 }}>
                     <Button
                         onClick={() => setPhysicalDialogOpen(false)}
                         variant="outlined"
                         size="large"
                         sx={{
-                            borderColor: '#059669',
-                            color: '#059669',
+                            borderColor: '#7c3aed',
+                            color: '#7c3aed',
                             fontWeight: 600,
                             px: 4,
                             py: 1.5,
                             borderRadius: 2,
                             '&:hover': {
-                                borderColor: '#047857',
-                                backgroundColor: 'rgba(5, 150, 105, 0.04)',
+                                borderColor: '#6d28d9',
+                                backgroundColor: 'rgba(124, 58, 237, 0.04)',
                                 transform: 'translateY(-1px)'
                             }
                         }}

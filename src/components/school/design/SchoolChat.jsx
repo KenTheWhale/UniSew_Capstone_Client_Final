@@ -79,7 +79,7 @@ export function statusTag(status) {
             icon = <SyncOutlined/>;
             break;
         case 'completed':
-            color = 'cyan';
+            color = 'success';
             icon = <CheckCircleOutlinedIcon/>;
             break;
         case 'canceled':
@@ -160,7 +160,7 @@ function DesignDetailDialog({visible, onCancel, request}) {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
                 color: 'white'
             }}>
                 <InfoCircleOutlinedIcon style={{color: 'white', fontSize: '18px'}}/>
@@ -225,7 +225,7 @@ function DesignDetailDialog({visible, onCancel, request}) {
                                         <Col span={24}>
                                             <Space direction="vertical" size="small" style={{width: '100%'}}>
                                                 <Space>
-                                                    <UserOutlinedIcon style={{color: '#1976d2'}}/>
+                                                    <UserOutlinedIcon style={{color: '#2e7d32'}}/>
                                                     <span style={{
                                                         fontWeight: 600,
                                                         fontSize: '14px'
@@ -236,8 +236,8 @@ function DesignDetailDialog({visible, onCancel, request}) {
                                                         size={48}
                                                         src={request.finalDesignQuotation.designer.customer.avatar || request.finalDesignQuotation.designer.customer.name.charAt(0)}
                                                         style={{
-                                                            border: '2px solid #1976d2',
-                                                            backgroundColor: '#1976d2'
+                                                            border: '2px solid #2e7d32',
+                                                            backgroundColor: '#2e7d32'
                                                         }}
                                                     >
                                                         {request.finalDesignQuotation.designer.customer.name.charAt(0)}
@@ -272,7 +272,7 @@ function DesignDetailDialog({visible, onCancel, request}) {
                                     <Card
                                         title={
                                             <Space>
-                                                <DollarOutlined style={{color: '#1976d2'}}/>
+                                                <DollarOutlined style={{color: '#2e7d32'}}/>
                                                 <span style={{
                                                     fontWeight: 600,
                                                     fontSize: '14px'
@@ -289,9 +289,9 @@ function DesignDetailDialog({visible, onCancel, request}) {
                                             <Col span={8} style={{display: 'flex'}}>
                                                 <Box sx={{
                                                     p: 1.5,
-                                                    backgroundColor: '#f0fdf4',
+                                                    background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.1) 0%, rgba(27, 94, 32, 0.15) 100%)',
                                                     borderRadius: 6,
-                                                    border: '1px solid #bbf7d0',
+                                                    border: '1px solid rgba(46, 125, 50, 0.2)',
                                                     textAlign: 'center',
                                                     width: '100%',
                                                     display: 'flex',
@@ -300,14 +300,14 @@ function DesignDetailDialog({visible, onCancel, request}) {
                                                 }}>
                                                     <Text style={{
                                                         fontSize: '10px',
-                                                        color: '#166534',
+                                                        color: '#2e7d32',
                                                         fontWeight: 600
                                                     }}>
                                                         PRICE (VND)
                                                     </Text>
                                                     <Title level={4} style={{
                                                         margin: '4px 0 0 0',
-                                                        color: '#166534',
+                                                        color: '#2e7d32',
                                                         fontWeight: 700
                                                     }}>
                                                         {formatCurrency(request.price)}
@@ -402,7 +402,7 @@ function DesignDetailDialog({visible, onCancel, request}) {
                                         <Col span={24}>
                                             <Space direction="vertical" size="small" style={{width: '100%'}}>
                                                 <Space>
-                                                    <PictureOutlined style={{color: '#1976d2'}}/>
+                                                    <PictureOutlined style={{color: '#2e7d32'}}/>
                                                     <span style={{fontWeight: 600, fontSize: '14px'}}>Logo Image</span>
                                                 </Space>
                                                 <MuiBox sx={{display: 'flex', justifyContent: 'center', p: 1}}>
@@ -432,7 +432,7 @@ function DesignDetailDialog({visible, onCancel, request}) {
                                 <Col span={24}>
                                     <Space direction="vertical" size="small" style={{width: '100%'}}>
                                         <Space>
-                                            <FileTextOutlinedIcon style={{color: '#1976d2'}}/>
+                                            <FileTextOutlinedIcon style={{color: '#2e7d32'}}/>
                                             <span style={{
                                                 fontWeight: 600,
                                                 fontSize: '14px'
@@ -464,7 +464,8 @@ function DesignDetailDialog({visible, onCancel, request}) {
                                                                 width: 32,
                                                                 height: 32,
                                                                 borderRadius: 6,
-                                                                bgcolor: '#e3f2fd',
+                                                                background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
+                                                                color: 'white',
                                                                 flexShrink: 0
                                                             }}>
                                                                 {getItemIcon(item.type)}
@@ -575,7 +576,7 @@ function DesignDetailDialog({visible, onCancel, request}) {
                             <Col span={24}>
                                 <Space direction="vertical" size="small" style={{width: '100%'}}>
                                     <Space>
-                                        <InfoCircleOutlinedIcon style={{color: '#1976d2'}}/>
+                                                                                    <InfoCircleOutlinedIcon style={{color: '#2e7d32'}}/>
                                         <span style={{fontWeight: 600, fontSize: '14px'}}>Feedback</span>
                                     </Space>
                                     <MuiBox
@@ -655,7 +656,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
         >
             {/* Header */}
             <Box sx={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
                 color: 'white',
                 p: 3,
                 position: 'relative',
@@ -1086,15 +1087,15 @@ function RevisionRequestModal({visible, onCancel, onSubmit, selectedDeliveryId, 
         <Modal
             title={
                 <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
-                    <EditOutlined style={{color: '#1976d2', fontSize: '18px'}}/>
+                    <EditOutlined style={{color: '#2e7d32', fontSize: '18px'}}/>
                     <Typography.Title level={5} style={{margin: 0, color: '#1e293b'}}>
                         Request Revision
                     </Typography.Title>
                     <Chip
                         label={`${parseID(selectedDeliveryId, 'dd') || 'N/A'}`}
-                        color="primary"
+                        color="success"
                         size="small"
-                        style={{backgroundColor: '#1976d2'}}
+                        style={{backgroundColor: '#2e7d32'}}
                     />
                 </Box>
             }
@@ -1106,8 +1107,8 @@ function RevisionRequestModal({visible, onCancel, onSubmit, selectedDeliveryId, 
             okButtonProps={{
                 disabled: remainingRevisions === 0,
                 style: {
-                    backgroundColor: remainingRevisions === 0 ? '#d1d5db' : '#1976d2',
-                    borderColor: remainingRevisions === 0 ? '#d1d5db' : '#1976d2',
+                    backgroundColor: remainingRevisions === 0 ? '#d1d5db' : '#2e7d32',
+                    borderColor: remainingRevisions === 0 ? '#d1d5db' : '#2e7d32',
                     color: remainingRevisions === 0 ? '#6b7280' : 'white'
                 }
             }}
@@ -1177,7 +1178,7 @@ function RevisionRequestModal({visible, onCancel, onSubmit, selectedDeliveryId, 
     );
 }
 
-export default function DesignChat() {
+export default function SchoolChat() {
     const [requestData, setRequestData] = useState(null);
     const [designDeliveries, setDesignDeliveries] = useState([]);
     const [finalDelivery, setFinalDelivery] = useState(null);
@@ -1443,7 +1444,7 @@ export default function DesignChat() {
     return (
         <Box sx={{
             height: 'max-content',
-            backgroundColor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            backgroundColor: 'linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(27, 94, 32, 0.08) 100%)',
             p: {xs: 2, md: 4}
         }}>
             <Container maxWidth="xl" sx={{height: 'max-content'}}>
@@ -1455,8 +1456,8 @@ export default function DesignChat() {
                         p: 2,
                         backgroundColor: 'white',
                         borderRadius: 4,
-                        border: '2px solid #1976d2',
-                        boxShadow: '0 8px 32px rgba(25, 118, 210, 0.2)',
+                        border: '2px solid #2e7d32',
+                        boxShadow: '0 8px 32px rgba(46, 125, 50, 0.2)',
                         position: 'relative',
                         overflow: 'hidden',
                         '&::before': {
@@ -1485,17 +1486,17 @@ export default function DesignChat() {
                                     icon={<InfoCircleOutlined/>}
                                     onClick={() => setIsDesignDetailModalVisible(true)}
                                     style={{
-                                        background: 'linear-gradient(135deg, #1976d2, #42a5f5)',
+                                        background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
                                         border: 'none',
                                         borderRadius: '8px',
                                         height: '40px',
                                         fontSize: '14px',
                                         fontWeight: 600,
-                                        boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+                                        boxShadow: '0 4px 12px rgba(46, 125, 50, 0.3)',
                                         transition: 'all 0.3s ease',
                                         '&:hover': {
                                             transform: 'translateY(-1px)',
-                                            boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)'
+                                            boxShadow: '0 6px 16px rgba(46, 125, 50, 0.4)'
                                         }
                                     }}
                                 >
@@ -1503,10 +1504,10 @@ export default function DesignChat() {
                                 </Button>
                                 <Chip
                                     label={requestData?.status?.toUpperCase() || 'UNKNOWN'}
-                                    color={requestData?.status === 'completed' ? 'default' : 'success'}
+                                    color="success"
                                     size="large"
                                     style={{
-                                        backgroundColor: requestData?.status === 'completed' ? '#1890ff' : '#52c41a',
+                                        backgroundColor: '#2e7d32',
                                         color: 'white',
                                         fontSize: '14px',
                                         fontWeight: 600,
@@ -1518,7 +1519,40 @@ export default function DesignChat() {
                     </Box>
 
                     {/* Main Content */}
-                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 3, flex: 1, minHeight: 0, height: '90vh'}}>
+                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 3, flex: 1, minHeight: 0, height: '90vh', position: 'relative'}}>
+                        {/* Completed Overlay */}
+                        {requestData?.status === 'completed' && (
+                            <Box sx={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                borderRadius: 2,
+                                zIndex: 1,
+                                pointerEvents: 'none',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}>
+                                <Box sx={{
+                                    backgroundColor: 'rgba(46, 125, 50, 0.9)',
+                                    color: 'white',
+                                    px: 4,
+                                    py: 2,
+                                    borderRadius: 2,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    boxShadow: '0 4px 20px rgba(46, 125, 50, 0.3)'
+                                }}>
+                                    <CheckCircleOutlined style={{fontSize: '24px'}} />
+                                    <Typography.Text style={{fontSize: '16px', fontWeight: 600}}>
+                                        Design Request Completed - View Only Mode
+                                    </Typography.Text>
+                                </Box>
+                            </Box>
+                        )}
 
                         {/* Top Row - Chat and Deliveries */}
                         <Box sx={{display: 'flex', gap: 3, flex: 2}}>
@@ -1532,9 +1566,9 @@ export default function DesignChat() {
                                     flexDirection: 'column',
                                     backgroundColor: 'white',
                                     borderRadius: 4,
-                                    border: '2px solid #1976d2',
+                                    border: '2px solid #2e7d32',
                                     overflow: 'hidden',
-                                    boxShadow: '0 8px 32px rgba(25, 118, 210, 0.15)',
+                                    boxShadow: '0 8px 32px rgba(46, 125, 50, 0.15)',
                                     position: 'relative'
                                 }}
                             >
@@ -1551,13 +1585,13 @@ export default function DesignChat() {
                                             width: 50,
                                             height: 50,
                                             borderRadius: '50%',
-                                            background: 'linear-gradient(135deg, #1976d2, #42a5f5)',
+                                            background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             color: 'white',
                                             fontSize: '20px',
-                                            boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)'
+                                            boxShadow: '0 4px 12px rgba(46, 125, 50, 0.3)'
                                         }}>
                                             <UserSwitchOutlined/>
                                         </Box>
@@ -1581,8 +1615,8 @@ export default function DesignChat() {
                                     overflowY: 'auto',
                                     backgroundColor: '#f8fafc',
                                     maxHeight: '70vh',
-                                    opacity: isFinalDesignSet ? 0.6 : 1,
-                                    pointerEvents: isFinalDesignSet ? 'none' : 'auto'
+                                    opacity: (isFinalDesignSet || requestData?.status === 'completed') ? 0.6 : 1,
+                                    pointerEvents: (isFinalDesignSet || requestData?.status === 'completed') ? 'none' : 'auto'
                                 }}>
                                     {chatMessages.length === 0 ? (
                                         <Box sx={{
@@ -1627,14 +1661,14 @@ export default function DesignChat() {
                                                             p: 2,
                                                             borderRadius: 4,
                                                             backgroundColor: msg.user === (auth.currentUser?.displayName || "User")
-                                                                ? 'linear-gradient(135deg, #1976d2, #42a5f5)'
+                                                                ? 'linear-gradient(135deg, #2e7d32, #4caf50)'
                                                                 : 'white',
                                                             color: msg.user === (auth.currentUser?.displayName || "User") ? 'white' : '#1e293b',
                                                             border: msg.user !== (auth.currentUser?.displayName || "User") ? '2px solid #e2e8f0' : 'none',
                                                             maxWidth: '100%',
                                                             wordWrap: 'break-word',
                                                             boxShadow: msg.user === (auth.currentUser?.displayName || "User")
-                                                                ? '0 4px 12px rgba(25, 118, 210, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                                                ? '0 4px 12px rgba(46, 125, 50, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
                                                             position: 'relative'
                                                         }}>
                                                             <Box
@@ -1680,8 +1714,8 @@ export default function DesignChat() {
                                     px: 2,
                                     borderTop: '2px solid #e2e8f0',
                                     backgroundColor: 'linear-gradient(135deg, #f8fafc 0%, #e3f2fd 100%)',
-                                    opacity: isFinalDesignSet ? 0.6 : 1,
-                                    pointerEvents: isFinalDesignSet ? 'none' : 'auto'
+                                    opacity: (isFinalDesignSet || requestData?.status === 'completed') ? 0.6 : 1,
+                                    pointerEvents: (isFinalDesignSet || requestData?.status === 'completed') ? 'none' : 'auto'
                                 }}>
                                     <Box sx={{display: 'flex', gap: 3, alignItems: 'flex-end'}}>
                                         <Box sx={{flex: 1, position: 'relative'}}>
@@ -1772,14 +1806,14 @@ export default function DesignChat() {
                                                 borderRadius: '50%',
                                                 width: '50px',
                                                 height: '50px',
-                                                background: 'linear-gradient(135deg, #1976d2, #42a5f5)',
+                                                background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
                                                 border: 'none',
                                                 fontSize: '18px',
-                                                boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+                                                boxShadow: '0 4px 12px rgba(46, 125, 50, 0.3)',
                                                 transition: 'all 0.3s ease',
                                                 '&:hover': {
                                                     transform: 'scale(1.05)',
-                                                    boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)'
+                                                    boxShadow: '0 6px 16px rgba(46, 125, 50, 0.4)'
                                                 }
                                             }}
                                         />
@@ -1799,9 +1833,9 @@ export default function DesignChat() {
                                         flexDirection: 'column',
                                         backgroundColor: 'white',
                                         borderRadius: 4,
-                                        border: '2px solid #1976d2',
+                                        border: '2px solid #2e7d32',
                                         overflow: 'hidden',
-                                        boxShadow: '0 8px 32px rgba(25, 118, 210, 0.15)',
+                                        boxShadow: '0 8px 32px rgba(46, 125, 50, 0.15)',
                                         position: 'relative'
                                     }}
                                 >
@@ -1823,13 +1857,13 @@ export default function DesignChat() {
                                                     width: 40,
                                                     height: 40,
                                                     borderRadius: '50%',
-                                                    background: 'linear-gradient(135deg, #1976d2, #42a5f5)',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    color: 'white',
-                                                    fontSize: '16px',
-                                                    boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)'
+                                                                                                background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'white',
+                                            fontSize: '16px',
+                                            boxShadow: '0 4px 12px rgba(46, 125, 50, 0.3)'
                                                 }}>
                                                     <FileTextOutlined/>
                                                 </Box>
@@ -1859,11 +1893,11 @@ export default function DesignChat() {
                                                 height: 32,
                                                 px: 2,
                                                 borderRadius: '16px',
-                                                background: 'linear-gradient(135deg, #1976d2, #42a5f5)',
+                                                background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
                                                 color: 'white',
                                                 fontSize: '14px',
                                                 fontWeight: 600,
-                                                boxShadow: '0 2px 8px rgba(25, 118, 210, 0.3)',
+                                                boxShadow: '0 2px 8px rgba(46, 125, 50, 0.3)',
                                                 border: '2px solid rgba(255, 255, 255, 0.2)'
                                             }}>
                                                 Amount: {designDeliveries.length}
@@ -1915,8 +1949,8 @@ export default function DesignChat() {
                                                                 backgroundColor: 'white',
                                                                 transition: 'all 0.3s ease',
                                                                 '&:hover': {
-                                                                    borderColor: '#1976d2',
-                                                                    boxShadow: '0 2px 8px rgba(25, 118, 210, 0.1)'
+                                                                    borderColor: '#2e7d32',
+                                                                    boxShadow: '0 2px 8px rgba(46, 125, 50, 0.1)'
                                                                 }
                                                             }}
                                                         >
@@ -1961,7 +1995,7 @@ export default function DesignChat() {
                                                                 >
                                                                     View Details
                                                                 </Button>
-                                                                {!isFinalDesignSet && (
+                                                                {!isFinalDesignSet && requestData?.status !== 'completed' && (
                                                                     <>
                                                                         {requestData?.revisionTime > 0 && (
                                                                             <Button
@@ -2155,15 +2189,22 @@ export default function DesignChat() {
                                                 color: '#64748b'
                                             }}>
                                                 <EditOutlined style={{fontSize: '48px', opacity: 0.5}}/>
-                                                <Typography.Text type="secondary" style={{fontSize: '14px'}}>
-                                                    {requestData?.revisionTime === 0 ? 'No revisions left' : 'No revision requests'}
-                                                </Typography.Text>
-                                                {requestData?.revisionTime === 0 && (
-                                                    <Typography.Text type="secondary"
-                                                                     style={{fontSize: '12px', color: '#dc2626'}}>
-                                                        You have used all available revisions
+                                                                                                    <Typography.Text type="secondary" style={{fontSize: '14px'}}>
+                                                        {requestData?.status === 'completed' ? 'Design request completed - no actions available' : 
+                                                         requestData?.revisionTime === 0 ? 'No revisions left' : 'No revision requests'}
                                                     </Typography.Text>
-                                                )}
+                                                    {requestData?.status === 'completed' && (
+                                                        <Typography.Text type="secondary"
+                                                                         style={{fontSize: '12px', color: '#2e7d32'}}>
+                                                            This design request has been completed
+                                                        </Typography.Text>
+                                                    )}
+                                                    {requestData?.status !== 'completed' && requestData?.revisionTime === 0 && (
+                                                        <Typography.Text type="secondary"
+                                                                         style={{fontSize: '12px', color: '#dc2626'}}>
+                                                            You have used all available revisions
+                                                        </Typography.Text>
+                                                    )}
                                             </Box>
                                         )}
                                     </Box>
@@ -2174,115 +2215,116 @@ export default function DesignChat() {
                         </Box>
 
                         {/* Bottom Row - Final Delivery */}
-                        <Paper
-                            elevation={0}
-                            sx={{
-                                width: '100%',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                backgroundColor: 'white',
-                                borderRadius: 4,
-                                border: '2px solid #52c41a',
-                                overflow: 'hidden',
-                                boxShadow: '0 8px 32px rgba(82, 196, 26, 0.15)',
-                                position: 'relative',
-                                height: 'max-content',
-                                flex: 1
-                            }}
-                        >
-                            {/* Final Delivery Header */}
-                            <Box sx={{
-                                py: 2,
-                                px: 3,
-                                borderBottom: '2px solid #e2e8f0',
-                                backgroundColor: 'linear-gradient(135deg, #f6ffed 0%, #d9f7be 100%)',
-                                position: 'relative'
-                            }}>
-                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
-                                    <Box sx={{
-                                        width: 32,
-                                        height: 32,
-                                        borderRadius: '50%',
-                                        background: 'linear-gradient(135deg, #52c41a, #73d13d)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        color: 'white',
-                                        fontSize: '14px',
-                                        boxShadow: '0 4px 12px rgba(82, 196, 26, 0.3)'
-                                    }}>
-                                        <CheckCircleOutlined/>
-                                    </Box>
-                                    <Typography.Title level={5}
-                                                      style={{margin: 0, color: '#52c41a', fontWeight: 600}}>
-                                        Final Delivery
-                                    </Typography.Title>
-                                </Box>
-                            </Box>
+                        {/*<Paper*/}
+                        {/*    elevation={0}*/}
+                        {/*    sx={{*/}
+                        {/*        width: '100%',*/}
+                        {/*        display: 'flex',*/}
+                        {/*        flexDirection: 'column',*/}
+                        {/*        backgroundColor: 'white',*/}
+                        {/*        borderRadius: 4,*/}
+                        {/*        border: '2px solid #52c41a',*/}
+                        {/*        overflow: 'hidden',*/}
+                        {/*        boxShadow: '0 8px 32px rgba(82, 196, 26, 0.15)',*/}
+                        {/*        position: 'relative',*/}
+                        {/*        height: 'max-content',*/}
+                        {/*        flex: 1*/}
+                        {/*    }}*/}
+                        {/*>*/}
+                        {/*    /!* Final Delivery Header *!/*/}
+                        {/*    <Box sx={{*/}
+                        {/*        py: 2,*/}
+                        {/*        px: 3,*/}
+                        {/*        borderBottom: '2px solid #e2e8f0',*/}
+                        {/*        backgroundColor: 'linear-gradient(135deg, #f6ffed 0%, #d9f7be 100%)',*/}
+                        {/*        position: 'relative'*/}
+                        {/*    }}>*/}
+                        {/*        <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>*/}
+                        {/*            <Box sx={{*/}
+                        {/*                width: 32,*/}
+                        {/*                height: 32,*/}
+                        {/*                borderRadius: '50%',*/}
+                        {/*                background: 'linear-gradient(135deg, #52c41a, #73d13d)',*/}
+                        {/*                display: 'flex',*/}
+                        {/*                alignItems: 'center',*/}
+                        {/*                justifyContent: 'center',*/}
+                        {/*                color: 'white',*/}
+                        {/*                fontSize: '14px',*/}
+                        {/*                boxShadow: '0 4px 12px rgba(82, 196, 26, 0.3)'*/}
+                        {/*            }}>*/}
+                        {/*                <CheckCircleOutlined/>*/}
+                        {/*            </Box>*/}
+                        {/*            <Typography.Title level={5}*/}
+                        {/*                              style={{margin: 0, color: '#52c41a', fontWeight: 600}}>*/}
+                        {/*                Final Delivery*/}
+                        {/*            </Typography.Title>*/}
+                        {/*        </Box>*/}
+                        {/*    </Box>*/}
 
-                            {/* Final Delivery Content */}
-                            <Box sx={{
-                                p: 3,
-                                flex: 1,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                height: 'max-content'
-                            }}>
-                                {finalDelivery ? (
-                                    <>
-                                        <Typography.Title level={5} style={{margin: '0 0 8px 0', color: '#1e293b'}}>
-                                            {finalDelivery.name}
-                                        </Typography.Title>
-                                        <Typography.Text type="secondary"
-                                                         style={{fontSize: '12px', display: 'block', mb: 1}}>
-                                            {finalDelivery.note || 'Final delivery selected'}
-                                        </Typography.Text>
-                                        <Typography.Text type="secondary"
-                                                         style={{fontSize: '11px', display: 'block', mb: 2}}>
-                                            {new Date(finalDelivery.submitDate).toLocaleDateString('vi-VN', {
-                                                day: '2-digit',
-                                                month: '2-digit',
-                                                year: 'numeric'
-                                            })}
-                                        </Typography.Text>
-                                        <Button
-                                            type="primary"
-                                            icon={<EyeOutlined/>}
-                                            onClick={() => handleOpenDeliveryDetailModal(finalDelivery)}
-                                            size="small"
-                                            style={{
-                                                backgroundColor: '#52c41a',
-                                                borderColor: '#52c41a',
-                                                borderRadius: '6px',
-                                                height: '32px',
-                                                fontSize: '12px',
-                                                fontWeight: 600,
-                                                marginTop: '8px'
-                                            }}
-                                        >
-                                            View Details
-                                        </Button>
-                                    </>
-                                ) : (
-                                    <Box sx={{
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: '100%',
-                                        flexDirection: 'column',
-                                        gap: 2,
-                                        color: '#64748b'
-                                    }}>
-                                        <FileTextOutlined style={{fontSize: '48px', opacity: 0.5}}/>
-                                        <Typography.Text type="secondary" style={{fontSize: '14px'}}>
-                                            No data
-                                        </Typography.Text>
-                                    </Box>
-                                )}
-                            </Box>
-                        </Paper>
+                        {/*    /!* Final Delivery Content *!/*/}
+                        {/*    <Box sx={{*/}
+                        {/*        p: 3,*/}
+                        {/*        flex: 1,*/}
+                        {/*        display: 'flex',*/}
+                        {/*        flexDirection: 'column',*/}
+                        {/*        justifyContent: 'center',*/}
+                        {/*        alignItems: 'center',*/}
+                        {/*        height: 'max-content'*/}
+                        {/*    }}>*/}
+                        {/*        {finalDelivery ? (*/}
+                        {/*            <>*/}
+                        {/*                <Typography.Title level={5} style={{margin: '0 0 8px 0', color: '#1e293b'}}>*/}
+                        {/*                    {finalDelivery.name}*/}
+                        {/*                </Typography.Title>*/}
+                        {/*                <Typography.Text type="secondary"*/}
+                        {/*                                 style={{fontSize: '12px', display: 'block', mb: 1}}>*/}
+                        {/*                    {requestData?.status === 'completed' ? 'Final delivery - Design completed' : */}
+                        {/*                     finalDelivery.note || 'Final delivery selected'}*/}
+                        {/*                </Typography.Text>*/}
+                        {/*                <Typography.Text type="secondary"*/}
+                        {/*                                 style={{fontSize: '11px', display: 'block', mb: 2}}>*/}
+                        {/*                    {new Date(finalDelivery.submitDate).toLocaleDateString('vi-VN', {*/}
+                        {/*                        day: '2-digit',*/}
+                        {/*                        month: '2-digit',*/}
+                        {/*                        year: 'numeric'*/}
+                        {/*                    })}*/}
+                        {/*                </Typography.Text>*/}
+                        {/*                <Button*/}
+                        {/*                    type="primary"*/}
+                        {/*                    icon={<EyeOutlined/>}*/}
+                        {/*                    onClick={() => handleOpenDeliveryDetailModal(finalDelivery)}*/}
+                        {/*                    size="small"*/}
+                        {/*                    style={{*/}
+                        {/*                        backgroundColor: '#52c41a',*/}
+                        {/*                        borderColor: '#52c41a',*/}
+                        {/*                        borderRadius: '6px',*/}
+                        {/*                        height: '32px',*/}
+                        {/*                        fontSize: '12px',*/}
+                        {/*                        fontWeight: 600,*/}
+                        {/*                        marginTop: '8px'*/}
+                        {/*                    }}*/}
+                        {/*                >*/}
+                        {/*                    View Details*/}
+                        {/*                </Button>*/}
+                        {/*            </>*/}
+                        {/*        ) : (*/}
+                        {/*            <Box sx={{*/}
+                        {/*                display: 'flex',*/}
+                        {/*                justifyContent: 'center',*/}
+                        {/*                alignItems: 'center',*/}
+                        {/*                height: '100%',*/}
+                        {/*                flexDirection: 'column',*/}
+                        {/*                gap: 2,*/}
+                        {/*                color: '#64748b'*/}
+                        {/*            }}>*/}
+                        {/*                <FileTextOutlined style={{fontSize: '48px', opacity: 0.5}}/>*/}
+                        {/*                <Typography.Text type="secondary" style={{fontSize: '14px'}}>*/}
+                        {/*                    {requestData?.status === 'completed' ? 'Design completed' : 'No data'}*/}
+                        {/*                </Typography.Text>*/}
+                        {/*            </Box>*/}
+                        {/*        )}*/}
+                        {/*    </Box>*/}
+                        {/*</Paper>*/}
                     </Box>
                 </Box>
             </Container>

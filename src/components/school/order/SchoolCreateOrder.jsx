@@ -41,7 +41,7 @@ import {enqueueSnackbar} from "notistack";
 
 const {Text, Title} = AntTypography;
 
-export default function CreateOrder() {
+export default function SchoolCreateOrder() {
     const [schoolDesigns, setSchoolDesigns] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -155,6 +155,25 @@ export default function CreateOrder() {
         if (totalQuantity < 1) {
             errors.quantity = 'Please select at least 1 item to order';
         }
+        
+        // Check if each uniform type has at least 1 item selected
+        const uniforms = groupItemsByUniform(selectedDesign?.delivery?.designItems || []);
+        const uniformKeys = Object.keys(uniforms);
+        
+        uniformKeys.forEach(uniformKey => {
+            const uniform = uniforms[uniformKey];
+            const uniformQuantities = Object.entries(selectedUniformSizeQuantities)
+                .filter(([key]) => key.startsWith(uniformKey))
+                .map(([, quantity]) => quantity);
+            
+            const uniformTotal = uniformQuantities.reduce((sum, qty) => sum + qty, 0);
+            
+            if (uniformTotal < 1) {
+                const gender = uniform.gender === 'boy' ? 'Boys' : 'Girls';
+                const type = uniform.shirt ? 'Shirt' : (uniform.pants ? 'Pants' : 'Skirt');
+                errors[`uniform_${uniformKey}`] = `Please select at least 1 ${gender} ${type}`;
+            }
+        });
         
         setValidationErrors(errors);
         return Object.keys(errors).length === 0;
@@ -277,6 +296,23 @@ export default function CreateOrder() {
                 return newErrors;
             });
         }
+        
+        // Clear uniform-specific errors when user adds items to that uniform
+        if (quantity > 0) {
+            setValidationErrors(prev => {
+                const newErrors = {...prev};
+                // Check if this uniform now has at least 1 item
+                const uniformQuantities = Object.entries(selectedUniformSizeQuantities)
+                    .filter(([key]) => key.startsWith(uniformKey))
+                    .map(([, qty]) => qty);
+                const uniformTotal = uniformQuantities.reduce((sum, qty) => sum + qty, 0) + quantity;
+                
+                if (uniformTotal >= 1) {
+                    delete newErrors[`uniform_${uniformKey}`];
+                }
+                return newErrors;
+            });
+        }
     };
 
     const handleRemoveSizeFromUniform = (uniformKey, size) => {
@@ -284,6 +320,26 @@ export default function CreateOrder() {
             const newState = {...prev};
             delete newState[`${uniformKey}_${size}`];
             return newState;
+        });
+        
+        // Check if uniform now has no items and add validation error
+        setValidationErrors(prev => {
+            const newErrors = {...prev};
+            const uniformQuantities = Object.entries(selectedUniformSizeQuantities)
+                .filter(([key]) => key.startsWith(uniformKey))
+                .map(([, qty]) => qty);
+            const uniformTotal = uniformQuantities.reduce((sum, qty) => sum + qty, 0);
+            
+            if (uniformTotal < 1) {
+                const uniforms = groupItemsByUniform(selectedDesign?.delivery?.designItems || []);
+                const uniform = uniforms[uniformKey];
+                if (uniform) {
+                    const gender = uniform.gender === 'boy' ? 'Boys' : 'Girls';
+                    const type = uniform.shirt ? 'Shirt' : (uniform.pants ? 'Pants' : 'Skirt');
+                    newErrors[`uniform_${uniformKey}`] = `Please select at least 1 ${gender} ${type}`;
+                }
+            }
+            return newErrors;
         });
     };
 
@@ -402,10 +458,10 @@ export default function CreateOrder() {
                 justifyContent: 'center',
                 alignItems: 'center',
                 minHeight: '60vh',
-                background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)'
+                background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(27, 94, 32, 0.08) 100%)'
             }}>
                 <Box sx={{textAlign: 'center'}}>
-                    <CircularProgress size={60} sx={{color: '#1976d2', mb: 2}}/>
+                    <CircularProgress size={60} sx={{color: '#2e7d32', mb: 2}}/>
                     <Typography variant="h6" color="text.secondary">
                         Loading designs...
                     </Typography>
@@ -428,29 +484,30 @@ export default function CreateOrder() {
         <Box sx={{
             height: 'max-content',
             flex: 1,
-            background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+            background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(27, 94, 32, 0.08) 100%)',
             py: 4
         }}>
             <Container maxWidth="xl">
                 {schoolDesigns.length === 0 ? (
-                    <MuiCard sx={{
-                        maxWidth: 600,
-                        mx: 'auto',
-                        textAlign: 'center',
-                        background: 'rgba(255, 255, 255, 0.9)',
-                        backdropFilter: 'blur(10px)',
-                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-                    }}>
-                        <CardContent sx={{py: 4}}>
-                            <DesignServicesIcon sx={{fontSize: 60, color: '#ccc', mb: 2}}/>
-                            <Typography variant="h5" sx={{mb: 2, color: '#666'}}>
-                                No Designs Available
-                            </Typography>
-                            <Typography variant="body1" color="text.secondary">
-                                Please complete a design request first before creating an order.
-                            </Typography>
-                        </CardContent>
-                    </MuiCard>
+                                            <MuiCard sx={{
+                            maxWidth: 600,
+                            mx: 'auto',
+                            textAlign: 'center',
+                            background: 'rgba(255, 255, 255, 0.95)',
+                            backdropFilter: 'blur(10px)',
+                            boxShadow: '0 8px 32px rgba(46, 125, 50, 0.15)',
+                            border: '2px solid #2e7d32'
+                        }}>
+                            <CardContent sx={{py: 4}}>
+                                <DesignServicesIcon sx={{fontSize: 60, color: '#2e7d32', mb: 2}}/>
+                                <Typography variant="h5" sx={{mb: 2, color: '#2e7d32', fontWeight: 600}}>
+                                    No Designs Available
+                                </Typography>
+                                <Typography variant="body1" color="text.secondary">
+                                    Please complete a design request first before creating an order.
+                                </Typography>
+                            </CardContent>
+                        </MuiCard>
                 ) : (
                     <Box sx={{maxWidth: 1200, mx: 'auto'}}>
                         {/* Selection Section */}
@@ -458,15 +515,16 @@ export default function CreateOrder() {
                             mb: 4,
                             background: 'rgba(255, 255, 255, 0.95)',
                             backdropFilter: 'blur(10px)',
-                            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-                            borderRadius: 3
+                            boxShadow: '0 8px 32px rgba(46, 125, 50, 0.15)',
+                            borderRadius: 3,
+                            border: '2px solid #2e7d32'
                         }}>
                             <CardContent sx={{p: 4}}>
                                 <Box sx={{
                                     p: 3,
                                     mb: 3,
                                     borderRadius: 3,
-                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    background: 'linear-gradient(135deg, #2e7d32 0%, #4caf50 100%)',
                                     color: 'white'
                                 }}>
                                     <Typography variant="h5" sx={{fontWeight: 600, color: 'white', mb: 2}}>
@@ -511,12 +569,12 @@ export default function CreateOrder() {
                                                     backgroundColor: 'rgba(255, 255, 255, 0.95)',
                                                     color: '#333',
                                                     '&:hover': {
-                                                        backgroundColor: 'rgba(25, 118, 210, 0.1)',
+                                                        backgroundColor: 'rgba(46, 125, 50, 0.1)',
                                                     },
                                                     '&.Mui-selected': {
-                                                        backgroundColor: 'rgba(25, 118, 210, 0.1)',
+                                                        backgroundColor: 'rgba(46, 125, 50, 0.1)',
                                                         '&:hover': {
-                                                            backgroundColor: 'rgba(25, 118, 210, 0.2)',
+                                                            backgroundColor: 'rgba(46, 125, 50, 0.2)',
                                                         },
                                                     },
                                                 },
@@ -545,18 +603,18 @@ export default function CreateOrder() {
 
                                 {/* Deadline Section */}
                                 {selectedDesignId && (
-                                    <Box sx={{
-                                        p: 3,
-                                        borderRadius: 3,
-                                        background: 'linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%)',
-                                        border: '1px solid #e1f5fe'
-                                    }}>
-                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
-                                            <CalendarIcon sx={{color: '#1976d2'}}/>
-                                            <Typography variant="h6" sx={{fontWeight: 600, color: '#1a237e'}}>
-                                                Step 2: Set Delivery Deadline
-                                            </Typography>
-                                        </Box>
+                                                                    <Box sx={{
+                                    p: 3,
+                                    borderRadius: 3,
+                                    background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.1) 0%, rgba(76, 175, 80, 0.15) 100%)',
+                                    border: '1px solid #2e7d32'
+                                }}>
+                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                        <CalendarIcon sx={{color: '#2e7d32'}}/>
+                                        <Typography variant="h6" sx={{fontWeight: 600, color: '#2e7d32'}}>
+                                            Step 2: Set Delivery Deadline
+                                        </Typography>
+                                    </Box>
                                         <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
                                             <Box sx={{display: 'flex', alignItems: 'center', gap: 3}}>
                                                 <Typography variant="body1" sx={{fontWeight: 500, minWidth: '120px'}}>
@@ -606,23 +664,23 @@ export default function CreateOrder() {
 
                                 {/* Order Note Section */}
                                 {selectedDesignId && (
-                                    <Box sx={{
-                                        p: 3,
-                                        borderRadius: 3,
-                                        background: 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)',
-                                        border: '1px solid #ffcc02',
-                                        mt: 3
-                                    }}>
-                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
-                                            <InfoIcon sx={{color: '#f57c00'}}/>
-                                            <Typography variant="h6" sx={{fontWeight: 600, color: '#e65100'}}>
-                                                Step 3: Additional Notes (Optional)
-                                            </Typography>
-                                        </Box>
-                                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
-                                            <Typography variant="body1" sx={{fontWeight: 500, color: '#bf360c'}}>
-                                                Order Notes:
-                                            </Typography>
+                                                                    <Box sx={{
+                                    p: 3,
+                                    borderRadius: 3,
+                                    background: 'linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 152, 0, 0.15) 100%)',
+                                    border: '1px solid #ff9800',
+                                    mt: 3
+                                }}>
+                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                        <InfoIcon sx={{color: '#ff9800'}}/>
+                                        <Typography variant="h6" sx={{fontWeight: 600, color: '#f57c00'}}>
+                                            Step 3: Additional Notes (Optional)
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                                        <Typography variant="body1" sx={{fontWeight: 500, color: '#e65100'}}>
+                                            Order Notes:
+                                        </Typography>
                                             <TextField
                                                 multiline
                                                 rows={4}
@@ -635,13 +693,13 @@ export default function CreateOrder() {
                                                     '& .MuiOutlinedInput-root': {
                                                         backgroundColor: 'rgba(255, 255, 255, 0.9)',
                                                         borderRadius: 2,
-                                                        '&:hover fieldset': {
-                                                            borderColor: '#f57c00',
-                                                        },
-                                                        '&.Mui-focused fieldset': {
-                                                            borderColor: '#f57c00',
-                                                            borderWidth: '2px',
-                                                        },
+                                                                                                            '&:hover fieldset': {
+                                                        borderColor: '#ff9800',
+                                                    },
+                                                    '&.Mui-focused fieldset': {
+                                                        borderColor: '#ff9800',
+                                                        borderWidth: '2px',
+                                                    },
                                                     },
                                                     '& .MuiInputBase-input': {
                                                         fontSize: '14px',
@@ -668,18 +726,19 @@ export default function CreateOrder() {
 
                         {/* Design Details Section */}
                         {selectedDesignId && selectedDesign && (
-                            <MuiCard sx={{
-                                background: 'rgba(255, 255, 255, 0.95)',
-                                backdropFilter: 'blur(10px)',
-                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-                                borderRadius: 3
-                            }}>
+                                                    <MuiCard sx={{
+                            background: 'rgba(255, 255, 255, 0.95)',
+                            backdropFilter: 'blur(10px)',
+                            boxShadow: '0 8px 32px rgba(46, 125, 50, 0.15)',
+                            borderRadius: 3,
+                            border: '2px solid #2e7d32'
+                        }}>
                                 <CardContent sx={{p: 4}}>
                                     <Box sx={{
                                         p: 3,
                                         mb: 4,
                                         borderRadius: 3,
-                                        background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                                        background: 'linear-gradient(135deg, #2e7d32 0%, #4caf50 100%)',
                                         color: 'white'
                                     }}>
                                         <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
@@ -698,8 +757,8 @@ export default function CreateOrder() {
                                         p: 3,
                                         mb: 4,
                                         borderRadius: 3,
-                                        background: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
-                                        border: '1px solid #ffd89b'
+                                        background: 'linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 152, 0, 0.15) 100%)',
+                                        border: '1px solid #ff9800'
                                     }}>
                                         <Row gutter={[24, 16]} align="middle">
                                             <Col span={12}>
@@ -708,17 +767,17 @@ export default function CreateOrder() {
                                                         p: 1.5,
                                                         borderRadius: 2,
                                                         background: 'rgba(255, 255, 255, 0.2)',
-                                                        color: '#8b4513'
+                                                        color: '#e65100'
                                                     }}>
                                                         <DesignServicesIcon/>
                                                     </Box>
                                                     <Box>
                                                         <Typography variant="h6"
-                                                                    sx={{fontWeight: 600, color: '#8b4513'}}>
+                                                                    sx={{fontWeight: 600, color: '#e65100'}}>
                                                             {selectedDesign.delivery?.designRequest?.name}
                                                         </Typography>
                                                         <Typography variant="body2"
-                                                                    sx={{color: '#8b4513', opacity: 0.8}}>
+                                                                    sx={{color: '#e65100', opacity: 0.8}}>
                                                             Design
                                                             Completed: {formatDate(selectedDesign.delivery?.submitDate)}
                                                         </Typography>
@@ -737,7 +796,7 @@ export default function CreateOrder() {
                                                 <Card
                                                     title={
                                                         <Space>
-                                                            <PaletteIcon style={{color: '#1976d2'}}/>
+                                                            <PaletteIcon style={{color: '#2e7d32'}}/>
                                                             <span style={{
                                                                 fontWeight: 600,
                                                                 fontSize: '16px'
@@ -767,13 +826,13 @@ export default function CreateOrder() {
                                         <Col span={24}>
                                             <Card
                                                 title={
-                                                    <Space>
-                                                        <DesignServicesIcon style={{color: '#1976d2'}}/>
-                                                        <span style={{
-                                                            fontWeight: 600,
-                                                            fontSize: '16px'
-                                                        }}>Uniform Selection</span>
-                                                    </Space>
+                                                                                                            <Space>
+                                                            <DesignServicesIcon style={{color: '#2e7d32'}}/>
+                                                            <span style={{
+                                                                fontWeight: 600,
+                                                                fontSize: '16px'
+                                                            }}>Uniform Selection</span>
+                                                        </Space>
                                                 }
                                                 style={{
                                                     border: '1px solid #e2e8f0',
@@ -840,9 +899,9 @@ export default function CreateOrder() {
                                                                                 backgroundColor: 'rgba(107, 114, 128, 0.05)',
                                                                                 border: '1px solid rgba(107, 114, 128, 0.1)',
                                                                                 '&:hover': {
-                                                                                    color: '#1976d2',
-                                                                                    backgroundColor: 'rgba(25, 118, 210, 0.08)',
-                                                                                    borderColor: 'rgba(25, 118, 210, 0.2)'
+                                                                                    color: '#2e7d32',
+                                                                                    backgroundColor: 'rgba(46, 125, 50, 0.08)',
+                                                                                    borderColor: 'rgba(46, 125, 50, 0.2)'
                                                                                 }
                                                                             }}
                                                                         >
@@ -859,18 +918,18 @@ export default function CreateOrder() {
                                                                                 px: 2.5,
                                                                                 py: 1.5,
                                                                                 borderRadius: 2,
-                                                                                borderColor: '#1976d2',
-                                                                                color: '#1976d2',
+                                                                                borderColor: '#2e7d32',
+                                                                                color: '#2e7d32',
                                                                                 fontWeight: 600,
                                                                                 fontSize: '13px',
                                                                                 textTransform: 'none',
-                                                                                boxShadow: '0 2px 8px rgba(25, 118, 210, 0.1)',
+                                                                                boxShadow: '0 2px 8px rgba(46, 125, 50, 0.1)',
                                                                                 whiteSpace: 'nowrap',
                                                                                 '&:hover': {
-                                                                                    backgroundColor: '#1976d2',
+                                                                                    backgroundColor: '#2e7d32',
                                                                                     color: '#ffffff',
-                                                                                    borderColor: '#1976d2',
-                                                                                    boxShadow: '0 4px 12px rgba(25, 118, 210, 0.2)',
+                                                                                    borderColor: '#2e7d32',
+                                                                                    boxShadow: '0 4px 12px rgba(46, 125, 50, 0.2)',
                                                                                     transform: 'translateY(-1px)'
                                                                                 }
                                                                             }}
@@ -889,7 +948,7 @@ export default function CreateOrder() {
                                                                         <Typography variant="body1" sx={{
                                                                             fontSize: '14px',
                                                                             fontWeight: 600,
-                                                                            color: '#1976d2',
+                                                                            color: '#2e7d32',
                                                                             whiteSpace: 'nowrap'
                                                                         }}>
                                                                             Uniform Sizes & Quantities:
@@ -1000,15 +1059,15 @@ export default function CreateOrder() {
                                                                                             width: '49%',
                                                                                             p: 2.5,
                                                                                             borderRadius: 3,
-                                                                                            backgroundColor: currentQuantity > 0 ? '#e0f2fe' : '#ffffff',
-                                                                                            border: currentQuantity > 0 ? '2px solid #0288d1' : '1px solid #e2e8f0',
+                                                                                            backgroundColor: currentQuantity > 0 ? 'rgba(46, 125, 50, 0.1)' : '#ffffff',
+                                                                                            border: currentQuantity > 0 ? '2px solid #2e7d32' : '1px solid #e2e8f0',
                                                                                             transition: 'all 0.3s ease',
-                                                                                            boxShadow: currentQuantity > 0 ? '0 4px 12px rgba(2, 136, 209, 0.15)' : '0 2px 8px rgba(0, 0, 0, 0.05)',
+                                                                                            boxShadow: currentQuantity > 0 ? '0 4px 12px rgba(46, 125, 50, 0.15)' : '0 2px 8px rgba(0, 0, 0, 0.05)',
                                                                                             position: 'relative',
                                                                                             overflow: 'hidden',
                                                                                             '&:hover': {
-                                                                                                borderColor: '#0288d1',
-                                                                                                backgroundColor: currentQuantity > 0 ? '#e0f2fe' : '#f0f9ff',
+                                                                                                borderColor: '#2e7d32',
+                                                                                                backgroundColor: currentQuantity > 0 ? 'rgba(46, 125, 50, 0.1)' : 'rgba(46, 125, 50, 0.05)',
                                                                                                 transform: 'translateY(-2px)',
                                                                                                 boxShadow: '0 6px 20px rgba(0, 0, 0, 0.1)'
                                                                                             },
@@ -1019,7 +1078,7 @@ export default function CreateOrder() {
                                                                                                 left: 0,
                                                                                                 right: 0,
                                                                                                 height: '3px',
-                                                                                                backgroundColor: '#0288d1'
+                                                                                                backgroundColor: '#2e7d32'
                                                                                             } : {}
                                                                                         }}>
                                                                                             {/* Size Label with Reset Button */}
@@ -1033,7 +1092,7 @@ export default function CreateOrder() {
                                                                                                 <Typography variant="h6" sx={{ 
                                                                                                     fontSize: '18px', 
                                                                                                     fontWeight: 800, 
-                                                                                                    color: currentQuantity > 0 ? '#0288d1' : '#374151',
+                                                                                                    color: currentQuantity > 0 ? '#2e7d32' : '#374151',
                                                                                                     textAlign: 'left',
                                                                                                     letterSpacing: '0.5px',
                                                                                                     flex: 1
@@ -1095,15 +1154,15 @@ export default function CreateOrder() {
                                                                                                             borderRadius: 2.5,
                                                                                                             fontWeight: 700,
                                                                                                             border: '2px solid',
-                                                                                                            borderColor: currentQuantity > 0 ? '#0288d1' : '#e2e8f0',
+                                                                                                            borderColor: currentQuantity > 0 ? '#2e7d32' : '#e2e8f0',
                                                                                                             '&:hover': {
                                                                                                                 backgroundColor: '#f8fafc',
-                                                                                                                borderColor: '#0288d1'
+                                                                                                                borderColor: '#2e7d32'
                                                                                                             },
                                                                                                             '&.Mui-focused': {
                                                                                                                 backgroundColor: '#ffffff',
-                                                                                                                borderColor: '#0288d1',
-                                                                                                                boxShadow: '0 0 0 3px rgba(2, 136, 209, 0.1)'
+                                                                                                                borderColor: '#2e7d32',
+                                                                                                                boxShadow: '0 0 0 3px rgba(46, 125, 50, 0.1)'
                                                                                                             }
                                                                                                         }
                                                                                                     }}
@@ -1113,7 +1172,7 @@ export default function CreateOrder() {
                                                                                                             fontSize: '16px',
                                                                                                             textAlign: 'center',
                                                                                                             fontWeight: 700,
-                                                                                                            color: currentQuantity > 0 ? '#0288d1' : '#374151'
+                                                                                                            color: currentQuantity > 0 ? '#2e7d32' : '#374151'
                                                                                                         } 
                                                                                                     }}
                                                                                                 />
@@ -1127,13 +1186,13 @@ export default function CreateOrder() {
                                                                                                         width: '100%',
                                                                                                         p: 1,
                                                                                                         borderRadius: 2,
-                                                                                                        backgroundColor: 'rgba(2, 136, 209, 0.1)',
-                                                                                                        border: '1px solid rgba(2, 136, 209, 0.2)',
+                                                                                                        backgroundColor: 'rgba(46, 125, 50, 0.1)',
+                                                                                                        border: '1px solid rgba(46, 125, 50, 0.2)',
                                                                                                         position: 'relative'
                                                                                                     }}>
                                                                                                         <Typography variant="body2" sx={{ 
                                                                                                             fontSize: '12px', 
-                                                                                                            color: '#0288d1',
+                                                                                                            color: '#2e7d32',
                                                                                                             fontWeight: 700,
                                                                                                             textAlign: 'center',
                                                                                                             textTransform: 'uppercase',
@@ -1173,6 +1232,43 @@ export default function CreateOrder() {
                             </MuiCard>
                         )}
                         
+                        {/* Validation Errors for Uniform Selection */}
+                        {selectedDesignId && selectedDesign && Object.keys(validationErrors).some(key => key.startsWith('uniform_')) && (
+                            <Box sx={{ mt: 3 }}>
+                                <MuiCard sx={{
+                                    background: 'rgba(255, 235, 238, 0.9)',
+                                    border: '1px solid #f44336',
+                                    borderRadius: 2
+                                }}>
+                                    <CardContent sx={{ p: 2 }}>
+                                        <Typography variant="h6" sx={{ 
+                                            color: '#d32f2f', 
+                                            fontWeight: 600, 
+                                            mb: 1,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 1
+                                        }}>
+                                            ⚠ Required Fields Missing
+                                        </Typography>
+                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                            {Object.entries(validationErrors)
+                                                .filter(([key]) => key.startsWith('uniform_'))
+                                                .map(([key, error]) => (
+                                                    <Typography key={key} variant="body2" sx={{ 
+                                                        color: '#d32f2f', 
+                                                        fontSize: '14px',
+                                                        fontWeight: 500
+                                                    }}>
+                                                        • {error}
+                                                    </Typography>
+                                                ))}
+                                        </Box>
+                                    </CardContent>
+                                </MuiCard>
+                            </Box>
+                        )}
+                        
                         {/* Create Order Button */}
                         {selectedDesignId && selectedDesign && (
                             <Box sx={{ mt: 4, textAlign: 'right' }}>
@@ -1187,12 +1283,16 @@ export default function CreateOrder() {
                                         fontSize: '16px',
                                         fontWeight: 600,
                                         borderRadius: 3,
-                                        backgroundColor: '#4caf50',
+                                        background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
+                                        boxShadow: '0 4px 12px rgba(46, 125, 50, 0.3)',
                                         '&:hover': {
-                                            backgroundColor: '#45a049'
+                                            background: 'linear-gradient(135deg, #1b5e20, #388e3c)',
+                                            boxShadow: '0 6px 16px rgba(46, 125, 50, 0.4)',
+                                            transform: 'translateY(-1px)'
                                         },
                                         '&:disabled': {
-                                            backgroundColor: '#bdbdbd'
+                                            backgroundColor: '#bdbdbd',
+                                            boxShadow: 'none'
                                         }
                                     }}
                                 >
@@ -1202,7 +1302,7 @@ export default function CreateOrder() {
                                             Creating Order...
                                         </>
                                     ) : (
-                                        `Create Order (${getTotalQuantity()} items)`
+                                        `Create Order (${getTotalQuantity()} uniform)`
                                     )}
                                 </Button>
                                 
@@ -1234,7 +1334,7 @@ export default function CreateOrder() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: 2,
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    background: 'linear-gradient(135deg, #2e7d32 0%, #4caf50 100%)',
                     color: 'white'
                 }}>
                     <DesignServicesIcon style={{color: 'white', fontSize: '24px'}}/>
@@ -1250,9 +1350,9 @@ export default function CreateOrder() {
                             <Box sx={{
                                 p: 4,
                                 borderRadius: 4,
-                                background: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
-                                border: '2px solid #ffd89b',
-                                boxShadow: '0 8px 32px rgba(255, 214, 155, 0.3)'
+                                background: 'linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 152, 0, 0.15) 100%)',
+                                border: '2px solid #ff9800',
+                                boxShadow: '0 8px 32px rgba(255, 152, 0, 0.2)'
                             }}>
                                 <Box sx={{display: 'flex', alignItems: 'center', gap: 3}}>
                                     <Box sx={{
@@ -1267,7 +1367,7 @@ export default function CreateOrder() {
                                     <Box>
                                         <Typography variant="h4" sx={{
                                             fontWeight: 700,
-                                            color: '#8b4513',
+                                            color: '#e65100',
                                             mb: 1
                                         }}>
                                             {selectedUniform.gender === 'boy' ? 'Boys' : 'Girls'} Uniform
@@ -1964,7 +2064,7 @@ export default function CreateOrder() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: 1,
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    background: 'linear-gradient(135deg, #2e7d32 0%, #4caf50 100%)',
                     color: 'white'
                 }}>
                     <TableChartIcon style={{color: 'white', fontSize: '18px'}}/>
@@ -1978,13 +2078,13 @@ export default function CreateOrder() {
                         <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
                             <Card
                                 title={
-                                    <Space>
-                                        <DesignServicesIcon style={{color: '#1976d2'}}/>
-                                        <span style={{
-                                            fontWeight: 600,
-                                            fontSize: '16px'
-                                        }}>{selectedSizeSpecs.gender === 'male' ? 'Boys' : 'Girls'} Sizes</span>
-                                    </Space>
+                                                                            <Space>
+                                            <DesignServicesIcon style={{color: '#2e7d32'}}/>
+                                            <span style={{
+                                                fontWeight: 600,
+                                                fontSize: '16px'
+                                            }}>{selectedSizeSpecs.gender === 'male' ? 'Boys' : 'Girls'} Sizes</span>
+                                        </Space>
                                 }
                                 style={{
                                     border: '1px solid #e2e8f0',

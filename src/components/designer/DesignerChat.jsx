@@ -2100,7 +2100,8 @@ export default function DesignerChat() {
                                         backgroundColor: requestData?.status === 'completed' ? '#1890ff' : '#52c41a',
                                         fontSize: '14px',
                                         fontWeight: 600,
-                                        padding: '8px 16px'
+                                        padding: '8px 16px',
+                                        color: 'white'
                                     }}
                                 />
                             </Box>
@@ -2108,7 +2109,40 @@ export default function DesignerChat() {
                     </Box>
 
                     {/* Main Content */}
-                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 3, flex: 1, minHeight: 0, height: '90vh'}}>
+                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 3, flex: 1, minHeight: 0, height: '90vh', position: 'relative'}}>
+                        {/* Completed Overlay */}
+                        {requestData?.status === 'completed' && (
+                            <Box sx={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                borderRadius: 2,
+                                zIndex: 1,
+                                pointerEvents: 'none',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}>
+                                <Box sx={{
+                                    backgroundColor: 'rgba(25, 118, 210, 0.9)',
+                                    color: 'white',
+                                    px: 4,
+                                    py: 2,
+                                    borderRadius: 2,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    boxShadow: '0 4px 20px rgba(25, 118, 210, 0.3)'
+                                }}>
+                                    <CheckCircleOutlined style={{fontSize: '24px'}} />
+                                    <Typography.Text style={{fontSize: '16px', fontWeight: 600}}>
+                                        Design Request Completed - View Only Mode
+                                    </Typography.Text>
+                                </Box>
+                            </Box>
+                        )}
 
                         {/* Top Row - Chat and Deliveries */}
                         <Box sx={{display: 'flex', gap: 3, flex: 2}}>
@@ -2170,7 +2204,9 @@ export default function DesignerChat() {
                                     p: 3,
                                     overflowY: 'auto',
                                     backgroundColor: '#f8fafc',
-                                    maxHeight: '70vh'
+                                    maxHeight: '70vh',
+                                    opacity: requestData?.status === 'completed' ? 0.6 : 1,
+                                    pointerEvents: requestData?.status === 'completed' ? 'none' : 'auto'
                                 }}>
                                     {chatMessages.length === 0 ? (
                                         <Box sx={{
@@ -2266,7 +2302,9 @@ export default function DesignerChat() {
                                     py: 2,
                                     px: 2,
                                     borderTop: '2px solid #e2e8f0',
-                                    backgroundColor: 'linear-gradient(135deg, #f8fafc 0%, #e3f2fd 100%)'
+                                    backgroundColor: 'linear-gradient(135deg, #f8fafc 0%, #e3f2fd 100%)',
+                                    opacity: requestData?.status === 'completed' ? 0.6 : 1,
+                                    pointerEvents: requestData?.status === 'completed' ? 'none' : 'auto'
                                 }}>
                                     <Box sx={{display: 'flex', gap: 3, alignItems: 'flex-end'}}>
                                         <Box sx={{flex: 1, position: 'relative'}}>
@@ -2465,20 +2503,27 @@ export default function DesignerChat() {
                                         ) : (
                                             <Box sx={{display: 'flex', flexDirection: 'column', gap: 1.5}}>
                                                 {designDeliveries.length === 0 ? (
-                                                    <Box sx={{
-                                                        display: 'flex',
-                                                        justifyContent: 'center',
-                                                        alignItems: 'center',
-                                                        height: '100%',
-                                                        flexDirection: 'column',
-                                                        gap: 2,
-                                                        color: '#64748b'
-                                                    }}>
-                                                        <FileTextOutlined style={{fontSize: '48px', opacity: 0.5}}/>
-                                                        <Typography.Text type="secondary" style={{fontSize: '14px'}}>
-                                                            No deliveries yet. Start by adding your first delivery!
-                                                        </Typography.Text>
-                                                    </Box>
+                                                                                                <Box sx={{
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                height: '100%',
+                                                flexDirection: 'column',
+                                                gap: 2,
+                                                color: '#64748b'
+                                            }}>
+                                                <FileTextOutlined style={{fontSize: '48px', opacity: 0.5}}/>
+                                                <Typography.Text type="secondary" style={{fontSize: '14px'}}>
+                                                    {requestData?.status === 'completed' ? 'Design request completed - no actions available' : 
+                                                     'No deliveries yet. Start by adding your first delivery!'}
+                                                </Typography.Text>
+                                                {requestData?.status === 'completed' && (
+                                                    <Typography.Text type="secondary"
+                                                                     style={{fontSize: '12px', color: '#1890ff'}}>
+                                                        This design request has been completed
+                                                    </Typography.Text>
+                                                )}
+                                            </Box>
                                                 ) : (
                                                     designDeliveries.map(item => (
                                                         <Paper
@@ -2543,21 +2588,23 @@ export default function DesignerChat() {
                                                 )}
 
                                                 {/* Add New Delivery Button */}
-                                                <Button
-                                                    type="dashed"
-                                                    icon={<FileTextOutlined/>}
-                                                    onClick={handleOpenDeliveryModal}
-                                                    style={{
-                                                        borderRadius: '8px',
-                                                        height: '48px',
-                                                        border: '2px dashed #d9d9d9',
-                                                        color: '#666',
-                                                        fontSize: '14px',
-                                                        fontWeight: 500
-                                                    }}
-                                                >
-                                                    + Add New Delivery
-                                                </Button>
+                                                {requestData?.status !== 'completed' && (
+                                                    <Button
+                                                        type="dashed"
+                                                        icon={<FileTextOutlined/>}
+                                                        onClick={handleOpenDeliveryModal}
+                                                        style={{
+                                                            borderRadius: '8px',
+                                                            height: '48px',
+                                                            border: '2px dashed #d9d9d9',
+                                                            color: '#666',
+                                                            fontSize: '14px',
+                                                            fontWeight: 500
+                                                        }}
+                                                    >
+                                                        + Add New Delivery
+                                                    </Button>
+                                                )}
                                             </Box>
                                         )}
                                     </Box>
@@ -2715,8 +2762,15 @@ export default function DesignerChat() {
                                             }}>
                                                 <EditOutlined style={{fontSize: '48px', opacity: 0.5}}/>
                                                 <Typography.Text type="secondary" style={{fontSize: '14px'}}>
-                                                    No revision requests
+                                                    {requestData?.status === 'completed' ? 'Design request completed - no actions available' : 
+                                                     'No revision requests'}
                                                 </Typography.Text>
+                                                {requestData?.status === 'completed' && (
+                                                    <Typography.Text type="secondary"
+                                                                     style={{fontSize: '12px', color: '#ff6b35'}}>
+                                                        This design request has been completed
+                                                    </Typography.Text>
+                                                )}
                                             </Box>
                                         )}
                                     </Box>

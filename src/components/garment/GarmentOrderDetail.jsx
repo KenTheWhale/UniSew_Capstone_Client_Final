@@ -149,6 +149,7 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
         validUntil: ''
     });
     const [submittingQuotation, setSubmittingQuotation] = useState(false);
+    const [deliveryTimeError, setDeliveryTimeError] = useState('');
 
     // Fallback data if order is not provided
     const defaultOrder = {
@@ -236,6 +237,16 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
             const earlyDeliveryDate = new Date(currentDate);
             earlyDeliveryDate.setDate(currentDate.getDate() + deliveryDays);
             
+            // Check if delivery time exceeds the order deadline
+            const orderDeadline = new Date(mergedOrderData.deadline);
+            orderDeadline.setHours(23, 59, 59, 999); // Set to end of day
+            
+            if (earlyDeliveryDate > orderDeadline) {
+                enqueueSnackbar(`Delivery time cannot exceed the order deadline (${formatDate(mergedOrderData.deadline)})`, { variant: 'error' });
+                setSubmittingQuotation(false);
+                return;
+            }
+            
             // Prepare data according to API structure
             const quotationPayload = {
                 orderId: parseInt(mergedOrderData.id),
@@ -277,6 +288,41 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
             ...prev,
             totalPrice: numericValue
         }));
+    };
+
+    const handleDeliveryTimeChange = (value) => {
+        const deliveryDays = parseInt(value);
+        setQuotationData(prev => ({
+            ...prev,
+            deliveryTime: value
+        }));
+
+        // Clear error if empty
+        if (!value) {
+            setDeliveryTimeError('');
+            return;
+        }
+
+        // Validate delivery time
+        if (deliveryDays < 1) {
+            setDeliveryTimeError('Delivery time must be at least 1 day');
+            return;
+        }
+
+        // Check if delivery time exceeds the order deadline
+        const currentDate = new Date();
+        const earlyDeliveryDate = new Date(currentDate);
+        earlyDeliveryDate.setDate(currentDate.getDate() + deliveryDays);
+        
+        const orderDeadline = new Date(mergedOrderData.deadline);
+        orderDeadline.setHours(23, 59, 59, 999); // Set to end of day
+        
+        if (earlyDeliveryDate > orderDeadline) {
+            setDeliveryTimeError(`Cannot exceed order deadline (${formatDate(mergedOrderData.deadline)})`);
+            return;
+        }
+
+        setDeliveryTimeError('');
     };
 
     if (!visible) return null;
@@ -631,7 +677,7 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
                                                     Email
                                                 </Typography>
                                                 <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                                                    {mergedOrderData.school?.email || 'email@school.edu'}
+                                                    {mergedOrderData.school?.account?.email || 'email@school.edu'}
                                                 </Typography>
                                             </Box>
                                         </Box>
@@ -812,26 +858,30 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
                                                 <TextField
                                                     type="number"
                                                     value={quotationData.deliveryTime}
-                                                    onChange={(e) => setQuotationData({
-                                                        ...quotationData,
-                                                        deliveryTime: e.target.value
-                                                    })}
+                                                    onChange={(e) => handleDeliveryTimeChange(e.target.value)}
                                                     size="small"
                                                     fullWidth
                                                     placeholder="Enter delivery time in days"
                                                     inputProps={{ min: 1 }}
+                                                    error={!!deliveryTimeError}
+                                                    helperText={deliveryTimeError}
                                                     sx={{
                                                         '& .MuiOutlinedInput-root': {
                                                             background: 'rgba(255, 255, 255, 0.9)',
                                                             '& fieldset': {
-                                                                borderColor: 'rgba(102, 126, 234, 0.3)'
+                                                                borderColor: deliveryTimeError ? '#ef4444' : 'rgba(102, 126, 234, 0.3)'
                                                             },
                                                             '&:hover fieldset': {
-                                                                borderColor: 'rgba(102, 126, 234, 0.5)'
+                                                                borderColor: deliveryTimeError ? '#ef4444' : 'rgba(102, 126, 234, 0.5)'
                                                             },
                                                             '&.Mui-focused fieldset': {
-                                                                borderColor: '#667eea'
+                                                                borderColor: deliveryTimeError ? '#ef4444' : '#667eea'
                                                             }
+                                                        },
+                                                        '& .MuiFormHelperText-root': {
+                                                            color: '#ef4444',
+                                                            fontSize: '0.75rem',
+                                                            marginTop: 0.5
                                                         }
                                                     }}
                                                 />
@@ -856,6 +906,13 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
                                                     size="small"
                                                     fullWidth
                                                     InputLabelProps={{ shrink: true }}
+                                                    inputProps={{
+                                                        min: (() => {
+                                                            const tomorrow = new Date();
+                                                            tomorrow.setDate(tomorrow.getDate() + 1);
+                                                            return tomorrow.toISOString().split('T')[0];
+                                                        })()
+                                                    }}
                                                     sx={{
                                                         '& .MuiOutlinedInput-root': {
                                                             background: 'rgba(255, 255, 255, 0.9)',
@@ -932,7 +989,7 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
                                                     fullWidth
                                                     startIcon={submittingQuotation ? <CircularProgress size={16} sx={{ color: 'white' }} /> : <SendIcon />}
                                                     onClick={handleSubmitQuotation}
-                                                    disabled={!quotationData.totalPrice || !quotationData.deliveryTime || !quotationData.validUntil || submittingQuotation}
+                                                    disabled={!quotationData.totalPrice || !quotationData.deliveryTime || !quotationData.validUntil || !!deliveryTimeError || submittingQuotation}
                                                     sx={{
                                                         background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
                                                         '&:hover': {

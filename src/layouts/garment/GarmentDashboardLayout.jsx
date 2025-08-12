@@ -289,42 +289,42 @@ export default function GarmentDashboardLayout() {
                                     />
                                 </ListItemButton>
                             </ListItem>
-                            <ListItem disablePadding>
-                                <ListItemButton
-                                    sx={{
-                                        borderRadius: 2,
-                                        mx: 1,
-                                        my: 0.5,
-                                        background: activeMenu === 'inventory'
-                                            ? 'linear-gradient(135deg, #059669 0%, #047857 100%)'
-                                            : 'transparent',
-                                        color: activeMenu === 'inventory' ? 'white' : '#495057',
-                                        boxShadow: activeMenu === 'inventory'
-                                            ? '0 4px 12px rgba(5, 150, 105, 0.3)'
-                                            : 'none',
-                                        '&:hover': {
-                                            background: activeMenu === 'inventory'
-                                                ? 'linear-gradient(135deg, #047857 0%, #065f46 100%)'
-                                                : 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
-                                            color: activeMenu === 'inventory' ? 'white' : '#059669',
-                                            transform: 'translateY(-1px)',
-                                            boxShadow: activeMenu === 'inventory'
-                                                ? '0 6px 16px rgba(5, 150, 105, 0.4)'
-                                                : '0 4px 12px rgba(5, 150, 105, 0.2)'
-                                        },
-                                        transition: 'all 0.3s ease'
-                                    }}
-                                    onClick={() => window.location.href = '/garment/inventory'}
-                                >
-                                    <ListItemIcon sx={{color: activeMenu === 'inventory' ? 'white' : 'inherit'}}>
-                                        <Inventory/>
-                                    </ListItemIcon>
-                                    <ListItemText
-                                        primary="Inventory Management"
-                                        sx={{fontWeight: 600}}
-                                    />
-                                </ListItemButton>
-                            </ListItem>
+                            {/*<ListItem disablePadding>*/}
+                            {/*    <ListItemButton*/}
+                            {/*        sx={{*/}
+                            {/*            borderRadius: 2,*/}
+                            {/*            mx: 1,*/}
+                            {/*            my: 0.5,*/}
+                            {/*            background: activeMenu === 'inventory'*/}
+                            {/*                ? 'linear-gradient(135deg, #059669 0%, #047857 100%)'*/}
+                            {/*                : 'transparent',*/}
+                            {/*            color: activeMenu === 'inventory' ? 'white' : '#495057',*/}
+                            {/*            boxShadow: activeMenu === 'inventory'*/}
+                            {/*                ? '0 4px 12px rgba(5, 150, 105, 0.3)'*/}
+                            {/*                : 'none',*/}
+                            {/*            '&:hover': {*/}
+                            {/*                background: activeMenu === 'inventory'*/}
+                            {/*                    ? 'linear-gradient(135deg, #047857 0%, #065f46 100%)'*/}
+                            {/*                    : 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',*/}
+                            {/*                color: activeMenu === 'inventory' ? 'white' : '#059669',*/}
+                            {/*                transform: 'translateY(-1px)',*/}
+                            {/*                boxShadow: activeMenu === 'inventory'*/}
+                            {/*                    ? '0 6px 16px rgba(5, 150, 105, 0.4)'*/}
+                            {/*                    : '0 4px 12px rgba(5, 150, 105, 0.2)'*/}
+                            {/*            },*/}
+                            {/*            transition: 'all 0.3s ease'*/}
+                            {/*        }}*/}
+                            {/*        onClick={() => window.location.href = '/garment/inventory'}*/}
+                            {/*    >*/}
+                            {/*        <ListItemIcon sx={{color: activeMenu === 'inventory' ? 'white' : 'inherit'}}>*/}
+                            {/*            <Inventory/>*/}
+                            {/*        </ListItemIcon>*/}
+                            {/*        <ListItemText*/}
+                            {/*            primary="Inventory Management"*/}
+                            {/*            sx={{fontWeight: 600}}*/}
+                            {/*        />*/}
+                            {/*    </ListItemButton>*/}
+                            {/*</ListItem>*/}
                         </List>
 
                         {/* Analytics Section */}

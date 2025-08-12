@@ -20,7 +20,8 @@ import {
     LocalShipping as ShippingIcon,
     CheckCircle as CheckCircleIcon,
     Pending as PendingIcon,
-    Cancel as CancelIcon
+    Cancel as CancelIcon,
+    DesignServices as DesignServicesIcon
 } from '@mui/icons-material';
 import { parseID } from '../../../utils/ParseIDUtil';
 import DisplayImage from '../../ui/DisplayImage';
@@ -109,215 +110,267 @@ export default function OrderDetailDialog({ open, onClose, order }) {
         <Dialog
             open={open}
             onClose={onClose}
-            maxWidth="lg"
+            maxWidth="xl"
             fullWidth
             PaperProps={{
                 sx: {
-                    borderRadius: 4,
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
-                    overflow: 'hidden'
+                    borderRadius: 3,
+                    boxShadow: '0 25px 80px rgba(0,0,0,0.2)',
+                    overflow: 'hidden',
+                    maxHeight: '90vh'
                 }
             }}
         >
             {/* Header */}
             <DialogTitle
                 sx={{
-                    background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+                    background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
                     color: 'white',
                     position: 'relative',
-                    py: 3
+                    py: 4,
+                    px: 4
                 }}
             >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <BusinessIcon sx={{ fontSize: 32 }} />
-                    <Box>
-                        <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                            Order Details
-                        </Typography>
-                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                            {parseID(order.id, 'ord')}
-                        </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                        <Box sx={{
+                            p: 2,
+                            borderRadius: 2,
+                            backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                            backdropFilter: 'blur(10px)'
+                        }}>
+                            <BusinessIcon sx={{ fontSize: 28, color: 'white' }} />
+                        </Box>
+                        <Box>
+                            <Typography variant="h4" sx={{ fontWeight: 800, mb: 1, letterSpacing: '-0.02em' }}>
+                                Order Details
+                            </Typography>
+                            <Typography variant="body1" sx={{ opacity: 0.9, fontWeight: 500 }}>
+                                {parseID(order.id, 'ord')}
+                            </Typography>
+                        </Box>
                     </Box>
+                    <Chip
+                        icon={getStatusIcon(order.status)}
+                        label={order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                        sx={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                            color: 'white',
+                            fontWeight: 700,
+                            fontSize: '0.9rem',
+                            px: 2,
+                            py: 1,
+                            backdropFilter: 'blur(10px)',
+                            '& .MuiChip-icon': {
+                                color: 'white',
+                                fontSize: '1.2rem'
+                            }
+                        }}
+                    />
                 </Box>
-                <Chip
-                    icon={getStatusIcon(order.status)}
-                    label={order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                    sx={{
-                        position: 'absolute',
-                        right: 16,
-                        top: 16,
-                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                        color: 'white',
-                        fontWeight: 'bold',
-                        '& .MuiChip-icon': {
-                            color: 'white'
-                        }
-                    }}
-                />
             </DialogTitle>
 
-            <DialogContent sx={{ p: 0 }}>
+            <DialogContent sx={{ p: 0, backgroundColor: '#fafafa' }}>
                 <Box sx={{ p: 4 }}>
-                    {/* School Information */}
+                    {/* Order Summary */}
                     <Paper
                         elevation={0}
                         sx={{
-                            p: 3,
-                            mb: 3,
-                            backgroundColor: '#f8fafc',
+                            p: 4,
+                            mb: 4,
+                            backgroundColor: 'white',
                             border: '1px solid #e2e8f0',
-                            borderRadius: 3
+                            borderRadius: 3,
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
                         }}
                     >
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                            <BusinessIcon sx={{ color: '#1976d2' }} />
-                            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
-                                School Information
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
+                            <Box sx={{
+                                p: 1.5,
+                                borderRadius: 2,
+                                backgroundColor: 'rgba(46, 125, 50, 0.1)',
+                                color: '#2e7d32'
+                            }}>
+                                <BusinessIcon sx={{ fontSize: 24 }} />
+                            </Box>
+                            <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b' }}>
+                                Order Summary
                             </Typography>
                         </Box>
 
-                        <Grid container spacing={3}>
-                            <Grid item xs={12} md={6}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                            {/* School Info */}
+                            <Box sx={{
+                                p: 3,
+                                backgroundColor: '#f8fafc',
+                                borderRadius: 2,
+                                border: '1px solid #e2e8f0'
+                            }}>
+                                <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b', mb: 2 }}>
+                                    School Information
+                                </Typography>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
                                     {order.school?.avatar && (
                                         <Avatar
                                             src={order.school.avatar}
-                                            sx={{ width: 48, height: 48 }}
+                                            sx={{ width: 40, height: 40 }}
                                         />
                                     )}
                                     <Box>
-                                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#1e293b' }}>
                                             {order.school?.business || 'Unknown School'}
                                         </Typography>
                                         <Typography variant="body2" sx={{ color: '#64748b' }}>
-                                            Contact: {order.school?.name || 'N/A'}
+                                            {order.school?.name || 'N/A'}
                                         </Typography>
                                     </Box>
                                 </Box>
-                            </Grid>
+                                {order.school?.phone && (
+                                    <Typography variant="body2" sx={{ color: '#64748b', mb: 0.5 }}>
+                                        📞 {order.school.phone}
+                                    </Typography>
+                                )}
+                                {order.school?.account?.email && (
+                                    <Typography variant="body2" sx={{ color: '#64748b', mb: 0.5 }}>
+                                        ✉️ {order.school.account.email}
+                                    </Typography>
+                                )}
+                                {order.school?.address && (
+                                    <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                        📍 {order.school.address}
+                                    </Typography>
+                                )}
+                            </Box>
 
-                            <Grid item xs={12} md={6}>
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                        <CalendarIcon sx={{ color: '#64748b', fontSize: 16 }} />
+                            {/* Order Details */}
+                            <Box sx={{
+                                p: 3,
+                                backgroundColor: '#f8fafc',
+                                borderRadius: 2,
+                                border: '1px solid #e2e8f0'
+                            }}>
+                                <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b', mb: 2 }}>
+                                    Order Details
+                                </Typography>
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <Typography variant="body2" sx={{ color: '#64748b' }}>
-                                            <strong>Order Date:</strong> {formatDate(order.orderDate)}
+                                            Order Date:
+                                        </Typography>
+                                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>
+                                            {formatDate(order.orderDate)}
                                         </Typography>
                                     </Box>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                        <CalendarIcon sx={{ color: '#64748b', fontSize: 16 }} />
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <Typography variant="body2" sx={{ color: '#64748b' }}>
-                                            <strong>Deadline:</strong> {formatDate(order.deadline)}
+                                            Delivery Deadline:
+                                        </Typography>
+                                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>
+                                            {formatDate(order.deadline)}
                                         </Typography>
                                     </Box>
-                                    {order.school?.phone && (
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                            <BusinessIcon sx={{ color: '#64748b', fontSize: 16 }} />
-                                            <Typography variant="body2" sx={{ color: '#64748b' }}>
-                                                <strong>Phone:</strong> {order.school.phone}
-                                            </Typography>
-                                        </Box>
-                                    )}
-                                    {order.school?.address && (
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                            <BusinessIcon sx={{ color: '#64748b', fontSize: 16 }} />
-                                            <Typography variant="body2" sx={{ color: '#64748b' }}>
-                                                <strong>Address:</strong> {order.school.address}
-                                            </Typography>
-                                        </Box>
-                                    )}
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                            Total Items:
+                                        </Typography>
+                                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>
+                                            {items.length} items
+                                        </Typography>
+                                    </Box>
                                     {order.school?.taxCode && (
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                            <BusinessIcon sx={{ color: '#64748b', fontSize: 16 }} />
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <Typography variant="body2" sx={{ color: '#64748b' }}>
-                                                <strong>Tax Code:</strong> {order.school.taxCode}
+                                                Tax Code:
                                             </Typography>
-                                        </Box>
-                                    )}
-                                    {order.school?.account?.email && (
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                            <BusinessIcon sx={{ color: '#64748b', fontSize: 16 }} />
-                                            <Typography variant="body2" sx={{ color: '#64748b' }}>
-                                                <strong>Email:</strong> {order.school.account.email}
-                                            </Typography>
-                                        </Box>
-                                    )}
-                                    {order.school?.account?.registerDate && (
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                            <CalendarIcon sx={{ color: '#64748b', fontSize: 16 }} />
-                                            <Typography variant="body2" sx={{ color: '#64748b' }}>
-                                                <strong>Register Date:</strong> {formatDate(order.school.account.registerDate)}
+                                            <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>
+                                                {order.school.taxCode}
                                             </Typography>
                                         </Box>
                                     )}
                                 </Box>
-                            </Grid>
-                        </Grid>
+                            </Box>
+                        </Box>
                     </Paper>
 
                     {/* Product Details */}
                     <Paper
                         elevation={0}
                         sx={{
-                            p: 3,
-                            mb: 3,
+                            p: 4,
+                            mb: 4,
+                            backgroundColor: 'white',
                             border: '1px solid #e2e8f0',
-                            borderRadius: 3
+                            borderRadius: 3,
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
                         }}
                     >
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: '#1e293b' }}>
-                            Product Details
-                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
+                            <Box sx={{
+                                p: 1.5,
+                                borderRadius: 2,
+                                backgroundColor: 'rgba(46, 125, 50, 0.1)',
+                                color: '#2e7d32'
+                            }}>
+                                <DesignServicesIcon sx={{ fontSize: 24 }} />
+                            </Box>
+                            <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b' }}>
+                                Product Details
+                            </Typography>
+                        </Box>
 
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                             {/* Regular Uniforms Section */}
                             <Box sx={{
-                                border: '2px solid #e2e8f0',
-                                borderRadius: 4,
+                                border: '1px solid #e2e8f0',
+                                borderRadius: 3,
                                 overflow: 'hidden',
-                                backgroundColor: 'white'
+                                backgroundColor: 'white',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
                             }}>
                                 <Box sx={{
-                                    background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+                                    background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
                                     color: 'white',
-                                    p: 3,
+                                    p: 4,
                                     textAlign: 'center'
                                 }}>
-                                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                                    <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
                                         Regular Uniforms
                                     </Typography>
-                                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                    <Typography variant="body1" sx={{ opacity: 0.9, fontWeight: 500 }}>
                                         Daily school uniforms
                                     </Typography>
                                 </Box>
 
-                                <Box sx={{ p: 3 }}>
+                                <Box sx={{ p: 4 }}>
                                     {regularItems.length > 0 ? (
                                         regularItems.map((item, index) => (
                                             <Box key={index} sx={{
                                                 border: '1px solid #f1f5f9',
                                                 borderRadius: 3,
                                                 p: 3,
-                                                mb: 2,
+                                                mb: 3,
                                                 backgroundColor: '#fafbff',
                                                 transition: 'all 0.3s ease',
                                                 '&:hover': {
-                                                    borderColor: '#1976d2',
-                                                    backgroundColor: '#f0f4ff',
-                                                    transform: 'translateX(4px)'
+                                                    borderColor: '#2e7d32',
+                                                    backgroundColor: 'rgba(46, 125, 50, 0.05)',
+                                                    transform: 'translateY(-2px)',
+                                                    boxShadow: '0 4px 12px rgba(46, 125, 50, 0.1)'
                                                 },
                                                 '&:last-child': { mb: 0 }
                                             }}>
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                                                    <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#1e293b' }}>
+                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                                                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e293b' }}>
                                                         {item.name}
                                                     </Typography>
                                                     <Chip
                                                         label={`${item.quantity} items`}
                                                         sx={{
-                                                            backgroundColor: '#1976d2',
+                                                            backgroundColor: '#2e7d32',
                                                             color: 'white',
-                                                            fontWeight: 600
+                                                            fontWeight: 600,
+                                                            px: 2,
+                                                            py: 1
                                                         }}
                                                         size="small"
                                                     />
@@ -328,8 +381,8 @@ export default function OrderDetailDialog({ open, onClose, order }) {
                                                         label={item.size}
                                                         size="small"
                                                         sx={{
-                                                            backgroundColor: '#dbeafe',
-                                                            color: '#1e40af',
+                                                            backgroundColor: 'rgba(46, 125, 50, 0.1)',
+                                                            color: '#2e7d32',
                                                             fontWeight: 600
                                                         }}
                                                     />
@@ -427,11 +480,11 @@ export default function OrderDetailDialog({ open, onClose, order }) {
 
                                                 {(item.logoPosition || item.logoImageUrl) && (
                                                     <Box sx={{
-                                                        backgroundColor: '#f0f4ff',
+                                                        backgroundColor: 'rgba(46, 125, 50, 0.05)',
                                                         borderRadius: 2,
                                                         p: 2,
                                                         mt: 2,
-                                                        border: '1px solid #c7d2fe'
+                                                        border: '1px solid rgba(46, 125, 50, 0.2)'
                                                     }}>
                                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                                             {item.logoImageUrl && (
@@ -445,7 +498,7 @@ export default function OrderDetailDialog({ open, onClose, order }) {
                                                             <Box sx={{ flex: 1 }}>
                                                                 {item.logoPosition && (
                                                                     <Typography variant="body2" sx={{
-                                                                        color: '#4338ca',
+                                                                        color: '#2e7d32',
                                                                         fontWeight: 500,
                                                                         display: 'flex',
                                                                         alignItems: 'center',
@@ -455,14 +508,14 @@ export default function OrderDetailDialog({ open, onClose, order }) {
                                                                         <Box component="span" sx={{
                                                                             width: 6,
                                                                             height: 6,
-                                                                            backgroundColor: '#4338ca',
+                                                                            backgroundColor: '#2e7d32',
                                                                             borderRadius: '50%'
                                                                         }} />
                                                                         Position: {item.logoPosition}
                                                                     </Typography>
                                                                 )}
                                                                 {item.logoImageUrl && (
-                                                                    <Typography variant="caption" sx={{ color: '#6366f1', fontWeight: 500 }}>
+                                                                    <Typography variant="caption" sx={{ color: '#4caf50', fontWeight: 500 }}>
                                                                         Custom logo included
                                                                     </Typography>
                                                                 )}
@@ -565,39 +618,41 @@ export default function OrderDetailDialog({ open, onClose, order }) {
 
                             {/* Physical Education Section */}
                             <Box sx={{
-                                border: '2px solid #e2e8f0',
-                                borderRadius: 4,
+                                border: '1px solid #e2e8f0',
+                                borderRadius: 3,
                                 overflow: 'hidden',
-                                backgroundColor: 'white'
+                                backgroundColor: 'white',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
                             }}>
                                 <Box sx={{
-                                    background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                                    background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
                                     color: 'white',
-                                    p: 3,
+                                    p: 4,
                                     textAlign: 'center'
                                 }}>
-                                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                                    <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
                                         Physical Education
                                     </Typography>
-                                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                    <Typography variant="body1" sx={{ opacity: 0.9, fontWeight: 500 }}>
                                         Sports & PE uniforms
                                     </Typography>
                                 </Box>
 
-                                <Box sx={{ p: 3 }}>
+                                <Box sx={{ p: 4 }}>
                                     {peItems.length > 0 ? (
                                         peItems.map((item, index) => (
                                             <Box key={index} sx={{
                                                 border: '1px solid #f1f5f9',
                                                 borderRadius: 3,
-                                                p: 3,
-                                                mb: 2,
+                                                p: 4,
+                                                mb: 3,
                                                 backgroundColor: '#f0fdf4',
                                                 transition: 'all 0.3s ease',
                                                 '&:hover': {
-                                                    borderColor: '#059669',
-                                                    backgroundColor: '#dcfce7',
-                                                    transform: 'translateX(4px)'
+                                                    borderColor: '#ff9800',
+                                                    backgroundColor: 'rgba(255, 152, 0, 0.05)',
+                                                    transform: 'translateX(4px)',
+                                                    boxShadow: '0 4px 12px rgba(255, 152, 0, 0.1)'
                                                 },
                                                 '&:last-child': { mb: 0 }
                                             }}>
@@ -608,7 +663,7 @@ export default function OrderDetailDialog({ open, onClose, order }) {
                                                     <Chip
                                                         label={`${item.quantity} items`}
                                                         sx={{
-                                                            backgroundColor: '#059669',
+                                                            backgroundColor: '#ff9800',
                                                             color: 'white',
                                                             fontWeight: 600
                                                         }}
@@ -621,8 +676,8 @@ export default function OrderDetailDialog({ open, onClose, order }) {
                                                         label={item.size}
                                                         size="small"
                                                         sx={{
-                                                            backgroundColor: '#d1fae5',
-                                                            color: '#065f46',
+                                                            backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                                                            color: '#ff9800',
                                                             fontWeight: 600
                                                         }}
                                                     />
@@ -655,14 +710,14 @@ export default function OrderDetailDialog({ open, onClose, order }) {
                                                 {/* Product Images Section */}
                                                 {(item.frontImageUrl || item.backImageUrl) && (
                                                     <Box sx={{
-                                                        backgroundColor: '#f0fdf4',
+                                                        backgroundColor: 'rgba(255, 152, 0, 0.05)',
                                                         borderRadius: 2,
                                                         p: 2,
                                                         mb: 2,
-                                                        border: '1px solid #a7f3d0'
+                                                        border: '1px solid rgba(255, 152, 0, 0.2)'
                                                     }}>
                                                         <Typography variant="body2" sx={{
-                                                            color: '#047857',
+                                                            color: '#ff9800',
                                                             fontWeight: 600,
                                                             mb: 2,
                                                             display: 'flex',
@@ -672,7 +727,7 @@ export default function OrderDetailDialog({ open, onClose, order }) {
                                                             <Box component="span" sx={{
                                                                 width: 6,
                                                                 height: 6,
-                                                                backgroundColor: '#047857',
+                                                                backgroundColor: '#ff9800',
                                                                 borderRadius: '50%'
                                                             }} />
                                                             Product Images
@@ -720,11 +775,11 @@ export default function OrderDetailDialog({ open, onClose, order }) {
 
                                                 {(item.logoPosition || item.logoImageUrl) && (
                                                     <Box sx={{
-                                                        backgroundColor: '#ecfdf5',
+                                                        backgroundColor: 'rgba(255, 152, 0, 0.05)',
                                                         borderRadius: 2,
                                                         p: 2,
                                                         mt: 2,
-                                                        border: '1px solid #a7f3d0'
+                                                        border: '1px solid rgba(255, 152, 0, 0.2)'
                                                     }}>
                                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                                             {item.logoImageUrl && (
@@ -738,7 +793,7 @@ export default function OrderDetailDialog({ open, onClose, order }) {
                                                             <Box sx={{ flex: 1 }}>
                                                                 {item.logoPosition && (
                                                                     <Typography variant="body2" sx={{
-                                                                        color: '#047857',
+                                                                        color: '#ff9800',
                                                                         fontWeight: 500,
                                                                         display: 'flex',
                                                                         alignItems: 'center',
@@ -748,14 +803,14 @@ export default function OrderDetailDialog({ open, onClose, order }) {
                                                                         <Box component="span" sx={{
                                                                             width: 6,
                                                                             height: 6,
-                                                                            backgroundColor: '#047857',
+                                                                            backgroundColor: '#ff9800',
                                                                             borderRadius: '50%'
                                                                         }} />
                                                                         Position: {item.logoPosition}
                                                                     </Typography>
                                                                 )}
                                                                 {item.logoImageUrl && (
-                                                                    <Typography variant="caption" sx={{ color: '#10b981', fontWeight: 500 }}>
+                                                                    <Typography variant="caption" sx={{ color: '#f57c00', fontWeight: 500 }}>
                                                                         Custom logo included
                                                                     </Typography>
                                                                 )}
@@ -863,12 +918,14 @@ export default function OrderDetailDialog({ open, onClose, order }) {
                         <Paper
                             elevation={0}
                             sx={{
-                                p: 3,
+                                p: 4,
+                                backgroundColor: 'white',
                                 border: '1px solid #e2e8f0',
-                                borderRadius: 3
+                                borderRadius: 3,
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
                             }}
                         >
-                            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: '#1e293b' }}>
+                            <Typography variant="h5" sx={{ fontWeight: 700, mb: 4, color: '#1e293b' }}>
                                 Additional Information
                             </Typography>
                             <Grid container spacing={3}>
@@ -914,8 +971,8 @@ export default function OrderDetailDialog({ open, onClose, order }) {
                 </Box>
             </DialogContent>
 
-            <DialogActions sx={{ p: 3, backgroundColor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
-                <Typography variant="body2" sx={{ color: '#64748b' }}>
+            <DialogActions sx={{ p: 4, backgroundColor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+                <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>
                     Order ID: {order.id}
                 </Typography>
                 <Button
@@ -925,11 +982,11 @@ export default function OrderDetailDialog({ open, onClose, order }) {
                         borderRadius: 3,
                         px: 3,
                         py: 1.5,
-                        boxShadow: '0 4px 14px rgba(25, 118, 210, 0.4)',
-                        background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+                        boxShadow: '0 4px 14px rgba(46, 125, 50, 0.4)',
+                        background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
                         '&:hover': {
-                            background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
-                            boxShadow: '0 6px 20px rgba(25, 118, 210, 0.6)',
+                            background: 'linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%)',
+                            boxShadow: '0 6px 20px rgba(46, 125, 50, 0.6)',
                             transform: 'translateY(-2px)'
                         }
                     }}

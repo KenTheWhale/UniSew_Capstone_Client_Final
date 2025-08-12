@@ -130,9 +130,9 @@ export default function GarmentOrderList() {
         fetchOrders();
     }, []);
 
-    // Filter orders for garment processing
+    // Filter orders for garment processing - only show pending orders
     const filteredOrders = orders.filter(order => 
-        order.status === 'pending' || order.status === 'processing'
+        order.status === 'pending'
     );
 
     // Calculate statistics
@@ -559,10 +559,10 @@ export default function GarmentOrderList() {
                             Production Orders
                         </Typography>
                         <Chip
-                            label={`${filteredOrders.length} Active Orders`}
-                            color="success"
+                            label={`${filteredOrders.length} Pending Orders`}
+                            color="warning"
                             sx={{
-                                background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                                background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
                                 color: 'white',
                                 fontWeight: 600
                             }}
