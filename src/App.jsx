@@ -31,6 +31,7 @@ import CreateOrder from "./components/school/order/CreateOrder.jsx";
 import GarmentDashboardLayout from "./layouts/garment/GarmentDashboardLayout.jsx";
 import GarmentOrderList from "./components/garment/GarmentOrderList.jsx";
 import GarmentOrderDetail from "./components/garment/GarmentOrderDetail.jsx";
+import GarmentOrderProduction from "./components/garment/GarmentOrderProduction.jsx";
 
 // Create theme with Tinos font
 const theme = createTheme({
@@ -225,6 +226,10 @@ const router = createBrowserRouter([
             {
                 path: 'orders',
                 element: <GarmentOrderList />
+            },
+            {
+                path: 'production',
+                element: <GarmentOrderProduction />
             }
         ]
     }

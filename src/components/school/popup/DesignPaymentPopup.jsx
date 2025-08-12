@@ -20,8 +20,11 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
     if (!selectedQuotationDetails) {
         return (
             <Modal open={visible} onCancel={onCancel} footer={null} centered>
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
-                    <Spin size="large" spinning tip="Loading payment details..." />
+                <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', py: 4, gap: 2 }}>
+                    <Spin size="large" />
+                    <Typography.Text style={{ color: '#64748b' }}>
+                        Loading payment details...
+                    </Typography.Text>
                 </Box>
             </Modal>
         );
@@ -31,17 +34,20 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
 
     const handleProceedToPayment = async () => {
         try {
-            // Store quotation details in sessionStorage for VNPay callback
-            const quotationDetailsToStore = {
-                quotation: quotation,
-                request: request
-            };
-            sessionStorage.setItem('paymentQuotationDetails', JSON.stringify(quotationDetailsToStore));
-            
             const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
             const subtotal = quotation.price + (extraRevision * (quotation.extraRevisionPrice || 0));
             const fee = serviceFee(subtotal);
             const totalAmount = subtotal + fee;
+            
+            // Store quotation details in sessionStorage for VNPay callback
+            const quotationDetailsToStore = {
+                quotation: quotation,
+                request: request,
+                serviceFee: fee,
+                subtotal: subtotal,
+                totalAmount: totalAmount
+            };
+            sessionStorage.setItem('paymentQuotationDetails', JSON.stringify(quotationDetailsToStore));
             
             const response = await getPaymentUrl(
                 totalAmount,
