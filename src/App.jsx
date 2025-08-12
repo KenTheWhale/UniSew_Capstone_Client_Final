@@ -1,18 +1,18 @@
 import './styles/App.css'
 import {createBrowserRouter, Navigate, RouterProvider} from "react-router-dom";
-import WebAppLayout from "./layouts/school/WebAppLayout.jsx";
+import WebAppLayout from "./layouts/ui/WebAppLayout.jsx";
 import Homepage from "./components/auth/Homepage.jsx";
 import About from "./components/auth/About.jsx";
 import Login from "./components/auth/Login.jsx";
-import {GoogleOAuthProvider} from "@react-oauth/google"; // Import GoogleOAuthProvider
+import {GoogleOAuthProvider} from "@react-oauth/google";
 import SchoolDesign from "./components/school/design/SchoolDesign.jsx";
-import WebAppDashboard from "./layouts/school/WebAppDashboard.jsx";
+import SchoolDashboardLayout from "./layouts/school/SchoolDashboardLayout.jsx";
 import Contact from "./components/auth/Contact.jsx";
 import {SnackbarProvider} from 'notistack';
 import DesignChat from "./components/school/design/DesignChat.jsx";
 import {Slide, ThemeProvider, createTheme, CssBaseline} from '@mui/material';
-import CreateRequest from './components/school/design/CreateRequest.jsx';
-import PendingRequest from "./components/school/design/PendingRequest.jsx";
+import SchoolCreateDesign from './components/school/design/SchoolCreateDesign.jsx';
+import SchoolPendingDesign from "./components/school/design/SchoolPendingDesign.jsx";
 import PaymentResult from "./components/school/PaymentResult.jsx";
 import DesignerRequestList from "./components/designer/DesignerRequestList.jsx";
 import DesignerDashboardLayout from "./layouts/designer/DesignerDashboardLayout.jsx";
@@ -26,7 +26,7 @@ import AppliedRequestList from "./components/designer/AppliedRequestList.jsx";
 import AppliedRequestDetail from "./components/designer/AppliedRequestDetail.jsx";
 import SchoolProfile from "./components/school/profile/SchoolProfile.jsx";
 import DesignerProfile from "./components/designer/profile/DesignerProfile.jsx";
-import SchoolOrderList from "./components/school/order/SchoolOrderList.jsx";
+import SchoolOrderManagement from "./components/school/order/SchoolOrderManagement.jsx";
 import CreateOrder from "./components/school/order/CreateOrder.jsx";
 import GarmentDashboardLayout from "./layouts/garment/GarmentDashboardLayout.jsx";
 import GarmentOrderList from "./components/garment/GarmentOrderList.jsx";
@@ -34,50 +34,53 @@ import GarmentOrderDetail from "./components/garment/GarmentOrderDetail.jsx";
 import UniSewFAQ from "./components/auth/UniSewFAQ.jsx";
 import TermOfServices from "./components/auth/TermOfServices.jsx";
 import GarmentOrderProduction from "./components/garment/GarmentOrderProduction.jsx";
+import AdminDashboard from "./components/admin/AdminDashboard.jsx";
+import AdminAccount from "./components/admin/AdminAccount.jsx";
+import AdminTransaction from "./components/admin/AdminTransaction.jsx";
+import AdminDashboardLayout from "./layouts/admin/AdminDashboardLayout.jsx";
 
-// Create theme with Tinos font
 const theme = createTheme({
   typography: {
-    fontFamily: '"Tinos", serif',
+    fontFamily: '"Open Sans", serif',
     h1: {
-      fontFamily: '"Tinos", serif',
+      fontFamily: '"Open Sans", serif',
     },
     h2: {
-      fontFamily: '"Tinos", serif',
+      fontFamily: '"Open Sans", serif',
     },
     h3: {
-      fontFamily: '"Tinos", serif',
+      fontFamily: '"Open Sans", serif',
     },
     h4: {
-      fontFamily: '"Tinos", serif',
+      fontFamily: '"Open Sans", serif',
     },
     h5: {
-      fontFamily: '"Tinos", serif',
+      fontFamily: '"Open Sans", serif',
     },
     h6: {
-      fontFamily: '"Tinos", serif',
+      fontFamily: '"Open Sans", serif',
     },
     body1: {
-      fontFamily: '"Tinos", serif',
+      fontFamily: '"Open Sans", serif',
     },
     body2: {
-      fontFamily: '"Tinos", serif',
+      fontFamily: '"Open Sans", serif',
     },
     button: {
-      fontFamily: '"Tinos", serif',
+      fontFamily: '"Open Sans", serif',
     },
     caption: {
-      fontFamily: '"Tinos", serif',
+      fontFamily: '"Open Sans", serif',
     },
     overline: {
-      fontFamily: '"Tinos", serif',
+      fontFamily: '"Open Sans", serif',
     },
   },
   components: {
     MuiCssBaseline: {
       styleOverrides: {
         body: {
-          fontFamily: '"Tinos", serif',
+          fontFamily: '"Open Sans", serif',
         },
       },
     },
@@ -132,62 +135,78 @@ const router = createBrowserRouter([
             {
                 path: 'login',
                 element: <Login />
+            }
+        ]
+    },
+    {
+        path: '/school',
+        element: (
+            <ProtectedRoute allowRoles={['school']}>
+                <SchoolDashboardLayout />
+            </ProtectedRoute>
+        ),
+        children: [
+            {
+                index: true,
+                element: <Navigate to={'/school/design'} />
             },
             {
-                path: 'school',
-                element: (
-                    <ProtectedRoute allowRoles={['school']}>
-                        <WebAppDashboard />
-                    </ProtectedRoute>
-                ),
-                children: [
-                    {
-                        index: true,
-                        element: <Navigate to={'/school/design'} />
-                    },
-                    {
-                        path: 'design',
-                        element: <SchoolDesign />
-                    },
-                    {
-                        path: 'chat',
-                        element: <DesignChat />
-                    },
-                    {
-                        path: 'request/create',
-                        element: <CreateRequest />
-                    },
-                    {
-                        path: 'pending/request',
-                        element: <PendingRequest />
-                    },
-                    {
-                        path: 'payment/result',
-                        element: <PaymentResult />  
-                    },
-                    {
-                        path: 'profile',
-                        element: <SchoolProfile/>
-                    },
-                    {
-                        path: 'order',
-                        element: <SchoolOrderList/>
-                    },
-                    {
-                        path: 'order/create',
-                        element: <CreateOrder/>
-                    }
-                ]
+                path: 'design',
+                element: <SchoolDesign />
+            },
+            {
+                path: 'chat',
+                element: <DesignChat />
+            },
+            {
+                path: 'request/create',
+                element: <SchoolCreateDesign />
+            },
+            {
+                path: 'pending/request',
+                element: <SchoolPendingDesign />
+            },
+            {
+                path: 'payment/result',
+                element: <PaymentResult />  
+            },
+            {
+                path: 'profile',
+                element: <SchoolProfile/>
+            },
+            {
+                path: 'order',
+                element: <SchoolOrderManagement/>
+            },
+            {
+                path: 'order/create',
+                element: <CreateOrder/>
             }
         ]
     },
     {
         path: 'admin',
-        element: <DesignerDashboardLayout />,
+        element: (
+            <ProtectedRoute allowRoles={['admin']}>
+                <AdminDashboardLayout />
+            </ProtectedRoute>
+        ),
         children: [
             {
                 index: true,
                 element: <Navigate to={'/admin/dashboard'} />
+            },
+            {
+                path: 'dashboard',
+                element: <AdminDashboard/>
+            },
+            {
+                path: 'accounts',
+                element: <AdminAccount/>
+            },
+            {
+                path: 'transactions',
+                element: <AdminTransaction/>
             }
         ]
     },

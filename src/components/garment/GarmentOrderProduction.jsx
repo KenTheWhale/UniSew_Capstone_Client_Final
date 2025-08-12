@@ -1,59 +1,54 @@
-import React, { useState, useEffect } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
+    Alert,
+    Avatar,
     Box,
-    Container,
-    Typography,
-    Paper,
-    Grid,
+    Button,
     Card,
     CardContent,
-    Button,
     Chip,
-    Stepper,
-    Step,
-    StepLabel,
-    StepContent,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    IconButton,
-    Alert,
     CircularProgress,
+    Container,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
     Divider,
-    Avatar,
+    Fab,
+    Grid,
+    IconButton,
     List,
     ListItem,
-    ListItemText,
     ListItemAvatar,
-    Badge,
-    Tooltip,
-    Fab
+    ListItemText,
+    Paper,
+    Step,
+    StepLabel,
+    Stepper,
+    Typography
 } from '@mui/material';
 import {
-    Add as AddIcon,
-    CheckCircle as CheckCircleIcon,
-    Schedule as ScheduleIcon,
-    LocalShipping as LocalShippingIcon,
-    Inventory as InventoryIcon,
-    ContentCut as ContentCutIcon,
-    Brush as BrushIcon,
-    LocalLaundryService as LocalLaundryServiceIcon,
-    Verified as VerifiedIcon,
-    Inventory2 as Inventory2Icon,
-    Build as BuildIcon,
-    DeliveryDining as DeliveryDiningIcon,
     AssignmentTurnedIn as AssignmentTurnedInIcon,
+    AttachMoney as MoneyIcon,
+    Brush as BrushIcon,
+    Build as BuildIcon,
     Business as BusinessIcon,
     CalendarToday as CalendarIcon,
-    AttachMoney as MoneyIcon,
+    CheckCircle as CheckCircleIcon,
     Close as CloseIcon,
+    ContentCut as ContentCutIcon,
+    Inventory as InventoryIcon,
+    Inventory2 as Inventory2Icon,
+    LocalLaundryService as LocalLaundryServiceIcon,
+    LocalShipping as LocalShippingIcon,
     Refresh as RefreshIcon,
-    Timeline as TimelineIcon
+    Schedule as ScheduleIcon,
+    Timeline as TimelineIcon,
+    Verified as VerifiedIcon
 } from '@mui/icons-material';
-import { enqueueSnackbar } from 'notistack';
-import dayjs from 'dayjs';
-import { getOrdersByGarment, getOrderProductionHistory } from '../../services/OrderService';
+import {enqueueSnackbar} from 'notistack';
+import {getOrdersByGarment} from '../../services/OrderService';
+import dayjs from "dayjs";
 
 // Production status configuration
 const PRODUCTION_STATUSES = [

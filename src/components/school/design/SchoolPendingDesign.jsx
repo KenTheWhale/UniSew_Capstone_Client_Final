@@ -1,15 +1,15 @@
 import React, {useEffect, useState} from 'react';
-import {Box, Chip, Container, Grid, IconButton, Paper, Tooltip, Typography} from "@mui/material";
+import {Box, Chip, IconButton, Paper, Tooltip, Typography} from "@mui/material";
 import InfoIcon from '@mui/icons-material/Info';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import {Space, Table} from 'antd';
 import 'antd/dist/reset.css';
-import RequestDesignerPopup, {statusTag} from '../popup/RequestDesignerPopup';
+import FindingDesignerPopup, {statusTag} from '../popup/FindingDesignerPopup.jsx';
 import DesignPaymentPopup from '../popup/DesignPaymentPopup';
 import {getSchoolDesignRequests} from "../../../services/DesignService.jsx";
 import {parseID} from "../../../utils/ParseIDUtil.jsx";
 
-export default function PendingRequest() {
+export default function SchoolPendingDesign() {
     useEffect(() => {
         localStorage.removeItem('currentDesignRequest');
     }, []);
@@ -75,7 +75,7 @@ export default function PendingRequest() {
         const request = pendingRequestsData.find(req => req.id === id);
         setSelectedRequest(request);
 
-        // Only open RequestDesignerPopup for 'pending' status
+        // Only open FindingDesignerPopup for 'pending' status
         if (request.status === 'pending') {
             setPaymentRequestDetails(null);
             setIsPaymentModalVisible(false);
@@ -104,7 +104,7 @@ export default function PendingRequest() {
             width: 110,
             fixed: 'left',
             render: (text) => (
-                <Typography variant="body2" sx={{fontWeight: 600, color: '#f57c00'}}>
+                <Typography variant="body2" sx={{fontWeight: 600, color: '#2e7d32'}}>
                     {parseID(text, 'dr')}
                 </Typography>
             ),
@@ -143,7 +143,7 @@ export default function PendingRequest() {
                         </Typography>
                         <Typography variant="caption"
                                     sx={{color: daysDiff > 30 ? '#dc2626' : '#64748b', fontSize: '0.75rem'}}>
-                            {daysDiff} days ago
+                            {daysDiff < 1 ? 'Today' : `${daysDiff} days ago`}
                         </Typography>
                     </Box>
                 );
@@ -182,9 +182,9 @@ export default function PendingRequest() {
                         <IconButton
                             onClick={() => handleViewDetail(record.id)}
                             sx={{
-                                color: '#f57c00',
+                                color: '#2e7d32',
                                 '&:hover': {
-                                    backgroundColor: '#fff3e0',
+                                    backgroundColor: '#e8f5e8',
                                     transform: 'scale(1.1)'
                                 },
                                 transition: 'all 0.2s ease'
@@ -200,17 +200,16 @@ export default function PendingRequest() {
     ];
 
     return (
-        <Box sx={{backgroundColor: '#fafafa', height: 'max-content', width: '100%'}}>
-            {/* Hero Section */}
-            <Box
-                sx={{
-                    background: "linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)",
-                    py: {xs: 6, md: 8},
-                    color: "white",
+        <Box sx={{ height: '100%', overflowY: 'auto' }}>
+            {/* Header Section */}
+            <Box 
+                sx={{ 
+                    mb: 4,
                     position: "relative",
-                    overflow: "hidden",
-                    width: '100%',
-                    height: 'max-content',
+                    p: 4,
+                    borderRadius: 3,
+                    background: "linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(27, 94, 32, 0.08) 100%)",
+                    border: "1px solid rgba(46, 125, 50, 0.1)",
                     "&::before": {
                         content: '""',
                         position: "absolute",
@@ -219,105 +218,93 @@ export default function PendingRequest() {
                         right: 0,
                         bottom: 0,
                         background: "url('/unisew.jpg') center/cover",
-                        opacity: 0.1,
-                        zIndex: 0
+                        opacity: 0.15,
+                        borderRadius: 3,
+                        zIndex: -1
                     }
                 }}
             >
-                <Container maxWidth={false} sx={{width: '95vw', position: "relative", zIndex: 1, mx: 'auto'}}>
-                    <Grid container spacing={4} alignItems="center">
-                        <Grid>
-                            <Box sx={{display: "flex", alignItems: "center", mb: 2}}>
-                                <PendingActionsIcon sx={{fontSize: 48, mr: 2, opacity: 0.9}}/>
-                                <Typography
-                                    variant="h2"
-                                    sx={{
-                                        fontWeight: 800,
-                                        fontSize: {xs: "2rem", md: "2.8rem"},
-                                        letterSpacing: "-0.02em"
-                                    }}
-                                >
-                                    Pending Requests
-                                </Typography>
-                            </Box>
-                            <Typography
-                                variant="h6"
-                                sx={{
-                                    opacity: 0.95,
-                                    fontSize: {xs: "1rem", md: "1.2rem"},
-                                    lineHeight: 1.6,
-                                    mb: 3
-                                }}
-                            >
-                                Review and manage your pending design requests. Take action to move them forward.
-                            </Typography>
-                        </Grid>
-                    </Grid>
-                </Container>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                    <PendingActionsIcon sx={{ fontSize: 32, mr: 2, color: "#2e7d32" }} />
+                    <Typography
+                        variant="h4"
+                        sx={{
+                            fontWeight: 700,
+                            color: "#1e293b",
+                            fontSize: { xs: "1.5rem", md: "2rem" }
+                        }}
+                    >
+                        Pending Requests
+                    </Typography>
+                </Box>
+                <Typography
+                    variant="body1"
+                    sx={{
+                        color: "#64748b",
+                        fontSize: "1rem",
+                        lineHeight: 1.6,
+                        mb: 3
+                    }}
+                >
+                    Review and manage your pending design requests. Take action to move them forward.
+                </Typography>
             </Box>
 
             {/* Table Section */}
-            <Container maxWidth={false} sx={{width: '100%', pb: {xs: 4, md: 6}, mt: 5, height: 'max-content'}}>
-                <Paper
-                    elevation={0}
-                    sx={{
-                        borderRadius: 4,
-                        border: "1px solid #e2e8f0",
-                        overflow: "hidden",
-                        width: '85%'
-                    }}
-                >
-                    <Box sx={{p: {xs: 3, md: 4}, backgroundColor: "white"}}>
-                        <Box sx={{display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3}}>
-                            <Typography
-                                variant="h5"
-                                sx={{
-                                    fontWeight: 700,
-                                    color: "#1e293b",
-                                    fontSize: {xs: "1.3rem", md: "1.5rem"}
-                                }}
-                            >
-                                Pending Design Requests
-                            </Typography>
-                            <Chip
-                                label={`${stats.total} Pending`}
-                                sx={{
-                                    backgroundColor: "#fff3e0",
-                                    color: "#f57c00",
-                                    fontWeight: 600
-                                }}
-                            />
-                        </Box>
-
-                        <Table
-                            columns={columns}
-                            dataSource={pendingRequests}
-                            rowKey="id"
-                            loading={loading}
-                            pagination={{
-                                defaultPageSize: 5,
-                                pageSizeOptions: ['5', '8', '10', '15'],
-                                showSizeChanger: true,
-                                showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total} pending requests`,
-                                style: {marginTop: 16}
+            <Paper
+                elevation={0}
+                sx={{
+                    borderRadius: 2,
+                    border: "1px solid #e2e8f0",
+                    overflow: "hidden"
+                }}
+            >
+                <Box sx={{ p: 3, backgroundColor: "white" }}>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                        <Typography
+                            variant="h6"
+                            sx={{
+                                fontWeight: 700,
+                                color: "#1e293b"
                             }}
-                            scroll={{x: 'max-content', y: 'calc(100vh)'}}
-                            style={{
-                                backgroundColor: 'white',
-                                borderRadius: '8px',
-                                width: '100%',
-                                height: 'max-content',
-                                overflow: 'auto'
+                        >
+                            Pending Design Requests
+                        </Typography>
+                        <Chip
+                            label={`${stats.total} Pending`}
+                            sx={{
+                                backgroundColor: "#e8f5e8",
+                                color: "#2e7d32",
+                                fontWeight: 600
                             }}
-                            rowHoverColor="#fff8e1"
                         />
                     </Box>
-                </Paper>
-            </Container>
+
+                    <Table
+                        columns={columns}
+                        dataSource={pendingRequests}
+                        rowKey="id"
+                        loading={loading}
+                        pagination={{
+                            defaultPageSize: 5,
+                            pageSizeOptions: ['5', '8', '10', '15'],
+                            showSizeChanger: true,
+                            showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total} pending requests`,
+                            style: {marginTop: 16}
+                        }}
+                        scroll={{x: 'max-content'}}
+                        style={{
+                            backgroundColor: 'white',
+                            borderRadius: '8px'
+                        }}
+                        rowHoverColor="#f8fafc"
+                    />
+                </Box>
+            </Paper>
 
             {
                 isModalVisible &&
-                <RequestDesignerPopup
+                <FindingDesignerPopup
                     visible={isModalVisible}
                     onCancel={handleCloseDesignerModal}
                     request={selectedRequest}

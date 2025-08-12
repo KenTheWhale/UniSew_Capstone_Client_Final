@@ -20,13 +20,14 @@ import {
     Typography
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import DesignServicesIcon from '@mui/icons-material/DesignServices';
 import {ColorPicker} from 'antd';
 import {enqueueSnackbar} from "notistack";
 import {createDesignRequest, getFabrics} from "../../../services/DesignService.jsx";
 import {uploadCloudinary} from "../../../services/UploadImageService.jsx";
 
 
-export default function CreateRequest() {
+export default function SchoolCreateDesign() {
     const [designRequest, setDesignRequest] = useState({
         designName: '',
         logo: {
@@ -187,14 +188,14 @@ export default function CreateRequest() {
                 enqueueSnackbar('Only JPG, JPEG, PNG, GIF files are allowed for logo.', {variant: 'error'});
                 return;
             }
-            
+
             // Validate file size (5MB for logo)
             const MAX_LOGO_SIZE = 5 * 1024 * 1024; // 5MB
             if (file.size > MAX_LOGO_SIZE) {
                 enqueueSnackbar('Logo file must be less than 5MB.', {variant: 'error'});
                 return;
             }
-            
+
             setDesignRequest((prev) => ({
                 ...prev,
                 logo: {file: file, preview: URL.createObjectURL(file)}
@@ -316,7 +317,7 @@ export default function CreateRequest() {
 
     const handleSubmit = async () => {
         setIsSubmitting(true);
-        
+
         if (!designRequest.designName.trim()) {
             enqueueSnackbar('Design Name is required.', {variant: 'error'});
             setIsSubmitting(false);
@@ -439,7 +440,7 @@ export default function CreateRequest() {
         //Logo image
         const logoFile = designRequest.logo.file
         const logo = await uploadCloudinary(logoFile)
-        
+
         if (!logo) {
             enqueueSnackbar('Failed to upload logo image. Please try again.', {variant: 'error'});
             setIsSubmitting(false);
@@ -627,7 +628,7 @@ export default function CreateRequest() {
             if (createResponse && createResponse.status === 201) {
                 enqueueSnackbar(createResponse.data.message, {variant: 'success', autoHideDuration: 1000})
                 setTimeout(() => {
-                    window.location.href = '/school/pending/request'; // Go to PendingRequest.jsx after submission
+                    window.location.href = '/school/pending/request'; // Go to SchoolPendingDesign.jsx after submission
                 }, 1000)
             } else {
                 enqueueSnackbar("Fail to create design request", {variant: 'error'})
@@ -2189,755 +2190,852 @@ export default function CreateRequest() {
     };
 
     return (
-        <Box sx={{
-            minHeight: '100vh',
-            backgroundColor: '#f5f5f5',
-            flex: 1,
-            py: 3
-        }}>
-            <Box sx={{
-                maxWidth: '900px',
-                margin: '0 auto',
-                px: 2
-            }}>
-                {/* Simple Header */}
-                <Box sx={{
-                    backgroundColor: 'white',
-                    borderRadius: '8px',
-                    p: 3,
-                    mb: 3,
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                    borderLeft: '4px solid #1976d2'
-                }}>
-                    <Typography variant="h4" component="h1" sx={{
-                        fontWeight: '600',
-                        color: '#1976d2',
-                        mb: 1
-                    }}>
+        <Box sx={{height: '100%', overflowY: 'auto'}}>
+            {/* Header Section */}
+            <Box
+                sx={{
+                    mb: 4,
+                    position: "relative",
+                    p: 4,
+                    borderRadius: 3,
+                    background: "linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(27, 94, 32, 0.08) 100%)",
+                    border: "1px solid rgba(46, 125, 50, 0.1)",
+                    "&::before": {
+                        content: '""',
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: "url('/unisew.jpg') center/cover",
+                        opacity: 0.15,
+                        borderRadius: 3,
+                        zIndex: -1
+                    }
+                }}
+            >
+                <Box sx={{display: "flex", alignItems: "center", mb: 2}}>
+                    <DesignServicesIcon sx={{fontSize: 32, mr: 2, color: "#2e7d32"}}/>
+                    <Typography
+                        variant="h4"
+                        sx={{
+                            fontWeight: 700,
+                            color: "#1e293b",
+                            fontSize: {xs: "1.5rem", md: "2rem"}
+                        }}
+                    >
                         Create Design Request
                     </Typography>
-                    <Typography variant="body1" sx={{
-                        color: '#666'
-                    }}>
-                        Submit a new uniform design request for your school
-                    </Typography>
                 </Box>
+                <Typography
+                    variant="body1"
+                    sx={{
+                        color: "#64748b",
+                        fontSize: "1rem",
+                        lineHeight: 1.6,
+                        mb: 3
+                    }}
+                >
+                    Submit a new uniform design request for your school. Design and customize uniforms for your
+                    students.
+                </Typography>
+            </Box>
 
-                {/* Content Section */}
-                <Box sx={{
-                    backgroundColor: 'white',
-                    borderRadius: '8px',
-                    p: 4,
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                }}>
-                    {/* Design Information */}
+            {/* Content Section */}
+            <Box sx={{
+                backgroundColor: 'white',
+                borderRadius: 2,
+                p: 4,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                border: '1px solid #e2e8f0'
+            }}>
+                {/* Design Information */}
+                <Box sx={{mb: 4}}>
+                    <Typography variant="h6" sx={{
+                        color: '#1e293b',
+                        mb: 2,
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1
+                    }}>
+                        📝 Design Information
+                    </Typography>
+                    <TextField
+                        required
+                        id="design-name"
+                        label="Design Name"
+                        placeholder="Enter a name for your uniform design"
+                        value={designRequest.designName}
+                        onChange={(e) => setDesignRequest(prev => ({...prev, designName: e.target.value}))}
+                        variant="outlined"
+                        fullWidth
+                        size="medium"
+                        sx={{
+                            '& .MuiOutlinedInput-root': {
+                                borderRadius: 2,
+                                '&:hover .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: '#2e7d32'
+                                },
+                                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: '#2e7d32'
+                                }
+                            },
+                            '& .MuiInputLabel-root': {
+                                '&.Mui-focused': {
+                                    color: '#2e7d32'
+                                }
+                            },
+                            '& .MuiFormLabel-root': {
+                                '&.Mui-focused': {
+                                    color: '#2e7d32'
+                                }
+                            }
+                        }}
+                    />
+                </Box>
+                <Box
+                    component="form"
+                    sx={{
+                        '& .MuiTextField-root': {my: 1, mx: 0, width: '100%'},
+                    }}
+                    noValidate
+                    autoComplete="off"
+                >
+                    {/* Logo Upload */}
                     <Box sx={{mb: 4}}>
                         <Typography variant="h6" sx={{
-                            color: '#333',
+                            color: '#1e293b',
                             mb: 2,
-                            fontWeight: '600'
+                            fontWeight: 700,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1
                         }}>
-                            1. Design Information
+                            🏫 School Logo
                         </Typography>
-                        <TextField
-                            required
-                            id="design-name"
-                            label="Design Name"
-                            placeholder="Enter a name for your uniform design"
-                            value={designRequest.designName}
-                            onChange={(e) => setDesignRequest(prev => ({...prev, designName: e.target.value}))}
-                            variant="outlined"
-                            fullWidth
-                            size="medium"
-                        />
+                        <Box sx={{
+                            border: '2px dashed #cbd5e1',
+                            borderRadius: 2,
+                            p: 3,
+                            textAlign: 'center',
+                            backgroundColor: '#f8fafc',
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                                borderColor: '#2e7d32',
+                                backgroundColor: '#f0f9ff'
+                            }
+                        }}>
+                            <input
+                                accept="image/*"
+                                style={{display: 'none'}}
+                                id="raised-button-file"
+                                type="file"
+                                onChange={handleFileChange}
+                            />
+                            <label htmlFor="raised-button-file">
+                                <Button
+                                    variant="contained"
+                                    component="span"
+                                    startIcon={<CloudUploadIcon/>}
+                                    sx={{
+                                        mb: 2,
+                                        background: "linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)",
+                                        '&:hover': {
+                                            background: "linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%)"
+                                        }
+                                    }}
+                                >
+                                    Upload Logo
+                                </Button>
+                            </label>
+                            <Typography variant="body2" sx={{color: '#64748b'}}>
+                                Supported formats: JPG, PNG, GIF (Max 5MB)
+                            </Typography>
+                            {designRequest.logo.preview && (
+                                <Box sx={{mt: 2}}>
+                                    <img
+                                        src={designRequest.logo.preview}
+                                        alt="Logo Preview"
+                                        style={{
+                                            maxWidth: '150px',
+                                            height: 'auto',
+                                            borderRadius: '8px',
+                                            border: '2px solid #e2e8f0',
+                                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                                        }}
+                                    />
+                                </Box>
+                            )}
+                        </Box>
                     </Box>
 
-                    <Box
-                        component="form"
-                        sx={{
-                            '& .MuiTextField-root': {my: 1, mx: 0, width: '100%'},
-                        }}
-                        noValidate
-                        autoComplete="off"
-                    >
-                        {/* Logo Upload */}
-                        <Box sx={{mb: 4}}>
-                            <Typography variant="h6" sx={{
-                                color: '#333',
-                                mb: 2,
-                                fontWeight: '600'
-                            }}>
-                                2. School Logo
-                            </Typography>
-                            <Box sx={{
-                                border: '2px dashed #ddd',
-                                borderRadius: '8px',
-                                p: 3,
-                                textAlign: 'center',
-                                backgroundColor: '#fafafa'
-                            }}>
-                                <input
-                                    accept="image/*"
-                                    style={{display: 'none'}}
-                                    id="raised-button-file"
-                                    type="file"
-                                    onChange={handleFileChange}
+                    {/* Uniform Type */}
+                    <Box sx={{mb: 4}}>
+                        <Typography variant="h6" sx={{
+                            color: '#1e293b',
+                            mb: 2,
+                            fontWeight: 700,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1
+                        }}>
+                            👕 Uniform Type *
+                        </Typography>
+                        <Box sx={{
+                            border: '1px solid #e2e8f0',
+                            borderRadius: 2,
+                            overflow: 'hidden',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                        }}>
+                            <Box
+                                onClick={() => handleUniformChange("regular")}
+                                sx={{
+                                    p: 3,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    backgroundColor: designRequest.uniformTypes.regular.selected ? '#e8f5e8' : '#fff',
+                                    borderBottom: '1px solid #e2e8f0',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease',
+                                    '&:hover': {
+                                        backgroundColor: designRequest.uniformTypes.regular.selected ? '#e8f5e8' : '#f8fafc'
+                                    }
+                                }}
+                            >
+                                <Checkbox
+                                    checked={designRequest.uniformTypes.regular.selected}
+                                    name="regular-uniform"
+                                    sx={{
+                                        p: 0,
+                                        pointerEvents: 'none',
+                                        color: '#2e7d32',
+                                        '&.Mui-checked': {
+                                            color: '#2e7d32'
+                                        }
+                                    }}
                                 />
-                                <label htmlFor="raised-button-file">
-                                    <Button
-                                        variant="contained"
-                                        component="span"
-                                        startIcon={<CloudUploadIcon/>}
-                                        sx={{mb: 2}}
-                                    >
-                                        Upload Logo
-                                    </Button>
-                                </label>
-                                <Typography variant="body2" color="text.secondary">
-                                    Supported formats: JPG, PNG, GIF (Max 5MB)
+                                <Box sx={{flex: 1, pointerEvents: 'none'}}>
+                                    <Typography variant="body1" sx={{fontWeight: 600, mb: 0.5, color: '#1e293b'}}>
+                                        Regular Uniform
+                                    </Typography>
+                                    <Typography variant="body2" sx={{color: '#64748b'}}>
+                                        Daily wear uniform for regular school activities
+                                    </Typography>
+                                </Box>
+                                <Box sx={{
+                                    fontSize: '1.5rem',
+                                    opacity: designRequest.uniformTypes.regular.selected ? 1 : 0.3,
+                                    pointerEvents: 'none'
+                                }}>
+                                    👔
+                                </Box>
+                            </Box>
+
+                            <Box
+                                onClick={() => handleUniformChange("physicalEducation")}
+                                sx={{
+                                    p: 3,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    backgroundColor: designRequest.uniformTypes.physicalEducation.selected ? '#e8f5e8' : '#fff',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease',
+                                    '&:hover': {
+                                        backgroundColor: designRequest.uniformTypes.physicalEducation.selected ? '#e8f5e8' : '#f8fafc'
+                                    }
+                                }}
+                            >
+                                <Checkbox
+                                    checked={designRequest.uniformTypes.physicalEducation.selected}
+                                    name="physical-education-uniform"
+                                    sx={{
+                                        p: 0,
+                                        pointerEvents: 'none',
+                                        color: '#2e7d32',
+                                        '&.Mui-checked': {
+                                            color: '#2e7d32'
+                                        }
+                                    }}
+                                />
+                                <Box sx={{flex: 1, pointerEvents: 'none'}}>
+                                    <Typography variant="body1" sx={{fontWeight: 600, mb: 0.5, color: '#1e293b'}}>
+                                        Physical Education Uniform
+                                    </Typography>
+                                    <Typography variant="body2" sx={{color: '#64748b'}}>
+                                        Sports uniform for physical education and athletic activities
+                                    </Typography>
+                                </Box>
+                                <Box sx={{
+                                    fontSize: '1.5rem',
+                                    opacity: designRequest.uniformTypes.physicalEducation.selected ? 1 : 0.3,
+                                    pointerEvents: 'none'
+                                }}>
+                                    🏃‍♂️
+                                </Box>
+                            </Box>
+                        </Box>
+                    </Box>
+
+                    {designRequest.uniformTypes.regular.selected && (
+                        <>
+                            <Box sx={{mb: 4}}>
+                                <Typography variant="h6" sx={{
+                                    color: '#1e293b',
+                                    mb: 2,
+                                    fontWeight: 600,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1
+                                }}>
+                                    Gender Selection (Regular Uniform) *
                                 </Typography>
-                                {designRequest.logo.preview && (
-                                    <Box sx={{mt: 2}}>
-                                        <img
-                                            src={designRequest.logo.preview}
-                                            alt="Logo Preview"
-                                            style={{
-                                                maxWidth: '150px',
-                                                height: 'auto',
-                                                borderRadius: '4px',
-                                                border: '1px solid #ddd'
-                                            }}
-                                        />
-                                    </Box>
-                                )}
-                            </Box>
-                        </Box>
-
-                        {/* Uniform Type */}
-                        <Box sx={{mb: 4}}>
-                            <Typography variant="h6" sx={{
-                                color: '#333',
-                                mb: 2,
-                                fontWeight: '600'
-                            }}>
-                                3. Uniform Type *
-                            </Typography>
-                            <Box sx={{
-                                border: '1px solid #e0e0e0',
-                                borderRadius: '8px',
-                                overflow: 'hidden'
-                            }}>
-                                <Box
-                                    onClick={() => handleUniformChange("regular")}
-                                    sx={{
+                                <Box sx={{
+                                    border: '1px solid #e0e0e0',
+                                    borderRadius: '8px',
+                                    overflow: 'hidden'
+                                }}>
+                                    <Box sx={{
                                         p: 3,
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: 2,
-                                        backgroundColor: designRequest.uniformTypes.regular.selected ? '#e3f2fd' : '#fff',
+                                        justifyContent: 'space-between',
+                                        backgroundColor: designRequest.uniformTypes.regular.genders.boy ? '#e3f2fd' : '#fff',
                                         borderBottom: '1px solid #e0e0e0',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s ease',
-                                        '&:hover': {
-                                            backgroundColor: designRequest.uniformTypes.regular.selected ? '#e3f2fd' : '#f5f5f5'
-                                        }
-                                    }}
-                                >
-                                    <Checkbox
-                                        checked={designRequest.uniformTypes.regular.selected}
-                                        name="regular-uniform"
-                                        color="primary"
-                                        sx={{
-                                            p: 0,
-                                            pointerEvents: 'none' // Disable checkbox direct clicks
-                                        }}
-                                    />
-                                    <Box sx={{flex: 1, pointerEvents: 'none'}}>
-                                        <Typography variant="body1" sx={{fontWeight: '600', mb: 0.5}}>
-                                            Regular Uniform
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                            Daily wear uniform for regular school activities
-                                        </Typography>
-                                    </Box>
-                                    <Box sx={{
-                                        fontSize: '1.5rem',
-                                        opacity: designRequest.uniformTypes.regular.selected ? 1 : 0.3,
-                                        pointerEvents: 'none'
+                                        transition: 'all 0.2s ease'
                                     }}>
-                                        👔
+                                        <Box
+                                            onClick={() => handleGenderChange("regular", "boy")}
+                                            sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 2,
+                                                cursor: 'pointer',
+                                                flex: 1
+                                            }}
+                                        >
+                                            <Checkbox
+                                                checked={designRequest.uniformTypes.regular.genders.boy}
+                                                name="regular-boy"
+                                                color="primary"
+                                                sx={{
+                                                    p: 0,
+                                                    pointerEvents: 'none'
+                                                }}
+                                            />
+                                            <Box sx={{flex: 1, pointerEvents: 'none'}}>
+                                                <Typography variant="body1" sx={{fontWeight: '600', mb: 0.5}}>
+                                                    Boy
+                                                </Typography>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    Design uniform for male students
+                                                </Typography>
+                                            </Box>
+                                            <Box sx={{
+                                                fontSize: '1.5rem',
+                                                opacity: designRequest.uniformTypes.regular.genders.boy ? 1 : 0.3,
+                                                pointerEvents: 'none'
+                                            }}>
+                                                👦
+                                            </Box>
+                                        </Box>
+                                        {designRequest.uniformTypes.regular.genders.boy && (
+                                            <Button
+                                                variant="contained"
+                                                size="small"
+                                                onClick={() => setDesignRequest(prev => ({
+                                                    ...prev,
+                                                    uniformTypes: {
+                                                        ...prev.uniformTypes,
+                                                        regular: {
+                                                            ...prev.uniformTypes.regular,
+                                                            details: {
+                                                                ...prev.uniformTypes.regular.details,
+                                                                boy: {
+                                                                    ...prev.uniformTypes.regular.details.boy,
+                                                                    showForm: true
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }))}
+                                                sx={{
+                                                    ml: 2,
+                                                    backgroundColor: '#1976d2',
+                                                    '&:hover': {
+                                                        backgroundColor: '#1565c0'
+                                                    }
+                                                }}
+                                            >
+                                                Configure Details
+                                            </Button>
+                                        )}
                                     </Box>
-                                </Box>
 
-                                <Box
-                                    onClick={() => handleUniformChange("physicalEducation")}
-                                    sx={{
+                                    <Box sx={{
                                         p: 3,
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: 2,
-                                        backgroundColor: designRequest.uniformTypes.physicalEducation.selected ? '#e8f5e9' : '#fff',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s ease',
-                                        '&:hover': {
-                                            backgroundColor: designRequest.uniformTypes.physicalEducation.selected ? '#e8f5e9' : '#f5f5f5'
-                                        }
-                                    }}
-                                >
-                                    <Checkbox
-                                        checked={designRequest.uniformTypes.physicalEducation.selected}
-                                        name="physical-education-uniform"
-                                        color="primary"
-                                        sx={{
-                                            p: 0,
-                                            pointerEvents: 'none'
-                                        }}
-                                    />
-                                    <Box sx={{flex: 1, pointerEvents: 'none'}}>
-                                        <Typography variant="body1" sx={{fontWeight: '600', mb: 0.5}}>
-                                            Physical Education Uniform
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                            Sports uniform for physical education and athletic activities
-                                        </Typography>
-                                    </Box>
-                                    <Box sx={{
-                                        fontSize: '1.5rem',
-                                        opacity: designRequest.uniformTypes.physicalEducation.selected ? 1 : 0.3,
-                                        pointerEvents: 'none'
+                                        justifyContent: 'space-between',
+                                        backgroundColor: designRequest.uniformTypes.regular.genders.girl ? '#fce4ec' : '#fff',
+                                        transition: 'all 0.2s ease'
                                     }}>
-                                        🏃‍♂️
+                                        <Box
+                                            onClick={() => handleGenderChange("regular", "girl")}
+                                            sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 2,
+                                                cursor: 'pointer',
+                                                flex: 1
+                                            }}
+                                        >
+                                            <Checkbox
+                                                checked={designRequest.uniformTypes.regular.genders.girl}
+                                                name="regular-girl"
+                                                color="primary"
+                                                sx={{
+                                                    p: 0,
+                                                    pointerEvents: 'none'
+                                                }}
+                                            />
+                                            <Box sx={{flex: 1, pointerEvents: 'none'}}>
+                                                <Typography variant="body1" sx={{fontWeight: '600', mb: 0.5}}>
+                                                    Girl
+                                                </Typography>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    Design uniform for female students
+                                                </Typography>
+                                            </Box>
+                                            <Box sx={{
+                                                fontSize: '1.5rem',
+                                                opacity: designRequest.uniformTypes.regular.genders.girl ? 1 : 0.3,
+                                                pointerEvents: 'none'
+                                            }}>
+                                                👧
+                                            </Box>
+                                        </Box>
+                                        {designRequest.uniformTypes.regular.genders.girl && (
+                                            <Button
+                                                variant="contained"
+                                                size="small"
+                                                onClick={() => setDesignRequest(prev => ({
+                                                    ...prev,
+                                                    uniformTypes: {
+                                                        ...prev.uniformTypes,
+                                                        regular: {
+                                                            ...prev.uniformTypes.regular,
+                                                            details: {
+                                                                ...prev.uniformTypes.regular.details,
+                                                                girl: {
+                                                                    ...prev.uniformTypes.regular.details.girl,
+                                                                    showForm: true
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }))}
+                                                sx={{
+                                                    ml: 2,
+                                                    backgroundColor: '#1976d2',
+                                                    '&:hover': {
+                                                        backgroundColor: '#1565c0'
+                                                    }
+                                                }}
+                                            >
+                                                Configure Details
+                                            </Button>
+                                        )}
                                     </Box>
                                 </Box>
                             </Box>
-                        </Box>
+                            <Dialog open={designRequest.uniformTypes.regular.details.boy.showForm}
+                                    onClose={() => setDesignRequest(prev => ({
+                                        ...prev,
+                                        uniformTypes: {
+                                            ...prev.uniformTypes,
+                                            regular: {
+                                                ...prev.uniformTypes.regular,
+                                                details: {
+                                                    ...prev.uniformTypes.regular.details,
+                                                    boy: {...prev.uniformTypes.regular.details.boy, showForm: false}
+                                                }
+                                            }
+                                        }
+                                    }))} maxWidth="md" fullWidth>
+                                <DialogTitle>Regular Uniform Details (Boy)</DialogTitle>
+                                <DialogContent>
+                                    {renderBoyUniformDetails("regular")}
+                                </DialogContent>
+                                <DialogActions>
+                                    <Button onClick={() => setDesignRequest(prev => ({
+                                        ...prev,
+                                        uniformTypes: {
+                                            ...prev.uniformTypes,
+                                            regular: {
+                                                ...prev.uniformTypes.regular,
+                                                details: {
+                                                    ...prev.uniformTypes.regular.details,
+                                                    boy: {...prev.uniformTypes.regular.details.boy, showForm: false}
+                                                }
+                                            }
+                                        }
+                                    }))}>Close</Button>
+                                </DialogActions>
+                            </Dialog>
+                            <Dialog open={designRequest.uniformTypes.regular.details.girl.showForm}
+                                    onClose={() => setDesignRequest(prev => ({
+                                        ...prev,
+                                        uniformTypes: {
+                                            ...prev.uniformTypes,
+                                            regular: {
+                                                ...prev.uniformTypes.regular,
+                                                details: {
+                                                    ...prev.uniformTypes.regular.details,
+                                                    girl: {
+                                                        ...prev.uniformTypes.regular.details.girl,
+                                                        showForm: false
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }))} maxWidth="md" fullWidth>
+                                <DialogTitle>Regular Uniform Details (Girl)</DialogTitle>
+                                <DialogContent>
+                                    {renderGirlUniformDetails("regular")}
+                                </DialogContent>
+                                <DialogActions>
+                                    <Button onClick={() => setDesignRequest(prev => ({
+                                        ...prev,
+                                        uniformTypes: {
+                                            ...prev.uniformTypes,
+                                            regular: {
+                                                ...prev.uniformTypes.regular,
+                                                details: {
+                                                    ...prev.uniformTypes.regular.details,
+                                                    girl: {
+                                                        ...prev.uniformTypes.regular.details.girl,
+                                                        showForm: false
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }))}>Close</Button>
+                                </DialogActions>
+                            </Dialog>
+                        </>
+                    )}
 
-                        {designRequest.uniformTypes.regular.selected && (
-                            <>
-                                <Box sx={{mb: 4}}>
-                                    <Typography variant="h6" sx={{
-                                        color: '#333',
-                                        mb: 2,
-                                        fontWeight: '600'
-                                    }}>
-                                        4. Gender Selection (Regular Uniform) *
-                                    </Typography>
+                    {designRequest.uniformTypes.physicalEducation.selected && (
+                        <>
+                            <Box sx={{mb: 4}}>
+                                <Typography variant="h6" sx={{
+                                    color: '#333',
+                                    mb: 2,
+                                    fontWeight: '600'
+                                }}>
+                                    Gender Selection (Physical Education Uniform) *
+                                </Typography>
+                                <Box sx={{
+                                    border: '1px solid #e0e0e0',
+                                    borderRadius: '8px',
+                                    overflow: 'hidden'
+                                }}>
                                     <Box sx={{
-                                        border: '1px solid #e0e0e0',
-                                        borderRadius: '8px',
-                                        overflow: 'hidden'
+                                        p: 3,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        backgroundColor: designRequest.uniformTypes.physicalEducation.genders.boy ? '#e8f5e9' : '#fff',
+                                        borderBottom: '1px solid #e0e0e0',
+                                        transition: 'all 0.2s ease'
                                     }}>
-                                        <Box sx={{
-                                            p: 3,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
-                                            backgroundColor: designRequest.uniformTypes.regular.genders.boy ? '#e3f2fd' : '#fff',
-                                            borderBottom: '1px solid #e0e0e0',
-                                            transition: 'all 0.2s ease'
-                                        }}>
-                                            <Box
-                                                onClick={() => handleGenderChange("regular", "boy")}
+                                        <Box
+                                            onClick={() => handleGenderChange("physicalEducation", "boy")}
+                                            sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 2,
+                                                cursor: 'pointer',
+                                                flex: 1
+                                            }}
+                                        >
+                                            <Checkbox
+                                                checked={designRequest.uniformTypes.physicalEducation.genders.boy}
+                                                name="physical-boy"
+                                                color="primary"
                                                 sx={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 2,
-                                                    cursor: 'pointer',
-                                                    flex: 1
-                                                }}
-                                            >
-                                                <Checkbox
-                                                    checked={designRequest.uniformTypes.regular.genders.boy}
-                                                    name="regular-boy"
-                                                    color="primary"
-                                                    sx={{
-                                                        p: 0,
-                                                        pointerEvents: 'none'
-                                                    }}
-                                                />
-                                                <Box sx={{flex: 1, pointerEvents: 'none'}}>
-                                                    <Typography variant="body1" sx={{fontWeight: '600', mb: 0.5}}>
-                                                        Boy
-                                                    </Typography>
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        Design uniform for male students
-                                                    </Typography>
-                                                </Box>
-                                                <Box sx={{
-                                                    fontSize: '1.5rem',
-                                                    opacity: designRequest.uniformTypes.regular.genders.boy ? 1 : 0.3,
+                                                    p: 0,
                                                     pointerEvents: 'none'
-                                                }}>
-                                                    👦
-                                                </Box>
+                                                }}
+                                            />
+                                            <Box sx={{flex: 1, pointerEvents: 'none'}}>
+                                                <Typography variant="body1" sx={{fontWeight: '600', mb: 0.5}}>
+                                                    Boy
+                                                </Typography>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    Physical education uniform for male students
+                                                </Typography>
                                             </Box>
-                                            {designRequest.uniformTypes.regular.genders.boy && (
-                                                <Button
-                                                    variant="contained"
-                                                    size="small"
-                                                    onClick={() => setDesignRequest(prev => ({
-                                                        ...prev,
-                                                        uniformTypes: {
-                                                            ...prev.uniformTypes,
-                                                            regular: {
-                                                                ...prev.uniformTypes.regular,
-                                                                details: {
-                                                                    ...prev.uniformTypes.regular.details,
-                                                                    boy: {
-                                                                        ...prev.uniformTypes.regular.details.boy,
-                                                                        showForm: true
-                                                                    }
+                                            <Box sx={{
+                                                fontSize: '1.5rem',
+                                                opacity: designRequest.uniformTypes.physicalEducation.genders.boy ? 1 : 0.3,
+                                                pointerEvents: 'none'
+                                            }}>
+                                                🏃‍♂️
+                                            </Box>
+                                        </Box>
+                                        {designRequest.uniformTypes.physicalEducation.genders.boy && (
+                                            <Button
+                                                variant="contained"
+                                                size="small"
+                                                onClick={() => setDesignRequest(prev => ({
+                                                    ...prev,
+                                                    uniformTypes: {
+                                                        ...prev.uniformTypes,
+                                                        physicalEducation: {
+                                                            ...prev.uniformTypes.physicalEducation,
+                                                            details: {
+                                                                ...prev.uniformTypes.physicalEducation.details,
+                                                                boy: {
+                                                                    ...prev.uniformTypes.physicalEducation.details.boy,
+                                                                    showForm: true
                                                                 }
                                                             }
                                                         }
-                                                    }))}
-                                                    sx={{
-                                                        ml: 2,
-                                                        backgroundColor: '#1976d2',
-                                                        '&:hover': {
-                                                            backgroundColor: '#1565c0'
-                                                        }
-                                                    }}
-                                                >
-                                                    Configure Details
-                                                </Button>
-                                            )}
-                                        </Box>
+                                                    }
+                                                }))}
+                                                sx={{
+                                                    ml: 2,
+                                                    backgroundColor: '#1976d2',
+                                                    '&:hover': {
+                                                        backgroundColor: '#1565c0'
+                                                    }
+                                                }}
+                                            >
+                                                Configure Details
+                                            </Button>
+                                        )}
+                                    </Box>
 
-                                        <Box sx={{
-                                            p: 3,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
-                                            backgroundColor: designRequest.uniformTypes.regular.genders.girl ? '#fce4ec' : '#fff',
-                                            transition: 'all 0.2s ease'
-                                        }}>
-                                            <Box
-                                                onClick={() => handleGenderChange("regular", "girl")}
+                                    <Box sx={{
+                                        p: 3,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        backgroundColor: designRequest.uniformTypes.physicalEducation.genders.girl ? '#fff3e0' : '#fff',
+                                        transition: 'all 0.2s ease'
+                                    }}>
+                                        <Box
+                                            onClick={() => handleGenderChange("physicalEducation", "girl")}
+                                            sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 2,
+                                                cursor: 'pointer',
+                                                flex: 1
+                                            }}
+                                        >
+                                            <Checkbox
+                                                checked={designRequest.uniformTypes.physicalEducation.genders.girl}
+                                                name="physical-girl"
+                                                color="primary"
                                                 sx={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 2,
-                                                    cursor: 'pointer',
-                                                    flex: 1
-                                                }}
-                                            >
-                                                <Checkbox
-                                                    checked={designRequest.uniformTypes.regular.genders.girl}
-                                                    name="regular-girl"
-                                                    color="primary"
-                                                    sx={{
-                                                        p: 0,
-                                                        pointerEvents: 'none'
-                                                    }}
-                                                />
-                                                <Box sx={{flex: 1, pointerEvents: 'none'}}>
-                                                    <Typography variant="body1" sx={{fontWeight: '600', mb: 0.5}}>
-                                                        Girl
-                                                    </Typography>
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        Design uniform for female students
-                                                    </Typography>
-                                                </Box>
-                                                <Box sx={{
-                                                    fontSize: '1.5rem',
-                                                    opacity: designRequest.uniformTypes.regular.genders.girl ? 1 : 0.3,
+                                                    p: 0,
                                                     pointerEvents: 'none'
-                                                }}>
-                                                    👧
-                                                </Box>
+                                                }}
+                                            />
+                                            <Box sx={{flex: 1, pointerEvents: 'none'}}>
+                                                <Typography variant="body1" sx={{fontWeight: '600', mb: 0.5}}>
+                                                    Girl
+                                                </Typography>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    Physical education uniform for female students
+                                                </Typography>
                                             </Box>
-                                            {designRequest.uniformTypes.regular.genders.girl && (
-                                                <Button
-                                                    variant="contained"
-                                                    size="small"
-                                                    onClick={() => setDesignRequest(prev => ({
-                                                        ...prev,
-                                                        uniformTypes: {
-                                                            ...prev.uniformTypes,
-                                                            regular: {
-                                                                ...prev.uniformTypes.regular,
-                                                                details: {
-                                                                    ...prev.uniformTypes.regular.details,
-                                                                    girl: {
-                                                                        ...prev.uniformTypes.regular.details.girl,
-                                                                        showForm: true
-                                                                    }
+                                            <Box sx={{
+                                                fontSize: '1.5rem',
+                                                opacity: designRequest.uniformTypes.physicalEducation.genders.girl ? 1 : 0.3,
+                                                pointerEvents: 'none'
+                                            }}>
+                                                🏃‍♀️
+                                            </Box>
+                                        </Box>
+                                        {designRequest.uniformTypes.physicalEducation.genders.girl && (
+                                            <Button
+                                                variant="contained"
+                                                size="small"
+                                                onClick={() => setDesignRequest(prev => ({
+                                                    ...prev,
+                                                    uniformTypes: {
+                                                        ...prev.uniformTypes,
+                                                        physicalEducation: {
+                                                            ...prev.uniformTypes.physicalEducation,
+                                                            details: {
+                                                                ...prev.uniformTypes.physicalEducation.details,
+                                                                girl: {
+                                                                    ...prev.uniformTypes.physicalEducation.details.girl,
+                                                                    showForm: true
                                                                 }
                                                             }
                                                         }
-                                                    }))}
-                                                    sx={{
-                                                        ml: 2,
-                                                        backgroundColor: '#1976d2',
-                                                        '&:hover': {
-                                                            backgroundColor: '#1565c0'
-                                                        }
-                                                    }}
-                                                >
-                                                    Configure Details
-                                                </Button>
-                                            )}
-                                        </Box>
+                                                    }
+                                                }))}
+                                                sx={{
+                                                    ml: 2,
+                                                    backgroundColor: '#1976d2',
+                                                    '&:hover': {
+                                                        backgroundColor: '#1565c0'
+                                                    }
+                                                }}
+                                            >
+                                                Configure Details
+                                            </Button>
+                                        )}
                                     </Box>
                                 </Box>
-                                <Dialog open={designRequest.uniformTypes.regular.details.boy.showForm}
-                                        onClose={() => setDesignRequest(prev => ({
-                                            ...prev,
-                                            uniformTypes: {
-                                                ...prev.uniformTypes,
-                                                regular: {
-                                                    ...prev.uniformTypes.regular,
-                                                    details: {
-                                                        ...prev.uniformTypes.regular.details,
-                                                        boy: {...prev.uniformTypes.regular.details.boy, showForm: false}
+                            </Box>
+                            <Dialog open={designRequest.uniformTypes.physicalEducation.details.boy.showForm}
+                                    onClose={() => setDesignRequest(prev => ({
+                                        ...prev,
+                                        uniformTypes: {
+                                            ...prev.uniformTypes,
+                                            physicalEducation: {
+                                                ...prev.uniformTypes.physicalEducation,
+                                                details: {
+                                                    ...prev.uniformTypes.physicalEducation.details,
+                                                    boy: {
+                                                        ...prev.uniformTypes.physicalEducation.details.boy,
+                                                        showForm: false
                                                     }
                                                 }
                                             }
-                                        }))} maxWidth="md" fullWidth>
-                                    <DialogTitle>Regular Uniform Details (Boy)</DialogTitle>
-                                    <DialogContent>
-                                        {renderBoyUniformDetails("regular")}
-                                    </DialogContent>
-                                    <DialogActions>
-                                        <Button onClick={() => setDesignRequest(prev => ({
-                                            ...prev,
-                                            uniformTypes: {
-                                                ...prev.uniformTypes,
-                                                regular: {
-                                                    ...prev.uniformTypes.regular,
-                                                    details: {
-                                                        ...prev.uniformTypes.regular.details,
-                                                        boy: {...prev.uniformTypes.regular.details.boy, showForm: false}
+                                        }
+                                    }))} maxWidth="md" fullWidth>
+                                <DialogTitle>Physical Education Uniform Details (Boy)</DialogTitle>
+                                <DialogContent>
+                                    {renderBoyUniformDetails("physicalEducation")}
+                                </DialogContent>
+                                <DialogActions>
+                                    <Button onClick={() => setDesignRequest(prev => ({
+                                        ...prev,
+                                        uniformTypes: {
+                                            ...prev.uniformTypes,
+                                            physicalEducation: {
+                                                ...prev.uniformTypes.physicalEducation,
+                                                details: {
+                                                    ...prev.uniformTypes.physicalEducation.details,
+                                                    boy: {
+                                                        ...prev.uniformTypes.physicalEducation.details.boy,
+                                                        showForm: false
                                                     }
                                                 }
                                             }
-                                        }))}>Close</Button>
-                                    </DialogActions>
-                                </Dialog>
-                                <Dialog open={designRequest.uniformTypes.regular.details.girl.showForm}
-                                        onClose={() => setDesignRequest(prev => ({
-                                            ...prev,
-                                            uniformTypes: {
-                                                ...prev.uniformTypes,
-                                                regular: {
-                                                    ...prev.uniformTypes.regular,
-                                                    details: {
-                                                        ...prev.uniformTypes.regular.details,
-                                                        girl: {
-                                                            ...prev.uniformTypes.regular.details.girl,
-                                                            showForm: false
-                                                        }
+                                        }
+                                    }))}>Close</Button>
+                                </DialogActions>
+                            </Dialog>
+                            <Dialog open={designRequest.uniformTypes.physicalEducation.details.girl.showForm}
+                                    onClose={() => setDesignRequest(prev => ({
+                                        ...prev,
+                                        uniformTypes: {
+                                            ...prev.uniformTypes,
+                                            physicalEducation: {
+                                                ...prev.uniformTypes.physicalEducation,
+                                                details: {
+                                                    ...prev.uniformTypes.physicalEducation.details,
+                                                    girl: {
+                                                        ...prev.uniformTypes.physicalEducation.details.girl,
+                                                        showForm: false
                                                     }
                                                 }
                                             }
-                                        }))} maxWidth="md" fullWidth>
-                                    <DialogTitle>Regular Uniform Details (Girl)</DialogTitle>
-                                    <DialogContent>
-                                        {renderGirlUniformDetails("regular")}
-                                    </DialogContent>
-                                    <DialogActions>
-                                        <Button onClick={() => setDesignRequest(prev => ({
-                                            ...prev,
-                                            uniformTypes: {
-                                                ...prev.uniformTypes,
-                                                regular: {
-                                                    ...prev.uniformTypes.regular,
-                                                    details: {
-                                                        ...prev.uniformTypes.regular.details,
-                                                        girl: {
-                                                            ...prev.uniformTypes.regular.details.girl,
-                                                            showForm: false
-                                                        }
+                                        }
+                                    }))} maxWidth="md" fullWidth>
+                                <DialogTitle>Physical Education Uniform Details (Girl)</DialogTitle>
+                                <DialogContent>
+                                    {renderGirlUniformDetails("physicalEducation")}
+                                </DialogContent>
+                                <DialogActions>
+                                    <Button onClick={() => setDesignRequest(prev => ({
+                                        ...prev,
+                                        uniformTypes: {
+                                            ...prev.uniformTypes,
+                                            physicalEducation: {
+                                                ...prev.uniformTypes.physicalEducation,
+                                                details: {
+                                                    ...prev.uniformTypes.physicalEducation.details,
+                                                    girl: {
+                                                        ...prev.uniformTypes.physicalEducation.details.girl,
+                                                        showForm: false
                                                     }
                                                 }
                                             }
-                                        }))}>Close</Button>
-                                    </DialogActions>
-                                </Dialog>
-                            </>
-                        )}
-
-                        {designRequest.uniformTypes.physicalEducation.selected && (
-                            <>
-                                <Box sx={{mb: 4}}>
-                                    <Typography variant="h6" sx={{
-                                        color: '#333',
-                                        mb: 2,
-                                        fontWeight: '600'
-                                    }}>
-                                        5. Gender Selection (Physical Education Uniform) *
-                                    </Typography>
-                                    <Box sx={{
-                                        border: '1px solid #e0e0e0',
-                                        borderRadius: '8px',
-                                        overflow: 'hidden'
-                                    }}>
-                                        <Box sx={{
-                                            p: 3,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
-                                            backgroundColor: designRequest.uniformTypes.physicalEducation.genders.boy ? '#e8f5e9' : '#fff',
-                                            borderBottom: '1px solid #e0e0e0',
-                                            transition: 'all 0.2s ease'
-                                        }}>
-                                            <Box
-                                                onClick={() => handleGenderChange("physicalEducation", "boy")}
-                                                sx={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 2,
-                                                    cursor: 'pointer',
-                                                    flex: 1
-                                                }}
-                                            >
-                                                <Checkbox
-                                                    checked={designRequest.uniformTypes.physicalEducation.genders.boy}
-                                                    name="physical-boy"
-                                                    color="primary"
-                                                    sx={{
-                                                        p: 0,
-                                                        pointerEvents: 'none'
-                                                    }}
-                                                />
-                                                <Box sx={{flex: 1, pointerEvents: 'none'}}>
-                                                    <Typography variant="body1" sx={{fontWeight: '600', mb: 0.5}}>
-                                                        Boy
-                                                    </Typography>
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        Physical education uniform for male students
-                                                    </Typography>
-                                                </Box>
-                                                <Box sx={{
-                                                    fontSize: '1.5rem',
-                                                    opacity: designRequest.uniformTypes.physicalEducation.genders.boy ? 1 : 0.3,
-                                                    pointerEvents: 'none'
-                                                }}>
-                                                    🏃‍♂️
-                                                </Box>
-                                            </Box>
-                                            {designRequest.uniformTypes.physicalEducation.genders.boy && (
-                                                <Button
-                                                    variant="contained"
-                                                    size="small"
-                                                    onClick={() => setDesignRequest(prev => ({
-                                                        ...prev,
-                                                        uniformTypes: {
-                                                            ...prev.uniformTypes,
-                                                            physicalEducation: {
-                                                                ...prev.uniformTypes.physicalEducation,
-                                                                details: {
-                                                                    ...prev.uniformTypes.physicalEducation.details,
-                                                                    boy: {
-                                                                        ...prev.uniformTypes.physicalEducation.details.boy,
-                                                                        showForm: true
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }))}
-                                                    sx={{
-                                                        ml: 2,
-                                                        backgroundColor: '#1976d2',
-                                                        '&:hover': {
-                                                            backgroundColor: '#1565c0'
-                                                        }
-                                                    }}
-                                                >
-                                                    Configure Details
-                                                </Button>
-                                            )}
-                                        </Box>
-
-                                        <Box sx={{
-                                            p: 3,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
-                                            backgroundColor: designRequest.uniformTypes.physicalEducation.genders.girl ? '#fff3e0' : '#fff',
-                                            transition: 'all 0.2s ease'
-                                        }}>
-                                            <Box
-                                                onClick={() => handleGenderChange("physicalEducation", "girl")}
-                                                sx={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 2,
-                                                    cursor: 'pointer',
-                                                    flex: 1
-                                                }}
-                                            >
-                                                <Checkbox
-                                                    checked={designRequest.uniformTypes.physicalEducation.genders.girl}
-                                                    name="physical-girl"
-                                                    color="primary"
-                                                    sx={{
-                                                        p: 0,
-                                                        pointerEvents: 'none'
-                                                    }}
-                                                />
-                                                <Box sx={{flex: 1, pointerEvents: 'none'}}>
-                                                    <Typography variant="body1" sx={{fontWeight: '600', mb: 0.5}}>
-                                                        Girl
-                                                    </Typography>
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        Physical education uniform for female students
-                                                    </Typography>
-                                                </Box>
-                                                <Box sx={{
-                                                    fontSize: '1.5rem',
-                                                    opacity: designRequest.uniformTypes.physicalEducation.genders.girl ? 1 : 0.3,
-                                                    pointerEvents: 'none'
-                                                }}>
-                                                    🏃‍♀️
-                                                </Box>
-                                            </Box>
-                                            {designRequest.uniformTypes.physicalEducation.genders.girl && (
-                                                <Button
-                                                    variant="contained"
-                                                    size="small"
-                                                    onClick={() => setDesignRequest(prev => ({
-                                                        ...prev,
-                                                        uniformTypes: {
-                                                            ...prev.uniformTypes,
-                                                            physicalEducation: {
-                                                                ...prev.uniformTypes.physicalEducation,
-                                                                details: {
-                                                                    ...prev.uniformTypes.physicalEducation.details,
-                                                                    girl: {
-                                                                        ...prev.uniformTypes.physicalEducation.details.girl,
-                                                                        showForm: true
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }))}
-                                                    sx={{
-                                                        ml: 2,
-                                                        backgroundColor: '#1976d2',
-                                                        '&:hover': {
-                                                            backgroundColor: '#1565c0'
-                                                        }
-                                                    }}
-                                                >
-                                                    Configure Details
-                                                </Button>
-                                            )}
-                                        </Box>
-                                    </Box>
-                                </Box>
-                                <Dialog open={designRequest.uniformTypes.physicalEducation.details.boy.showForm}
-                                        onClose={() => setDesignRequest(prev => ({
-                                            ...prev,
-                                            uniformTypes: {
-                                                ...prev.uniformTypes,
-                                                physicalEducation: {
-                                                    ...prev.uniformTypes.physicalEducation,
-                                                    details: {
-                                                        ...prev.uniformTypes.physicalEducation.details,
-                                                        boy: {
-                                                            ...prev.uniformTypes.physicalEducation.details.boy,
-                                                            showForm: false
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }))} maxWidth="md" fullWidth>
-                                    <DialogTitle>Physical Education Uniform Details (Boy)</DialogTitle>
-                                    <DialogContent>
-                                        {renderBoyUniformDetails("physicalEducation")}
-                                    </DialogContent>
-                                    <DialogActions>
-                                        <Button onClick={() => setDesignRequest(prev => ({
-                                            ...prev,
-                                            uniformTypes: {
-                                                ...prev.uniformTypes,
-                                                physicalEducation: {
-                                                    ...prev.uniformTypes.physicalEducation,
-                                                    details: {
-                                                        ...prev.uniformTypes.physicalEducation.details,
-                                                        boy: {
-                                                            ...prev.uniformTypes.physicalEducation.details.boy,
-                                                            showForm: false
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }))}>Close</Button>
-                                    </DialogActions>
-                                </Dialog>
-                                <Dialog open={designRequest.uniformTypes.physicalEducation.details.girl.showForm}
-                                        onClose={() => setDesignRequest(prev => ({
-                                            ...prev,
-                                            uniformTypes: {
-                                                ...prev.uniformTypes,
-                                                physicalEducation: {
-                                                    ...prev.uniformTypes.physicalEducation,
-                                                    details: {
-                                                        ...prev.uniformTypes.physicalEducation.details,
-                                                        girl: {
-                                                            ...prev.uniformTypes.physicalEducation.details.girl,
-                                                            showForm: false
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }))} maxWidth="md" fullWidth>
-                                    <DialogTitle>Physical Education Uniform Details (Girl)</DialogTitle>
-                                    <DialogContent>
-                                        {renderGirlUniformDetails("physicalEducation")}
-                                    </DialogContent>
-                                    <DialogActions>
-                                        <Button onClick={() => setDesignRequest(prev => ({
-                                            ...prev,
-                                            uniformTypes: {
-                                                ...prev.uniformTypes,
-                                                physicalEducation: {
-                                                    ...prev.uniformTypes.physicalEducation,
-                                                    details: {
-                                                        ...prev.uniformTypes.physicalEducation.details,
-                                                        girl: {
-                                                            ...prev.uniformTypes.physicalEducation.details.girl,
-                                                            showForm: false
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }))}>Close</Button>
-                                    </DialogActions>
-                                </Dialog>
-                            </>
-                        )}
-                    </Box>
-                    {/* Action Buttons */}
-                    <Box sx={{
-                        mt: 4,
-                        pt: 3,
-                        borderTop: '1px solid #eee',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        gap: 2
-                    }}>
-                        <Button
-                            onClick={() => window.location.href = '/school/design'}
-                            variant="outlined"
-                            size="large"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            onClick={handleSubmit}
-                            variant="contained"
-                            size="large"
-                            color="primary"
-                            disabled={isSubmitting}
-                            startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : null}
-                        >
-                            {isSubmitting ? 'Submitting...' : 'Submit Request'}
-                        </Button>
-                    </Box>
+                                        }
+                                    }))}>Close</Button>
+                                </DialogActions>
+                            </Dialog>
+                        </>
+                    )}
                 </Box>
+            </Box>
+            {/* Action Buttons */}
+            <Box sx={{
+                mt: 4,
+                pt: 3,
+                borderTop: '1px solid #e2e8f0',
+                display: 'flex',
+                justifyContent: 'space-between',
+                gap: 2
+            }}>
+                <Button
+                    onClick={() => window.location.href = '/school/design'}
+                    variant="outlined"
+                    size="large"
+                    sx={{
+                        borderColor: '#cbd5e1',
+                        color: '#64748b',
+                        '&:hover': {
+                            borderColor: '#2e7d32',
+                            color: '#2e7d32',
+                            backgroundColor: 'rgba(46, 125, 50, 0.04)'
+                        }
+                    }}
+                >
+                    Cancel
+                </Button>
+                <Button
+                    onClick={handleSubmit}
+                    variant="contained"
+                    size="large"
+                    disabled={isSubmitting}
+                    startIcon={isSubmitting ? <CircularProgress size={20} color="inherit"/> : null}
+                    sx={{
+                        background: "linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)",
+                        color: "white",
+                        px: 4,
+                        py: 1.5,
+                        fontSize: "1rem",
+                        fontWeight: 600,
+                        borderRadius: 2,
+                        textTransform: "none",
+                        boxShadow: "0 4px 15px rgba(46, 125, 50, 0.3)",
+                        "&:hover": {
+                            background: "linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%)",
+                            transform: "translateY(-2px)",
+                            boxShadow: "0 8px 25px rgba(46, 125, 50, 0.4)"
+                        },
+                        "&:disabled": {
+                            background: "#cbd5e1",
+                            transform: "none",
+                            boxShadow: "none"
+                        }
+                    }}
+                >
+                    {isSubmitting ? 'Submitting...' : 'Submit Request'}
+                </Button>
             </Box>
         </Box>
     );
