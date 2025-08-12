@@ -10,7 +10,7 @@ import WebAppDashboard from "./layouts/school/WebAppDashboard.jsx";
 import Contact from "./components/auth/Contact.jsx";
 import {SnackbarProvider} from 'notistack';
 import DesignChat from "./components/school/design/DesignChat.jsx";
-import {Slide} from '@mui/material';
+import {Slide, ThemeProvider, createTheme, CssBaseline} from '@mui/material';
 import CreateRequest from './components/school/design/CreateRequest.jsx';
 import PendingRequest from "./components/school/design/PendingRequest.jsx";
 import PaymentResult from "./components/school/PaymentResult.jsx";
@@ -31,6 +31,55 @@ import CreateOrder from "./components/school/order/CreateOrder.jsx";
 import GarmentDashboardLayout from "./layouts/garment/GarmentDashboardLayout.jsx";
 import GarmentOrderList from "./components/garment/GarmentOrderList.jsx";
 import GarmentOrderDetail from "./components/garment/GarmentOrderDetail.jsx";
+
+// Create theme with Tinos font
+const theme = createTheme({
+  typography: {
+    fontFamily: '"Tinos", serif',
+    h1: {
+      fontFamily: '"Tinos", serif',
+    },
+    h2: {
+      fontFamily: '"Tinos", serif',
+    },
+    h3: {
+      fontFamily: '"Tinos", serif',
+    },
+    h4: {
+      fontFamily: '"Tinos", serif',
+    },
+    h5: {
+      fontFamily: '"Tinos", serif',
+    },
+    h6: {
+      fontFamily: '"Tinos", serif',
+    },
+    body1: {
+      fontFamily: '"Tinos", serif',
+    },
+    body2: {
+      fontFamily: '"Tinos", serif',
+    },
+    button: {
+      fontFamily: '"Tinos", serif',
+    },
+    caption: {
+      fontFamily: '"Tinos", serif',
+    },
+    overline: {
+      fontFamily: '"Tinos", serif',
+    },
+  },
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          fontFamily: '"Tinos", serif',
+        },
+      },
+    },
+  },
+});
 
 const router = createBrowserRouter([
     {
@@ -192,9 +241,12 @@ function App() {
             TransitionComponent={Slide}
             preventDuplicate={true}
         >
-            <GoogleOAuthProvider clientId={clientID}>
-                <RouterProvider router={router} />
-            </GoogleOAuthProvider>
+            <ThemeProvider theme={theme}>
+                <CssBaseline />
+                <GoogleOAuthProvider clientId={clientID}>
+                    <RouterProvider router={router} />
+                </GoogleOAuthProvider>
+            </ThemeProvider>
         </SnackbarProvider>
     )
 }

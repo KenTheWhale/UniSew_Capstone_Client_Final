@@ -17,7 +17,7 @@ export const createOrder = async (orderData) => {
 }
 
 export const cancelOrder = async (orderId) => {
-    const response = await axiosClient.put(`/order/cancellation?id=${orderId}`)
+    const response = await axiosClient.put(`/order/cancellation?orderId=${orderId}`)
     return response || null
 }
 

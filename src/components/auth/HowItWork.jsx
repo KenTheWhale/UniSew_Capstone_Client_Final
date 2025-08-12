@@ -4,56 +4,56 @@ export default function HowItWork() {
     const steps = [
         {
             number: '01',
-            title: 'Create a Design Request',
-            description: 'Initiate your project by submitting a detailed design request, outlining your vision and requirements.',
+            title: 'Tạo Yêu Cầu Thiết Kế',
+            description: 'Bắt đầu dự án bằng cách gửi yêu cầu thiết kế chi tiết, mô tả tầm nhìn và yêu cầu của bạn.',
             icon: '✏️'
         },
         {
             number: '02',
-            title: 'Await Designer Bids',
-            description: 'Once your request is live, designers will review it and submit their proposals to work on your project.',
+            title: 'Chờ Đợi Đề Xuất Từ Nhà Thiết Kế',
+            description: 'Khi yêu cầu của bạn được đăng, các nhà thiết kế sẽ xem xét và gửi đề xuất để làm việc trên dự án của bạn.',
             icon: '⏳'
         },
         {
             number: '03',
-            title: 'Select a Designer and Quotation',
-            description: 'Review the proposals, choose the designer that best fits your needs, and select their preferred design quotation.',
+            title: 'Chọn Nhà Thiết Kế Và Báo Giá',
+            description: 'Xem xét các đề xuất, chọn nhà thiết kế phù hợp nhất với nhu cầu và lựa chọn báo giá thiết kế ưa thích.',
             icon: '👨‍🎨'
         },
         {
             number: '04',
-            title: 'Payment and Designer Chat',
-            description: 'Complete the payment for the chosen design quotation to unlock direct communication with your selected designer.',
+            title: 'Thanh Toán Và Trò Chuyện Với Nhà Thiết Kế',
+            description: 'Hoàn thành thanh toán cho báo giá thiết kế đã chọn để mở khóa giao tiếp trực tiếp với nhà thiết kế đã chọn.',
             icon: '💬'
         },
         {
             number: '05',
-            title: 'Request Revisions or Finalize',
-            description: 'Collaborate with your designer, provide feedback, request revisions, and finalize the design until you are satisfied.',
+            title: 'Yêu Cầu Chỉnh Sửa Hoặc Hoàn Thành',
+            description: 'Cộng tác với nhà thiết kế, đưa ra phản hồi, yêu cầu chỉnh sửa và hoàn thiện thiết kế cho đến khi bạn hài lòng.',
             icon: '✅'
         },
         {
             number: '06',
-            title: 'Create an Order',
-            description: 'Once the design is finalized, proceed to create a production order using the approved design.',
+            title: 'Tạo Đơn Hàng',
+            description: 'Khi thiết kế đã hoàn thành, tiến hành tạo đơn hàng sản xuất sử dụng thiết kế đã được phê duyệt.',
             icon: '📋'
         },
         {
             number: '07',
-            title: 'Await Factory Quotes',
-            description: 'Your order will be sent to various garment factories who will then provide their quotes for production.',
+            title: 'Chờ Đợi Báo Giá Từ Nhà Máy',
+            description: 'Đơn hàng của bạn sẽ được gửi đến các nhà máy may mặc khác nhau để họ đưa ra báo giá sản xuất.',
             icon: '🏭'
         },
         {
             number: '08',
-            title: 'Select Factory and Pay',
-            description: 'Review the factory quotes, select the best option, and complete the payment to initiate production.',
+            title: 'Chọn Nhà Máy Và Thanh Toán',
+            description: 'Xem xét báo giá từ nhà máy, chọn lựa chọn tốt nhất và hoàn thành thanh toán để bắt đầu sản xuất.',
             icon: '💰'
         },
         {
             number: '09',
-            title: 'Track and Complete Your Order',
-            description: 'Monitor the progress of your order through our system, from production to shipping. Once received and satisfied, confirm completion to close the project.',
+            title: 'Theo Dõi Và Hoàn Thành Đơn Hàng',
+            description: 'Theo dõi tiến độ đơn hàng thông qua hệ thống của chúng tôi, từ sản xuất đến vận chuyển. Khi nhận được và hài lòng, xác nhận hoàn thành để kết thúc dự án.',
             icon: '📦🎉'
         }
     ];
@@ -79,7 +79,7 @@ export default function HowItWork() {
                     color: '#2c3e50',
                     marginBottom: '15px',
                     fontWeight: '700'
-                }}>How It Works</h1>
+                }}>Quy Trình Hoạt Động</h1>
                 <div style={{
                     width: '80px',
                     height: '4px',
@@ -91,7 +91,7 @@ export default function HowItWork() {
                     color: '#7f8c8d',
                     maxWidth: '700px',
                     margin: '0 auto'
-                }}>Follow these simple steps to bring your fashion design from concept to reality</p>
+                }}>Làm theo những bước đơn giản này để biến thiết kế thời trang của bạn từ ý tưởng thành hiện thực</p>
             </div>
 
             <div style={{
@@ -161,8 +161,8 @@ export default function HowItWork() {
                 backgroundColor: '#f1f8fe',
                 borderRadius: '10px'
             }}>
-                <h3 style={{ color: '#2c3e50', marginBottom: '15px' }}>Ready to Start Your Project?</h3>
-                <p style={{ color: '#7f8c8d', marginBottom: '25px' }}>Create your first design request and bring your vision to life</p>
+                <h3 style={{ color: '#2c3e50', marginBottom: '15px' }}>Sẵn Sàng Bắt Đầu Dự Án?</h3>
+                <p style={{ color: '#7f8c8d', marginBottom: '25px' }}>Tạo yêu cầu thiết kế đầu tiên và biến tầm nhìn của bạn thành hiện thực</p>
                 <button style={{
                     backgroundColor: '#3498db',
                     color: 'white',
@@ -175,7 +175,7 @@ export default function HowItWork() {
                     boxShadow: '0 4px 10px rgba(52, 152, 219, 0.3)',
                     transition: 'all 0.3s ease'
                 }}>
-                    Start Now
+                    Bắt Đầu Ngay
                 </button>
             </div>
         </div>
