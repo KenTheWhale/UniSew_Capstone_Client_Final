@@ -36,7 +36,22 @@ export const viewQuotation = async (orderId) => {
     return response || null
 }
 
-export const approveQuotation = async (quotationId) => {
-    const response = await axiosClient.get(`/order/quotation/approval?quotationId=${quotationId}`)
+export const approveQuotation = async (data) => {
+    const response = await axiosClient.post(`/order/quotation/approval`, data)
     return response || null
 }
+
+export const updateOrderProductionStatus = async (data) => {
+    const response = await axiosClient.get(`/order/production`, data)
+    return response || null
+}
+
+export const getOrderProductionHistory = async (orderId) => {
+    try {
+        const response = await axiosClient.get(`/order/production/history?orderId=${orderId}`);
+        return response;
+    } catch (error) {
+        console.error('Error fetching production history:', error);
+        throw error;
+    }
+};
