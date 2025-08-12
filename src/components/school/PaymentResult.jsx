@@ -575,9 +575,8 @@ export default function PaymentResult() {
                                                 </Typography.Text>
                                             </Box>
                                             <Typography.Title level={4} style={{ margin: 0, color: '#fa8c16', fontWeight: 700 }}>
-                                                {isOrderPayment 
-                                                    ? (parseInt(vnpAmount) / 100).toLocaleString('vi-VN') + ' VND'
-                                                    : quotation?.price?.toLocaleString('vi-VN') + ' VND'
+                                                {
+                                                    (parseInt(vnpAmount) / 100).toLocaleString('vi-VN') + ' VND'                                           
                                                 }
                                             </Typography.Title>
                                         </Box>
@@ -601,7 +600,7 @@ export default function PaymentResult() {
                                                         </Typography.Text>
                                                     </Box>
                                                     <Typography.Text style={{ color: '#0284c7', fontSize: '14px', fontWeight: 600 }}>
-                                                        {serviceFee(parseInt(vnpAmount) / 100).toLocaleString('vi-VN')} VND
+                                                        {orderDetails.serviceFee.toLocaleString('vi-VN')} VND
                                                     </Typography.Text>
                                                 </Box>
 
@@ -621,9 +620,9 @@ export default function PaymentResult() {
                                                             <strong>Net Amount (After Service Fee):</strong>
                                                         </Typography.Text>
                                                     </Box>
-                                                    <Typography.Title level={5} style={{ margin: 0, color: '#16a34a', fontWeight: 700 }}>
-                                                        {((parseInt(vnpAmount) / 100) - serviceFee(parseInt(vnpAmount) / 100)).toLocaleString('vi-VN')} VND
-                                                    </Typography.Title>
+                                                                                                <Typography.Title level={5} style={{ margin: 0, color: '#16a34a', fontWeight: 700 }}>
+                                                {((parseInt(vnpAmount) / 100) - orderDetails.serviceFee).toLocaleString('vi-VN')} VND
+                                            </Typography.Title>
                                                 </Box>
                                             </>
                                         )}

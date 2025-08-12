@@ -173,32 +173,25 @@ export default function QuotationViewer({ visible, onCancel, orderId }) {
             };
             sessionStorage.setItem('orderPaymentDetails', JSON.stringify(orderPaymentDetails));
             
-            // Step 1: Approve the quotation
-            const approveResponse = await approveQuotation(quotation.id);
+            // Get payment URL directly (approveQuotation will be called in PaymentResult)
+            const amount = quotation.price + fee; // Include service fee in payment amount
+            const description = `Thanh toan don hang tu ${quotation.garmentName}`;
+            const orderType = 'order';
+            const returnUrl = `/school/payment/result?orderType=order&quotationId=${quotation.id}`;
             
-            if (approveResponse && approveResponse.status === 200) {
-                // Step 2: Get payment URL
-                const amount = quotation.price;
-                const description = `Thanh toan don hang tu ${quotation.garmentName}`;
-                const orderType = 'order';
-                const returnUrl = `/school/payment/result?orderType=order&quotationId=${quotation.id}`;
-                
-                const paymentResponse = await getPaymentUrl(amount, description, orderType, returnUrl);
-                
-                if (paymentResponse && paymentResponse.status === 200 && paymentResponse.data.body) {
-                    // Redirect to payment URL
-                    window.location.href = paymentResponse.data.body.url;
-                } else {
-                    enqueueSnackbar('Failed to get payment URL. Please try again.', { variant: 'error' });
-                }
-                
-                setShowSummaryPopup(false);
+            const paymentResponse = await getPaymentUrl(amount, description, orderType, returnUrl);
+            
+            if (paymentResponse && paymentResponse.status === 200 && paymentResponse.data.body) {
+                // Redirect to payment URL
+                window.location.href = paymentResponse.data.body.url;
             } else {
-                enqueueSnackbar('Failed to accept quotation. Please try again.', { variant: 'error' });
+                enqueueSnackbar('Failed to get payment URL. Please try again.', { variant: 'error' });
             }
+            
+            setShowSummaryPopup(false);
         } catch (error) {
             console.error('Error processing payment:', error);
-            enqueueSnackbar('An error occurred while processing payment.', { variant: 'error' });
+            enqueueSnackbar('An error occurred while processing payment. Please try again.', { variant: 'error' });
         } finally {
             setApprovingQuotationId(null);
         }

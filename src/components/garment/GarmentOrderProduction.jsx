@@ -53,7 +53,7 @@ import {
 } from '@mui/icons-material';
 import { enqueueSnackbar } from 'notistack';
 import dayjs from 'dayjs';
-import { getOrdersByGarment, updateOrderProductionStatus, getOrderProductionHistory } from '../../services/OrderService';
+import { getOrdersByGarment, getOrderProductionHistory } from '../../services/OrderService';
 
 // Production status configuration
 const PRODUCTION_STATUSES = [
@@ -202,8 +202,7 @@ export default function GarmentOrderProduction() {
                 orderId: selectedOrder.id,
                 status: newStatus
             };
-            const response = await updateOrderProductionStatus(data);
-            
+
             if (response && response.status === 200) {
                 enqueueSnackbar('Production status updated successfully', { variant: 'success' });
                 setUpdateDialogOpen(false);

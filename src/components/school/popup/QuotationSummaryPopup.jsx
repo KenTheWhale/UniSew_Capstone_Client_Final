@@ -22,6 +22,7 @@ import {
 } from '@mui/icons-material';
 import { CircularProgress } from '@mui/material';
 import dayjs from 'dayjs';
+import { serviceFee } from '../../../configs/FixedVariables';
 
 export default function QuotationSummaryPopup({ 
     visible, 
@@ -183,34 +184,86 @@ export default function QuotationSummaryPopup({
 
                     <Divider sx={{ my: 3 }} />
 
-                    {/* Total Price */}
+                    {/* Price Breakdown */}
                     <Paper 
-                        elevation={3}
+                        elevation={0}
                         sx={{ 
-                            p: 4, 
-                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                            color: 'white',
-                            borderRadius: 3,
-                            textAlign: 'center'
+                            p: 3, 
+                            mb: 3,
+                            backgroundColor: '#f8fafc',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: 3
                         }}
                     >
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, mb: 2 }}>
-                            <MoneyIcon sx={{ fontSize: 32 }} />
-                            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                                Total Amount
-                            </Typography>
-                        </Box>
-                        <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
-                            {formatCurrency(quotation.price)}
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: '#1e293b' }}>
+                            Price Breakdown
                         </Typography>
-                        <Chip 
-                            label="Includes all costs"
-                            sx={{ 
-                                backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                                color: 'white',
-                                fontWeight: 'bold'
-                            }}
-                        />
+                        
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            {/* Quotation Price */}
+                            <Box sx={{ 
+                                display: 'flex', 
+                                justifyContent: 'space-between', 
+                                alignItems: 'center',
+                                p: 2,
+                                backgroundColor: '#f0f9ff',
+                                borderRadius: 2,
+                                border: '1px solid #bae6fd'
+                            }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <MoneyIcon sx={{ color: '#0284c7', fontSize: 20 }} />
+                                    <Typography variant="body1" sx={{ color: '#475569', fontWeight: 600 }}>
+                                        Quotation Price
+                                    </Typography>
+                                </Box>
+                                <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#0284c7' }}>
+                                    {formatCurrency(quotation.price)}
+                                </Typography>
+                            </Box>
+
+                            {/* Service Fee */}
+                            <Box sx={{ 
+                                display: 'flex', 
+                                justifyContent: 'space-between', 
+                                alignItems: 'center',
+                                p: 2,
+                                backgroundColor: '#fef3c7',
+                                borderRadius: 2,
+                                border: '1px solid #fbbf24'
+                            }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <MoneyIcon sx={{ color: '#d97706', fontSize: 20 }} />
+                                    <Typography variant="body1" sx={{ color: '#475569', fontWeight: 600 }}>
+                                        Service Fee
+                                    </Typography>
+                                </Box>
+                                <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#d97706' }}>
+                                    {formatCurrency(serviceFee(quotation.price))}
+                                </Typography>
+                            </Box>
+
+                            {/* Total Amount */}
+                            <Box sx={{ 
+                                display: 'flex', 
+                                justifyContent: 'space-between', 
+                                alignItems: 'center',
+                                p: 3,
+                                backgroundColor: '#dcfce7',
+                                borderRadius: 2,
+                                border: '2px solid #16a34a',
+                                mt: 1
+                            }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <MoneyIcon sx={{ color: '#16a34a', fontSize: 24 }} />
+                                    <Typography variant="h6" sx={{ color: '#166534', fontWeight: 'bold' }}>
+                                        Total Amount
+                                    </Typography>
+                                </Box>
+                                <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#16a34a' }}>
+                                    {formatCurrency(quotation.price + serviceFee(quotation.price))}
+                                </Typography>
+                            </Box>
+                        </Box>
                     </Paper>
                 </Box>
             </DialogContent>
