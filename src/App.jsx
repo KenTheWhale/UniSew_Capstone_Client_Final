@@ -32,6 +32,7 @@ import GarmentDashboardLayout from "./layouts/garment/GarmentDashboardLayout.jsx
 import GarmentOrderList from "./components/garment/GarmentOrderList.jsx";
 import GarmentOrderDetail from "./components/garment/GarmentOrderDetail.jsx";
 import UniSewFAQ from "./components/auth/UniSewFAQ.jsx";
+import TermOfServices from "./components/auth/TermOfServices.jsx";
 
 // Create theme with Tinos font
 const theme = createTheme({
@@ -118,6 +119,10 @@ const router = createBrowserRouter([
             {
                 path: 'policy/privacy',
                 element: <PrivacyPolicy />
+            },
+            {
+                path: 'tos',
+                element: <TermOfServices/>
             },
             {
                 path: 'faq',

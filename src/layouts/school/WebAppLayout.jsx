@@ -501,7 +501,7 @@ function Footer() {
                         }}>
                             <div><a href="/policy/privacy" style={{color: 'inherit', textDecoration: 'none'}}>Privacy
                                 Policy</a></div>
-                            <div><a href="#" style={{color: 'inherit', textDecoration: 'none'}}>Terms of Service</a>
+                            <div><a href="/tos" style={{color: 'inherit', textDecoration: 'none'}}>Terms of Service</a>
                             </div>
                             {/*<div><a href="#" style={{color: 'inherit', textDecoration: 'none'}}>Return Policy</a></div>*/}
                             {/*<div><a href="#" style={{color: 'inherit', textDecoration: 'none'}}>Shipping Information</a>*/}
