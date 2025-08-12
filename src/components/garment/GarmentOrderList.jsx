@@ -16,13 +16,13 @@ import {
     Info as InfoIcon,
     LocalShipping as ShippingIcon,
     Assignment as OrderIcon,
-    TrendingUp as StatsIcon,
-    Assignment
+    TrendingUp as StatsIcon
 } from '@mui/icons-material';
 import { Space, Table } from 'antd';
 import 'antd/dist/reset.css';
 import { parseID } from "../../utils/ParseIDUtil.jsx";
 import { getOrdersByGarment } from "../../services/OrderService.jsx";
+import GarmentOrderDetail from "./GarmentOrderDetail.jsx";
 
 // Mock data for fallback
 const mockOrders = [
@@ -97,9 +97,8 @@ export default function GarmentOrderList() {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    // TODO: Implement modal functionality when needed
-    // const [isModalVisible, setIsModalVisible] = useState(false);
-    // const [selectedOrder, setSelectedOrder] = useState(null);
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState(null);
 
     // Fetch orders from API
     const fetchOrders = async () => {
@@ -146,11 +145,15 @@ export default function GarmentOrderList() {
     };
 
     const handleViewDetail = (id) => {
-        // TODO: Implement order detail modal
         console.log('View order detail for ID:', id);
-        // const order = orders.find(ord => ord.id === id);
-        // setSelectedOrder(order);
-        // setIsModalVisible(true);
+        const order = orders.find(ord => ord.id === id);
+        setSelectedOrder(order);
+        setIsModalVisible(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalVisible(false);
+        setSelectedOrder(null);
     };
 
     const handleRetry = () => {
@@ -482,7 +485,7 @@ export default function GarmentOrderList() {
                         color: 'white',
                         textAlign: 'center'
                     }}>
-                        <Assignment sx={{ fontSize: 40, mb: 2, opacity: 0.9 }} />
+                        <OrderIcon sx={{ fontSize: 40, mb: 2, opacity: 0.9 }} />
                         <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
                             {stats.pending}
                         </Typography>
@@ -593,12 +596,12 @@ export default function GarmentOrderList() {
                 </Box>
             </Paper>
 
-            {/* TODO: Add Order Detail Modal Component */}
-            {/* <GarmentOrderDetail
+            {/* Order Detail Modal Component */}
+            <GarmentOrderDetail
                 visible={isModalVisible}
-                onCancel={handleCancel}
+                onCancel={handleCloseModal}
                 order={selectedOrder}
-            /> */}
+            />
         </Container>
     );
 }

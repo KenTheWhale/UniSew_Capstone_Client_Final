@@ -27,11 +27,13 @@ import {
     CheckCircle as CheckCircleIcon,
     Schedule as ScheduleIcon,
     LocalShipping as ShippingIcon,
-    Cancel as CancelledIcon
+    Cancel as CancelledIcon,
+    RequestQuote as QuoteIcon
 } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
 import { getOrdersBySchool, cancelOrder } from '../../../services/OrderService.jsx';
 import DisplayImage from '../../ui/DisplayImage.jsx';
+import QuotationViewer from './QuotationViewer.jsx';
 
 // Helper function to transform API data to component format
 const transformOrderData = (apiOrders) => {
@@ -85,6 +87,8 @@ const SchoolOrderList = () => {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [openOrderDetail, setOpenOrderDetail] = useState(false);
     const [cancellingOrderId, setCancellingOrderId] = useState(null);
+    const [quotationViewerOpen, setQuotationViewerOpen] = useState(false);
+    const [selectedOrderIdForQuotations, setSelectedOrderIdForQuotations] = useState(null);
     const { enqueueSnackbar } = useSnackbar();
 
     useEffect(() => {
@@ -119,6 +123,16 @@ const SchoolOrderList = () => {
     const handleCloseOrderDetail = () => {
         setOpenOrderDetail(false);
         setSelectedOrder(null);
+    };
+
+    const handleViewQuotations = (orderId) => {
+        setSelectedOrderIdForQuotations(orderId);
+        setQuotationViewerOpen(true);
+    };
+
+    const handleCloseQuotationViewer = () => {
+        setQuotationViewerOpen(false);
+        setSelectedOrderIdForQuotations(null);
     };
 
     const handleCancelOrder = async (orderId) => {
@@ -291,6 +305,23 @@ const SchoolOrderList = () => {
                                                     size="small"
                                                 >
                                                     <InfoIcon fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                            <Tooltip title="View Quotations">
+                                                <IconButton
+                                                    onClick={() => handleViewQuotations(order.id)}
+                                                    sx={{
+                                                        color: '#059669',
+                                                        backgroundColor: '#ecfdf5',
+                                                        '&:hover': {
+                                                            backgroundColor: '#d1fae5',
+                                                            transform: 'scale(1.1)'
+                                                        },
+                                                        transition: 'all 0.2s ease'
+                                                    }}
+                                                    size="small"
+                                                >
+                                                    <QuoteIcon fontSize="small" />
                                                 </IconButton>
                                             </Tooltip>
                                             <Tooltip title="Cancel Order">
@@ -873,6 +904,13 @@ const SchoolOrderList = () => {
                     </>
                 )}
             </Dialog>
+
+            {/* Quotation Viewer */}
+            <QuotationViewer
+                visible={quotationViewerOpen}
+                onCancel={handleCloseQuotationViewer}
+                orderId={selectedOrderIdForQuotations}
+            />
         </Box>
     );
 };
