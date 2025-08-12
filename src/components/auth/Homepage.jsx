@@ -9,22 +9,22 @@ import CountUp from "../ui/CountUp.jsx";
 const stats = [
   {
     number: "500+",
-    label: "Trường Học",
+    label: "Schools Joined",
     icon: <SchoolIcon sx={{ fontSize: 32, color: "#6C63FF" }} />,
   },
   {
     number: "120+",
-    label: "Nhà Thiết Kế",
+    label: "Designers",
     icon: <DesignServicesIcon sx={{ fontSize: 32, color: "#6C63FF" }} />,
   },
   {
     number: "80+",
-    label: "Xưởng May",
+    label: "Garment Factories",
     icon: <FactoryIcon sx={{ fontSize: 32, color: "#6C63FF" }} />,
   },
   {
-    number: "5 Năm",
-    label: "Năm Hoạt Động",
+    number: "5 Years",
+    label: "Platform Age",
     icon: <CalendarTodayIcon sx={{ fontSize: 32, color: "#6C63FF" }} />,
   },
 ];
@@ -32,44 +32,44 @@ const stats = [
 const features = [
   {
     icon: <DesignServices sx={{ fontSize: 40, color: "#6C63FF" }} />,
-    title: "Studio Thiết Kế Tùy Chỉnh",
+    title: "Custom Design Studio",
     description:
-      "Tạo phong cách đồng phục độc đáo với công cụ thiết kế trực tuyến trực quan.",
+      "Create unique uniform style with our intuitive online design tools.",
   },
   {
     icon: <CheckCircle sx={{ fontSize: 40, color: "#6C63FF" }} />,
-    title: "Đảm Bảo Chất Lượng",
+    title: "Quality Assurance",
     description:
-      "Vật liệu cao cấp và kiểm soát chất lượng nghiêm ngặt cho mọi đơn hàng đồng phục.",
+      "Premium materials and strict quality control for every uniform order.",
   },
   {
     icon: <EmojiEvents sx={{ fontSize: 40, color: "#6C63FF" }} />,
-    title: "Giá Cả Tốt Nhất",
-    description: "Giá cả cạnh tranh với chiết khấu số lượng lớn cho các trường học.",
+    title: "Best Pricing",
+    description: "Competitive prices with bulk discounts for schools.",
   },
 ];
 
 const testimonials = [
   {
-    name: "Nguyễn Thị Lan",
-    role: "Hiệu Trưởng, Trường Tiểu Học Thung Lũng Xanh",
+    name: "Sarah Johnson",
+    role: "Principal, Green Valley School",
     avatar: "https://randomuser.me/api/portraits/women/32.jpg",
     content:
-      "UniSew đã thay đổi hoàn toàn quy trình đặt đồng phục của chúng tôi. Công cụ thiết kế rất trực quan và chất lượng xuất sắc.",
+      "UniSew transformed our uniform ordering process. The design tools are intuitive and the quality is outstanding.",
   },
   {
-    name: "Trần Văn Minh",
-    role: "Giáo Viên Chủ Nhiệm, Học Viện Bình Minh",
+    name: "Michael Chen",
+    role: "Head Teacher, Sunrise Academy",
     avatar: "https://randomuser.me/api/portraits/men/44.jpg",
     content:
-      "Dịch vụ và hỗ trợ tuyệt vời. Nền tảng trực tuyến giúp việc quản lý nhu cầu đồng phục trở nên dễ dàng.",
+      "Excellent service and support. The online platform makes it so easy to manage our uniform needs.",
   },
   {
-    name: "Lê Thị Hương",
-    role: "Quản Lý, Trường Tiểu Học Tương Lai Tươi Sáng",
+    name: "Emily Rodriguez",
+    role: "Administrator, Bright Future School",
     avatar: "https://randomuser.me/api/portraits/women/67.jpg",
     content:
-      "Chuyên nghiệp, đáng tin cậy và hiệu quả về chi phí. Rất khuyến nghị UniSew cho mọi nhu cầu đồng phục của trường học.",
+      "Professional, reliable, and cost-effective. Highly recommend UniSew for any school's uniform needs.",
   },
 ];
 
@@ -139,7 +139,7 @@ export default function Homepage() {
                 letterSpacing: 0,
               }}
             >
-              Cách Mạng Hóa Đồng Phục Trường Học
+              Revolutionize Your School Uniforms
             </Typography>
             {/* New Subtitle */}
             <Typography
@@ -154,7 +154,7 @@ export default function Homepage() {
                 maxWidth: 700,
               }}
             >
-              Thiết kế, tùy chỉnh và đặt hàng đồng phục trường học chất lượng cao một cách dễ dàng.
+              Design, customize, and order premium primary school uniforms with ease.
             </Typography>
             {/* Join Now Button */}
             <Button
@@ -176,7 +176,7 @@ export default function Homepage() {
                 },
               }}
             >
-              Tham Gia Ngay
+              Join Now
             </Button>
           </Box>
         </Container>
@@ -197,7 +197,7 @@ export default function Homepage() {
             <Box
               component="img"
               src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80"
-              alt="Máy may"
+              alt="Sewing machine"
               sx={{
                 width: { xs: "100%", md: 400 },
                 borderRadius: 3,
@@ -219,24 +219,27 @@ export default function Homepage() {
                 variant="h3"
                 sx={{ fontWeight: 700, mb: 2, color: "#222" }}
               >
-                Về UniSew
+                About UniSew
               </Typography>
               <Typography
                 variant="h6"
                 sx={{ color: "#1976d2", mb: 2, fontWeight: 500 }}
               >
-                UniSew là nền tảng thiết kế và đặt hàng đồng phục trường học hàng đầu.
+                UniSew is the platform for designing and ordering primary school
+                uniforms.
               </Typography>
               <Typography variant="body1" sx={{ color: "#555", mb: 1 }}>
-                Chúng tôi trao quyền cho các trường học tạo ra đồng phục độc đáo, chất lượng cao một cách dễ dàng. Từ thiết kế tùy chỉnh đến giao hàng nhanh chóng, UniSew là đối tác đáng tin cậy của bạn trong mọi bước của quy trình.
+                We empower schools to create unique, high-quality uniforms with
+                ease. From custom design to fast delivery, UniSew is your
+                trusted partner for every step.
               </Typography>
               <Box
                 component="ul"
                 sx={{ pl: 3, mb: 3, color: "#444", fontSize: "1.1rem" }}
               >
-                <li>Studio thiết kế trực tuyến trực quan và dễ sử dụng</li>
-                <li>Vật liệu cao cấp, bền bỉ</li>
-                <li>Giao hàng nhanh chóng, đáng tin cậy</li>
+                <li>Easy online design studio</li>
+                <li>Premium materials</li>
+                <li>Fast, reliable delivery</li>
               </Box>
               <Button
                 variant="contained"
@@ -255,7 +258,7 @@ export default function Homepage() {
                   "&:hover": { background: "#1565c0" },
                 }}
               >
-                Khám Phá UniSew
+                Discover UniSew
               </Button>
             </Box>
           </Box>
@@ -348,7 +351,7 @@ export default function Homepage() {
                 fontSize: { xs: "2rem", md: "2.5rem" },
               }}
             >
-              Tại Sao Chọn UniSew?
+              Why Choose UniSew?
             </Typography>
             <Typography
               variant="h6"
@@ -359,7 +362,8 @@ export default function Homepage() {
                 fontSize: { xs: "1rem", md: "1.1rem" },
               }}
             >
-              Chúng tôi cung cấp giải pháp đồng phục toàn diện giúp toàn bộ quy trình trở nên mượt mà và hiệu quả
+              We provide comprehensive uniform solutions that make the entire
+              process seamless and efficient
             </Typography>
           </Box>
 
@@ -417,7 +421,7 @@ export default function Homepage() {
                 fontSize: { xs: "2rem", md: "2.5rem" },
               }}
             >
-              Cách Thức Hoạt Động
+              How It Works
             </Typography>
             <Typography
               variant="h6"
@@ -428,7 +432,7 @@ export default function Homepage() {
                 fontSize: { xs: "1rem", md: "1.1rem" },
               }}
             >
-              Các bước đơn giản để thiết kế và giao đồng phục trường học chất lượng cao
+              Simple steps to get your school uniforms designed and delivered
             </Typography>
           </Box>
 
@@ -436,21 +440,21 @@ export default function Homepage() {
             {[
               {
                 step: "01",
-                title: "Thiết Kế Đồng Phục",
+                title: "Design Your Uniform",
                 description:
-                  "Sử dụng studio thiết kế trực quan để tạo phong cách đồng phục độc đáo và phù hợp với bản sắc trường học",
+                  "Use our intuitive design studio to create your school's unique uniform style",
               },
               {
                 step: "02",
-                title: "Đặt Hàng",
+                title: "Place Your Order",
                 description:
-                  "Xem lại thiết kế và đặt hàng với các tùy chọn thanh toán an toàn và linh hoạt",
+                  "Review your design and place your order with secure payment options",
               },
               {
                 step: "03",
-                title: "Nhận Giao Hàng",
+                title: "Get Delivery",
                 description:
-                  "Nhận đồng phục chất lượng cao được giao trực tiếp đến trường học với dịch vụ hậu mãi tận tâm",
+                  "Receive your high-quality uniforms delivered directly to your school",
               },
             ].map((item, index) => (
               <Grid item xs={12} sm={4} md={4} key={index}>
@@ -511,7 +515,7 @@ export default function Homepage() {
                 fontSize: { xs: "2rem", md: "2.5rem" },
               }}
             >
-              Khách Hàng Nói Gì
+              What Our Clients Say
             </Typography>
             <Typography
               variant="h6"
@@ -522,7 +526,8 @@ export default function Homepage() {
                 fontSize: { xs: "1rem", md: "1.1rem" },
               }}
             >
-              Đừng chỉ tin lời chúng tôi - hãy nghe từ các trường học mà chúng tôi đã hỗ trợ thành công
+              Don't just take our word for it - hear from the schools we've
+              helped
             </Typography>
           </Box>
 
@@ -627,7 +632,7 @@ export default function Homepage() {
                   fontSize: { xs: "1.8rem", md: "2.5rem" },
                 }}
               >
-                Sẵn Sàng Thay Đổi Trải Nghiệm Đồng Phục Của Trường Học?
+                Ready to Transform Your School's Uniform Experience?
               </Typography>
               <Typography
                 variant="h6"
@@ -637,7 +642,8 @@ export default function Homepage() {
                   fontSize: { xs: "1rem", md: "1.1rem" },
                 }}
               >
-                              Tham gia hàng trăm trường học trên toàn quốc đã tin tưởng UniSew cho nhu cầu đồng phục của họ
+                Join hundreds of schools that trust UniSew for their uniform
+                needs
               </Typography>
               <Button
                 variant="contained"
@@ -660,7 +666,7 @@ export default function Homepage() {
                   transition: "all 0.3s ease",
                 }}
               >
-                Bắt Đầu Ngay Hôm Nay
+                Get Started Today
               </Button>
             </Box>
           </Paper>
