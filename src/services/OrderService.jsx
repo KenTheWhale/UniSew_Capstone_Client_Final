@@ -41,17 +41,14 @@ export const approveQuotation = async (data) => {
     return response || null
 }
 
-export const updateOrderProductionStatus = async (data) => {
-    const response = await axiosClient.get(`/order/production`, data)
+export const assignMilestone = async (data) => {
+    const response = await axiosClient.post(`/order/milestone`, data)
     return response || null
 }
 
-export const getOrderProductionHistory = async (orderId) => {
-    try {
-        const response = await axiosClient.get(`/order/production/history?orderId=${orderId}`);
-        return response;
-    } catch (error) {
-        console.error('Error fetching production history:', error);
-        throw error;
-    }
-};
+export const updateMilestoneStatus = async (data) => {
+    const response = await axiosClient.put(`/order/milestone`, data)
+    return response || null
+}
+
+
