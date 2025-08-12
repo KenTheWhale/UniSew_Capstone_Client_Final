@@ -1,199 +1,148 @@
 import React, { useState, useEffect } from 'react';
 import {
     Box,
+    Container,
     Typography,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
     Paper,
-    IconButton,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Button,
-    Chip,
     Grid,
-    Divider,
-    CircularProgress,
-    Tooltip
+    Card,
+    CardContent,
+    Chip,
+    IconButton,
+    Tooltip,
+    Button
 } from '@mui/material';
 import {
-    InfoOutlined as InfoIcon,
-    Cancel as CancelIcon,
+    ShoppingCart as ShoppingCartIcon,
+    Add as AddIcon,
+    TrendingUp as TrendingUpIcon,
     CheckCircle as CheckCircleIcon,
-    Schedule as ScheduleIcon,
-    LocalShipping as ShippingIcon,
-    Cancel as CancelledIcon,
-    RequestQuote as QuoteIcon
+    Pending as PendingIcon,
+    LocalShipping as LocalShippingIcon,
+    Cancel as CancelIcon,
+    Info as InfoIcon
 } from '@mui/icons-material';
+import { Table, Space } from 'antd';
+import 'antd/dist/reset.css';
+import { useNavigate } from 'react-router-dom';
+import { getOrdersBySchool, cancelOrder } from '../../../services/OrderService';
+import { parseID } from '../../../utils/ParseIDUtil';
+import OrderDetailDialog from './OrderDetailDialog';
+import QuotationViewer from './QuotationViewer';
 import { useSnackbar } from 'notistack';
-import { getOrdersBySchool, cancelOrder } from '../../../services/OrderService.jsx';
-import DisplayImage from '../../ui/DisplayImage.jsx';
-import QuotationViewer from './QuotationViewer.jsx';
 
-// Helper function to transform API data to component format
-const transformOrderData = (apiOrders) => {
-    return apiOrders.map(order => {
-        // Transform order details to items with individual pricing
-        const items = order.orderDetails.map(detail => {
-            const itemPrice = 150000; // Default price per item
-            return {
-                name: `${detail.deliveryItem.designItem.gender === 'boy' ? 'Male' : 'Female'} ${detail.deliveryItem.designItem.type.charAt(0).toUpperCase() + detail.deliveryItem.designItem.type.slice(1)}`,
-                quantity: detail.quantity,
-                price: itemPrice,
-                size: detail.size,
-                category: detail.deliveryItem.designItem.category,
-                fabricName: detail.deliveryItem.designItem.fabricName,
-                color: detail.deliveryItem.designItem.color,
-                frontImageUrl: detail.deliveryItem.frontImageUrl,
-                backImageUrl: detail.deliveryItem.backImageUrl,
-                logoPosition: detail.deliveryItem.designItem.logoPosition,
-                logoImageUrl: detail.deliveryItem.designItem.logoImageUrl,
-                baseLogoWidth: detail.deliveryItem.baseLogoWidth,
-                baseLogoHeight: detail.deliveryItem.baseLogoHeight
-            };
-        });
-
-        return {
-            id: order.id.toString(),
-            orderNumber: `ORD-${new Date(order.orderDate).getFullYear()}-${order.id.toString().padStart(3, '0')}`,
-            schoolName: order.school?.business || 'N/A',
-            schoolContactName: order.school?.name || '',
-            schoolBusiness: order.school?.business || '',
-            schoolAddress: order.school?.address || '',
-            schoolPhone: order.school?.phone || '',
-            schoolAvatar: order.school?.avatar || '',
-            schoolEmail: order.school?.account?.email || '',
-            orderDate: order.orderDate,
-            deliveryDate: order.deadline,
-            status: order.status,
-            items: items,
-            paymentStatus: 'paid',
-            shippingStatus: order.status === 'completed' ? 'delivered' : order.status === 'processing' ? 'shipped' : 'preparing',
-            note: order.note,
-            serviceFee: order.serviceFee,
-            price: order.price
-        };
-    });
-};
-
-const SchoolOrderList = () => {
+export default function SchoolOrderList() {
+    const navigate = useNavigate();
+    const { enqueueSnackbar } = useSnackbar();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedOrder, setSelectedOrder] = useState(null);
-    const [openOrderDetail, setOpenOrderDetail] = useState(false);
+    const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+    const [isQuotationViewerOpen, setIsQuotationViewerOpen] = useState(false);
     const [cancellingOrderId, setCancellingOrderId] = useState(null);
-    const [quotationViewerOpen, setQuotationViewerOpen] = useState(false);
-    const [selectedOrderIdForQuotations, setSelectedOrderIdForQuotations] = useState(null);
-    const { enqueueSnackbar } = useSnackbar();
 
+    // Fetch orders on component mount
     useEffect(() => {
         fetchOrders();
+    }, []);
+
+    // Refresh data when user returns from other pages
+    useEffect(() => {
+        const handleFocus = () => {
+            fetchOrders();
+        };
+
+        window.addEventListener('focus', handleFocus);
+        return () => {
+            window.removeEventListener('focus', handleFocus);
+        };
     }, []);
 
     const fetchOrders = async () => {
         try {
             setLoading(true);
-                const response = await getOrdersBySchool();
-                
-                if (response && response.status === 200) {
-                    const transformedOrders = transformOrderData(response.data.body || []);
-                    setOrders(transformedOrders);
-                    console.log('Orders loaded:', transformedOrders);
-                } else {
-                enqueueSnackbar('Failed to load orders', { variant: 'error' });
-                }
-            } catch (error) {
-                console.error('Error fetching orders:', error);
-                enqueueSnackbar('An error occurred while loading orders', { variant: 'error' });
+            const response = await getOrdersBySchool();
+            if (response && response.data) {
+                const ordersData = response.data.body || [];
+                setOrders(ordersData);
+            }
+        } catch (error) {
+            console.error('Error fetching orders:', error);
         } finally {
             setLoading(false);
         }
     };
 
-    const handleViewDetails = (order) => {
+    const handleViewDetail = (order) => {
         setSelectedOrder(order);
-        setOpenOrderDetail(true);
+        setIsDetailDialogOpen(true);
     };
 
-    const handleCloseOrderDetail = () => {
-        setOpenOrderDetail(false);
-        setSelectedOrder(null);
-    };
-
-    const handleViewQuotations = (orderId) => {
-        setSelectedOrderIdForQuotations(orderId);
-        setQuotationViewerOpen(true);
-    };
-
-    const handleCloseQuotationViewer = () => {
-        setQuotationViewerOpen(false);
-        setSelectedOrderIdForQuotations(null);
+    const handleViewQuotations = (order) => {
+        setSelectedOrder(order);
+        setIsQuotationViewerOpen(true);
     };
 
     const handleCancelOrder = async (orderId) => {
         try {
             setCancellingOrderId(orderId);
+            
             const response = await cancelOrder(orderId);
             
             if (response && response.status === 200) {
-                setOrders(prev => prev.map(order => 
-                    order.id === orderId 
-                        ? { ...order, status: 'cancelled' }
-                        : order
-                ));
-                enqueueSnackbar('Order cancelled successfully!', { variant: 'success' });
+                enqueueSnackbar('Order cancelled successfully!', { 
+                    variant: 'success',
+                    autoHideDuration: 3000
+                });
+                
+                // Refresh the orders list
+                await fetchOrders();
             } else {
-                enqueueSnackbar('Failed to cancel order', { variant: 'error' });
+                enqueueSnackbar('Failed to cancel order. Please try again.', { 
+                    variant: 'error',
+                    autoHideDuration: 4000
+                });
             }
         } catch (error) {
             console.error('Error cancelling order:', error);
-            enqueueSnackbar('An error occurred while cancelling the order', { variant: 'error' });
+            enqueueSnackbar('An error occurred while cancelling the order. Please try again.', { 
+                variant: 'error',
+                autoHideDuration: 4000
+            });
         } finally {
             setCancellingOrderId(null);
         }
     };
 
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'pending': return '#f59e0b';
-            case 'processing': return '#3b82f6';
-            case 'completed': return '#10b981';
-            case 'cancelled': return '#ef4444';
-            default: return '#6b7280';
-        }
+    const handleCreateOrder = () => {
+        navigate('/school/order/create');
     };
 
-    const getStatusIcon = (status) => {
-        switch (status) {
-            case 'pending': return <ScheduleIcon />;
-            case 'processing': return <ShippingIcon />;
-            case 'completed': return <CheckCircleIcon />;
-            case 'cancelled': return <CancelledIcon />;
-            default: return <ScheduleIcon />;
-        }
+    const handleCloseDetailDialog = () => {
+        setIsDetailDialogOpen(false);
+        setSelectedOrder(null);
     };
 
-    const getStatusText = (status) => {
-        switch (status) {
-            case 'pending': return 'Pending';
-            case 'processing': return 'Processing';
-            case 'completed': return 'Completed';
-            case 'cancelled': return 'Cancelled';
-            default: return 'Unknown';
-        }
+    const handleCloseQuotationViewer = () => {
+        setIsQuotationViewerOpen(false);
+        setSelectedOrder(null);
+    };
+
+    // Calculate statistics
+    const stats = {
+        total: orders.length,
+        pending: orders.filter(order => order.status === 'pending').length,
+        processing: orders.filter(order => order.status === 'processing').length,
+        completed: orders.filter(order => order.status === 'completed').length,
+        cancelled: orders.filter(order => order.status === 'cancelled').length
     };
 
     const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
     };
 
     const formatCurrency = (amount) => {
@@ -203,716 +152,527 @@ const SchoolOrderList = () => {
         }).format(amount);
     };
 
-    if (loading) {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
-                <CircularProgress />
-            </Box>
-        );
-    }
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'pending':
+                return { color: '#f57c00', bgColor: '#fff3e0' };
+            case 'processing':
+                return { color: '#1976d2', bgColor: '#e3f2fd' };
+            case 'completed':
+                return { color: '#2e7d32', bgColor: '#e8f5e8' };
+            case 'cancelled':
+                return { color: '#d32f2f', bgColor: '#ffebee' };
+            default:
+                return { color: '#64748b', bgColor: '#f1f5f9' };
+        }
+    };
 
-    return (
-        <Box sx={{ p: 4, backgroundColor: '#f8fafc', minHeight: '100vh' }}>
-            {/* Header */}
-            <Box sx={{ mb: 4 }}>
-                <Typography variant="h4" sx={{ fontWeight: 700, color: '#1e293b', mb: 2 }}>
-                    Order Management
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                    Manage and track your school uniform orders
-                </Typography>
-            </Box>
+    const getStatusIcon = (status) => {
+        switch (status) {
+            case 'pending':
+                return <PendingIcon />;
+            case 'processing':
+                return <LocalShippingIcon />;
+            case 'completed':
+                return <CheckCircleIcon />;
+            case 'cancelled':
+                return <CancelIcon />;
+            default:
+                return <PendingIcon />;
+        }
+    };
 
-            {/* Orders Table */}
-            <Paper sx={{ borderRadius: 3, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
-                <TableContainer>
-                    <Table>
-                        <TableHead>
-                            <TableRow sx={{ backgroundColor: '#f1f5f9' }}>
-                                <TableCell sx={{ fontWeight: 600, color: '#374151' }}>Order Number</TableCell>
-                                <TableCell sx={{ fontWeight: 600, color: '#374151' }}>School</TableCell>
-                                <TableCell sx={{ fontWeight: 600, color: '#374151' }}>Order Date</TableCell>
-                                <TableCell sx={{ fontWeight: 600, color: '#374151' }}>Status</TableCell>
-                                <TableCell sx={{ fontWeight: 600, color: '#374151' }}>Total Items</TableCell>
-                                <TableCell sx={{ fontWeight: 600, color: '#374151' }}>Actions</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {orders.map((order) => (
-                                <TableRow key={order.id} sx={{ '&:hover': { backgroundColor: '#f9fafb' } }}>
-                                    <TableCell>
-                                        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1e293b' }}>
-                                            {order.orderNumber}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                            {order.schoolAvatar && (
-                                                <Box
-                                                    component="img"
-                                                    src={order.schoolAvatar}
-                                                    alt="School"
-                                                    sx={{ width: 32, height: 32, borderRadius: 1, objectFit: 'cover' }}
-                                                />
-                                            )}
-                                            <Box>
-                                                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                                                    {order.schoolName}
-                                                </Typography>
-                                                <Typography variant="caption" color="text.secondary">
-                                                    {order.schoolContactName}
-                                                </Typography>
-                                            </Box>
-                                        </Box>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Typography variant="body2">
-                                            {formatDate(order.orderDate)}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Chip
-                                            icon={getStatusIcon(order.status)}
-                                            label={getStatusText(order.status)}
-                                            size="small"
+    const columns = [
+        {
+            title: 'Order ID',
+            dataIndex: 'id',
+            key: 'id',
+            align: 'center',
+            width: 120,
+            fixed: 'left',
+            render: (text) => (
+                <Typography variant="body2" sx={{ fontWeight: 600, color: '#1976d2' }}>
+                    {parseID(text, 'ord')}
+                </Typography>
+            ),
+        },
+        {
+            title: 'Status',
+            dataIndex: 'status',
+            key: 'status',
+            align: 'center',
+            width: 140,
+            render: (status) => {
+                const { color, bgColor } = getStatusColor(status);
+                return (
+                    <Chip
+                        icon={getStatusIcon(status)}
+                        label={status.charAt(0).toUpperCase() + status.slice(1)}
+                        sx={{
+                            backgroundColor: bgColor,
+                            color: color,
+                            fontWeight: 600,
+                            '& .MuiChip-icon': {
+                                color: color
+                            }
+                        }}
+                        size="small"
+                    />
+                );
+            },
+        },
+        {
+            title: 'School',
+            dataIndex: 'school',
+            key: 'school',
+            align: 'left',
+            width: 200,
+            render: (school) => (
+                <Typography variant="body2" sx={{ fontWeight: 500, color: '#1e293b' }}>
+                    {school?.business || 'Unknown School'}
+                </Typography>
+            ),
+        },
+        {
+            title: 'Order Date',
+            dataIndex: 'orderDate',
+            key: 'orderDate',
+            align: 'center',
+            width: 120,
+            render: (text) => (
+                <Typography variant="body2" sx={{ color: '#64748b' }}>
+                    {formatDate(text)}
+                </Typography>
+            ),
+        },
+        {
+            title: 'Deadline',
+            dataIndex: 'deadline',
+            key: 'deadline',
+            align: 'center',
+            width: 120,
+            render: (text) => (
+                <Typography variant="body2" sx={{ color: '#64748b' }}>
+                    {formatDate(text)}
+                </Typography>
+            ),
+        },
+        {
+            title: 'Total Items',
+            key: 'totalItems',
+            align: 'center',
+            width: 120,
+            render: (_, record) => {
+                const totalItems = record.orderDetails?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+                return (
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>
+                        {totalItems}
+                    </Typography>
+                );
+            },
+        },
+        {
+            title: 'Actions',
+            key: 'actions',
+            align: 'center',
+            width: 200,
+            fixed: 'right',
+            render: (_, record) => (
+                <Space size="small">
+                    <Tooltip title="View Details">
+                        <IconButton
+                            onClick={() => handleViewDetail(record)}
+                            sx={{
+                                color: '#1976d2',
+                                '&:hover': {
+                                    backgroundColor: '#e3f2fd',
+                                    transform: 'scale(1.1)'
+                                },
+                                transition: 'all 0.2s ease'
+                            }}
+                            size="small"
+                        >
+                            <InfoIcon />
+                        </IconButton>
+                    </Tooltip>
+                    {record.status === 'pending' && (
+                        <>
+                            <Tooltip title="View Quotations">
+                                <IconButton
+                                    onClick={() => handleViewQuotations(record)}
+                                    sx={{
+                                        color: '#2e7d32',
+                                        '&:hover': {
+                                            backgroundColor: '#e8f5e8',
+                                            transform: 'scale(1.1)'
+                                        },
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                    size="small"
+                                >
+                                    <TrendingUpIcon />
+                                </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Cancel Order">
+                                <IconButton
+                                    onClick={() => handleCancelOrder(record.id)}
+                                    disabled={cancellingOrderId === record.id}
+                                    sx={{
+                                        color: cancellingOrderId === record.id ? '#bdbdbd' : '#d32f2f',
+                                        '&:hover': {
+                                            backgroundColor: cancellingOrderId === record.id ? 'transparent' : '#ffebee',
+                                            transform: cancellingOrderId === record.id ? 'none' : 'scale(1.1)'
+                                        },
+                                        transition: 'all 0.2s ease',
+                                        '&:disabled': {
+                                            cursor: 'not-allowed'
+                                        }
+                                    }}
+                                    size="small"
+                                >
+                                    {cancellingOrderId === record.id ? (
+                                        <Box
+                                            component="span"
                                             sx={{
-                                                backgroundColor: `${getStatusColor(order.status)}20`,
-                                                color: getStatusColor(order.status),
-                                                fontWeight: 600,
-                                                '& .MuiChip-icon': { color: getStatusColor(order.status) }
+                                                width: 16,
+                                                height: 16,
+                                                border: '2px solid #bdbdbd',
+                                                borderTop: '2px solid transparent',
+                                                borderRadius: '50%',
+                                                animation: 'spin 1s linear infinite',
+                                                '@keyframes spin': {
+                                                    '0%': { transform: 'rotate(0deg)' },
+                                                    '100%': { transform: 'rotate(360deg)' }
+                                                }
                                             }}
                                         />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                            {order.items.reduce((total, item) => total + item.quantity, 0)} items
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Box sx={{ display: 'flex', gap: 1 }}>
-                                            <Tooltip title="View Details">
-                                                <IconButton
-                                                    onClick={() => handleViewDetails(order)}
-                                                    sx={{
-                                                        color: '#3b82f6',
-                                                        backgroundColor: '#eff6ff',
-                                                        '&:hover': {
-                                                            backgroundColor: '#dbeafe',
-                                                            transform: 'scale(1.1)'
-                                                        },
-                                                        transition: 'all 0.2s ease'
-                                                    }}
-                                                    size="small"
-                                                >
-                                                    <InfoIcon fontSize="small" />
-                                                </IconButton>
-                                            </Tooltip>
-                                            <Tooltip title="View Quotations">
-                                                <IconButton
-                                                    onClick={() => handleViewQuotations(order.id)}
-                                                    sx={{
-                                                        color: '#059669',
-                                                        backgroundColor: '#ecfdf5',
-                                                        '&:hover': {
-                                                            backgroundColor: '#d1fae5',
-                                                            transform: 'scale(1.1)'
-                                                        },
-                                                        transition: 'all 0.2s ease'
-                                                    }}
-                                                    size="small"
-                                                >
-                                                    <QuoteIcon fontSize="small" />
-                                                </IconButton>
-                                            </Tooltip>
-                                            <Tooltip title="Cancel Order">
-                                                <IconButton
-                                                    onClick={() => handleCancelOrder(order.id)}
-                                                    disabled={order.status === 'cancelled' || order.status === 'completed' || cancellingOrderId === order.id}
-                                                    sx={{
-                                                        color: order.status === 'cancelled' || order.status === 'completed' ? '#9ca3af' : '#ef4444',
-                                                        backgroundColor: order.status === 'cancelled' || order.status === 'completed' ? 'transparent' : '#fef2f2',
-                                                        '&:hover': {
-                                                            backgroundColor: order.status === 'cancelled' || order.status === 'completed' ? 'transparent' : '#fee2e2',
-                                                            transform: order.status === 'cancelled' || order.status === 'completed' ? 'none' : 'scale(1.1)'
-                                                        },
-                                transition: 'all 0.2s ease',
-                                                        cursor: order.status === 'cancelled' || order.status === 'completed' || cancellingOrderId === order.id ? 'not-allowed' : 'pointer'
-                                                    }}
-                                                    size="small"
-                                                >
-                                                    {cancellingOrderId === order.id ? (
-                                                        <CircularProgress size={16} />
-                                                    ) : (
-                                                        <CancelIcon fontSize="small" />
-                                                    )}
-                                                </IconButton>
-                                            </Tooltip>
-                                        </Box>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </Paper>
+                                    ) : (
+                                        <CancelIcon />
+                                    )}
+                                </IconButton>
+                            </Tooltip>
+                        </>
+                    )}
+                </Space>
+            ),
+        },
+    ];
 
-            {/* Order Detail Dialog */}
-            <Dialog
-                open={openOrderDetail}
-                onClose={handleCloseOrderDetail}
-                    maxWidth="lg"
+    return (
+        <Box sx={{ backgroundColor: '#fafafa', minHeight: '100vh' }}>
+            {/* Hero Section */}
+            <Box
                 sx={{
-                    '& .MuiDialog-paper': {
-                            borderRadius: 4,
-                        boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
-                        overflow: 'hidden'
-                        }
+                    background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
+                    py: { xs: 6, md: 8 },
+                    color: "white",
+                    position: "relative",
+                    overflow: "hidden",
+                    "&::before": {
+                        content: '""',
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: "url('/unisew.jpg') center/cover",
+                        opacity: 0.1,
+                        zIndex: 0
+                    }
                 }}
             >
-                {selectedOrder && (
-                    <>
-                                         {/* Header Section */}
-                        <DialogTitle sx={{
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            color: 'white',
-                         fontWeight: 600,
-                         py: 3,
-                         px: 4
-                     }}>
-                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                             <Typography variant="h5" sx={{ fontWeight: 700, color: 'white' }}>
-                                    Order Details - {selectedOrder.orderNumber}
-                             </Typography>
-                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-                                 <Chip
-                                     icon={getStatusIcon(selectedOrder.status)}
-                                     label={getStatusText(selectedOrder.status)}
-                                     sx={{
-                                         backgroundColor: 'rgba(255,255,255,0.2)',
-                                         color: 'white',
-                                         fontWeight: 600,
-                                         '& .MuiChip-icon': { color: 'white' }
-                                     }}
-                                 />
-                                    <Typography variant="body1" sx={{ opacity: 0.9, color: 'white' }}>
-                                     Order placed on {formatDate(selectedOrder.orderDate)}
-                                 </Typography>
-                             </Box>
-                         </Box>
-                        </DialogTitle>
-
-                    <DialogContent sx={{ p: 0 }}>
-                        {/* School Information Card */}
-                        <Box sx={{ p: 4, borderBottom: '1px solid #f1f5f9' }}>
-                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: '#1e293b' }}>
-                                    School Information
+                <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
+                    <Grid container spacing={4} alignItems="center">
+                        <Grid item xs={12} md={8}>
+                            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                                <ShoppingCartIcon sx={{ fontSize: 48, mr: 2, opacity: 0.9 }} />
+                                <Typography
+                                    variant="h2"
+                                    sx={{
+                                        fontWeight: 800,
+                                        fontSize: { xs: "2rem", md: "2.8rem" },
+                                        letterSpacing: "-0.02em"
+                                    }}
+                                >
+                                    Order Management
                                 </Typography>
-                            <Grid container spacing={3}>
-                                <Grid item xs={12}>
-                                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 3 }}>
-                                        {selectedOrder.schoolAvatar && (
-                                            <Box
-                                                component="img"
-                                                src={selectedOrder.schoolAvatar}
-                                                alt="School Avatar"
-                                                sx={{
-                                                    width: 60,
-                                                    height: 60,
-                                                    borderRadius: 2,
-                                                    border: '3px solid #e2e8f0',
-                                                    objectFit: 'cover'
-                                                }}
-                                            />
-                                        )}
-                                        <Box sx={{ flex: 1 }}>
-                                            <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b', mb: 1 }}>
-                                                    {selectedOrder.schoolName}
-                                                </Typography>
-                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                    <Box sx={{ 
-                                                        width: 8, 
-                                                        height: 8, 
-                                                        backgroundColor: '#3b82f6', 
-                                                        borderRadius: '50%' 
-                                                    }} />
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        Contact: <strong>{selectedOrder.schoolContactName}</strong>
-                                                        </Typography>
-                                                </Box>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                    <Box sx={{ 
-                                                        width: 8, 
-                                                        height: 8, 
-                                                        backgroundColor: '#10b981', 
-                                                        borderRadius: '50%' 
-                                                    }} />
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        Email: <strong>{selectedOrder.schoolEmail}</strong>
-                                                        </Typography>
-                                                </Box>
-                                                {selectedOrder.schoolPhone && (
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                        <Box sx={{ 
-                                                            width: 8, 
-                                                            height: 8, 
-                                                            backgroundColor: '#f59e0b', 
-                                                            borderRadius: '50%' 
-                                                        }} />
-                                                        <Typography variant="body2" color="text.secondary">
-                                                            Phone: <strong>{selectedOrder.schoolPhone}</strong>
-                                                            </Typography>
-                                                    </Box>
-                                                )}
-                                                {selectedOrder.schoolAddress && (
-                                                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mt: 1 }}>
-                                                        <Box sx={{ 
-                                                            width: 8, 
-                                                            height: 8, 
-                                                            backgroundColor: '#8b5cf6', 
-                                                            borderRadius: '50%',
-                                                            mt: 0.5
-                                                        }} />
-                                                        <Typography variant="body2" color="text.secondary">
-                                                            Address: <strong>{selectedOrder.schoolAddress}</strong>
-                                                            </Typography>
-                                                    </Box>
-                                                )}
-                                            </Box>
-                                        </Box>
-                                    </Box>
-                                </Grid>
-                            </Grid>
-                        </Box>
-
-                        {/* Product List by Category */}
-                        <Box sx={{ p: 4 }}>
-                                <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: '#1e293b' }}>
-                                    Product Details
-                                </Typography>
-                            {(() => {
-                                const regularItems = selectedOrder.items.filter(item => item.category === 'regular');
-                                const peItems = selectedOrder.items.filter(item => item.category === 'physical education' || item.category === 'pe');
-                                
-                                return (
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                                        {/* Regular Uniforms Section */}
-                                        <Box sx={{
-                                            border: '2px solid #e2e8f0',
-                                            borderRadius: 4,
-                                            overflow: 'hidden',
-                                            backgroundColor: 'white'
-                                        }}>
-                                            {/* Regular Header */}
-                                            <Box sx={{
-                                                background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                                                color: 'white',
-                                                p: 3,
-                                                textAlign: 'center'
-                                            }}>
-                                                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-                                                    Regular Uniforms
-                                                    </Typography>
-                                                <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                                                    Daily school uniforms
-                                                    </Typography>
-                                            </Box>
-
-                                            {/* Regular Items */}
-                                            <Box sx={{ p: 3 }}>
-                                                {regularItems.length > 0 ? (
-                                                    regularItems.map((item, index) => (
-                                                        <Box key={index} sx={{
-                                                            border: '1px solid #f1f5f9',
-                                                            borderRadius: 3,
-                                                            p: 3,
-                                                            mb: 2,
-                                                            backgroundColor: '#fafbff',
-                                                            transition: 'all 0.3s ease',
-                                                            '&:hover': {
-                                                                borderColor: '#3b82f6',
-                                                                backgroundColor: '#f0f4ff',
-                                                                transform: 'translateX(4px)'
-                                                            },
-                                                            '&:last-child': { mb: 0 }
-                                                        }}>
-                                                            {/* Item Header */}
-                                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                                                                <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#1e293b' }}>
-                                                                    {item.name}
-                                                                    </Typography>
-                                                                <Box sx={{
-                                                                    backgroundColor: '#3b82f6',
-                                                                    color: 'white',
-                                                                    px: 2,
-                                                                    py: 0.5,
-                                                                    borderRadius: 20,
-                                                                    fontSize: '0.75rem',
-                                                                    fontWeight: 600
-                                                                }}>
-                                                                    {item.quantity}
-                                                                </Box>
-                                                            </Box>
-
-                                                            {/* Item Details */}
-                                                            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
-                                                                    <Chip 
-                                                                    label={item.size} 
-                                                                    size="small" 
-                                                                    sx={{ 
-                                                                        backgroundColor: '#dbeafe', 
-                                                                        color: '#1e40af',
-                                                                        fontWeight: 600
-                                                                    }} 
-                                                                    />
-                                                                    <Chip 
-                                                                    label={item.fabricName} 
-                                                                    size="small" 
-                                                                    sx={{ borderColor: '#cbd5e1' }}
-                                                                />
-                                                            </Box>
-
-                                                            {/* Color and Logo */}
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                                    <Typography variant="body2" color="text.secondary">Color:</Typography>
-                                                                    <Box sx={{ 
-                                                                        width: 20, 
-                                                                        height: 20, 
-                                                                        backgroundColor: item.color,
-                                                                        borderRadius: 1,
-                                                                        border: '2px solid #e2e8f0',
-                                                                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                                                                    }} />
-                                                                </Box>
-                                                                {(item.baseLogoWidth > 0 || item.baseLogoHeight > 0) && (
-                                                                    <Typography variant="caption" color="text.secondary">
-                                                                        Logo: {item.baseLogoWidth}×{item.baseLogoHeight}cm
-                                                                    </Typography>
-                                                                )}
-                                                            </Box>
-
-                                                            {/* Logo Information */}
-                                                            {(item.logoPosition || item.logoImageUrl) && (
-                                                                <Box sx={{
-                                                                    backgroundColor: '#f0f4ff',
-                                                                    borderRadius: 2,
-                                                                    p: 2,
-                                                                    mt: 2,
-                                                                    border: '1px solid #c7d2fe'
-                                                                }}>
-                                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                                        {item.logoImageUrl && (
-                                                                            <DisplayImage
-                                                                                imageUrl={item.logoImageUrl}
-                                                                                alt="Logo"
-                                                                                width={32}
-                                                                                height={32}
-                                                                            />
-                                                                        )}
-                                                                        <Box sx={{ flex: 1 }}>
-                                                                            {item.logoPosition && (
-                                                                                <Typography variant="body2" sx={{ 
-                                                                                    color: '#4338ca', 
-                                                                                    fontWeight: 500,
-                                                                                    display: 'flex',
-                                                                                    alignItems: 'center',
-                                                                                    gap: 1,
-                                                                                    mb: item.logoImageUrl ? 0.5 : 0
-                                                                                }}>
-                                                                                    <Box component="span" sx={{ 
-                                                                                        width: 6, 
-                                                                                        height: 6, 
-                                                                                        backgroundColor: '#4338ca', 
-                                                                                        borderRadius: '50%' 
-                                                                                    }} />
-                                                                                    Position: {item.logoPosition}
-                                                                                </Typography>
-                                                                            )}
-                                                                            {item.logoImageUrl && (
-                                                                                <Typography variant="caption" sx={{ color: '#6366f1', fontWeight: 500 }}>
-                                                                                    Custom logo included
-                                                                                </Typography>
-                                                                            )}
-                                                                        </Box>
-                                                                    </Box>
-                                                                </Box>
-                                                            )}
-                                                        </Box>
-                                                    ))
-                                                ) : (
-                                                    <Box sx={{
-                                                        textAlign: 'center',
-                                                        py: 4,
-                                                        color: 'text.secondary'
-                                                    }}>
-                                                        <Typography variant="h6" sx={{ mb: 1, opacity: 0.6 }}>
-                                                            No Data
-                                                        </Typography>
-                                                        <Typography variant="body2">
-                                                            No regular uniforms in this order
-                                                        </Typography>
-                                                    </Box>
-                                                )}
-                                            </Box>
-                                        </Box>
-
-                                        {/* Physical Education Section */}
-                                        <Box sx={{
-                                            border: '2px solid #e2e8f0',
-                                            borderRadius: 4,
-                                            overflow: 'hidden',
-                                            backgroundColor: 'white'
-                                        }}>
-                                            {/* PE Header */}
-                                            <Box sx={{
-                                                background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
-                                                color: 'white',
-                                                p: 3,
-                                                textAlign: 'center'
-                                            }}>
-                                                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-                                                    Physical Education
-                                                </Typography>
-                                                <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                                                    Sports & PE uniforms
-                                                </Typography>
-                                            </Box>
-
-                                            {/* PE Items */}
-                                            <Box sx={{ p: 3 }}>
-                                                {peItems.length > 0 ? (
-                                                    peItems.map((item, index) => (
-                                                        <Box key={index} sx={{
-                                                            border: '1px solid #f1f5f9',
-                                                            borderRadius: 3,
-                                                            p: 3,
-                                                            mb: 2,
-                                                            backgroundColor: '#f0fdf4',
-                                                            transition: 'all 0.3s ease',
-                                                            '&:hover': {
-                                                                borderColor: '#059669',
-                                                                backgroundColor: '#dcfce7',
-                                                                transform: 'translateX(4px)'
-                                                            },
-                                                            '&:last-child': { mb: 0 }
-                                                        }}>
-                                                            {/* Item Header */}
-                                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                                                                <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#1e293b' }}>
-                                                                    {item.name}
-                                                                </Typography>
-                                                                <Box sx={{
-                                                                    backgroundColor: '#059669',
-                                                                    color: 'white',
-                                                                    px: 2,
-                                                                    py: 0.5,
-                                                                    borderRadius: 20,
-                                                                    fontSize: '0.75rem',
-                                                                    fontWeight: 600
-                                                                }}>
-                                                                    {item.quantity}
-                                                                </Box>
-                                                            </Box>
-
-                                                            {/* Item Details */}
-                                                            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
-                                                                    <Chip 
-                                                                    label={item.size} 
-                                                                    size="small" 
-                                                                    sx={{ 
-                                                                        backgroundColor: '#d1fae5', 
-                                                                        color: '#065f46',
-                                                                        fontWeight: 600
-                                                                    }} 
-                                                                />
-                                                                <Chip 
-                                                                    label={item.fabricName} 
-                                                                    size="small" 
-                                                                    sx={{ borderColor: '#a7f3d0' }}
-                                                                    />
-                                                                </Box>
-
-                                                            {/* Color and Logo */}
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                                    <Typography variant="body2" color="text.secondary">Color:</Typography>
-                                                                    <Box sx={{ 
-                                                                        width: 20, 
-                                                                        height: 20, 
-                                                                        backgroundColor: item.color,
-                                                                        borderRadius: 1,
-                                                                        border: '2px solid #e2e8f0',
-                                                                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                                                                    }} />
-                                                                </Box>
-                                                                {(item.baseLogoWidth > 0 || item.baseLogoHeight > 0) && (
-                                                                    <Typography variant="caption" color="text.secondary">
-                                                                        Logo: {item.baseLogoWidth}×{item.baseLogoHeight}cm
-                                                                        </Typography>
-                                                                )}
-                                                            </Box>
-
-                                                            {/* Logo Information */}
-                                                            {(item.logoPosition || item.logoImageUrl) && (
-                                                                <Box sx={{
-                                                                    backgroundColor: '#ecfdf5',
-                                                                    borderRadius: 2,
-                                                                    p: 2,
-                                                                    mt: 2,
-                                                                    border: '1px solid #a7f3d0'
-                                                                }}>
-                                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                                        {item.logoImageUrl && (
-                                                                            <DisplayImage
-                                                                                imageUrl={item.logoImageUrl}
-                                                                                alt="Logo"
-                                                                                width={32}
-                                                                                height={32}
-                                                                            />
-                                                                        )}
-                                                                        <Box sx={{ flex: 1 }}>
-                                                                            {item.logoPosition && (
-                                                                                <Typography variant="body2" sx={{ 
-                                                                                    color: '#047857', 
-                                                                                    fontWeight: 500,
-                                                                                        display: 'flex',
-                                                                                        alignItems: 'center',
-                                                                                    gap: 1,
-                                                                                    mb: item.logoImageUrl ? 0.5 : 0
-                                                                                }}>
-                                                                                    <Box component="span" sx={{ 
-                                                                                        width: 6, 
-                                                                                        height: 6, 
-                                                                                        backgroundColor: '#047857', 
-                                                                                        borderRadius: '50%' 
-                                                                                    }} />
-                                                                                    Position: {item.logoPosition}
-                                                                                    </Typography>
-                                                                            )}
-                                                                            {item.logoImageUrl && (
-                                                                                <Typography variant="caption" sx={{ color: '#10b981', fontWeight: 500 }}>
-                                                                                    Custom logo included
-                                                                                    </Typography>
-                                                                            )}
-                                                                        </Box>
-                                                                    </Box>
-                                                                </Box>
-                                                            )}
-                                                        </Box>
-                                                    ))
-                                                ) : (
-                                                    <Box sx={{
-                                                        textAlign: 'center',
-                                                        py: 4,
-                                                        color: 'text.secondary'
-                                                    }}>
-                                                        <Typography variant="h6" sx={{ mb: 1, opacity: 0.6 }}>
-                                                            No Data
-                                                        </Typography>
-                                                        <Typography variant="body2">
-                                                            No PE uniforms in this order
-                                                            </Typography>
-                                                        </Box>
-                                                )}
-                                                </Box>
-                                        </Box>
-                                    </Box>
-                                );
-                            })()}
-
-                            {/* Additional Information */}
-                            {(selectedOrder.note || selectedOrder.serviceFee > 0) && (
-                                <Box sx={{ mt: 4 }}>
-                                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: '#1e293b' }}>
-                                        Additional Information
-                                    </Typography>
-                                    <Grid container spacing={3}>
-                                        {selectedOrder.note && (
-                                            <Grid item xs={12} md={selectedOrder.serviceFee > 0 ? 8 : 12}>
-                                                <Box sx={{
-                                                    backgroundColor: '#fffbeb',
-                                                    borderRadius: 3,
-                                                    p: 3,
-                                                    border: '1px solid #fed7aa'
-                                                }}>
-                                                    <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#92400e', mb: 1 }}>
-                                                        Order Notes
-                                                    </Typography>
-                                                    <Typography variant="body2" sx={{ color: '#451a03', lineHeight: 1.6 }}>
-                                                        {selectedOrder.note}
-                                                    </Typography>
-                                                    </Box>
-                                                </Grid>
-                                        )}
-                                        
-                                        {selectedOrder.serviceFee > 0 && (
-                                            <Grid item xs={12} md={selectedOrder.note ? 4 : 12}>
-                                                    <Box sx={{
-                                                    backgroundColor: '#f0f9ff',
-                                                    borderRadius: 3,
-                                                    p: 3,
-                                                    border: '1px solid #bae6fd',
-                                                    textAlign: 'center'
-                                                }}>
-                                                    <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#0369a1', mb: 1 }}>
-                                                        Service Fee
-                                                        </Typography>
-                                                    <Typography variant="h5" sx={{ fontWeight: 700, color: '#0c4a6e' }}>
-                                                        {formatCurrency(selectedOrder.serviceFee)}
-                                                        </Typography>
-                                                    </Box>
-                                                </Grid>
-                                        )}
-                                        </Grid>
-                                </Box>
-                            )}
-                        </Box>
-                        </DialogContent>
-
-                    {/* Footer Actions */}
-                        <DialogActions sx={{ 
-                        p: 4, 
-                        backgroundColor: '#f8fafc', 
-                        borderTop: '1px solid #e2e8f0',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                    }}>
-                        <Typography variant="body2" color="text.secondary">
-                            Order ID: {selectedOrder.id}
-                        </Typography>
-                            <Button 
-                                onClick={handleCloseOrderDetail} 
-                                variant="contained"
+                            </Box>
+                            <Typography
+                                variant="h6"
                                 sx={{
-                                    borderRadius: 3,
-                                    px: 3,
+                                    opacity: 0.95,
+                                    fontSize: { xs: "1rem", md: "1.2rem" },
+                                    lineHeight: 1.6,
+                                    mb: 3
+                                }}
+                            >
+                                Manage and track your school's uniform orders with ease. From creation to delivery.
+                            </Typography>
+                            <Button
+                                variant="contained"
+                                size="large"
+                                startIcon={<AddIcon />}
+                                onClick={handleCreateOrder}
+                                sx={{
+                                    backgroundColor: "white",
+                                    color: "#1976d2",
+                                    px: 4,
                                     py: 1.5,
-                                    boxShadow: '0 4px 14px rgba(102, 126, 234, 0.4)',
-                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                    '&:hover': {
-                                        background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
-                                        boxShadow: '0 6px 20px rgba(102, 126, 234, 0.6)',
-                                        transform: 'translateY(-2px)'
+                                    fontSize: "1.1rem",
+                                    fontWeight: 600,
+                                    borderRadius: "50px",
+                                    textTransform: "none",
+                                    boxShadow: "0 4px 15px rgba(255,255,255,0.3)",
+                                    "&:hover": {
+                                        backgroundColor: "#f5f5f5",
+                                        transform: "translateY(-2px)",
+                                        boxShadow: "0 8px 25px rgba(255,255,255,0.4)"
                                     }
                                 }}
                             >
-                                Close
+                                Create New Order
                             </Button>
-                        </DialogActions>
-                    </>
-                )}
-            </Dialog>
+                        </Grid>
+                    </Grid>
+                </Container>
+            </Box>
 
-            {/* Quotation Viewer */}
-            <QuotationViewer
-                visible={quotationViewerOpen}
-                onCancel={handleCloseQuotationViewer}
-                orderId={selectedOrderIdForQuotations}
-            />
+            {/* Statistics Section */}
+            <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+                <Grid container spacing={3}>
+                    <Grid item xs={6} sm={3}>
+                        <Card
+                            elevation={0}
+                            sx={{
+                                border: "1px solid #e2e8f0",
+                                borderRadius: 3,
+                                transition: "all 0.3s ease",
+                                "&:hover": {
+                                    borderColor: "#1976d2",
+                                    transform: "translateY(-4px)",
+                                    boxShadow: "0 8px 25px rgba(25, 118, 210, 0.15)"
+                                }
+                            }}
+                        >
+                            <CardContent sx={{ textAlign: "center", p: 3 }}>
+                                <Box
+                                    sx={{
+                                        width: 60,
+                                        height: 60,
+                                        borderRadius: "50%",
+                                        backgroundColor: "#e3f2fd",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        mx: "auto",
+                                        mb: 2
+                                    }}
+                                >
+                                    <TrendingUpIcon sx={{ color: "#1976d2", fontSize: 30 }} />
+                                </Box>
+                                <Typography variant="h4" sx={{ fontWeight: 700, color: "#1976d2", mb: 1 }}>
+                                    {stats.total}
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
+                                    Total Orders
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+
+                    <Grid item xs={6} sm={3}>
+                        <Card
+                            elevation={0}
+                            sx={{
+                                border: "1px solid #e2e8f0",
+                                borderRadius: 3,
+                                transition: "all 0.3s ease",
+                                "&:hover": {
+                                    borderColor: "#f57c00",
+                                    transform: "translateY(-4px)",
+                                    boxShadow: "0 8px 25px rgba(245, 124, 0, 0.15)"
+                                }
+                            }}
+                        >
+                            <CardContent sx={{ textAlign: "center", p: 3 }}>
+                                <Box
+                                    sx={{
+                                        width: 60,
+                                        height: 60,
+                                        borderRadius: "50%",
+                                        backgroundColor: "#fff3e0",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        mx: "auto",
+                                        mb: 2
+                                    }}
+                                >
+                                    <PendingIcon sx={{ color: "#f57c00", fontSize: 30 }} />
+                                </Box>
+                                <Typography variant="h4" sx={{ fontWeight: 700, color: "#f57c00", mb: 1 }}>
+                                    {stats.pending}
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
+                                    Pending
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+
+                    <Grid item xs={6} sm={3}>
+                        <Card
+                            elevation={0}
+                            sx={{
+                                border: "1px solid #e2e8f0",
+                                borderRadius: 3,
+                                transition: "all 0.3s ease",
+                                "&:hover": {
+                                    borderColor: "#1976d2",
+                                    transform: "translateY(-4px)",
+                                    boxShadow: "0 8px 25px rgba(25, 118, 210, 0.15)"
+                                }
+                            }}
+                        >
+                            <CardContent sx={{ textAlign: "center", p: 3 }}>
+                                <Box
+                                    sx={{
+                                        width: 60,
+                                        height: 60,
+                                        borderRadius: "50%",
+                                        backgroundColor: "#e3f2fd",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        mx: "auto",
+                                        mb: 2
+                                    }}
+                                >
+                                    <LocalShippingIcon sx={{ color: "#1976d2", fontSize: 30 }} />
+                                </Box>
+                                <Typography variant="h4" sx={{ fontWeight: 700, color: "#1976d2", mb: 1 }}>
+                                    {stats.processing}
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
+                                    Processing
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+
+                    <Grid item xs={6} sm={3}>
+                        <Card
+                            elevation={0}
+                            sx={{
+                                border: "1px solid #e2e8f0",
+                                borderRadius: 3,
+                                transition: "all 0.3s ease",
+                                "&:hover": {
+                                    borderColor: "#2e7d32",
+                                    transform: "translateY(-4px)",
+                                    boxShadow: "0 8px 25px rgba(46, 125, 50, 0.15)"
+                                }
+                            }}
+                        >
+                            <CardContent sx={{ textAlign: "center", p: 3 }}>
+                                <Box
+                                    sx={{
+                                        width: 60,
+                                        height: 60,
+                                        borderRadius: "50%",
+                                        backgroundColor: "#e8f5e8",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        mx: "auto",
+                                        mb: 2
+                                    }}
+                                >
+                                    <CheckCircleIcon sx={{ color: "#2e7d32", fontSize: 30 }} />
+                                </Box>
+                                <Typography variant="h4" sx={{ fontWeight: 700, color: "#2e7d32", mb: 1 }}>
+                                    {stats.completed}
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
+                                    Completed
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+                </Grid>
+            </Container>
+
+            {/* Table Section */}
+            <Container maxWidth="lg" sx={{ pb: { xs: 4, md: 6 } }}>
+                <Paper
+                    elevation={0}
+                    sx={{
+                        borderRadius: 4,
+                        border: "1px solid #e2e8f0",
+                        overflow: "auto"
+                    }}
+                >
+                    <Box sx={{ p: { xs: 3, md: 4 }, backgroundColor: "white" }}>
+                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                            <Typography
+                                variant="h5"
+                                sx={{
+                                    fontWeight: 700,
+                                    color: "#1e293b",
+                                    fontSize: { xs: "1.3rem", md: "1.5rem" }
+                                }}
+                            >
+                                Recent Orders
+                            </Typography>
+                            <Chip
+                                label={`${stats.total} Total`}
+                                sx={{
+                                    backgroundColor: "#e3f2fd",
+                                    color: "#1976d2",
+                                    fontWeight: 600
+                                }}
+                            />
                         </Box>
-    );
-};
 
-export default SchoolOrderList;
+                        <Table
+                            columns={columns}
+                            dataSource={orders}
+                            rowKey="id"
+                            loading={loading}
+                            pagination={{
+                                defaultPageSize: 5,
+                                pageSizeOptions: ['5', '8', '10', '15'],
+                                showSizeChanger: true,
+                                showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total} orders`,
+                                style: { marginTop: 16 }
+                            }}
+                            scroll={{ x: 'max-content' }}
+                            style={{
+                                backgroundColor: 'white',
+                                borderRadius: '8px'
+                            }}
+                            rowHoverColor="#f8fafc"
+                        />
+                    </Box>
+                </Paper>
+            </Container>
+
+            {/* Modals */}
+            {isDetailDialogOpen && (
+                <OrderDetailDialog
+                    open={isDetailDialogOpen}
+                    onClose={handleCloseDetailDialog}
+                    order={selectedOrder}
+                />
+            )}
+
+            {isQuotationViewerOpen && (
+                <QuotationViewer
+                    visible={isQuotationViewerOpen}
+                    onCancel={handleCloseQuotationViewer}
+                    orderId={selectedOrder?.id}
+                />
+            )}
+        </Box>
+    );
+}
