@@ -14,7 +14,7 @@ export default function Login() {
             localStorage.setItem('user', JSON.stringify(loginResponse.data.body));
             const access = getCookie('access');
             const role = jwtDecode(access)?.role
-            enqueueSnackbar("Đăng nhập thành công", {variant: 'success', autoHideDuration: 1000});
+            enqueueSnackbar(loginResponse.data.message, {variant: 'success', autoHideDuration: 1000});
             setTimeout(() => {
                 switch (role) {
                     case 'admin':
@@ -54,7 +54,7 @@ export default function Login() {
 
     function HandleError(error) {
         console.log("Login Error:", error);
-        enqueueSnackbar("Đăng nhập thất bại", {variant: "error"});
+        enqueueSnackbar("Login failed", {variant: "error"});
     }
 
     const login = useGoogleLogin({
@@ -130,10 +130,10 @@ export default function Login() {
                 </Box>
 
                 <Typography variant="h5" sx={{mb: 1, fontWeight: 600, color: "#333"}}>
-                    Chào Mừng Trở Lại!
+                    Welcome Back!
                 </Typography>
                 <Typography variant="body1" sx={{mb: 4, color: "#666"}}>
-                    Đăng nhập vào tài khoản của bạn bằng Google.
+                    Sign in to your account with Google.
                 </Typography>
 
                 {/* Google Login Button */}
@@ -160,18 +160,18 @@ export default function Login() {
                             },
                         }}
                     >
-                        Đăng Nhập Bằng Google
+                        Sign in with Google
                     </Button>
                 </Box>
 
                 <Typography variant="body2" sx={{color: "#888", mb: 2}}>
-                    Bằng việc đăng nhập, bạn đồng ý với
+                    By signing in, you agree to our
                     <Link href="#" color="primary" sx={{ml: 0.5, textDecoration: 'none'}}>
-                        Điều Khoản Dịch Vụ
+                        Terms of Service
                     </Link>
-                    <span> và </span>
+                    <span> and </span>
                     <Link href={'/policy/privacy'} color="primary" sx={{ml: 0.5, textDecoration: 'none'}}>
-                        Chính Sách Bảo Mật
+                        Privacy Policy
                     </Link>.
                 </Typography>
             </Paper>
