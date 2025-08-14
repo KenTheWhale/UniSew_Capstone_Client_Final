@@ -40,7 +40,7 @@ import {
     Verified as VerifiedIcon
 } from '@mui/icons-material';
 import {enqueueSnackbar} from 'notistack';
-import {getOrdersByGarment, updateMilestoneStatus, viewMilestone} from '../../services/OrderService';
+import {getGarmentOrders, updateMilestoneStatus, viewMilestone} from '../../services/OrderService';
 import {uploadCloudinary} from '../../services/UploadImageService';
 import DisplayImage from '../ui/DisplayImage';
 import dayjs from "dayjs";
@@ -166,7 +166,7 @@ export default function GarmentOrderProduction() {
     const fetchOrders = async () => {
         try {
             setLoading(true);
-            const response = await getOrdersByGarment();
+            const response = await getGarmentOrders();
             if (response && response.data) {
                 setOrders(response.data.body || []);
             }

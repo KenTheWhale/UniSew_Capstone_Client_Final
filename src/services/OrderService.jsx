@@ -26,6 +26,11 @@ export const getOrdersByGarment = async () => {
     return response || null
 }
 
+export const getGarmentOrders = async () => {
+    const response = await axiosClient.get("/order/garment")
+    return response || null
+}
+
 export const createQuotation = async (data) => {
     const response = await axiosClient.post("/order/quotation", data)
     return response || null
@@ -38,6 +43,16 @@ export const viewQuotation = async (orderId) => {
 
 export const approveQuotation = async (data) => {
     const response = await axiosClient.post(`/order/quotation/approval`, data)
+    return response || null
+}
+
+export const createPhase = async (data) => {
+    const response = await axiosClient.post(`/order/phase`, data)
+    return response || null
+}
+
+export const viewPhase = async () => {
+    const response = await axiosClient.get(`/order/phase`)
     return response || null
 }
 
