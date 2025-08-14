@@ -51,4 +51,9 @@ export const updateMilestoneStatus = async (data) => {
     return response || null
 }
 
+export const viewMilestone = async (orderId) => {
+    const response = await axiosClient.get(`/order/milestone?orderId=${orderId}`)
+    return response || null
+}
+
 
