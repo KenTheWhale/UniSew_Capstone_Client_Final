@@ -20,7 +20,7 @@ import {
     Assignment, 
     LocalShipping, 
     Logout, 
-    Inventory,
+    Flag,
     Assessment,
     Settings
 } from '@mui/icons-material';
@@ -41,8 +41,8 @@ export default function GarmentDashboardLayout() {
             setActiveMenu('orders');
         } else if (pathname.includes('/garment/production')) {
             setActiveMenu('production');
-        } else if (pathname.includes('/garment/inventory')) {
-            setActiveMenu('inventory');
+        } else if (pathname.includes('/garment/milestone')) {
+            setActiveMenu('milestone');
         } else if (pathname.includes('/garment/reports')) {
             setActiveMenu('reports');
         } else if (pathname.includes('/garment/settings')) {
@@ -295,32 +295,32 @@ export default function GarmentDashboardLayout() {
                                         borderRadius: 2,
                                         mx: 1,
                                         my: 0.5,
-                                        background: activeMenu === 'inventory'
+                                        background: activeMenu === 'milestone'
                                             ? 'linear-gradient(135deg, #059669 0%, #047857 100%)'
                                             : 'transparent',
-                                        color: activeMenu === 'inventory' ? 'white' : '#495057',
-                                        boxShadow: activeMenu === 'inventory'
+                                        color: activeMenu === 'milestone' ? 'white' : '#495057',
+                                        boxShadow: activeMenu === 'milestone'
                                             ? '0 4px 12px rgba(5, 150, 105, 0.3)'
                                             : 'none',
                                         '&:hover': {
-                                            background: activeMenu === 'inventory'
+                                            background: activeMenu === 'milestone'
                                                 ? 'linear-gradient(135deg, #047857 0%, #065f46 100%)'
                                                 : 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
-                                            color: activeMenu === 'inventory' ? 'white' : '#059669',
+                                            color: activeMenu === 'milestone' ? 'white' : '#059669',
                                             transform: 'translateY(-1px)',
-                                            boxShadow: activeMenu === 'inventory'
+                                            boxShadow: activeMenu === 'milestone'
                                                 ? '0 6px 16px rgba(5, 150, 105, 0.4)'
                                                 : '0 4px 12px rgba(5, 150, 105, 0.2)'
                                         },
                                         transition: 'all 0.3s ease'
                                     }}
-                                    onClick={() => window.location.href = '/garment/inventory'}
+                                    onClick={() => window.location.href = '/garment/milestone'}
                                 >
-                                    <ListItemIcon sx={{color: activeMenu === 'inventory' ? 'white' : 'inherit'}}>
-                                        <Inventory/>
+                                    <ListItemIcon sx={{color: activeMenu === 'milestone' ? 'white' : 'inherit'}}>
+                                        <Flag/>
                                     </ListItemIcon>
                                     <ListItemText
-                                        primary="Inventory Management"
+                                        primary="Milestone Management"
                                         sx={{fontWeight: 600}}
                                     />
                                 </ListItemButton>

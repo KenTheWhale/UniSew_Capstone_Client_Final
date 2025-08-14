@@ -26,6 +26,11 @@ export const getOrdersByGarment = async () => {
     return response || null
 }
 
+export const getGarmentOrders = async () => {
+    const response = await axiosClient.get("/order/garment")
+    return response || null
+}
+
 export const createQuotation = async (data) => {
     const response = await axiosClient.post("/order/quotation", data)
     return response || null
@@ -41,6 +46,16 @@ export const approveQuotation = async (data) => {
     return response || null
 }
 
+export const createPhase = async (data) => {
+    const response = await axiosClient.post(`/order/phase`, data)
+    return response || null
+}
+
+export const viewPhase = async () => {
+    const response = await axiosClient.get(`/order/phase`)
+    return response || null
+}
+
 export const assignMilestone = async (data) => {
     const response = await axiosClient.post(`/order/milestone`, data)
     return response || null
@@ -48,6 +63,11 @@ export const assignMilestone = async (data) => {
 
 export const updateMilestoneStatus = async (data) => {
     const response = await axiosClient.put(`/order/milestone`, data)
+    return response || null
+}
+
+export const viewMilestone = async (orderId) => {
+    const response = await axiosClient.get(`/order/milestone?orderId=${orderId}`)
     return response || null
 }
 
