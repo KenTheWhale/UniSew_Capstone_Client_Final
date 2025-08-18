@@ -435,7 +435,14 @@ export default function SchoolDashboardLayout() {
                                     mb: 1,
                                     background: 'rgba(46, 125, 50, 0.05)'
                                 }}>
-                                    <Avatar sx={{ width: 40, height: 40, bgcolor: "rgba(46, 125, 50, 0.2)" }}>
+                                    <Avatar sx={{ width: 40, height: 40, bgcolor: "rgba(46, 125, 50, 0.2)" }}
+                                            src={user.customer.avatar}
+                                            slotProps={{
+                                                img: {
+                                                    referrerPolicy: 'no-referrer',
+                                                }
+                                            }}
+                                    >
                                         <AccountCircle />
                                     </Avatar>
                                     <Box>

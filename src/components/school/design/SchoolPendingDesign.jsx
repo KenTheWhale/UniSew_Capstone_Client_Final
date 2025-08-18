@@ -287,7 +287,7 @@ export default function SchoolPendingDesign() {
                         loading={loading}
                         pagination={{
                             defaultPageSize: 5,
-                            pageSizeOptions: ['5', '8', '10', '15'],
+                            pageSizeOptions: ['5', '10'],
                             showSizeChanger: true,
                             showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total} pending requests`,
                             style: {marginTop: 16}

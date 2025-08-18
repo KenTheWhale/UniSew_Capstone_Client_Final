@@ -17,6 +17,7 @@ import {useEffect, useState, useMemo, useCallback} from 'react';
 import React from 'react';
 import DesignPaymentPopup from './DesignPaymentPopup';
 import {parseID} from "../../../utils/ParseIDUtil.jsx";
+import DisplayImage from '../../ui/DisplayImage.jsx';
 
 // Constants
 const STATUS_CONFIG = {
@@ -233,6 +234,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
     const [isProcessing, setIsProcessing] = useState(false);
     // Applied designers data
     const [appliedDesigners, setAppliedDesigners] = useState([]);
+    const [showRequestDetail, setShowRequestDetail] = useState(false);
 
     // Memoized values
     const selectedDesigner = useMemo(() => 
@@ -249,6 +251,9 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
         selectedDesigner?.revisionTime === UNLIMITED_REVISION_CODE,
         [selectedDesigner]
     );
+
+    const regularItems = useMemo(() => (request?.items || []).filter(i => i.category === 'regular'), [request]);
+    const peItems = useMemo(() => (request?.items || []).filter(i => i.category === 'pe'), [request]);
 
     useEffect(() => {
         setSelectedQuotation(null);
@@ -316,6 +321,10 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
 
     const handleToggleDesigners = useCallback(() => {
         setShowDesigners(prev => !prev);
+    }, []);
+
+    const handleToggleRequestDetail = useCallback(() => {
+        setShowRequestDetail(prev => !prev);
     }, []);
 
     const handleExtraRevisionChange = useCallback((value) => {
@@ -437,24 +446,145 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                             <Typography.Title level={5} style={{margin: 0, color: '#1e293b'}}>
                                 Applied Designers ({appliedDesigners.length})
                             </Typography.Title>
-                            <Button
-                                type={showDesigners ? "default" : "primary"}
-                                onClick={handleToggleDesigners}
-                                icon={showDesigners ? <CloseCircleOutlined/> : <UserOutlined/>}
-                                style={{
-                                    backgroundColor: showDesigners ? '#f1f5f9' : '#2e7d32',
-                                    borderColor: showDesigners ? '#cbd5e1' : '#2e7d32',
-                                    color: showDesigners ? '#475569' : 'white'
-                                }}
-                            >
-                                {showDesigners ? 'Hide Designers' : 'View Designers'}
-                            </Button>
+                            <Box style={{ display: 'flex', gap: 8 }}>
+                                <Button
+                                    key="toggleRequestDetail"
+                                    type={showRequestDetail ? 'default' : 'primary'}
+                                    onClick={handleToggleRequestDetail}
+                                    icon={<InfoCircleOutlined/>}
+                                    style={{
+                                        backgroundColor: showRequestDetail ? '#f1f5f9' : '#2e7d32',
+                                        borderColor: showRequestDetail ? '#cbd5e1' : '#2e7d32',
+                                        color: showRequestDetail ? '#475569' : 'white'
+                                    }}
+                                >
+                                    {showRequestDetail ? 'Hide request detail' : 'Show request detail'}
+                                </Button>
+                                <Button
+                                    type={showDesigners ? "default" : "primary"}
+                                    onClick={handleToggleDesigners}
+                                    icon={showDesigners ? <CloseCircleOutlined/> : <UserOutlined/>}
+                                    style={{
+                                        backgroundColor: showDesigners ? '#f1f5f9' : '#2e7d32',
+                                        borderColor: showDesigners ? '#cbd5e1' : '#2e7d32',
+                                        color: showDesigners ? '#475569' : 'white'
+                                    }}
+                                >
+                                    {showDesigners ? 'Hide Designers' : 'View Designers'}
+                                </Button>
+                            </Box>
                         </Box>
                         <Typography.Text type="secondary" style={{fontSize: '14px'}}>
                             Review and select from the designers who have applied to your request. Each designer offers
                             different quotations with varying timelines and features.
                         </Typography.Text>
                     </Box>
+
+                    {/* Request Detail Panel */}
+                    {showRequestDetail && (
+                        <Box sx={{ mb: 3, p: 3, backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: 2, maxWidth: 900, mx: 'auto' }}>
+                            {/* Header with Logo and Metadata */}
+                            <Box sx={{ display: 'grid', gridTemplateColumns: 'auto 1fr', alignItems: 'center', gap: 2, mb: 2 }}>
+                                {request.logoImage && (
+                                    <DisplayImage imageUrl={request.logoImage} alt="School logo" width={56} height={56} />
+                                )}
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                                        <Typography.Title level={5} style={{ margin: 0, color: '#1e293b' }}>
+                                            {request.name}
+                                        </Typography.Title>
+                                        <Tag color="green">{parseID(request.id, 'dr')}</Tag>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                                        <Tag color="geekblue">Status: {request.status}</Tag>
+                                        <Tag color={request.privacy ? 'blue' : 'default'}>{request.privacy ? 'Private' : 'Public'}</Tag>
+                                        <Tag color="purple">Created: {formatDate(request.creationDate)}</Tag>
+                                    </Box>
+                                </Box>
+                            </Box>
+
+                            {/* Items grouped by category */}
+                            {regularItems.length > 0 && (
+                                <Box sx={{ mb: 2 }}>
+                                    <Typography.Title level={5} style={{ margin: 0, color: '#1e293b' }}>Regular</Typography.Title>
+                                    <Box sx={{ mt: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 2 }}>
+                                        {regularItems.map((item) => (
+                                            <Paper key={item.id} elevation={0} sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: 2 }}>
+                                                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 56px', alignItems: 'start', gap: 1 }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                                                        {/* Small color dot and info */}
+                                                        <Box sx={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: item.color, border: '1px solid #e2e8f0', mt: '6px' }} />
+                                                        <Box>
+                                                            <Typography.Title level={5} style={{ margin: 0, color: '#1e293b' }}>
+                                                                {item.type} - {(item.category === 'pe' ? 'physical education' : item.category)}
+                                                            </Typography.Title>
+                                                            <Box sx={{ display: 'flex', gap: 1, mt: 0.5, flexWrap: 'wrap' }}>
+                                                                <Tag>{item.gender}</Tag>
+                                                                <Tag color="success">{item.fabricName}</Tag>
+                                                                {item.logoPosition && <Tag color="gold">Logo: {item.logoPosition}</Tag>}
+                                                            </Box>
+                                                            {item.note && (
+                                                                <Typography.Text type="secondary" style={{ fontSize: '12px', marginTop: 4, display: 'block' }}>
+                                                                    Note: {item.note}
+                                                                </Typography.Text>
+                                                            )}
+                                                        </Box>
+                                                    </Box>
+
+                                                {/* Thumbnail (first sample image) */}
+                                                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                                    {(item.sampleImages && item.sampleImages.length > 0) ? (
+                                                        <DisplayImage imageUrl={item.sampleImages[0].url} alt="Sample" width={48} height={48} />
+                                                    ) : null}
+                                                </Box>
+                                            </Box>
+                                        </Paper>
+                                        ))}
+                                    </Box>
+                                </Box>
+                            )}
+
+                            {peItems.length > 0 && (
+                                <Box sx={{ mb: 2 }}>
+                                    <Typography.Title level={5} style={{ margin: 0, color: '#1e293b' }}>Physical Education</Typography.Title>
+                                    <Box sx={{ mt: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 2 }}>
+                                        {peItems.map((item) => (
+                                            <Paper key={item.id} elevation={0} sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: 2 }}>
+                                                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 56px', alignItems: 'start', gap: 1 }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                                                        {/* Small color dot and info */}
+                                                        <Box sx={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: item.color, border: '1px solid #e2e8f0', mt: '6px' }} />
+                                                        <Box>
+                                                            <Typography.Title level={5} style={{ margin: 0, color: '#1e293b' }}>
+                                                                {item.type} - {(item.category === 'pe' ? 'physical education' : item.category)}
+                                                            </Typography.Title>
+                                                            <Box sx={{ display: 'flex', gap: 1, mt: 0.5, flexWrap: 'wrap' }}>
+                                                                <Tag>{item.gender}</Tag>
+                                                                <Tag color="success">{item.fabricName}</Tag>
+                                                                {item.logoPosition && <Tag color="gold">Logo: {item.logoPosition}</Tag>}
+                                                            </Box>
+                                                            {item.note && (
+                                                                <Typography.Text type="secondary" style={{ fontSize: '12px', marginTop: 4, display: 'block' }}>
+                                                                    Note: {item.note}
+                                                                </Typography.Text>
+                                                            )}
+                                                        </Box>
+                                                    </Box>
+
+                                                {/* Thumbnail (first sample image) */}
+                                                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                                    {(item.sampleImages && item.sampleImages.length > 0) ? (
+                                                        <DisplayImage imageUrl={item.sampleImages[0].url} alt="Sample" width={48} height={48} />
+                                                    ) : null}
+                                                </Box>
+                                            </Box>
+                                        </Paper>
+                                        ))}
+                                    </Box>
+                                </Box>
+                            )}
+                        </Box>
+                    )}
 
                     {/* Designers List */}
                     {showDesigners && (
