@@ -74,6 +74,7 @@ export default function DisplayImage({
                 <img
                     src={imageUrl}
                     alt={alt}
+                    referrerPolicy="no-referrer"
                     style={{
                         width: '100%',
                         height: '100%',
@@ -142,6 +143,7 @@ export default function DisplayImage({
                         <img
                             src={imageUrl}
                             alt={alt}
+                            referrerPolicy="no-referrer"
                             style={{
                                 maxWidth: '100%',
                                 maxHeight: '80vh',
