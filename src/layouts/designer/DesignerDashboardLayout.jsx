@@ -155,7 +155,15 @@ export default function DesignerDashboardLayout() {
                                 <DesignServices sx={{fontSize: 16, color: '#7c3aed'}}/>
                             }
                         >
-                            <Avatar sx={{width: 32, height: 32, bgcolor: "rgba(255, 255, 255, 0.2)"}}>
+                            <Avatar
+                                sx={{width: 32, height: 32, bgcolor: "rgba(255, 255, 255, 0.2)"}}
+                                src={userObj?.customer?.avatar}
+                                slotProps={{
+                                    img: {
+                                        referrerPolicy: 'no-referrer',
+                                    }
+                                }}
+                            >
                                 <AccountCircle/>
                             </Avatar>
                         </Badge>
@@ -193,7 +201,15 @@ export default function DesignerDashboardLayout() {
                                 mb: 1,
                                 background: 'rgba(124, 58, 237, 0.05)'
                             }}>
-                                <Avatar sx={{width: 40, height: 40, bgcolor: "rgba(124, 58, 237, 0.2)"}}>
+                                <Avatar
+                                    sx={{width: 40, height: 40, bgcolor: "rgba(124, 58, 237, 0.2)"}}
+                                    src={userObj?.customer?.avatar}
+                                    slotProps={{
+                                        img: {
+                                            referrerPolicy: 'no-referrer',
+                                        }
+                                    }}
+                                >
                                     <AccountCircle/>
                                 </Avatar>
                                 <Box>

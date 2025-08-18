@@ -35,9 +35,10 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
     const handleProceedToPayment = async () => {
         try {
             const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
-            const subtotal = quotation.price + (extraRevision * (quotation.extraRevisionPrice || '0'));
-            const fee = serviceFee(subtotal);
-            const totalAmount = subtotal + fee;
+            const rawSubtotal = quotation.price + (extraRevision * (quotation.extraRevisionPrice || 0));
+            const subtotal = Math.round(rawSubtotal);
+            const fee = Math.round(serviceFee(subtotal));
+            const totalAmount = Math.round(subtotal + fee);
             
             // Store quotation details in sessionStorage for VNPay callback
             const quotationDetailsToStore = {
@@ -379,8 +380,9 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
                         <Typography.Title level={4} style={{ margin: 0, color: '#f57c00' }}>
                             {(() => {
                                 const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
-                                const subtotal = quotation.price + (extraRevision * (quotation.extraRevisionPrice || 0));
-                                const fee = serviceFee(subtotal);
+                                const rawSubtotal = quotation.price + (extraRevision * (quotation.extraRevisionPrice || 0));
+                                const subtotal = Math.round(rawSubtotal);
+                                const fee = Math.round(serviceFee(subtotal));
                                 return fee.toLocaleString('vi-VN') + ' VND';
                             })()}
                         </Typography.Title>
@@ -434,9 +436,10 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
                         <Typography.Title level={3} style={{ margin: 0, color: '#2e7d32', fontWeight: 'bold' }}>
                             {(() => {
                                 const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
-                                const subtotal = quotation.price + (extraRevision * (quotation.extraRevisionPrice || 0));
-                                const fee = serviceFee(subtotal);
-                                const totalAmount = subtotal + fee;
+                                const rawSubtotal = quotation.price + (extraRevision * (quotation.extraRevisionPrice || 0));
+                                const subtotal = Math.round(rawSubtotal);
+                                const fee = Math.round(serviceFee(subtotal));
+                                const totalAmount = Math.round(subtotal + fee);
                                 return totalAmount.toLocaleString('vi-VN') + ' VND';
                             })()}
                         </Typography.Title>

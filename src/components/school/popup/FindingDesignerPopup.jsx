@@ -1,4 +1,4 @@
-import {Button, InputNumber, Modal, Spin, Tag, Typography} from 'antd';
+import {Button, InputNumber, Modal, Spin, Tag, Typography, Select} from 'antd';
 import {
     CalendarOutlined as CalendarIcon,
     CheckCircleOutlined,
@@ -10,14 +10,17 @@ import {
     MailOutlined,
     PhoneOutlined,
     SyncOutlined,
-    UserOutlined
+    UserOutlined,
+    UpOutlined,
+    DownOutlined
 } from '@ant-design/icons';
-import {Box, Chip, Divider, Paper} from '@mui/material';
+import {Box, Chip, Divider, Paper, Avatar} from '@mui/material';
 import {useEffect, useState, useMemo, useCallback} from 'react';
 import React from 'react';
 import DesignPaymentPopup from './DesignPaymentPopup';
 import {parseID} from "../../../utils/ParseIDUtil.jsx";
 import DisplayImage from '../../ui/DisplayImage.jsx';
+import { serviceFee } from '../../../configs/FixedVariables.jsx';
 
 // Constants
 const STATUS_CONFIG = {
@@ -62,162 +65,135 @@ const DesignerCard = React.memo(({ designer, isSelected, onSelect }) => {
         <Paper
             elevation={0}
             sx={{
-                p: 3,
+                p: 2.5,
                 border: '1px solid #e2e8f0',
                 borderRadius: 3,
-                backgroundColor: 'white',
-                transition: 'all 0.3s ease',
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.5) 100%)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                transition: 'transform .25s ease, box-shadow .25s ease, border-color .25s ease',
+                cursor: 'pointer',
+                minHeight: 240,
+                boxShadow: '0 10px 30px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.6)',
+                position: 'relative',
+                overflow: 'hidden',
                 '&:hover': {
-                    borderColor: '#2e7d32',
-                    boxShadow: '0 4px 12px rgba(46, 125, 50, 0.1)'
+                    borderColor: '#e2e8f0',
+                    boxShadow: '0 18px 40px rgba(0,0,0,0.18)',
+                    transform: 'translateY(-3px) scale(1.01)'
+                },
+                '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: '-60%',
+                    width: '60%',
+                    height: '100%',
+                    background: 'linear-gradient(120deg, transparent, rgba(255,255,255,0.5), transparent)',
+                    transform: 'skewX(-20deg) translateX(-120%)',
+                    transition: 'transform 1s ease',
+                    pointerEvents: 'none',
+                    willChange: 'transform'
+                },
+                '&:hover::after': {
+                    transform: 'skewX(-20deg) translateX(420%)'
                 }
             }}
+            onClick={() => onSelect(designer.id)}
+            onKeyPress={handleKeyPress}
+            tabIndex={0}
+            role="button"
+            aria-label={`Select quotation from ${designer.designer.customer.name}`}
         >
-            {/* Designer Header */}
-            <Box sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-start',
-                mb: 3
-            }}>
-                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
-                    <Box sx={{
-                        width: 50,
-                        height: 50,
-                        borderRadius: '50%',
-                        backgroundColor: '#2e7d32',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                        fontWeight: 'bold',
-                        fontSize: '18px'
-                    }}>
+            {/* Header */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center', columnGap: 1.5, mb: 1.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
+                    <Avatar
+                        sx={{ width: 44, height: 44, bgcolor: '#2e7d32', border: isSelected ? '2px solid #2e7d32' : '2px solid transparent' }}
+                        src={designer?.designer?.customer?.avatar}
+                        slotProps={{ img: { referrerPolicy: 'no-referrer' } }}
+                    >
                         {designer.designer.customer.name.charAt(0)}
-                    </Box>
-                    <Box>
-                        <Typography.Title level={5} style={{margin: 0, color: '#1e293b'}}>
+                    </Avatar>
+                    <Box sx={{ minWidth: 0 }}>
+                        <Typography.Title level={5} style={{ margin: 0, color: '#1e293b' }}>
                             {designer.designer.customer.name}
                         </Typography.Title>
-                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mt: 0.5}}>
-                            <Typography.Text type="secondary" style={{fontSize: '12px'}}>
-                                ⭐ {designer.designer.rating}
-                            </Typography.Text>
+                        <Typography style={{ marginTop: 2, color: '#2e7d32', fontWeight: 800, fontSize: 20 }}>
+                            {formatPrice(designer.price).replace(' VND','')} <span style={{fontSize: 12, fontWeight: 700}}>VND</span>
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mt: 0.5 }}>
+                            <Chip size="small" variant="outlined" label={`⭐ ${designer.designer.rating}`} sx={{ height: 22 }} />
+                            <Chip size="small" variant="outlined" icon={<ClockCircleOutlined/>} label={`Valid until ${formatDate(designer.acceptanceDeadline)}`} sx={{ height: 22 }} />
                         </Box>
                     </Box>
                 </Box>
-                <Chip
-                    label={`Valid Until: ${formatDate(designer.acceptanceDeadline)}`}
-                    size="small"
-                    icon={<ClockCircleOutlined/>}
-                    style={{
-                        backgroundColor: '#fef3c7',
-                        color: '#92400e',
-                        borderColor: '#f59e0b'
-                    }}
-                />
+                {isSelected && (
+                    <Chip size="small" color="success" label="Selected" sx={{ justifySelf: 'end', alignSelf: 'start' }} />
+                )}
             </Box>
 
-            {/* Designer Contact Info */}
-            <Box sx={{display: 'flex', gap: 3, mb: 3}}>
-                <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+            <Divider sx={{ my: 1.5 }} />
+
+            {/* Details */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mb: 1 }}>
+                <Chip size="small" variant="outlined" icon={<CalendarIcon style={{ fontSize: 14 }} />} label={`${designer.deliveryWithIn} days`} sx={{ height: 26 }} />
+                <Chip size="small" variant="outlined" icon={<EditOutlined style={{ fontSize: 14 }} />} label={`${designer.revisionTime === UNLIMITED_REVISION_CODE ? 'Unlimited' : designer.revisionTime} revisions`} sx={{ height: 26 }} />
+                {designer.extraRevisionPrice > 0 && (
+                    <Chip size="small" variant="outlined" icon={<EditOutlined style={{ fontSize: 14 }} />} label={`Extra: ${formatPrice(designer.extraRevisionPrice)}`} sx={{ height: 26, gridColumn: 'span 2' }} />
+                )}
+            </Box>
+
+            {/* Contact */}
+            <Box sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.5,
+                p: 1,
+                border: '1px solid #e2e8f0',
+                borderRadius: 2,
+                backgroundColor: '#f8fafc',
+                color: '#475569',
+                mb: 1
+            }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0, flex: 1 }}>
                     <MailOutlined style={{color: '#64748b'}}/>
-                    <Typography.Text type="secondary" style={{fontSize: '13px'}}>
+                    <Typography.Text style={{fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
                         {designer.designer.customer.account.email}
                     </Typography.Text>
                 </Box>
-                <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                <Divider orientation="vertical" flexItem sx={{ borderColor: '#e2e8f0' }} />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <PhoneOutlined style={{color: '#64748b'}}/>
-                    <Typography.Text type="secondary" style={{fontSize: '13px'}}>
-                        {designer.designer.customer.phone}
-                    </Typography.Text>
+                    <Typography.Text style={{fontSize: '12px'}}>{designer.designer.customer.phone}</Typography.Text>
                 </Box>
             </Box>
 
-            <Divider style={{margin: '16px 0'}}/>
 
-            {/* Quotation Details */}
-            <Box>
-                <Typography.Title level={6} style={{margin: '0 0 16px 0', color: '#475569'}}>
-                    Quotation Details
-                </Typography.Title>
-                <Paper
-                    elevation={isSelected ? 4 : 1}
-                    sx={{
-                        border: isSelected ? '2px solid #2e7d32' : '1px solid #e2e8f0',
-                        padding: '20px',
-                        borderRadius: '12px',
-                        cursor: 'pointer',
-                        backgroundColor: isSelected ? '#e8f5e8' : '#ffffff',
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                            borderColor: '#2e7d32',
-                            backgroundColor: isSelected ? '#e8f5e8' : '#f8fafc',
-                            transform: 'translateY(-2px)',
-                            boxShadow: '0 8px 25px rgba(46, 125, 50, 0.15)',
-                        },
-                    }}
-                    onClick={() => onSelect(designer.id)}
-                    onKeyPress={handleKeyPress}
-                    tabIndex={0}
-                    role="button"
-                    aria-label={`Select quotation from ${designer.designer.customer.name}`}
-                >
-                    <Box sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        mb: 2
-                    }}>
-                        {isSelected && (
-                            <CheckCircleOutlined style={{color: '#2e7d32', fontSize: '20px'}}/>
-                        )}
+            {/* Footer note (optional) */}
+            {designer.note && (
+                <Box sx={{
+                    mt: 1,
+                    p: 1.5,
+                    backgroundColor: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 1.5,
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 1
+                }}>
+                    <FileTextOutlined style={{ color: '#64748b', fontSize: 16, marginTop: 2 }} />
+                    <Box>
+                        <Typography.Text style={{ fontSize: 12, color: '#1f2937', fontWeight: 600 }}>Note</Typography.Text>
+                        <Typography.Paragraph
+                            style={{ margin: 0, fontSize: 12, color: '#475569' }}
+                            ellipsis={{ rows: 3, tooltip: designer.note }}
+                        >
+                            {designer.note}
+                        </Typography.Paragraph>
                     </Box>
-
-                    <Typography.Title level={4} style={{margin: '8px 0', color: '#1e293b'}}>
-                        {formatPrice(designer.price)}
-                    </Typography.Title>
-
-                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 1}}>
-                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                            <CalendarIcon style={{color: '#64748b', fontSize: '14px'}}/>
-                            <Typography.Text style={{fontSize: '13px', color: '#475569'}}>
-                                <strong>{designer.deliveryWithIn} days</strong> design time
-                            </Typography.Text>
-                        </Box>
-                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                            <EditOutlined style={{color: '#64748b', fontSize: '14px'}}/>
-                            <Typography.Text style={{fontSize: '13px', color: '#475569'}}>
-                                Up to <strong>{designer.revisionTime === UNLIMITED_REVISION_CODE ? 'Unlimited' : designer.revisionTime}</strong> revisions
-                            </Typography.Text>
-                        </Box>
-                        {designer.extraRevisionPrice > 0 && (
-                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                                <EditOutlined style={{color: '#64748b', fontSize: '14px'}}/>
-                                <Typography.Text style={{fontSize: '13px', color: '#475569'}}>
-                                    Extra revision: <strong>{formatPrice(designer.extraRevisionPrice)}</strong>
-                                </Typography.Text>
-                            </Box>
-                        )}
-                        {designer.note && (
-                            <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 1}}>
-                                <FileTextOutlined style={{
-                                    color: '#64748b',
-                                    fontSize: '14px',
-                                    marginTop: '2px'
-                                }}/>
-                                <Typography.Text style={{
-                                    fontSize: '13px',
-                                    color: '#475569',
-                                    fontStyle: 'italic'
-                                }}>
-                                    {designer.note}
-                                </Typography.Text>
-                            </Box>
-                        )}
-                    </Box>
-                </Paper>
-            </Box>
+                </Box>
+            )}
         </Paper>
     );
 });
@@ -235,22 +211,37 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
     // Applied designers data
     const [appliedDesigners, setAppliedDesigners] = useState([]);
     const [showRequestDetail, setShowRequestDetail] = useState(false);
+    const [sortCriteria, setSortCriteria] = useState([]); // [{ key: 'rating'|'acceptanceDeadline'|'deliveryWithIn'|'revisionTime'|'price', order: 'asc'|'desc' }]
 
     // Memoized values
-    const selectedDesigner = useMemo(() => 
+    const selectedDesigner = useMemo(() =>
         appliedDesigners.find(d => d.id === selectedQuotation?.designerId),
         [appliedDesigners, selectedQuotation]
     );
 
-    const extraRevisionCost = useMemo(() => 
+    const extraRevisionCost = useMemo(() =>
         extraRevision * (selectedDesigner?.extraRevisionPrice || 0),
         [extraRevision, selectedDesigner]
     );
 
-    const isUnlimitedRevisions = useMemo(() => 
+    const isUnlimitedRevisions = useMemo(() =>
         selectedDesigner?.revisionTime === UNLIMITED_REVISION_CODE,
         [selectedDesigner]
     );
+
+    const totalCost = useMemo(() => {
+        const base = selectedDesigner?.price || 0;
+        const extra = isUnlimitedRevisions ? 0 : extraRevisionCost;
+        const fee = Math.round(serviceFee(base + extra));
+        return Math.round(base + extra + fee);
+    }, [selectedDesigner, isUnlimitedRevisions, extraRevisionCost]);
+    const baseAndExtra = useMemo(() => {
+        const base = selectedDesigner?.price || 0;
+        const extra = isUnlimitedRevisions ? 0 : extraRevisionCost;
+        return { base, extra };
+    }, [selectedDesigner, isUnlimitedRevisions, extraRevisionCost]);
+    const feeAmount = useMemo(() => Math.round(serviceFee(baseAndExtra.base + baseAndExtra.extra)), [baseAndExtra]);
+    const exceedsCap = totalCost > 200000000;
 
     const regularItems = useMemo(() => (request?.items || []).filter(i => i.category === 'regular'), [request]);
     const peItems = useMemo(() => (request?.items || []).filter(i => i.category === 'pe'), [request]);
@@ -267,6 +258,27 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
         }
     }, [request]);
 
+    // Restore saved sort criteria on mount
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem('designerSortCriteria');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed)) {
+                    const sanitized = parsed.filter(c => c && typeof c.key === 'string' && (c.order === 'asc' || c.order === 'desc'));
+                    if (sanitized.length) setSortCriteria(sanitized);
+                }
+            }
+        } catch {}
+    }, []);
+
+    // Persist sort criteria changes
+    useEffect(() => {
+        try {
+            localStorage.setItem('designerSortCriteria', JSON.stringify(sortCriteria));
+        } catch {}
+    }, [sortCriteria]);
+
     // Optimized event handlers
     const handleQuotationSelect = useCallback((designerId) => {
         const quotation = appliedDesigners.find(d => d.id === designerId);
@@ -274,7 +286,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
             setSelectedQuotation({designerId, quotationId: designerId});
             setPaymentDetails({quotation, request});
             setError(null);
-            
+
             // Reset extra revision if the selected quotation has unlimited revisions
             if (quotation.revisionTime === UNLIMITED_REVISION_CODE) {
                 setExtraRevision(0);
@@ -294,22 +306,29 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
         try {
             setIsProcessing(true);
             setError(null);
-            
+
             if (!selectedQuotation) {
                 setError('Please select a quotation first.');
                 return;
             }
-            
+
             const selectedDesigner = appliedDesigners.find(d => d.id === selectedQuotation.designerId);
             const isUnlimited = selectedDesigner?.revisionTime === UNLIMITED_REVISION_CODE;
-            
+            const basePrice = selectedDesigner?.price || 0;
+            const extraCost = isUnlimited ? 0 : (extraRevision * (selectedDesigner?.extraRevisionPrice || 0));
+            const total = Math.round(basePrice + extraCost + serviceFee(basePrice + extraCost));
+            if (total > 200000000) {
+                setError('Total amount cannot exceed 200,000,000 VND. Please reduce extra revisions.');
+                return;
+            }
+
             // Only store extra revision if not unlimited
             if (!isUnlimited) {
                 sessionStorage.setItem('extraRevision', extraRevision.toString());
             } else {
                 sessionStorage.setItem('extraRevision', '0');
             }
-            
+
             handleOpenPaymentModal();
         } catch (error) {
             setError('An error occurred. Please try again.');
@@ -330,6 +349,66 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
     const handleExtraRevisionChange = useCallback((value) => {
         setExtraRevision(Math.max(0, Math.min(value, MAX_EXTRA_REVISIONS)));
     }, []);
+
+    const DEFAULT_SORT_ORDER = {
+        rating: 'desc',
+        acceptanceDeadline: 'asc',
+        deliveryWithIn: 'asc',
+        revisionTime: 'desc',
+        price: 'asc'
+    };
+
+    const handleSortChange = useCallback((values) => {
+        setSortCriteria(prev => {
+            const prevMap = new Map(prev.map(c => [c.key, c.order]));
+            const next = values.map(key => ({ key, order: prevMap.get(key) || DEFAULT_SORT_ORDER[key] || 'asc' }));
+            return next;
+        });
+    }, []);
+
+    const handleToggleSortOrder = useCallback((key) => {
+        setSortCriteria(prev => prev.map(c => c.key === key ? { ...c, order: c.order === 'asc' ? 'desc' : 'asc' } : c));
+    }, []);
+
+    const handleResetSort = useCallback(() => {
+        setSortCriteria([]);
+        try { localStorage.removeItem('designerSortCriteria'); } catch {}
+    }, []);
+
+    const getComparableValue = (d, key) => {
+        switch (key) {
+            case 'rating':
+                return Number(d?.designer?.rating ?? 0);
+            case 'acceptanceDeadline':
+                return new Date(d?.acceptanceDeadline || 0).getTime() || 0;
+            case 'deliveryWithIn':
+                return Number(d?.deliveryWithIn ?? Number.MAX_SAFE_INTEGER);
+            case 'revisionTime': {
+                const val = Number(d?.revisionTime ?? 0);
+                return val === UNLIMITED_REVISION_CODE ? Number.MAX_SAFE_INTEGER : val;
+            }
+            case 'price':
+                return Number(d?.price ?? Number.MAX_SAFE_INTEGER);
+            default:
+                return 0;
+        }
+    };
+
+    const sortedDesigners = useMemo(() => {
+        if (!sortCriteria.length) return appliedDesigners;
+        const copy = [...appliedDesigners];
+        copy.sort((a, b) => {
+            for (const c of sortCriteria) {
+                const av = getComparableValue(a, c.key);
+                const bv = getComparableValue(b, c.key);
+                if (av === bv) continue;
+                const cmp = av < bv ? -1 : 1;
+                return c.order === 'asc' ? cmp : -cmp;
+            }
+            return 0;
+        });
+        return copy;
+    }, [appliedDesigners, sortCriteria]);
 
     // Loading state
     if (!request) {
@@ -361,7 +440,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                         key="confirmSelection"
                         type="primary"
                         onClick={handleConfirmSelection}
-                        disabled={!selectedQuotation || isProcessing}
+                        disabled={!selectedQuotation || isProcessing || exceedsCap}
                         icon={isProcessing ? <Spin size="small" /> : <CheckCircleOutlined/>}
                         style={{
                             backgroundColor: '#2e7d32',
@@ -375,7 +454,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
             default:
                 return null;
         }
-    }, [onCancel, handleConfirmSelection, selectedQuotation, isProcessing]);
+    }, [onCancel, handleConfirmSelection, selectedQuotation, isProcessing, exceedsCap]);
 
     return (
         <Modal
@@ -399,7 +478,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
             open={visible}
             onCancel={onCancel}
             centered
-            width={1000}
+            width={1280}
             styles={{
                 body: {
                     maxHeight: '70vh',
@@ -478,6 +557,47 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                             Review and select from the designers who have applied to your request. Each designer offers
                             different quotations with varying timelines and features.
                         </Typography.Text>
+                        {/* Sort controls (only show when viewing designers) */}
+                        {showDesigners && (
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2, flexWrap: 'wrap' }}>
+                                <Select
+                                    mode="multiple"
+                                    allowClear
+                                    placeholder="Sort by (priority left → right)"
+                                    style={{ minWidth: 360 }}
+                                    value={sortCriteria.map(c => c.key)}
+                                    onChange={handleSortChange}
+                                    options={[
+                                        { label: 'Rating', value: 'rating' },
+                                        { label: 'Valid until', value: 'acceptanceDeadline' },
+                                        { label: 'Delivery time', value: 'deliveryWithIn' },
+                                        { label: 'Revisions', value: 'revisionTime' },
+                                        { label: 'Price', value: 'price' }
+                                    ]}
+                                />
+                                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                    {sortCriteria.map(c => (
+                                        <Chip
+                                            key={c.key}
+                                            label={`${{
+                                                rating: 'Rating',
+                                                acceptanceDeadline: 'Valid until',
+                                                deliveryWithIn: 'Delivery',
+                                                revisionTime: 'Revisions',
+                                                price: 'Price'
+                                            }[c.key]} ${c.order === 'asc' ? '↑' : '↓'}`}
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() => handleToggleSortOrder(c.key)}
+                                            sx={{ cursor: 'pointer', height: 26 }}
+                                        />
+                                    ))}
+                                </Box>
+                                <Button onClick={handleResetSort} type="default">
+                                    Reset sort
+                                </Button>
+                            </Box>
+                        )}
                     </Box>
 
                     {/* Request Detail Panel */}
@@ -588,14 +708,19 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
 
                     {/* Designers List */}
                     {showDesigners && (
-                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
-                            {appliedDesigners.map((designer, index) => (
-                                <DesignerCard
-                                    key={index}
-                                    designer={designer}
-                                    isSelected={selectedQuotation && selectedQuotation.designerId === designer.id}
-                                    onSelect={handleQuotationSelect}
-                                />
+                        <Box sx={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                            gap: 3
+                        }}>
+                            {sortedDesigners.map((designer, index) => (
+                                <Box key={index} sx={{ minWidth: 0 }}>
+                                    <DesignerCard
+                                        designer={designer}
+                                        isSelected={selectedQuotation && selectedQuotation.designerId === designer.id}
+                                        onSelect={handleQuotationSelect}
+                                    />
+                                </Box>
                             ))}
                         </Box>
                     )}
@@ -620,7 +745,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                 from {appliedDesigners.find(d => d.id === selectedQuotation.designerId)?.designer.customer.name}.
                             </Typography.Text>
 
-                                                        {/* Extra Revision Selection */}
+                                                         {/* Extra Revision Selection */}
                             {(() => {
                                 if (isUnlimitedRevisions) {
                                     return (
@@ -883,23 +1008,49 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                             </Box>
                                         )}
 
-                                        {/* Benefits */}
-                                        {extraRevision > 0 && (
-                                            <Box sx={{
-                                                p: 2,
-                                                backgroundColor: '#f0fdf4',
-                                                borderRadius: 2,
-                                                border: '1px solid #bbf7d0'
-                                            }}>
-                                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
-                                                    <CheckCircleOutlined style={{color: '#16a34a', fontSize: '14px'}}/>
-                                                    <Typography.Text style={{fontSize: '12px', color: '#166534'}}>
-                                                        <strong>Benefits:</strong> More design iterations, better final
-                                                        result, faster approval process
+                                        {/* Payment Summary */}
+                                        <Box sx={{
+                                            p: 2.5,
+                                            backgroundColor: '#ffffff',
+                                            borderRadius: 2,
+                                            border: '1px solid #e2e8f0'
+                                        }}>
+                                            <Typography.Text style={{ fontWeight: 700, color: '#1e293b' }}>
+                                                Payment Summary
+                                            </Typography.Text>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+                                                <Typography.Text style={{ color: '#475569' }}>Base price</Typography.Text>
+                                                <Typography.Text style={{ color: '#1e293b', fontWeight: 600 }}>
+                                                    {baseAndExtra.base.toLocaleString('vi-VN')} VND
+                                                </Typography.Text>
+                                            </Box>
+                                            {!isUnlimitedRevisions && (
+                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
+                                                    <Typography.Text style={{ color: '#475569' }}>Extra revisions</Typography.Text>
+                                                    <Typography.Text style={{ color: '#1e293b', fontWeight: 600 }}>
+                                                        {baseAndExtra.extra.toLocaleString('vi-VN')} VND
                                                     </Typography.Text>
                                                 </Box>
+                                            )}
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
+                                                <Typography.Text style={{ color: '#475569' }}>Service fee</Typography.Text>
+                                                <Typography.Text style={{ color: '#1e293b', fontWeight: 600 }}>
+                                                    {feeAmount.toLocaleString('vi-VN')} VND
+                                                </Typography.Text>
                                             </Box>
-                                        )}
+                                            <Divider sx={{ my: 1 }} />
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <Typography.Text style={{ color: '#1e293b', fontWeight: 700 }}>Total</Typography.Text>
+                                                <Typography.Title level={4} style={{ margin: 0, color: '#16a34a' }}>
+                                                    {totalCost.toLocaleString('vi-VN')} VND
+                                                </Typography.Title>
+                                            </Box>
+                                            {exceedsCap && (
+                                                <Typography.Text style={{ color: '#dc2626', fontSize: 12 }}>
+                                                    Total exceeds the maximum allowed (200,000,000 VND). Please reduce extra revisions.
+                                                </Typography.Text>
+                                            )}
+                                        </Box>
                                     </Box>
                                 </Box>
                             </Box>
