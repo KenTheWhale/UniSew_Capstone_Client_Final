@@ -328,112 +328,112 @@ export default function GarmentDashboardLayout() {
                         </List>
 
                         {/* Analytics Section */}
-                        <Typography
-                            variant="overline"
-                            sx={{
-                                px: 2,
-                                pb: 1,
-                                color: '#6c757d',
-                                fontWeight: 700,
-                                fontSize: '0.75rem',
-                                letterSpacing: '1px'
-                            }}
-                        >
-                            ANALYTICS
-                        </Typography>
-                        <List sx={{mb: 3}}>
-                            <ListItem disablePadding>
-                                <ListItemButton
-                                    sx={{
-                                        borderRadius: 2,
-                                        mx: 1,
-                                        my: 0.5,
-                                        background: activeMenu === 'reports'
-                                            ? 'linear-gradient(135deg, #059669 0%, #047857 100%)'
-                                            : 'transparent',
-                                        color: activeMenu === 'reports' ? 'white' : '#495057',
-                                        boxShadow: activeMenu === 'reports'
-                                            ? '0 4px 12px rgba(5, 150, 105, 0.3)'
-                                            : 'none',
-                                        '&:hover': {
-                                            background: activeMenu === 'reports'
-                                                ? 'linear-gradient(135deg, #047857 0%, #065f46 100%)'
-                                                : 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
-                                            color: activeMenu === 'reports' ? 'white' : '#059669',
-                                            transform: 'translateY(-1px)',
-                                            boxShadow: activeMenu === 'reports'
-                                                ? '0 6px 16px rgba(5, 150, 105, 0.4)'
-                                                : '0 4px 12px rgba(5, 150, 105, 0.2)'
-                                        },
-                                        transition: 'all 0.3s ease'
-                                    }}
-                                    onClick={() => window.location.href = '/garment/reports'}
-                                >
-                                    <ListItemIcon sx={{color: activeMenu === 'reports' ? 'white' : 'inherit'}}>
-                                        <Assessment/>
-                                    </ListItemIcon>
-                                    <ListItemText
-                                        primary="Reports & Analytics"
-                                        sx={{fontWeight: 600}}
-                                    />
-                                </ListItemButton>
-                            </ListItem>
-                        </List>
+                        {/*<Typography*/}
+                        {/*    variant="overline"*/}
+                        {/*    sx={{*/}
+                        {/*        px: 2,*/}
+                        {/*        pb: 1,*/}
+                        {/*        color: '#6c757d',*/}
+                        {/*        fontWeight: 700,*/}
+                        {/*        fontSize: '0.75rem',*/}
+                        {/*        letterSpacing: '1px'*/}
+                        {/*    }}*/}
+                        {/*>*/}
+                        {/*    ANALYTICS*/}
+                        {/*</Typography>*/}
+                        {/*<List sx={{mb: 3}}>*/}
+                        {/*    <ListItem disablePadding>*/}
+                        {/*        <ListItemButton*/}
+                        {/*            sx={{*/}
+                        {/*                borderRadius: 2,*/}
+                        {/*                mx: 1,*/}
+                        {/*                my: 0.5,*/}
+                        {/*                background: activeMenu === 'reports'*/}
+                        {/*                    ? 'linear-gradient(135deg, #059669 0%, #047857 100%)'*/}
+                        {/*                    : 'transparent',*/}
+                        {/*                color: activeMenu === 'reports' ? 'white' : '#495057',*/}
+                        {/*                boxShadow: activeMenu === 'reports'*/}
+                        {/*                    ? '0 4px 12px rgba(5, 150, 105, 0.3)'*/}
+                        {/*                    : 'none',*/}
+                        {/*                '&:hover': {*/}
+                        {/*                    background: activeMenu === 'reports'*/}
+                        {/*                        ? 'linear-gradient(135deg, #047857 0%, #065f46 100%)'*/}
+                        {/*                        : 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',*/}
+                        {/*                    color: activeMenu === 'reports' ? 'white' : '#059669',*/}
+                        {/*                    transform: 'translateY(-1px)',*/}
+                        {/*                    boxShadow: activeMenu === 'reports'*/}
+                        {/*                        ? '0 6px 16px rgba(5, 150, 105, 0.4)'*/}
+                        {/*                        : '0 4px 12px rgba(5, 150, 105, 0.2)'*/}
+                        {/*                },*/}
+                        {/*                transition: 'all 0.3s ease'*/}
+                        {/*            }}*/}
+                        {/*            onClick={() => window.location.href = '/garment/reports'}*/}
+                        {/*        >*/}
+                        {/*            <ListItemIcon sx={{color: activeMenu === 'reports' ? 'white' : 'inherit'}}>*/}
+                        {/*                <Assessment/>*/}
+                        {/*            </ListItemIcon>*/}
+                        {/*            <ListItemText*/}
+                        {/*                primary="Reports & Analytics"*/}
+                        {/*                sx={{fontWeight: 600}}*/}
+                        {/*            />*/}
+                        {/*        </ListItemButton>*/}
+                        {/*    </ListItem>*/}
+                        {/*</List>*/}
 
                         <Divider sx={{my: 3, borderColor: '#e9ecef'}}/>
 
                         {/* Account Management Section */}
-                        <Typography
-                            variant="overline"
-                            sx={{
-                                px: 2,
-                                pb: 1,
-                                color: '#6c757d',
-                                fontWeight: 700,
-                                fontSize: '0.75rem',
-                                letterSpacing: '1px'
-                            }}
-                        >
-                            ACCOUNT MANAGEMENT
-                        </Typography>
-                        <List sx={{mb: 3}}>
-                            <ListItem disablePadding>
-                                <ListItemButton 
-                                    sx={{
-                                        borderRadius: 2,
-                                        mx: 1,
-                                        my: 0.5,
-                                        background: activeMenu === 'settings'
-                                            ? 'linear-gradient(135deg, #059669 0%, #047857 100%)'
-                                            : 'transparent',
-                                        color: activeMenu === 'settings' ? 'white' : '#495057',
-                                        boxShadow: activeMenu === 'settings'
-                                            ? '0 4px 12px rgba(5, 150, 105, 0.3)'
-                                            : 'none',
-                                        '&:hover': {
-                                            background: activeMenu === 'settings'
-                                                ? 'linear-gradient(135deg, #047857 0%, #065f46 100%)'
-                                                : 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
-                                            color: activeMenu === 'settings' ? 'white' : '#059669',
-                                            transform: 'translateY(-1px)',
-                                            boxShadow: activeMenu === 'settings'
-                                                ? '0 6px 16px rgba(5, 150, 105, 0.4)'
-                                                : '0 4px 12px rgba(5, 150, 105, 0.2)'
-                                        },
-                                        transition: 'all 0.3s ease'
-                                    }}
-                                    onClick={() => window.location.href = '/garment/settings'}
-                                >
-                                    <ListItemIcon sx={{color: activeMenu === 'settings' ? 'white' : 'inherit'}}>
-                                        <Settings/>
-                                    </ListItemIcon>
-                                    <ListItemText 
-                                        primary="Settings"
-                                        sx={{fontWeight: 600}}
-                                    />
-                                </ListItemButton>
-                            </ListItem>
-                        </List>
+                        {/*<Typography*/}
+                        {/*    variant="overline"*/}
+                        {/*    sx={{*/}
+                        {/*        px: 2,*/}
+                        {/*        pb: 1,*/}
+                        {/*        color: '#6c757d',*/}
+                        {/*        fontWeight: 700,*/}
+                        {/*        fontSize: '0.75rem',*/}
+                        {/*        letterSpacing: '1px'*/}
+                        {/*    }}*/}
+                        {/*>*/}
+                        {/*    ACCOUNT MANAGEMENT*/}
+                        {/*</Typography>*/}
+                        {/*<List sx={{mb: 3}}>*/}
+                        {/*    <ListItem disablePadding>*/}
+                        {/*        <ListItemButton */}
+                        {/*            sx={{*/}
+                        {/*                borderRadius: 2,*/}
+                        {/*                mx: 1,*/}
+                        {/*                my: 0.5,*/}
+                        {/*                background: activeMenu === 'settings'*/}
+                        {/*                    ? 'linear-gradient(135deg, #059669 0%, #047857 100%)'*/}
+                        {/*                    : 'transparent',*/}
+                        {/*                color: activeMenu === 'settings' ? 'white' : '#495057',*/}
+                        {/*                boxShadow: activeMenu === 'settings'*/}
+                        {/*                    ? '0 4px 12px rgba(5, 150, 105, 0.3)'*/}
+                        {/*                    : 'none',*/}
+                        {/*                '&:hover': {*/}
+                        {/*                    background: activeMenu === 'settings'*/}
+                        {/*                        ? 'linear-gradient(135deg, #047857 0%, #065f46 100%)'*/}
+                        {/*                        : 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',*/}
+                        {/*                    color: activeMenu === 'settings' ? 'white' : '#059669',*/}
+                        {/*                    transform: 'translateY(-1px)',*/}
+                        {/*                    boxShadow: activeMenu === 'settings'*/}
+                        {/*                        ? '0 6px 16px rgba(5, 150, 105, 0.4)'*/}
+                        {/*                        : '0 4px 12px rgba(5, 150, 105, 0.2)'*/}
+                        {/*                },*/}
+                        {/*                transition: 'all 0.3s ease'*/}
+                        {/*            }}*/}
+                        {/*            onClick={() => window.location.href = '/garment/settings'}*/}
+                        {/*        >*/}
+                        {/*            <ListItemIcon sx={{color: activeMenu === 'settings' ? 'white' : 'inherit'}}>*/}
+                        {/*                <Settings/>*/}
+                        {/*            </ListItemIcon>*/}
+                        {/*            <ListItemText */}
+                        {/*                primary="Settings"*/}
+                        {/*                sx={{fontWeight: 600}}*/}
+                        {/*            />*/}
+                        {/*        </ListItemButton>*/}
+                        {/*    </ListItem>*/}
+                        {/*</List>*/}
 
                         {/* Logout Section */}
                         <Divider sx={{my: 3, borderColor: '#e9ecef'}}/>
