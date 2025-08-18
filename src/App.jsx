@@ -9,12 +9,12 @@ import SchoolDesign from "./components/school/design/SchoolDesign.jsx";
 import SchoolDashboardLayout from "./layouts/school/SchoolDashboardLayout.jsx";
 import Contact from "./components/auth/Contact.jsx";
 import {SnackbarProvider} from 'notistack';
-import DesignChat from "./components/school/design/DesignChat.jsx";
+import SchoolChat from "./components/school/design/SchoolChat.jsx";
 import {Slide, ThemeProvider, createTheme, CssBaseline} from '@mui/material';
 import SchoolCreateDesign from './components/school/design/SchoolCreateDesign.jsx';
 import SchoolPendingDesign from "./components/school/design/SchoolPendingDesign.jsx";
 import PaymentResult from "./components/school/PaymentResult.jsx";
-import DesignerRequestList from "./components/designer/DesignerRequestList.jsx";
+import DesignerPendingDesign from "./components/designer/DesignerPendingDesign.jsx";
 import DesignerDashboardLayout from "./layouts/designer/DesignerDashboardLayout.jsx";
 import PrivacyPolicy from "./components/auth/PrivacyPolicy.jsx";
 import HowItWork from "./components/auth/HowItWork.jsx";
@@ -27,7 +27,7 @@ import AppliedRequestDetail from "./components/designer/AppliedRequestDetail.jsx
 import SchoolProfile from "./components/school/profile/SchoolProfile.jsx";
 import DesignerProfile from "./components/designer/profile/DesignerProfile.jsx";
 import SchoolOrderManagement from "./components/school/order/SchoolOrderManagement.jsx";
-import CreateOrder from "./components/school/order/CreateOrder.jsx";
+import SchoolCreateOrder from "./components/school/order/SchoolCreateOrder.jsx";
 import GarmentDashboardLayout from "./layouts/garment/GarmentDashboardLayout.jsx";
 import GarmentOrderList from "./components/garment/GarmentOrderList.jsx";
 import GarmentOrderDetail from "./components/garment/GarmentOrderDetail.jsx";
@@ -157,7 +157,7 @@ const router = createBrowserRouter([
             },
             {
                 path: 'chat',
-                element: <DesignChat />
+                element: <SchoolChat />
             },
             {
                 path: 'request/create',
@@ -181,7 +181,7 @@ const router = createBrowserRouter([
             },
             {
                 path: 'order/create',
-                element: <CreateOrder/>
+                element: <SchoolCreateOrder/>
             }
         ]
     },
@@ -221,7 +221,7 @@ const router = createBrowserRouter([
             },
             {
                 path: 'requests',
-                element: <DesignerRequestList />
+                element: <DesignerPendingDesign />
             },
             {
                 path: 'chat',
