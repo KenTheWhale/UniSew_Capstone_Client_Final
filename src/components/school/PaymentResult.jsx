@@ -42,10 +42,10 @@ export default function PaymentResult() {
     let orderDetails = null;
     let revisionPurchaseDetails = null;
     let isOrderPayment = paymentType === 'order';
-    let isRevisionPurchase = paymentType === 'design';
+    let isRevisionPurchase = paymentType === 'revision';
 
     // Check if we have valid payment data
-    const hasDesignPayment = sessionStorage.getItem('paymentQuotationDetails');
+    const hasDesignPayment = !isOrderPayment && !isRevisionPurchase && sessionStorage.getItem('paymentQuotationDetails');
     const hasOrderPayment = isOrderPayment && sessionStorage.getItem('orderPaymentDetails');
     const hasRevisionPurchase = isRevisionPurchase && sessionStorage.getItem('revisionPurchaseDetails');
 
@@ -113,6 +113,20 @@ export default function PaymentResult() {
                         } else {
                             console.error('Failed to approve order quotation');
                         }
+                    } else if (isRevisionPurchase && revisionPurchaseDetails) {
+                        // For revision purchase: call buyExtraRevision API
+                        const response = await buyExtraRevision(
+                            revisionPurchaseDetails.requestId,
+                            revisionPurchaseDetails.revisionQuantity,
+                            revisionPurchaseDetails.requestData?.finalDesignQuotation?.designer?.customer?.id || revisionPurchaseDetails.requestData?.designer?.id,
+                            parseInt(vnpAmount) / 100,
+                            vnpResponseCode
+                        );
+                        if (response && response.status === 200) {
+                            console.log('Extra revisions purchased successfully');
+                        } else {
+                            console.error('Failed to purchase extra revisions');
+                        }
                     } else if (quotationDetails) {
                         // For design payment: pick quotation with transaction details
                         const data = {
@@ -132,24 +146,10 @@ export default function PaymentResult() {
                         };
                         
                         const response = await pickQuotation(data);
-                    if (response && response.status === 200) {
-                            console.log('Design quotation picked successfully');
-                    } else {
-                            console.error('Failed to pick design quotation');
-                        }
-                    } else if (isRevisionPurchase && revisionPurchaseDetails) {
-                        // For revision purchase: call buyExtraRevision API
-                        const response = await buyExtraRevision(
-                            revisionPurchaseDetails.requestId,
-                            revisionPurchaseDetails.revisionQuantity,
-                            revisionPurchaseDetails.requestData?.finalDesignQuotation?.designer?.customer?.id || revisionPurchaseDetails.requestData?.designer?.id,
-                            parseInt(vnpAmount) / 100,
-                            vnpResponseCode
-                        );
                         if (response && response.status === 200) {
-                            console.log('Extra revisions purchased successfully');
+                            console.log('Design quotation picked successfully');
                         } else {
-                            console.error('Failed to purchase extra revisions');
+                            console.error('Failed to pick design quotation');
                         }
                     }
                 } catch (error) {
