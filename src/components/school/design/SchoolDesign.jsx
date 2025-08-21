@@ -19,6 +19,8 @@ import PendingIcon from '@mui/icons-material/Pending';
 import { Table, Space } from 'antd';
 import 'antd/dist/reset.css';
 import RequestDetailPopup, { statusTag } from '../popup/RequestDetailPopup';
+import FindingDesignerPopup from '../popup/FindingDesignerPopup.jsx';
+import DesignPaymentPopup from '../popup/DesignPaymentPopup';
 import { useNavigate } from 'react-router-dom';
 import {getSchoolDesignRequests} from "../../../services/DesignService.jsx";
 import { parseID } from "../../../utils/ParseIDUtil.jsx";
@@ -26,7 +28,7 @@ import { parseID } from "../../../utils/ParseIDUtil.jsx";
 // Constants
 const STATUS_COLORS = {
     completed: '#2e7d32',
-    processing: '#f57c00',
+    processing: '#7c3aed',
     canceled: '#d32f2f'
 };
 
@@ -129,27 +131,39 @@ export default function SchoolDesign() {
 
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedRequest, setSelectedRequest] = useState(null);
+    const [isPaymentModalVisible, setIsPaymentModalVisible] = useState(false);
+    const [paymentRequestDetails, setPaymentRequestDetails] = useState(null);
     
-    // Memoized filtered data
+    // Memoized filtered data - now includes all requests
     const filteredDesignRequests = useMemo(() => 
-        designRequests.filter(request => request.status !== 'pending'),
+        designRequests, // Show all requests including pending
         [designRequests]
     );
 
     // Memoized statistics
     const stats = useMemo(() => {
         const total = filteredDesignRequests.length;
+        const pending = filteredDesignRequests.filter(req => req.status === 'pending').length;
         const completed = filteredDesignRequests.filter(req => req.status === 'completed').length;
         const processing = filteredDesignRequests.filter(req => req.status === 'processing').length;
         const canceled = filteredDesignRequests.filter(req => req.status === 'canceled').length;
         
-        return { total, completed, processing, canceled };
+        return { total, pending, completed, processing, canceled };
     }, [filteredDesignRequests]);
 
     const handleViewDetail = useCallback((id) => {
         const request = designRequests.find(req => req.id === id);
         setSelectedRequest(request);
-        setIsModalVisible(true);
+
+        // Only open FindingDesignerPopup for 'pending' status
+        if (request.status === 'pending') {
+            setPaymentRequestDetails(null);
+            setIsPaymentModalVisible(false);
+            setIsModalVisible(true);
+        } else {
+            // For non-pending requests, open RequestDetailPopup
+            setIsModalVisible(true);
+        }
     }, [designRequests]);
 
     const handleCreateDesignRequest = useCallback(() => {
@@ -159,6 +173,16 @@ export default function SchoolDesign() {
     const handleCancel = useCallback(() => {
         setIsModalVisible(false);
         setSelectedRequest(null);
+    }, []);
+
+    const handleCloseDesignerModal = useCallback(() => {
+        setIsModalVisible(false);
+        setSelectedRequest(null);
+    }, []);
+
+    const handleClosePaymentModal = useCallback(() => {
+        setIsPaymentModalVisible(false);
+        setPaymentRequestDetails(null);
     }, []);
 
     // Memoized table columns
@@ -191,23 +215,45 @@ export default function SchoolDesign() {
             title: 'Request Date',
             dataIndex: 'creationDate',
             key: 'creationDate',
-            align: 'center',
-            width: 140,
+            align: 'left',
+            width: 200,
             sorter: (a, b) => new Date(a.creationDate) - new Date(b.creationDate),
-            render: (text) => (
-                <Typography variant="body2" sx={{ color: '#475569' }}>
-                    {formatDate(text)}
-                </Typography>
-            ),
+            render: (text) => {
+                const date = new Date(text);
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                const daysDiff = Math.floor((new Date() - date) / (1000 * 60 * 60 * 24));
+
+                return (
+                    <Box>
+                        <Typography variant="body2" sx={{color: '#475569', fontSize: '0.875rem'}}>
+                            {`${day}/${month}/${year}`}
+                        </Typography>
+                        <Typography variant="caption"
+                                    sx={{color: daysDiff > 30 ? '#dc2626' : '#64748b', fontSize: '0.75rem'}}>
+                            {daysDiff < 1 ? 'Today' : `${daysDiff} days ago`}
+                        </Typography>
+                    </Box>
+                );
+            },
         },
         {
             title: 'Name',
             dataIndex: 'name',
             key: 'name',
             align: 'left',
-            width: 'auto',
+            minWidth: 200,
+            ellipsis: true,
             render: (text) => (
-                <Typography variant="body2" sx={{ color: '#1e293b', fontWeight: 500 }}>
+                <Typography
+                    variant="body2"
+                    sx={{
+                        color: '#1e293b',
+                        fontWeight: 500,
+                        fontSize: '0.875rem'
+                    }}
+                >
                     {text}
                 </Typography>
             ),
@@ -216,7 +262,8 @@ export default function SchoolDesign() {
             title: 'Actions',
             key: 'actions',
             align: 'center',
-            width: 100,
+            width: 150,
+            fixed: 'right',
             render: (_, record) => (
                 <Space size="middle">
                     <Tooltip title="View Details">
@@ -326,18 +373,25 @@ export default function SchoolDesign() {
                         bgColor="#e8f5e8"
                     />
                     <StatCard
-                        icon={<CheckCircleIcon sx={{ color: STATUS_COLORS.completed, fontSize: 24 }} />}
-                        value={stats.completed}
-                        label="Completed"
-                        color={STATUS_COLORS.completed}
-                        bgColor="#e8f5e8"
+                        icon={<PendingIcon sx={{ color: '#f57c00', fontSize: 24 }} />}
+                        value={stats.pending}
+                        label="Pending"
+                        color="#f57c00"
+                        bgColor="#fff3e0"
                     />
                     <StatCard
                         icon={<PendingIcon sx={{ color: STATUS_COLORS.processing, fontSize: 24 }} />}
                         value={stats.processing}
                         label="Processing"
                         color={STATUS_COLORS.processing}
-                        bgColor="#fff3e0"
+                        bgColor="#f3f4f6"
+                    />
+                    <StatCard
+                        icon={<CheckCircleIcon sx={{ color: STATUS_COLORS.completed, fontSize: 24 }} />}
+                        value={stats.completed}
+                        label="Completed"
+                        color={STATUS_COLORS.completed}
+                        bgColor="#e8f5e8"
                     />
                     <StatCard
                         icon={<Typography variant="h6" sx={{ color: STATUS_COLORS.canceled, fontWeight: 700 }}>✕</Typography>}
@@ -367,7 +421,7 @@ export default function SchoolDesign() {
                                 color: "#1e293b"
                             }}
                         >
-                            Recent Design Requests
+                            All Design Requests
                         </Typography>
                         <Chip
                             label={`${stats.total} Total`}
@@ -388,7 +442,7 @@ export default function SchoolDesign() {
                             defaultPageSize: 5,
                             pageSizeOptions: TABLE_PAGE_SIZE_OPTIONS,
                             showSizeChanger: true,
-                            showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total} requests`,
+                            showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total} design requests`,
                             style: { marginTop: 16 }
                         }}
                         scroll={{ x: 'max-content' }}
@@ -401,11 +455,32 @@ export default function SchoolDesign() {
                 </Box>
             </Paper>
 
-            <RequestDetailPopup 
-                visible={isModalVisible}
-                onCancel={handleCancel}
-                request={selectedRequest}
-            />
+            {/* RequestDetailPopup for non-pending requests */}
+            {selectedRequest && selectedRequest.status !== 'pending' && (
+                <RequestDetailPopup 
+                    visible={isModalVisible}
+                    onCancel={handleCancel}
+                    request={selectedRequest}
+                />
+            )}
+
+            {/* FindingDesignerPopup for pending requests */}
+            {selectedRequest && selectedRequest.status === 'pending' && (
+                <FindingDesignerPopup
+                    visible={isModalVisible}
+                    onCancel={handleCloseDesignerModal}
+                    request={selectedRequest}
+                />
+            )}
+
+            {/* DesignPaymentPopup */}
+            {isPaymentModalVisible && (
+                <DesignPaymentPopup
+                    visible={isPaymentModalVisible}
+                    onCancel={handleClosePaymentModal}
+                    selectedQuotationDetails={paymentRequestDetails}
+                />
+            )}
         </Box>
     );
 }

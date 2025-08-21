@@ -177,7 +177,10 @@ export default function QuotationViewer({ visible, onCancel, orderId }) {
             const amount = quotation.price + fee; // Include service fee in payment amount
             const description = `Thanh toan don hang tu ${quotation.garmentName}`;
             const orderType = 'order';
-            const returnUrl = `/school/payment/result?orderType=order&quotationId=${quotation.id}`;
+            const returnUrl = `/school/payment/result?quotationId=${quotation.id}`;
+            
+            // Store payment type in sessionStorage for PaymentResult component
+            sessionStorage.setItem('currentPaymentType', orderType);
             
             const paymentResponse = await getPaymentUrl(amount, description, orderType, returnUrl);
             

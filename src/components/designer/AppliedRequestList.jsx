@@ -10,10 +10,16 @@ import {
     IconButton,
     Paper,
     Tooltip,
-    Typography
+    Typography,
+    Card,
+    CardContent
 } from "@mui/material";
-import {Info as InfoIcon} from '@mui/icons-material';
-import {Space, Table} from 'antd';
+import {
+    Info as InfoIcon,
+    Refresh as RefreshIcon,
+    Assignment as AssignmentIcon
+} from '@mui/icons-material';
+import {Space, Table, Empty} from 'antd';
 import 'antd/dist/reset.css';
 import {statusTag} from '../school/popup/RequestDetailPopup';
 import AppliedRequestDetail from './AppliedRequestDetail';
@@ -21,13 +27,264 @@ import {parseID} from "../../utils/ParseIDUtil.jsx";
 import {getAppliedDesignerDesignRequests} from "../../services/DesignService.jsx";
 import { useLocation, useNavigate } from 'react-router-dom';
 
+// Constants
+const TABLE_PAGE_SIZE_OPTIONS = ['5', '10'];
 
+// Utility functions
+const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+};
+
+const calculateDaysDiff = (dateString) => {
+    const requestDate = new Date(dateString);
+    const today = new Date();
+    requestDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    const timeDiff = today.getTime() - requestDate.getTime();
+    return Math.floor(timeDiff / (1000 * 3600 * 24));
+};
+
+// Extracted Components
+const StatCard = React.memo(({icon, value, label, color, bgColor}) => (
+    <Card
+        elevation={0}
+        sx={{
+            flex: 1,
+            border: "1px solid #e2e8f0",
+            borderRadius: 2,
+            transition: "all 0.3s ease",
+            "&:hover": {
+                borderColor: color,
+                transform: "translateY(-2px)",
+                boxShadow: `0 4px 15px ${color}20`
+            }
+        }}
+    >
+        <CardContent sx={{textAlign: "center", p: 2}}>
+            <Box
+                sx={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: "50%",
+                    backgroundColor: bgColor,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    mx: "auto",
+                    mb: 1.5
+                }}
+            >
+                {icon}
+            </Box>
+            <Typography variant="h5" sx={{fontWeight: 700, color, mb: 0.5}}>
+                {value}
+            </Typography>
+            <Typography variant="body2" sx={{color: "#64748b", fontWeight: 500}}>
+                {label}
+            </Typography>
+        </CardContent>
+    </Card>
+));
+
+const LoadingState = React.memo(() => (
+    <Box sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '60vh',
+        flexDirection: 'column',
+        gap: 3
+    }}>
+        <CircularProgress size={60} sx={{color: '#667eea'}}/>
+        <Typography variant="h6" sx={{color: '#2c3e50', fontWeight: 600}}>
+            Loading Applied Design Requests...
+        </Typography>
+    </Box>
+));
+
+const ErrorState = React.memo(({error, onRetry, isRetrying}) => (
+    <Box sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '60vh',
+        flexDirection: 'column',
+        gap: 3
+    }}>
+        <Box sx={{
+            textAlign: 'center',
+            p: 4,
+            borderRadius: 2,
+            border: '1px solid #fecaca',
+            backgroundColor: '#fef2f2',
+            maxWidth: 500
+        }}>
+            <Typography variant="h6" sx={{color: '#dc2626', fontWeight: 600, mb: 2}}>
+                Error Loading Data
+            </Typography>
+            <Typography variant="body1" sx={{color: '#7f1d1d', mb: 3}}>
+                {error}
+            </Typography>
+            <Button
+                variant="contained"
+                onClick={onRetry}
+                disabled={isRetrying}
+                startIcon={isRetrying ? <CircularProgress size={16}/> : <RefreshIcon/>}
+                sx={{
+                    backgroundColor: '#dc2626',
+                    '&:hover': {
+                        backgroundColor: '#b91c1c'
+                    }
+                }}
+            >
+                {isRetrying ? 'Retrying...' : 'Retry'}
+            </Button>
+        </Box>
+    </Box>
+));
+
+const EmptyState = React.memo(() => (
+    <Box sx={{
+        textAlign: 'center',
+        py: 8,
+        px: 4
+    }}>
+        <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={
+                <Typography variant="body1" sx={{color: '#64748b', mt: 2}}>
+                    No applied design requests available
+                </Typography>
+            }
+        />
+    </Box>
+));
+
+const HeaderSection = React.memo(({onRefresh}) => (
+    <Box
+        sx={{
+            mb: 4,
+            position: "relative",
+            p: 4,
+            borderRadius: 3,
+            background: "linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.08) 100%)",
+            border: "1px solid rgba(102, 126, 234, 0.1)",
+            "&::before": {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: "url('/unisew.jpg') center/cover",
+                opacity: 0.15,
+                borderRadius: 3,
+                zIndex: -1
+            }
+        }}
+    >
+        <Box sx={{display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2}}>
+            <Box sx={{display: "flex", alignItems: "center"}}>
+                <AssignmentIcon sx={{fontSize: 32, mr: 2, color: "#667eea"}}/>
+                <Typography
+                    variant="h4"
+                    sx={{
+                        fontWeight: 700,
+                        color: "#2c3e50",
+                        fontSize: {xs: "1.5rem", md: "2rem"}
+                    }}
+                >
+                    Applied Design Requests
+                </Typography>
+            </Box>
+        </Box>
+        <Typography
+            variant="body1"
+            sx={{
+                color: "#64748b",
+                fontSize: "1rem",
+                lineHeight: 1.6,
+                mb: 3
+            }}
+        >
+            View your accepted and paid design projects. Track the progress of your ongoing work and completed projects.
+        </Typography>
+    </Box>
+));
+
+
+
+const TableSection = React.memo(({
+    columns,
+    filteredDesignRequests,
+    loading
+}) => (
+    <Paper
+        elevation={0}
+        sx={{
+            borderRadius: 2,
+            border: "1px solid #e2e8f0",
+            overflow: "hidden"
+        }}
+    >
+        <Box sx={{p: 3, backgroundColor: "white"}}>
+            <Box sx={{display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3}}>
+                <Typography
+                    variant="h6"
+                    sx={{
+                        fontWeight: 700,
+                        color: "#2c3e50"
+                    }}
+                >
+                    Applied Design Requests
+                </Typography>
+                <Chip
+                    label={`${filteredDesignRequests.length} Applied`}
+                    sx={{
+                        backgroundColor: "rgba(102, 126, 234, 0.1)",
+                        color: "#667eea",
+                        fontWeight: 600
+                    }}
+                />
+            </Box>
+
+            {filteredDesignRequests.length === 0 ? (
+                <EmptyState/>
+            ) : (
+                <Table
+                    columns={columns}
+                    dataSource={filteredDesignRequests}
+                    rowKey="id"
+                    loading={loading}
+                    pagination={{
+                        defaultPageSize: 5,
+                        pageSizeOptions: TABLE_PAGE_SIZE_OPTIONS,
+                        showSizeChanger: true,
+                        showQuickJumper: true,
+                        showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total} requests`,
+                        style: {marginTop: 16}
+                    }}
+                    scroll={{x: 'max-content'}}
+                    style={{
+                        backgroundColor: 'white',
+                        borderRadius: '8px'
+                    }}
+                    rowHoverColor="#f8fafc"
+                />
+            )}
+        </Box>
+    </Paper>
+));
 
 export default function AppliedRequestList() {
     const [designRequests, setDesignRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-
+    const [isRetrying, setIsRetrying] = useState(false);
 
     const location = useLocation();
     const navigate = useNavigate();
@@ -53,12 +310,10 @@ export default function AppliedRequestList() {
         }
     }, [loading, openIdParam, designRequests, navigate]);
 
-
-
     // Fetch applied design requests from API
-    const fetchDesignRequests = async () => {
+    const fetchDesignRequests = async (showLoading = true) => {
         try {
-            setLoading(true);
+            if (showLoading) setLoading(true);
             setError('');
             const response = await getAppliedDesignerDesignRequests();
             if (response && response.status === 200) {
@@ -72,6 +327,7 @@ export default function AppliedRequestList() {
             setError('An error occurred while fetching applied design requests');
         } finally {
             setLoading(false);
+            setIsRetrying(false);
         }
     };
 
@@ -79,21 +335,22 @@ export default function AppliedRequestList() {
         fetchDesignRequests();
     }, []);
 
+    // Refresh data when user returns from other pages
+    useEffect(() => {
+        const handleFocus = () => {
+            fetchDesignRequests(false);
+        };
+
+        window.addEventListener('focus', handleFocus);
+        return () => {
+            window.removeEventListener('focus', handleFocus);
+        };
+    }, []);
+
     // No need to filter since the API already returns applied requests
     const filteredDesignRequests = designRequests;
 
-    // Calculate statistics
-    filteredDesignRequests.filter(req => {
-        const requestDate = new Date(req.creationDate);
-        const now = new Date();
-        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        return requestDate >= weekAgo;
-    }).length;
-    filteredDesignRequests.filter(req => {
-        const requestDate = new Date(req.creationDate);
-        const now = new Date();
-        return requestDate.getMonth() === now.getMonth() && requestDate.getFullYear() === now.getFullYear();
-    }).length;
+
 
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedRequest, setSelectedRequest] = useState(null);
@@ -110,7 +367,12 @@ export default function AppliedRequestList() {
     };
 
     const handleRetry = () => {
+        setIsRetrying(true);
         fetchDesignRequests();
+    };
+
+    const handleRefresh = () => {
+        fetchDesignRequests(false);
     };
 
     const columns = [
@@ -153,19 +415,17 @@ export default function AppliedRequestList() {
             width: 150,
             sorter: (a, b) => new Date(a.creationDate) - new Date(b.creationDate),
             render: (text) => {
-                const date = new Date(text);
-                const day = String(date.getDate()).padStart(2, '0');
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const year = date.getFullYear();
-                const daysDiff = Math.floor((new Date() - date) / (1000 * 60 * 60 * 24));
-
+                const daysDiff = calculateDaysDiff(text);
                 return (
-                    <Box sx={{textAlign: 'left'}}>
-                        <Typography variant="body2" sx={{fontWeight: 600, color: '#2c3e50'}}>
-                            {`${day}/${month}/${year}`}
+                    <Box>
+                        <Typography variant="body2" sx={{color: '#475569'}}>
+                            {formatDate(text)}
                         </Typography>
-                        <Typography variant="caption" sx={{color: daysDiff > 30 ? '#e74c3c' : '#7f8c8d'}}>
-                            {daysDiff < 0 ? 0 : daysDiff} day(s) ago
+                        <Typography variant="caption" sx={{
+                            color: daysDiff < 1 ? '#059669' : daysDiff < 10 ? '#f59e0b' : '#dc2626',
+                            fontWeight: 600
+                        }}>
+                            {daysDiff < 1 ? 'Today' : daysDiff === 1 ? '1 day ago' : `${daysDiff} days ago`}
                         </Typography>
                     </Box>
                 );
@@ -210,12 +470,11 @@ export default function AppliedRequestList() {
                             onClick={() => handleViewDetail(record.id)}
                             sx={{
                                 color: '#667eea',
-                                background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
                                 '&:hover': {
-                                    background: 'linear-gradient(135deg, #bbdefb 0%, #90caf9 100%)',
+                                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
                                     transform: 'scale(1.1)'
                                 },
-                                transition: 'all 0.3s ease'
+                                transition: 'all 0.2s ease'
                             }}
                             size="small"
                         >
@@ -228,114 +487,28 @@ export default function AppliedRequestList() {
     ];
 
     if (loading) {
-        return (
-            <Container maxWidth="xl" sx={{py: 3}}>
-                <Box sx={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    minHeight: '60vh',
-                    flexDirection: 'column',
-                    gap: 3
-                }}>
-                    <CircularProgress size={60} sx={{color: '#667eea'}}/>
-                    <Typography variant="h6" sx={{color: '#2c3e50', fontWeight: 600}}>
-                        Loading Applied Design Requests...
-                    </Typography>
-                </Box>
-            </Container>
-        );
+        return <LoadingState/>;
     }
 
     if (error) {
-        return (
-            <Container maxWidth="xl" sx={{py: 3}}>
-                <Alert
-                    severity="error"
-                    sx={{mb: 3}}
-                    action={
-                        <Button color="inherit" size="small" onClick={handleRetry}>
-                            Retry
-                        </Button>
-                    }
-                >
-                    {error}
-                </Alert>
-            </Container>
-        );
+        return <ErrorState error={error} onRetry={handleRetry} isRetrying={isRetrying}/>;
     }
 
     return (
-        <Container maxWidth="xl" sx={{py: 3}}>
-            {/* Header Section */}
-            <Box sx={{mb: 4}}>
-                <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3}}>
-                    <Box>
-                        <Typography variant="h3" sx={{fontWeight: 800, color: '#2c3e50', mb: 1}}>
-                            Applied Design Requests
-                        </Typography>
-                        <Typography variant="body1" sx={{color: '#7f8c8d', fontSize: '1.1rem'}}>
-                            View your accepted and paid design projects
-                        </Typography>
-                    </Box>
-                </Box>
-            </Box>
+        <Box sx={{height: '100%', overflowY: 'auto'}}>
+            <HeaderSection onRefresh={handleRefresh}/>
 
-            {/* Table Section */}
-            <Paper elevation={8} sx={{
-                borderRadius: 3,
-                overflow: 'hidden',
-                background: 'rgba(255, 255, 255, 0.95)',
-                backdropFilter: 'blur(10px)'
-            }}>
-                <Box sx={{p: 3, background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)'}}>
-                    <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
-                        <Typography variant="h5" sx={{fontWeight: 700, color: '#2c3e50'}}>
-                            Paid Design Requests
-                        </Typography>
-                        <Chip
-                            label={`${filteredDesignRequests.length} Applied`}
-                            color="primary"
-                            sx={{
-                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                color: 'white',
-                                fontWeight: 600
-                            }}
-                        />
-                    </Box>
-                </Box>
-
-                <Divider/>
-
-                <Box sx={{p: 3}}>
-                    <Table
-                        columns={columns}
-                        dataSource={filteredDesignRequests}
-                        rowKey="id"
-                        pagination={{
-                            defaultPageSize: 5,
-                            pageSizeOptions: ['5', '10'],
-                            showSizeChanger: true,
-                            showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total} requests`,
-                            style: {marginTop: 16}
-                        }}
-                        scroll={{x: 'max-content', y: '60vh'}}
-                        style={{
-                            backgroundColor: 'transparent',
-                            borderRadius: '8px'
-                        }}
-                        rowClassName={(record, index) =>
-                            index % 2 === 0 ? 'table-row-even' : 'table-row-odd'
-                        }
-                    />
-                </Box>
-            </Paper>
+            <TableSection
+                columns={columns}
+                filteredDesignRequests={filteredDesignRequests}
+                loading={loading}
+            />
 
             <AppliedRequestDetail
                 visible={isModalVisible}
                 onCancel={handleCancel}
                 request={selectedRequest}
             />
-        </Container>
+        </Box>
     );
 }
