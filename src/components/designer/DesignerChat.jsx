@@ -41,7 +41,18 @@ import {Box, Chip, Container, Dialog, DialogActions, DialogContent, DialogTitle,
 import EmojiPicker from 'emoji-picker-react';
 import {useSnackbar} from 'notistack';
 import {parseID} from '../../utils/ParseIDUtil.jsx';
-import {addDoc, collection, onSnapshot, query, serverTimestamp, where, doc, setDoc} from 'firebase/firestore';
+import {
+    addDoc,
+    collection,
+    onSnapshot,
+    query,
+    serverTimestamp,
+    where,
+    doc,
+    setDoc,
+    getDocs,
+    writeBatch
+} from 'firebase/firestore';
 import {auth, db} from "../../configs/FirebaseConfig.jsx";
 import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
 import {GiSkirt} from "react-icons/gi";
@@ -54,6 +65,7 @@ import {
 } from "../../services/DesignService.jsx";
 import {uploadCloudinary} from "../../services/UploadImageService.jsx";
 import AppliedRequestDetail from './AppliedRequestDetail.jsx';
+import { Badge } from "antd";
 
 const {TextArea} = Input;
 
@@ -130,46 +142,94 @@ const getItemIcon = (itemType) => {
 
 export function UseDesignerChatMessages(roomId) {
     const [chatMessages, setChatMessages] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    const me = auth.currentUser?.email || "";
 
     useEffect(() => {
         if (!roomId) return;
-        const messageRef = collection(db, "messages");
-        const queryMessages = query(messageRef, where("room", "==", roomId));
-        const unsubscribe = onSnapshot(queryMessages, (snapshot) => {
-            const messages = [];
-            snapshot.forEach((d) => messages.push({...d.data(), id: d.id}));
-            messages.sort((a, b) => a.createdAt?.seconds - b.createdAt?.seconds);
-            setChatMessages(messages);
-        });
-        return () => unsubscribe();
-    }, [roomId]);
+        const qAll = query(collection(db, "messages"), where("room", "==", roomId));
 
-    const sendMessage = async (text) => {
-        if (!text) return;
-        const messageRef = collection(db, "messages");
+        const unsubAll = onSnapshot(qAll, (snap) => {
+            const msgs = [];
+            snap.forEach((d) => msgs.push({ ...d.data(), id: d.id }));
+            msgs.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+            setChatMessages(msgs);
+        });
+
+        // stream đếm chưa đọc từ đối phương
+        const qUnread = query(
+            collection(db, "messages"),
+            where("room", "==", roomId),
+            where("read", "==", false)
+        );
+        const unsubUnread = onSnapshot(qUnread, (snap) => {
+            let count = 0;
+            snap.forEach((d) => {
+                const data = d.data();
+                if (data.senderEmail !== me) count++;
+            });
+            setUnreadCount(count);
+        });
+
+        return () => {
+            unsubAll();
+            unsubUnread();
+        };
+    }, [roomId, me]);
+
+    const sendMessage = async (textOrPayload) => {
+        if (!roomId) return;
         const email = auth.currentUser?.email || "designer@unknown";
         const displayName = auth.currentUser?.displayName || "Designer";
 
-        await addDoc(messageRef, {
-            text,
+        const payload =
+            typeof textOrPayload === "string"
+                ? { text: textOrPayload }
+                : { ...textOrPayload };
+
+        await addDoc(collection(db, "messages"), {
+            ...payload,                // {text?, imageUrl? ...}
             createdAt: serverTimestamp(),
             user: displayName,
             senderEmail: email,
             room: roomId,
+            read: false,               // 👈 mặc định chưa đọc
         });
 
-        const roomDocRef = doc(db, "chatRooms", roomId);
         await setDoc(
-            roomDocRef,
-            {
-                lastMessage: text,
-                updatedAt: serverTimestamp(),
-            },
-            {merge: true}
+            doc(db, "chatRooms", roomId),
+            { lastMessage: payload.text || "[image]", updatedAt: serverTimestamp() },
+            { merge: true }
         );
     };
 
-    return {chatMessages, sendMessage};
+    const markAsRead = async () => {
+        if (!roomId) return;
+        const q = query(
+            collection(db, "messages"),
+            where("room", "==", roomId),
+            where("read", "==", false)
+        );
+        const snap = await getDocs(q);
+        if (snap.empty) return;
+
+        const batch = writeBatch(db);
+        let count = 0;
+        snap.forEach((d) => {
+            const data = d.data();
+            if (data.senderEmail !== me) {
+                batch.update(doc(db, "messages", d.id), {
+                    read: true,
+                    readAt: serverTimestamp(),
+                });
+                count++;
+            }
+        });
+        if (count > 0) await batch.commit();
+    };
+
+    return { chatMessages, unreadCount, sendMessage, markAsRead };
 }
 
 // New DeliverySubmissionModal component for designers
@@ -1818,13 +1878,18 @@ export default function DesignerChat() {
     const [finalDelivery, setFinalDelivery] = useState(null);
     const [isFinalDesignSet, setIsFinalDesignSet] = useState(false);
     const roomId = requestData?.id;
-    const {chatMessages, sendMessage} = UseDesignerChatMessages(roomId);
     const [newMessage, setNewMessage] = useState('');
     const [isChatOpen, setIsChatOpen] = useState(false);
     const isViewOnly = requestData?.status === 'completed';
     const schoolName = requestData?.school?.business || 'School';
     const [isOpenButtonHover, setIsOpenButtonHover] = useState(false);
     const emojiPickerRef = useRef(null);
+
+     const { chatMessages, unreadCount, sendMessage, markAsRead } = UseDesignerChatMessages(roomId);
+
+     useEffect(() => {
+           if (isChatOpen) markAsRead();
+         }, [isChatOpen, chatMessages, markAsRead]);
 
     // Fetch design deliveries from API
     const fetchDesignDeliveries = async (designRequestId) => {
@@ -2978,6 +3043,7 @@ export default function DesignerChat() {
                         </Box>
                     </Paper>
                 ) : (
+                    <Badge count={unreadCount} overflowCount={99} offset={[-6, 6]}>
                     <Button
                         type="primary"
                         shape="circle"
@@ -2998,6 +3064,7 @@ export default function DesignerChat() {
                             border: 'none'
                         }}
                     />
+                    </Badge>
                 )}
             </Box>
         </Box>
