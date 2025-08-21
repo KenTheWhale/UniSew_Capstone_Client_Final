@@ -172,7 +172,12 @@ function ResultDeliveryModal({visible, onCancel, resultDelivery}) {
                                 background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(27, 94, 32, 0.08) 100%)'
                             }}
                         >
-                            <Box sx={{p: 1.5, bgcolor: 'rgba(46, 125, 50, 0.1)', borderRadius: 6, border: '1px solid rgba(46, 125, 50, 0.2)'}}>
+                            <Box sx={{
+                                p: 1.5,
+                                bgcolor: 'rgba(46, 125, 50, 0.1)',
+                                borderRadius: 6,
+                                border: '1px solid rgba(46, 125, 50, 0.2)'
+                            }}>
                                 <Text style={{color: '#1e293b', fontSize: '14px', lineHeight: 1.6}}>
                                     {resultDelivery.note}
                                 </Text>
@@ -360,7 +365,7 @@ function ResultDeliveryModal({visible, onCancel, resultDelivery}) {
     );
 }
 
-export default function RequestDetailPopup({visible, onCancel, request}) {
+export default function RequestDetailPopup({visible, onCancel, request, hideFooterButtons = false}) {
     const [extraRevision, setExtraRevision] = useState(0);
     const [showExtraRevisionModal, setShowExtraRevisionModal] = useState(false);
     const [showResultDeliveryModal, setShowResultDeliveryModal] = useState(false);
@@ -516,22 +521,24 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                 <Col span={8} style={{display: 'flex', justifyContent: 'flex-end', textAlign: 'right'}}>
                                     <Space direction="vertical" size="small">
                                         {statusTag(request.status)}
-                                        <Text style={{color: '#64748b', fontSize: '12px'}}>
-                                            Privacy: {request.privacy ? 'Private' : 'Public'}
-                                        </Text>
+                                        <Box sx={{height: '12px'}}></Box>
                                     </Space>
                                 </Col>
                             </Row>
                         </Card>
 
-                        {/* Main Content - Two Columns */}
-                        <Row gutter={[16, 16]}>
-                            {/* Left Column - Designer & Quotation */}
-                            <Col span={12}>
-                                <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                        {/* Designer & Service Summary - Full Width */}
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            gap: 2,
+                            marginTop: '16px',
+                            alignItems: 'stretch'
+                        }}>
 
                                     {/* Designer Info */}
                                     {request.finalDesignQuotation && (
+                                <Box sx={{flex: 1}}>
                                         <Card
                                             title={
                                                 <Space>
@@ -545,7 +552,8 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                             size="small"
                                             style={{
                                                 border: '1px solid #e2e8f0',
-                                                borderRadius: 8
+                                            borderRadius: 8,
+                                            height: '100%'
                                             }}
                                         >
                                             <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
@@ -625,10 +633,12 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                                 </Col>
                                             </Row>
                                         </Card>
+                                </Box>
                                     )}
 
                                     {/* Service Summary */}
                                     {request.finalDesignQuotation && (
+                                <Box sx={{flex: 1}}>
                                         <Card
                                             title={
                                                 <Space>
@@ -642,7 +652,8 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                             size="small"
                                             style={{
                                                 border: '1px solid #e2e8f0',
-                                                borderRadius: 8
+                                            borderRadius: 8,
+                                            height: '100%'
                                             }}
                                         >
                                             <Row gutter={[8, 8]} style={{display: 'flex'}}>
@@ -749,9 +760,11 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                                 </Box>
                                             )}
                                         </Card>
+                                </Box>
                                     )}
+                        </Box>
 
-                                    {/* Logo Design */}
+                        {/* Logo Design - Full Width */}
                                     {request.logoImage && (
                                         <Card
                                             title={
@@ -763,7 +776,8 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                             size="small"
                                             style={{
                                                 border: '1px solid #e2e8f0',
-                                                borderRadius: 8
+                                    borderRadius: 8,
+                                    marginTop: '16px'
                                             }}
                                         >
                                             <Box sx={{display: 'flex', justifyContent: 'center', p: 1}}>
@@ -776,11 +790,8 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                             </Box>
                                         </Card>
                                     )}
-                                </Box>
-                            </Col>
 
-                            {/* Right Column - Requested Design Items */}
-                            <Col span={12}>
+                        {/* Requested Design Items - Full Width */}
                                 <Card
                                     title={
                                         <Space>
@@ -795,39 +806,150 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                     style={{
                                         border: '1px solid #e2e8f0',
                                         borderRadius: 8,
-                                        height: 'fit-content'
+                                height: 'fit-content',
+                                marginTop: '16px'
                                     }}
                                 >
-                                    <Row gutter={[12, 12]}>
-                                        {request.items?.map((item, index) => (
-                                            <Col span={12} key={index}>
                                                 <Box sx={{
-                                                    p: 2,
-                                                    border: '1px solid #e2e8f0',
+                                display: 'flex',
+                                flexDirection: 'row',
+                                gap: 2,
+                                alignItems: 'stretch',
+                                minHeight: '200px'
+                            }}>
+                                {/* Boy Section */}
+                                {(() => {
+                                    const boyItems = request.items?.filter(item => item.gender === 'boy') || [];
+                                    if (boyItems.length > 0) {
+                                        const regularItems = boyItems.filter(item => item.category === 'regular');
+                                        const peItems = boyItems.filter(item => item.category === 'pe');
+
+                                        return (
+                                            <Box sx={{flex: 1}}>
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 1,
+                                                    mb: 1,
+                                                    p: 1,
+                                                    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.15) 100%)',
+                                                    borderRadius: 6,
+                                                    border: '1px solid rgba(59, 130, 246, 0.2)'
+                                                }}>
+                                                    <Box sx={{
+                                                        display: 'flex',
+                                                        justifyContent: 'center',
+                                                        alignItems: 'center',
+                                                        width: 24,
+                                                        height: 24,
+                                                        borderRadius: '50%',
+                                                        background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                                                        color: 'white',
+                                                        fontSize: '12px',
+                                                        fontWeight: 600
+                                                    }}>
+                                                        👦
+                                                    </Box>
+                                                    <Text style={{
+                                                        fontSize: '12px',
+                                                        fontWeight: 600,
+                                                        color: '#1e40af',
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.5px'
+                                                    }}>
+                                                        Boy ({boyItems.length} cloths)
+                                                    </Text>
+                                                </Box>
+
+                                                {/* Regular Uniform Subsection */}
+                                                {regularItems.length > 0 && (
+                                                    <Box sx={{mb: 1.5}}>
+                                                        <Box sx={{
+                                                            p: 1.5,
+                                                            background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(22, 163, 74, 0.08) 100%)',
                                                     borderRadius: 8,
-                                                    background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
-                                                    height: '100%',
+                                                            border: '1px solid rgba(34, 197, 94, 0.15)',
                                                     display: 'flex',
                                                     flexDirection: 'column',
+                                                            gap: 1,
+                                                            height: '100%'
+                                                        }}>
+                                                            {/* Header inside the box */}
+                                                            <Box sx={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: 1,
+                                                                p: 0.75,
+                                                                background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.15) 100%)',
+                                                                borderRadius: 4,
+                                                                border: '1px solid rgba(34, 197, 94, 0.2)',
+                                                                mb: 1
+                                                            }}>
+                                                                <Box sx={{
+                                                                    display: 'flex',
+                                                                    justifyContent: 'center',
+                                                                    alignItems: 'center',
+                                                                    width: 20,
+                                                                    height: 20,
+                                                                    borderRadius: '50%',
+                                                                    background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                                                                    color: 'white',
+                                                                    fontSize: '10px',
+                                                                    fontWeight: 600
+                                                                }}>
+                                                                    🎓
+                                                                </Box>
+                                                                <Text style={{
+                                                                    fontSize: '11px',
+                                                                    fontWeight: 600,
+                                                                    color: '#15803d',
+                                                                    textTransform: 'uppercase',
+                                                                    letterSpacing: '0.3px'
+                                                                }}>
+                                                                    Regular Uniform
+                                                                    ({regularItems.length} cloths)
+                                                                </Text>
+                                                            </Box>
+                                                            <Box sx={{
+                                                                display: 'flex',
+                                                                flexDirection: 'row',
+                                                                gap: 1,
+                                                                alignItems: 'stretch'
+                                                            }}>
+                                                                {regularItems.map((item, index) => (
+                                                                    <Box
+                                                                        key={item.id || index}
+                                                                        sx={{
+                                                                            flex: 1,
+                                                                            p: 1.5,
+                                                                            border: '1px solid rgba(34, 197, 94, 0.2)',
+                                                                            borderRadius: 8,
+                                                                            background: 'linear-gradient(135deg, #ffffff 0%, rgba(34, 197, 94, 0.02) 100%)',
                                                     transition: 'all 0.3s ease',
+                                                                            position: 'relative',
+                                                                            height: '100%',
+                                                                            display: 'flex',
+                                                                            flexDirection: 'column',
                                                     '&:hover': {
-                                                        borderColor: '#2e7d32',
-                                                        boxShadow: '0 4px 15px rgba(46, 125, 50, 0.1)'
+                                                                                borderColor: '#22c55e',
+                                                                                boxShadow: '0 3px 12px rgba(34, 197, 94, 0.15)',
+                                                                                background: 'linear-gradient(135deg, #ffffff 0%, rgba(34, 197, 94, 0.05) 100%)'
                                                     }
-                                                }}>
-                                                    {/* Header */}
+                                                                        }}
+                                                                    >
+                                                                        {/* Compact Header */}
                                                     <Box sx={{
                                                         display: 'flex',
                                                         alignItems: 'center',
                                                         gap: 1,
-                                                        mb: 1.5
+                                                                            mb: 1
                                                     }}>
                                                         <Box sx={{
                                                             display: 'flex',
                                                             justifyContent: 'center',
                                                             alignItems: 'center',
-                                                            width: 32,
-                                                            height: 32,
+                                                                                width: 28,
+                                                                                height: 28,
                                                             borderRadius: 6,
                                                             background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
                                                             color: 'white',
@@ -837,75 +959,1250 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                                         </Box>
                                                         <Box sx={{flex: 1}}>
                                                             <Text strong style={{
-                                                                fontSize: '13px',
+                                                                                    fontSize: '12px',
                                                                 color: '#1e293b',
-                                                                display: 'block'
+                                                                                    display: 'block',
+                                                                                    fontWeight: 600
                                                             }}>
-                                                                {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
+                                                                                    {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {item.category}
                                                             </Text>
-                                                            <Text style={{fontSize: '11px', color: '#64748b'}}>
-                                                                {item.category.toUpperCase()}
+                                                                            </Box>
+                                                                            <Tag
+                                                                                color="green"
+                                                                                style={{
+                                                                                    margin: 0,
+                                                                                    borderRadius: '4px',
+                                                                                    fontSize: '9px',
+                                                                                    fontWeight: 600,
+                                                                                    padding: '1px 6px',
+                                                                                    height: 'auto'
+                                                                                }}
+                                                                            >
+                                                                                #{index + 1}
+                                                                            </Tag>
+                                                                        </Box>
+
+                                                                        {/* Compact Details Grid */}
+                                                                        <Box sx={{
+                                                                            display: 'grid',
+                                                                            gridTemplateColumns: '1fr 1fr',
+                                                                            gap: 1,
+                                                                            mb: 1
+                                                                        }}>
+                                                                            {/* Fabric */}
+                                                                            <Box sx={{
+                                                                                p: 1,
+                                                                                background: 'rgba(46, 125, 50, 0.08)',
+                                                                                borderRadius: 4,
+                                                                                border: '1px solid rgba(46, 125, 50, 0.15)'
+                                                                            }}>
+                                                                                <Text style={{
+                                                                                    fontSize: '9px',
+                                                                                    color: '#2e7d32',
+                                                                                    fontWeight: 600,
+                                                                                    display: 'block',
+                                                                                    mb: 0.5,
+                                                                                    textTransform: 'uppercase'
+                                                                                }}>
+                                                                                    Fabric
+                                                                                </Text>
+                                                                                <Text style={{
+                                                                                    fontSize: '10px',
+                                                                                    color: '#1e293b',
+                                                                                    fontWeight: 500
+                                                                                }}>
+                                                                                    {item.fabricName}
+                                                                                </Text>
+                                                                            </Box>
+
+                                                                            {/* Color */}
+                                                                            <Box sx={{
+                                                                                p: 1,
+                                                                                background: 'rgba(124, 58, 237, 0.08)',
+                                                                                borderRadius: 4,
+                                                                                border: '1px solid rgba(124, 58, 237, 0.15)',
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                gap: 0.5
+                                                                            }}>
+                                                                                <Box sx={{
+                                                                                    width: 12,
+                                                                                    height: 12,
+                                                                                    borderRadius: '50%',
+                                                                                    bgcolor: item.color,
+                                                                                    border: '1px solid #ffffff',
+                                                                                    boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                                                                                    flexShrink: 0
+                                                                                }}/>
+                                                                                <Box sx={{flex: 1}}>
+                                                                                    <Text style={{
+                                                                                        fontSize: '9px',
+                                                                                        color: '#7c3aed',
+                                                                                        fontWeight: 600,
+                                                                                        display: 'block',
+                                                                                        mb: 0.5,
+                                                                                        textTransform: 'uppercase'
+                                                                                    }}>
+                                                                                        Color
+                                                                                    </Text>
+                                                                                    <Text style={{
+                                                                                        fontSize: '10px',
+                                                                                        color: '#1e293b',
+                                                                                        fontWeight: 500
+                                                                                    }}>
+                                                                                        {item.color}
                                                             </Text>
                                                         </Box>
                                                     </Box>
 
-                                                    {/* Details */}
+                                                                            {/* Logo Position */}
+                                                                            {item.logoPosition ? (
                                                     <Box sx={{
+                                                                                    p: 1,
+                                                                                    background: 'rgba(255, 152, 0, 0.08)',
+                                                                                    borderRadius: 4,
+                                                                                    border: '1px solid rgba(255, 152, 0, 0.15)'
+                                                                                }}>
+                                                                                    <Text style={{
+                                                                                        fontSize: '9px',
+                                                                                        color: '#f57c00',
+                                                                                        fontWeight: 600,
+                                                                                        display: 'block',
+                                                                                        mb: 0.5,
+                                                                                        textTransform: 'uppercase'
+                                                                                    }}>
+                                                                                        Logo
+                                                                                    </Text>
+                                                                                    <Text style={{
+                                                                                        fontSize: '10px',
+                                                                                        color: '#1e293b',
+                                                                                        fontWeight: 500
+                                                                                    }}>
+                                                                                        {item.logoPosition}
+                                                                                    </Text>
+                                                                                </Box>
+                                                                            ) : (
+                                                                                <Box sx={{
+                                                                                    p: 1,
+                                                                                    border: '1px dashed rgba(255, 152, 0, 0.2)',
+                                                                                    borderRadius: 4,
+                                                                                    background: 'rgba(255, 152, 0, 0.02)',
+                                                                                    display: 'flex',
+                                                                                    alignItems: 'center',
+                                                                                    justifyContent: 'center',
+                                                                                    minHeight: '48px'
+                                                                                }}>
+                                                                                    <Text style={{
+                                                                                        fontSize: '9px',
+                                                                                        color: 'rgba(255, 152, 0, 0.5)',
+                                                                                        fontWeight: 600,
+                                                                                        textTransform: 'uppercase'
+                                                                                    }}>
+                                                                                        No Logo
+                                                                                    </Text>
+                                                                                    <Text style={{
+                                                                                        fontSize: '10px',
+                                                                                        color: '#1e293b',
+                                                                                        fontWeight: 500
+                                                                                    }}>
+                                                                                    </Text>
+                                                                                </Box>
+                                                                            )}
+
+                                                                            {/* Note */}
+                                                                            {item.note ? (
+                                                                                <Box sx={{
+                                                                                    p: 1,
+                                                                                    background: 'rgba(236, 72, 153, 0.08)',
+                                                                                    borderRadius: 4,
+                                                                                    border: '1px solid rgba(236, 72, 153, 0.15)',
+                                                                                    gridColumn: 'span 1'
+                                                                                }}>
+                                                                                    <Text style={{
+                                                                                        fontSize: '9px',
+                                                                                        color: '#ec4899',
+                                                                                        fontWeight: 600,
+                                                                                        display: 'block',
+                                                                                        mb: 0.5,
+                                                                                        textTransform: 'uppercase'
+                                                                                    }}>
+                                                                                        Note
+                                                                                    </Text>
+                                                                                    <Text style={{
+                                                                                        fontSize: '10px',
+                                                                                        color: '#1e293b',
+                                                                                        fontWeight: 500,
+                                                                                        fontStyle: 'italic'
+                                                                                    }}>
+                                                                                        {item.note}
+                                                                                    </Text>
+                                                                                </Box>
+                                                                            ) : (
+                                                                                <Box sx={{
+                                                                                    p: 1,
+                                                                                    border: '1px dashed rgba(236, 72, 153, 0.2)',
+                                                                                    borderRadius: 4,
+                                                                                    background: 'rgba(236, 72, 153, 0.02)',
+                                                                                    display: 'flex',
+                                                                                    alignItems: 'center',
+                                                                                    justifyContent: 'center',
+                                                                                    minHeight: '48px'
+                                                                                }}>
+                                                                                    <Text style={{
+                                                                                        fontSize: '9px',
+                                                                                        color: 'rgba(236, 72, 153, 0.5)',
+                                                                                        fontWeight: 600,
+                                                                                        textTransform: 'uppercase'
+                                                                                    }}>
+                                                                                        No Note
+                                                                                    </Text>
+                                                                                </Box>
+                                                                            )}
+                                                                        </Box>
+
+                                                                        {/* Compact Sample Images */}
+                                                                        <Box sx={{
+                                                                            pt: 1,
+                                                                            borderTop: '1px solid #f1f5f9',
                                                         flex: 1,
                                                         display: 'flex',
                                                         flexDirection: 'column',
-                                                        gap: 0.5
-                                                    }}>
-                                                        <Text style={{fontSize: '11px', color: '#64748b'}}>
-                                                            Fabric: {item.fabricName}
+                                                                            justifyContent: item.sampleImages && item.sampleImages.length > 0 ? 'flex-start' : 'center'
+                                                                        }}>
+                                                                            <Text style={{
+                                                                                fontSize: '9px',
+                                                                                fontWeight: 600,
+                                                                                mb: 0.5,
+                                                                                display: 'block',
+                                                                                color: '#475569',
+                                                                                textTransform: 'uppercase'
+                                                                            }}>
+                                                                                Samples
+                                                                                {item.sampleImages && item.sampleImages.length > 0 ? ` (${item.sampleImages.length})` : ' (0)'}
                                                         </Text>
+                                                                            {item.sampleImages && item.sampleImages.length > 0 ? (
+                                                                                <Box sx={{
+                                                                                    display: 'flex',
+                                                                                    gap: 0.5,
+                                                                                    flexWrap: 'wrap'
+                                                                                }}>
+                                                                                    {item.sampleImages.map((image, imgIndex) => (
+                                                                                        <Box
+                                                                                            key={imgIndex}
+                                                                                            sx={{
+                                                                                                position: 'relative',
+                                                                                                overflow: 'hidden',
+                                                                                                height: '36px',
+                                                                                                width: '36px',
+                                                                                                border: '1px solid #e2e8f0',
+                                                                                                transition: 'all 0.2s ease',
+                                                                                                '&:hover': {
+                                                                                                    borderColor: '#22c55e',
+                                                                                                    transform: 'scale(1.05)'
+                                                                                                }
+                                                                                            }}
+                                                                                        >
+                                                                                            <DisplayImage
+                                                                                                imageUrl={image.url}
+                                                                                                alt={`Sample ${imgIndex + 1}`}
+                                                                                                width="36px"
+                                                                                                height="36px"
+                                                                                            />
+                                                                                        </Box>
+                                                                                    ))}
+                                                                                </Box>
+                                                                            ) : (
+                                                                                <Box sx={{
+                                                                                    height: '36px',
+                                                                                }}>
+                                                                                    <Text style={{
+                                                                                        fontSize: '10px',
+                                                                                        color: '#94a3b8',
+                                                                                        fontStyle: 'italic'
+                                                                                    }}>
+                                                                                        No samples available
+                                                                                    </Text>
+                                                                                </Box>
+                                                                            )}
+                                                                        </Box>
+                                                                    </Box>
+                                                                ))}
+                                                            </Box>
+                                                        </Box>
+                                                    </Box>
+                                                )}
 
+                                                {/* Physical Education Uniform Subsection */}
+                                                {peItems.length > 0 && (
+                                                    <Box sx={{mb: 1.5}}>
+                                                        <Box sx={{
+                                                            p: 1.5,
+                                                            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(217, 119, 6, 0.08) 100%)',
+                                                            borderRadius: 8,
+                                                            border: '1px solid rgba(245, 158, 11, 0.15)',
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
+                                                            gap: 1
+                                                        }}>
+                                                            {/* Header inside the box */}
                                                         <Box sx={{
                                                             display: 'flex',
                                                             alignItems: 'center',
-                                                            gap: 0.5,
-                                                            mt: 0.5
-                                                        }}>
-                                                            <Text style={{fontSize: '11px', color: '#475569'}}>
-                                                                Color: {item.color}
+                                                                gap: 1,
+                                                                p: 0.75,
+                                                                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.15) 100%)',
+                                                                borderRadius: 4,
+                                                                border: '1px solid rgba(245, 158, 11, 0.2)',
+                                                                mb: 1
+                                                            }}>
+                                                                <Box sx={{
+                                                                    display: 'flex',
+                                                                    justifyContent: 'center',
+                                                                    alignItems: 'center',
+                                                                    width: 20,
+                                                                    height: 20,
+                                                                    borderRadius: '50%',
+                                                                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                                                                    color: 'white',
+                                                                    fontSize: '10px',
+                                                                    fontWeight: 600
+                                                                }}>
+                                                                    ⚽
+                                                                </Box>
+                                                                <Text style={{
+                                                                    fontSize: '11px',
+                                                                    fontWeight: 600,
+                                                                    color: '#a16207',
+                                                                    textTransform: 'uppercase',
+                                                                    letterSpacing: '0.3px'
+                                                                }}>
+                                                                    Physical Education Uniform ({peItems.length} cloths)
                                                             </Text>
+                                                            </Box>
                                                             <Box sx={{
-                                                                width: 10,
-                                                                height: 10,
+                                                                display: 'flex',
+                                                                flexDirection: 'row',
+                                                                gap: 1
+                                                            }}>
+                                                                {peItems.map((item, index) => (
+                                                                    <Box
+                                                                        key={item.id || index}
+                                                                        sx={{
+                                                                            flex: 1,
+                                                                            p: 1.5,
+                                                                            border: '1px solid rgba(245, 158, 11, 0.2)',
+                                                                            borderRadius: 8,
+                                                                            background: 'linear-gradient(135deg, #ffffff 0%, rgba(245, 158, 11, 0.02) 100%)',
+                                                                            transition: 'all 0.3s ease',
+                                                                            position: 'relative',
+                                                                            '&:hover': {
+                                                                                borderColor: '#f59e0b',
+                                                                                boxShadow: '0 3px 12px rgba(245, 158, 11, 0.15)',
+                                                                                background: 'linear-gradient(135deg, #ffffff 0%, rgba(245, 158, 11, 0.05) 100%)'
+                                                                            }
+                                                                        }}
+                                                                    >
+                                                                        {/* Compact Header */}
+                                                                        <Box sx={{
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            gap: 1,
+                                                                            mb: 1
+                                                                        }}>
+                                                                            <Box sx={{
+                                                                                display: 'flex',
+                                                                                justifyContent: 'center',
+                                                                                alignItems: 'center',
+                                                                                width: 28,
+                                                                                height: 28,
+                                                                                borderRadius: 6,
+                                                                                background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
+                                                                                color: 'white',
+                                                                                flexShrink: 0
+                                                                            }}>
+                                                                                {getItemIcon(item.type)}
+                                                                            </Box>
+                                                                            <Box sx={{flex: 1}}>
+                                                                                <Text strong style={{
+                                                                                    fontSize: '12px',
+                                                                                    color: '#1e293b',
+                                                                                    display: 'block',
+                                                                                    fontWeight: 600
+                                                                                }}>
+                                                                                    {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {item.category}
+                                                                                </Text>
+                                                                            </Box>
+                                                                            <Tag
+                                                                                color="orange"
+                                                                                style={{
+                                                                                    margin: 0,
+                                                                                    borderRadius: '4px',
+                                                                                    fontSize: '9px',
+                                                                                    fontWeight: 600,
+                                                                                    padding: '1px 6px',
+                                                                                    height: 'auto'
+                                                                                }}
+                                                                            >
+                                                                                #{index + 1}
+                                                                            </Tag>
+                                                                        </Box>
+
+                                                                        {/* Compact Details Grid */}
+                                                                        <Box sx={{
+                                                                            display: 'grid',
+                                                                            gridTemplateColumns: '1fr 1fr',
+                                                                            gap: 1,
+                                                                            mb: 1
+                                                                        }}>
+                                                                            {/* Fabric */}
+                                                                            <Box sx={{
+                                                                                p: 1,
+                                                                                background: 'rgba(46, 125, 50, 0.08)',
+                                                                                borderRadius: 4,
+                                                                                border: '1px solid rgba(46, 125, 50, 0.15)'
+                                                                            }}>
+                                                                                <Text style={{
+                                                                                    fontSize: '9px',
+                                                                                    color: '#2e7d32',
+                                                                                    fontWeight: 600,
+                                                                                    display: 'block',
+                                                                                    mb: 0.5,
+                                                                                    textTransform: 'uppercase'
+                                                                                }}>
+                                                                                    Fabric
+                                                                                </Text>
+                                                                                <Text style={{
+                                                                                    fontSize: '10px',
+                                                                                    color: '#1e293b',
+                                                                                    fontWeight: 500
+                                                                                }}>
+                                                                                    {item.fabricName}
+                                                                                </Text>
+                                                                            </Box>
+
+                                                                            {/* Color */}
+                                                                            <Box sx={{
+                                                                                p: 1,
+                                                                                background: 'rgba(124, 58, 237, 0.08)',
+                                                                                borderRadius: 4,
+                                                                                border: '1px solid rgba(124, 58, 237, 0.15)',
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                gap: 0.5
+                                                                            }}>
+                                                                                <Box sx={{
+                                                                                    width: 12,
+                                                                                    height: 12,
                                                                 borderRadius: '50%',
                                                                 bgcolor: item.color,
-                                                                border: '1px solid #e0e0e0'
-                                                            }}/>
+                                                                                    border: '1px solid #ffffff',
+                                                                                    boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                                                                                    flexShrink: 0
+                                                                                }}/>
+                                                                                <Box sx={{flex: 1}}>
+                                                                                    <Text style={{
+                                                                                        fontSize: '9px',
+                                                                                        color: '#7c3aed',
+                                                                                        fontWeight: 600,
+                                                                                        display: 'block',
+                                                                                        mb: 0.5,
+                                                                                        textTransform: 'uppercase'
+                                                                                    }}>
+                                                                                        Color
+                                                                                    </Text>
+                                                                                    <Text style={{
+                                                                                        fontSize: '10px',
+                                                                                        color: '#1e293b',
+                                                                                        fontWeight: 500
+                                                                                    }}>
+                                                                                        {item.color}
+                                                                                    </Text>
+                                                                                </Box>
                                                         </Box>
 
-                                                        {item.logoPosition && (
+                                                                            {/* Logo Position */}
+                                                                            <Box sx={{
+                                                                                p: 1,
+                                                                                background: 'rgba(255, 152, 0, 0.08)',
+                                                                                borderRadius: 4,
+                                                                                border: '1px solid rgba(255, 152, 0, 0.15)'
+                                                                            }}>
+                                                                                <Text style={{
+                                                                                    fontSize: '9px',
+                                                                                    color: '#f57c00',
+                                                                                    fontWeight: 600,
+                                                                                    display: 'block',
+                                                                                    mb: 0.5,
+                                                                                    textTransform: 'uppercase'
+                                                                                }}>
+                                                                                    Logo
+                                                                                </Text>
+                                                                                <Text style={{
+                                                                                    fontSize: '10px',
+                                                                                    color: '#1e293b',
+                                                                                    fontWeight: 500
+                                                                                }}>
+                                                                                    {item.logoPosition || 'No logo'}
+                                                                                </Text>
+                                                                            </Box>
+
+                                                                            {/* Note */}
+                                                                            <Box sx={{
+                                                                                p: 1,
+                                                                                background: 'rgba(236, 72, 153, 0.08)',
+                                                                                borderRadius: 4,
+                                                                                border: '1px solid rgba(236, 72, 153, 0.15)',
+                                                                                gridColumn: 'span 1'
+                                                                            }}>
+                                                                                <Text style={{
+                                                                                    fontSize: '9px',
+                                                                                    color: '#ec4899',
+                                                                                    fontWeight: 600,
+                                                                                    display: 'block',
+                                                                                    mb: 0.5,
+                                                                                    textTransform: 'uppercase'
+                                                                                }}>
+                                                                                    Note
+                                                                                </Text>
+                                                                                <Text style={{
+                                                                                    fontSize: '10px',
+                                                                                    color: '#1e293b',
+                                                                                    fontWeight: 500,
+                                                                                    fontStyle: 'italic'
+                                                                                }}>
+                                                                                    {item.note || 'No note'}
+                                                                                </Text>
+                                                                            </Box>
+                                                                        </Box>
+
+                                                                        {/* Compact Sample Images */}
+                                                                        {item.sampleImages && item.sampleImages.length > 0 && (
+                                                                            <Box sx={{
+                                                                                pt: 1,
+                                                                                borderTop: '1px solid #f1f5f9'
+                                                                            }}>
+                                                                                <Text style={{
+                                                                                    fontSize: '9px',
+                                                                                    fontWeight: 600,
+                                                                                    mb: 0.5,
+                                                                                    display: 'block',
+                                                                                    color: '#475569',
+                                                                                    textTransform: 'uppercase'
+                                                                                }}>
+                                                                                    Samples
+                                                                                    ({item.sampleImages.length})
+                                                                                </Text>
+                                                                                <Box sx={{
+                                                                                    display: 'flex',
+                                                                                    gap: 0.5,
+                                                                                    flexWrap: 'wrap'
+                                                                                }}>
+                                                                                    {item.sampleImages.map((image, imgIndex) => (
+                                                                                        <Box
+                                                                                            key={imgIndex}
+                                                                                            sx={{
+                                                                                                position: 'relative',
+                                                                                                overflow: 'hidden',
+                                                                                                height: '36px',
+                                                                                                width: '36px',
+                                                                                                border: '1px solid #e2e8f0',
+                                                                                                transition: 'all 0.2s ease',
+                                                                                                boxSizing: 'border-box',
+                                                                                                '&:hover': {
+                                                                                                    borderColor: '#f59e0b',
+                                                                                                    transform: 'scale(1.05)'
+                                                                                                }
+                                                                                            }}
+                                                                                        >
+                                                                                            <DisplayImage
+                                                                                                imageUrl={image.url}
+                                                                                                alt={`Sample ${imgIndex + 1}`}
+                                                                                                width="36px"
+                                                                                                height="36px"
+                                                                                            />
+                                                                                        </Box>
+                                                                                    ))}
+                                                                                </Box>
+                                                                            </Box>
+                                                                        )}
+                                                                    </Box>
+                                                                ))}
+                                                            </Box>
+                                                        </Box>
+                                                    </Box>
+                                                )}
+                                            </Box>
+                                        );
+                                    }
+                                    return null;
+                                })()}
+
+                                {/* Girl Section */}
+                                {(() => {
+                                    const girlItems = request.items?.filter(item => item.gender === 'girl') || [];
+                                    if (girlItems.length > 0) {
+                                        const regularItems = girlItems.filter(item => item.category === 'regular');
+                                        const peItems = girlItems.filter(item => item.category === 'pe');
+
+                                        return (
+                                            <Box sx={{flex: 1}}>
                                                             <Box sx={{
                                                                 display: 'flex',
                                                                 alignItems: 'center',
-                                                                gap: 0.5,
-                                                                mt: 0.5
+                                                    gap: 1,
+                                                    mb: 1,
+                                                    p: 1,
+                                                    background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.1) 0%, rgba(219, 39, 119, 0.15) 100%)',
+                                                    borderRadius: 6,
+                                                    border: '1px solid rgba(236, 72, 153, 0.2)'
+                                                }}>
+                                                    <Box sx={{
+                                                        display: 'flex',
+                                                        justifyContent: 'center',
+                                                        alignItems: 'center',
+                                                        width: 24,
+                                                        height: 24,
+                                                        borderRadius: '50%',
+                                                        background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)',
+                                                        color: 'white',
+                                                        fontSize: '12px',
+                                                        fontWeight: 600
+                                                    }}>
+                                                        👧
+                                                    </Box>
+                                                    <Text style={{
+                                                        fontSize: '12px',
+                                                        fontWeight: 600,
+                                                        color: '#be185d',
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.5px'
+                                                    }}>
+                                                        Girl ({girlItems.length} cloths)
+                                                    </Text>
+                                                </Box>
+
+                                                {/* Regular Uniform Subsection */}
+                                                {regularItems.length > 0 && (
+                                                    <Box sx={{mb: 1.5}}>
+                                                        <Box sx={{
+                                                            p: 1.5,
+                                                            background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.05) 0%, rgba(219, 39, 119, 0.08) 100%)',
+                                                            borderRadius: 8,
+                                                            border: '1px solid rgba(236, 72, 153, 0.15)',
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
+                                                            gap: 1,
+                                                            height: '100%'
+                                                        }}>
+                                                            {/* Header inside the box */}
+                                                            <Box sx={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: 1,
+                                                                p: 0.75,
+                                                                background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.1) 0%, rgba(219, 39, 119, 0.15) 100%)',
+                                                                borderRadius: 4,
+                                                                border: '1px solid rgba(236, 72, 153, 0.2)',
+                                                                mb: 1
                                                             }}>
-                                                                <Text style={{fontSize: '10px', color: '#64748b'}}>
-                                                                    Logo: {item.logoPosition}
+                                                                <Box sx={{
+                                                                    display: 'flex',
+                                                                    justifyContent: 'center',
+                                                                    alignItems: 'center',
+                                                                    width: 20,
+                                                                    height: 20,
+                                                                    borderRadius: '50%',
+                                                                    background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)',
+                                                                    color: 'white',
+                                                                    fontSize: '10px',
+                                                                    fontWeight: 600
+                                                                }}>
+                                                                    🎓
+                                                                </Box>
+                                                                <Text style={{
+                                                                    fontSize: '11px',
+                                                                    fontWeight: 600,
+                                                                    color: '#be185d',
+                                                                    textTransform: 'uppercase',
+                                                                    letterSpacing: '0.3px'
+                                                                }}>
+                                                                    Regular Uniform ({regularItems.length} cloths)
                                                                 </Text>
+                                                            </Box>
+                                                            <Box sx={{
+                                                                display: 'flex',
+                                                                flexDirection: 'row',
+                                                                gap: 1,
+                                                                alignItems: 'stretch'
+                                                            }}>
+                                                                {regularItems.map((item, index) => (
+                                                                    <Box
+                                                                        key={item.id || index}
+                                                                        sx={{
+                                                                            flex: 1,
+                                                                            p: 1.5,
+                                                                            border: '1px solid #e2e8f0',
+                                                                            borderRadius: 8,
+                                                                            background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                                                                            transition: 'all 0.3s ease',
+                                                                            position: 'relative',
+                                                                            height: '100%',
+                                                                            display: 'flex',
+                                                                            flexDirection: 'column',
+                                                                            '&:hover': {
+                                                                                borderColor: '#ec4899',
+                                                                                boxShadow: '0 3px 12px rgba(236, 72, 153, 0.1)'
+                                                                            }
+                                                                        }}
+                                                                    >
+                                                                        {/* Compact Header */}
+                                                                        <Box sx={{
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            gap: 1,
+                                                                            mb: 1
+                                                                        }}>
+                                                                            <Box sx={{
+                                                                                display: 'flex',
+                                                                                justifyContent: 'center',
+                                                                                alignItems: 'center',
+                                                                                width: 28,
+                                                                                height: 28,
+                                                                                borderRadius: 6,
+                                                                                background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
+                                                                                color: 'white',
+                                                                                flexShrink: 0
+                                                                            }}>
+                                                                                {getItemIcon(item.type)}
+                                                                            </Box>
+                                                                            <Box sx={{flex: 1}}>
+                                                                                <Text strong style={{
+                                                                                    fontSize: '12px',
+                                                                                    color: '#1e293b',
+                                                                                    display: 'block',
+                                                                                    fontWeight: 600
+                                                                                }}>
+                                                                                    {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {item.category}
+                                                                                </Text>
+                                                                            </Box>
+                                                                            <Tag
+                                                                                color="pink"
+                                                                                style={{
+                                                                                    margin: 0,
+                                                                                    borderRadius: '4px',
+                                                                                    fontSize: '9px',
+                                                                                    fontWeight: 600,
+                                                                                    padding: '1px 6px',
+                                                                                    height: 'auto'
+                                                                                }}
+                                                                            >
+                                                                                #{index + 1}
+                                                                            </Tag>
+                                                                        </Box>
+
+                                                                        {/* Compact Details Grid */}
+                                                                        <Box sx={{
+                                                                            display: 'grid',
+                                                                            gridTemplateColumns: '1fr 1fr',
+                                                                            gap: 1,
+                                                                            mb: 1
+                                                                        }}>
+                                                                            {/* Fabric */}
+                                                                            <Box sx={{
+                                                                                p: 1,
+                                                                                background: 'rgba(46, 125, 50, 0.08)',
+                                                                                borderRadius: 4,
+                                                                                border: '1px solid rgba(46, 125, 50, 0.15)'
+                                                                            }}>
+                                                                                <Text style={{
+                                                                                    fontSize: '9px',
+                                                                                    color: '#2e7d32',
+                                                                                    fontWeight: 600,
+                                                                                    display: 'block',
+                                                                                    mb: 0.5,
+                                                                                    textTransform: 'uppercase'
+                                                                                }}>
+                                                                                    Fabric
+                                                                                </Text>
+                                                                                <Text style={{
+                                                                                    fontSize: '10px',
+                                                                                    color: '#1e293b',
+                                                                                    fontWeight: 500
+                                                                                }}>
+                                                                                    {item.fabricName}
+                                                                                </Text>
+                                                                            </Box>
+
+                                                                            {/* Color */}
+                                                                            <Box sx={{
+                                                                                p: 1,
+                                                                                background: 'rgba(124, 58, 237, 0.08)',
+                                                                                borderRadius: 4,
+                                                                                border: '1px solid rgba(124, 58, 237, 0.15)',
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                gap: 0.5
+                                                                            }}>
+                                                                                <Box sx={{
+                                                                                    width: 12,
+                                                                                    height: 12,
+                                                                                    borderRadius: '50%',
+                                                                                    bgcolor: item.color,
+                                                                                    border: '1px solid #ffffff',
+                                                                                    boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                                                                                    flexShrink: 0
+                                                                                }}/>
+                                                                                <Box sx={{flex: 1}}>
+                                                                                    <Text style={{
+                                                                                        fontSize: '9px',
+                                                                                        color: '#7c3aed',
+                                                                                        fontWeight: 600,
+                                                                                        display: 'block',
+                                                                                        mb: 0.5,
+                                                                                        textTransform: 'uppercase'
+                                                                                    }}>
+                                                                                        Color
+                                                                                    </Text>
+                                                                                    <Text style={{
+                                                                                        fontSize: '10px',
+                                                                                        color: '#1e293b',
+                                                                                        fontWeight: 500
+                                                                                    }}>
+                                                                                        {item.color}
+                                                                                    </Text>
+                                                                                </Box>
+                                                                            </Box>
+
+                                                                            {/* Logo Position */}
+                                                                            {item.logoPosition ? (
+                                                                                <Box sx={{
+                                                                                    p: 1,
+                                                                                    background: 'rgba(255, 152, 0, 0.08)',
+                                                                                    borderRadius: 4,
+                                                                                    border: '1px solid rgba(255, 152, 0, 0.15)'
+                                                                                }}>
+                                                                                    <Text style={{
+                                                                                        fontSize: '9px',
+                                                                                        color: '#f57c00',
+                                                                                        fontWeight: 600,
+                                                                                        display: 'block',
+                                                                                        mb: 0.5,
+                                                                                        textTransform: 'uppercase'
+                                                                                    }}>
+                                                                                        Logo
+                                                                                    </Text>
+                                                                                    <Text style={{
+                                                                                        fontSize: '10px',
+                                                                                        color: '#1e293b',
+                                                                                        fontWeight: 500
+                                                                                    }}>
+                                                                                        {item.logoPosition}
+                                                                                    </Text>
+                                                                                </Box>
+                                                                            ) : (
+                                                                                <Box sx={{
+                                                                                    p: 1,
+                                                                                    border: '1px dashed rgba(255, 152, 0, 0.2)',
+                                                                                    borderRadius: 4,
+                                                                                    background: 'rgba(255, 152, 0, 0.02)',
+                                                                                    display: 'flex',
+                                                                                    alignItems: 'center',
+                                                                                    justifyContent: 'center',
+                                                                                    minHeight: '50px'
+                                                                                }}>
+                                                                                    <Text style={{
+                                                                                        fontSize: '9px',
+                                                                                        color: 'rgba(255, 152, 0, 0.5)',
+                                                                                        fontWeight: 600,
+                                                                                        mb: 0.5,
+                                                                                        textTransform: 'uppercase'
+                                                                                    }}>
+                                                                                        No Logo
+                                                                                    </Text>
+                                                                                </Box>
+                                                                            )}
+
+                                                                            {/* Note */}
+                                                                            {item.note ? (
+                                                                                <Box sx={{
+                                                                                    p: 1,
+                                                                                    background: 'rgba(236, 72, 153, 0.08)',
+                                                                                    borderRadius: 4,
+                                                                                    border: '1px solid rgba(236, 72, 153, 0.15)',
+                                                                                    gridColumn: 'span 1'
+                                                                                }}>
+                                                                                    <Text style={{
+                                                                                        fontSize: '9px',
+                                                                                        color: '#ec4899',
+                                                                                        fontWeight: 600,
+                                                                                        display: 'block',
+                                                                                        mb: 0.5,
+                                                                                        textTransform: 'uppercase'
+                                                                                    }}>
+                                                                                        Note
+                                                                                    </Text>
+                                                                                    <Text style={{
+                                                                                        fontSize: '10px',
+                                                                                        color: '#1e293b',
+                                                                                        fontWeight: 500,
+                                                                                        fontStyle: 'italic'
+                                                                                    }}>
+                                                                                        {item.note}
+                                                                                    </Text>
+                                                                                </Box>
+                                                                            ) : (
+                                                                                <Box sx={{
+                                                                                    p: 1,
+                                                                                    border: '1px dashed rgba(236, 72, 153, 0.2)',
+                                                                                    borderRadius: 4,
+                                                                                    background: 'rgba(236, 72, 153, 0.02)',
+                                                                                    display: 'flex',
+                                                                                    alignItems: 'center',
+                                                                                    justifyContent: 'center',
+                                                                                    minHeight: '50px'
+                                                                                }}>
+                                                                                    <Text style={{
+                                                                                        fontSize: '9px',
+                                                                                        color: 'rgba(236, 72, 153, 0.5)',
+                                                                                        fontWeight: 600,
+                                                                                        mb: 0.5,
+                                                                                        textTransform: 'uppercase'
+                                                                                    }}>
+                                                                                        No Note
+                                                                                    </Text>
+                                                                                    <Text style={{
+                                                                                        fontSize: '10px',
+                                                                                        color: '#1e293b',
+                                                                                        fontWeight: 500,
+                                                                                        fontStyle: 'italic'
+                                                                                    }}>
+                                                                                    </Text>
+                                                                                </Box>
+                                                                            )}
+                                                                        </Box>
+
+                                                                        {/* Compact Sample Images */}
+                                                                        <Box sx={{
+                                                                            pt: 1,
+                                                                            borderTop: '1px solid #f1f5f9',
+                                                                            flex: 1,
+                                                                            display: 'flex',
+                                                                            flexDirection: 'column',
+                                                                            justifyContent: item.sampleImages && item.sampleImages.length > 0 ? 'flex-start' : 'center'
+                                                                        }}>
+                                                                            <Text style={{
+                                                                                fontSize: '9px',
+                                                                                fontWeight: 600,
+                                                                                mb: 0.5,
+                                                                                display: 'block',
+                                                                                color: '#475569',
+                                                                                textTransform: 'uppercase'
+                                                                            }}>
+                                                                                Samples
+                                                                                {item.sampleImages && item.sampleImages.length > 0 ? ` (${item.sampleImages.length})` : ' (0)'}
+                                                                            </Text>
+                                                                            {item.sampleImages && item.sampleImages.length > 0 ? (
+                                                                                <Box sx={{
+                                                                                    display: 'flex',
+                                                                gap: 0.5,
+                                                                                    flexWrap: 'wrap'
+                                                                                }}>
+                                                                                    {item.sampleImages.map((image, imgIndex) => (
+                                                                                        <Box
+                                                                                            key={imgIndex}
+                                                                                            sx={{
+                                                                                                position: 'relative',
+                                                                                                overflow: 'hidden',
+                                                                                                height: '36px',
+                                                                                                width: '36px',
+                                                                                                border: '1px solid #e2e8f0',
+                                                                                                transition: 'all 0.2s ease',
+                                                                                                boxSizing: 'border-box',
+                                                                                                '&:hover': {
+                                                                                                    borderColor: '#ec4899',
+                                                                                                    transform: 'scale(1.05)'
+                                                                                                }
+                                                                                            }}
+                                                                                        >
+                                                                                            <DisplayImage
+                                                                                                imageUrl={image.url}
+                                                                                                alt={`Sample ${imgIndex + 1}`}
+                                                                                                width="36px"
+                                                                                                height="36px"
+                                                                                            />
+                                                                                        </Box>
+                                                                                    ))}
+                                                                                </Box>
+                                                                            ) : (
+                                                                                <Box sx={{
+                                                                                    height: '36px',
+                                                                                }}>
+                                                                                    <Text style={{
+                                                                                        fontSize: '10px',
+                                                                                        color: '#94a3b8',
+                                                                                        fontStyle: 'italic'
+                                                                                    }}>
+                                                                                        No samples available
+                                                                </Text>
+                                                                                </Box>
+                                                                            )}
+                                                                        </Box>
+                                                                    </Box>
+                                                                ))}
+                                                            </Box>
+                                                        </Box>
                                                             </Box>
                                                         )}
 
-                                                        {item.note && (
-                                                            <Text style={{
-                                                                fontSize: '10px',
-                                                                fontStyle: 'italic',
-                                                                color: '#64748b',
-                                                                mt: 0.5
+                                                {/* Physical Education Uniform Subsection */}
+                                                {peItems.length > 0 && (
+                                                    <Box sx={{mb: 1.5}}>
+                                                        <Box sx={{
+                                                            p: 1.5,
+                                                            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(217, 119, 6, 0.08) 100%)',
+                                                            borderRadius: 8,
+                                                            border: '1px solid rgba(245, 158, 11, 0.15)',
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
+                                                            gap: 1
+                                                        }}>
+                                                            {/* Header inside the box */}
+                                                            <Box sx={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: 1,
+                                                                p: 0.75,
+                                                                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.15) 100%)',
+                                                                borderRadius: 4,
+                                                                border: '1px solid rgba(245, 158, 11, 0.2)',
+                                                                mb: 1
                                                             }}>
-                                                                Note: {item.note}
-                                                            </Text>
-                                                        )}
+                                                                <Box sx={{
+                                                                    display: 'flex',
+                                                                    justifyContent: 'center',
+                                                                    alignItems: 'center',
+                                                                    width: 20,
+                                                                    height: 20,
+                                                                    borderRadius: '50%',
+                                                                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                                                                    color: 'white',
+                                                                    fontSize: '10px',
+                                                                    fontWeight: 600
+                                                                }}>
+                                                                    ⚽
+                                                                </Box>
+                                                                <Text style={{
+                                                                    fontSize: '11px',
+                                                                    fontWeight: 600,
+                                                                    color: '#a16207',
+                                                                    textTransform: 'uppercase',
+                                                                    letterSpacing: '0.3px'
+                                                                }}>
+                                                                    Physical Education Uniform ({peItems.length} cloths)
+                                                                </Text>
+                                                            </Box>
+                                                            <Box sx={{
+                                                                display: 'flex',
+                                                                flexDirection: 'row',
+                                                                gap: 1
+                                                            }}>
+                                                                {peItems.map((item, index) => (
+                                                                    <Box
+                                                                        key={item.id || index}
+                                                                        sx={{
+                                                                            flex: 1,
+                                                                            p: 1.5,
+                                                                            border: '1px solid rgba(245, 158, 11, 0.2)',
+                                                                            borderRadius: 8,
+                                                                            background: 'linear-gradient(135deg, #ffffff 0%, rgba(245, 158, 11, 0.02) 100%)',
+                                                                            transition: 'all 0.3s ease',
+                                                                            position: 'relative',
+                                                                            '&:hover': {
+                                                                                borderColor: '#f59e0b',
+                                                                                boxShadow: '0 3px 12px rgba(245, 158, 11, 0.15)',
+                                                                                background: 'linear-gradient(135deg, #ffffff 0%, rgba(245, 158, 11, 0.05) 100%)'
+                                                                            }
+                                                                        }}
+                                                                    >
+                                                                        {/* Compact Header */}
+                                                                        <Box sx={{
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            gap: 1,
+                                                                            mb: 1
+                                                                        }}>
+                                                                            <Box sx={{
+                                                                                display: 'flex',
+                                                                                justifyContent: 'center',
+                                                                                alignItems: 'center',
+                                                                                width: 28,
+                                                                                height: 28,
+                                                                                borderRadius: 6,
+                                                                                background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
+                                                                                color: 'white',
+                                                                                flexShrink: 0
+                                                                            }}>
+                                                                                {getItemIcon(item.type)}
+                                                                            </Box>
+                                                                            <Box sx={{flex: 1}}>
+                                                                                <Text strong style={{
+                                                                                    fontSize: '12px',
+                                                                                    color: '#1e293b',
+                                                                                    display: 'block',
+                                                                                    fontWeight: 600
+                                                                                }}>
+                                                                                    {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {item.category}
+                                                                                </Text>
+                                                                            </Box>
+                                                                            <Tag
+                                                                                color="orange"
+                                                                                style={{
+                                                                                    margin: 0,
+                                                                                    borderRadius: '4px',
+                                                                                    fontSize: '9px',
+                                                                                    fontWeight: 600,
+                                                                                    padding: '1px 6px',
+                                                                                    height: 'auto'
+                                                                                }}
+                                                                            >
+                                                                                #{index + 1}
+                                                                            </Tag>
+                                                                        </Box>
+
+                                                                        {/* Compact Details Grid */}
+                                                                        <Box sx={{
+                                                                            display: 'grid',
+                                                                            gridTemplateColumns: '1fr 1fr',
+                                                                            gap: 1,
+                                                                            mb: 1
+                                                                        }}>
+                                                                            {/* Fabric */}
+                                                                            <Box sx={{
+                                                                                p: 1,
+                                                                                background: 'rgba(46, 125, 50, 0.08)',
+                                                                                borderRadius: 4,
+                                                                                border: '1px solid rgba(46, 125, 50, 0.15)'
+                                                                            }}>
+                                                                                <Text style={{
+                                                                                    fontSize: '9px',
+                                                                                    color: '#2e7d32',
+                                                                                    fontWeight: 600,
+                                                                                    display: 'block',
+                                                                                    mb: 0.5,
+                                                                                    textTransform: 'uppercase'
+                                                                                }}>
+                                                                                    Fabric
+                                                                                </Text>
+                                                                                <Text style={{
+                                                                                    fontSize: '10px',
+                                                                                    color: '#1e293b',
+                                                                                    fontWeight: 500
+                                                                                }}>
+                                                                                    {item.fabricName}
+                                                                                </Text>
+                                                                            </Box>
+
+                                                                            {/* Color */}
+                                                                            <Box sx={{
+                                                                                p: 1,
+                                                                                background: 'rgba(124, 58, 237, 0.08)',
+                                                                                borderRadius: 4,
+                                                                                border: '1px solid rgba(124, 58, 237, 0.15)',
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                gap: 0.5
+                                                                            }}>
+                                                                                <Box sx={{
+                                                                                    width: 12,
+                                                                                    height: 12,
+                                                                                    borderRadius: '50%',
+                                                                                    bgcolor: item.color,
+                                                                                    border: '1px solid #ffffff',
+                                                                                    boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                                                                                    flexShrink: 0
+                                                                                }}/>
+                                                                                <Box sx={{flex: 1}}>
+                                                                                    <Text style={{
+                                                                                        fontSize: '9px',
+                                                                                        color: '#7c3aed',
+                                                                                        fontWeight: 600,
+                                                                                        display: 'block',
+                                                                                        mb: 0.5,
+                                                                                        textTransform: 'uppercase'
+                                                                                    }}>
+                                                                                        Color
+                                                                                    </Text>
+                                                                                    <Text style={{
+                                                                                        fontSize: '10px',
+                                                                                        color: '#1e293b',
+                                                                                        fontWeight: 500
+                                                                                    }}>
+                                                                                        {item.color}
+                                                                                    </Text>
+                                                                                </Box>
+                                                                            </Box>
+
+                                                                            {/* Logo Position */}
+                                                                            <Box sx={{
+                                                                                p: 1,
+                                                                                background: 'rgba(255, 152, 0, 0.08)',
+                                                                                borderRadius: 4,
+                                                                                border: '1px solid rgba(255, 152, 0, 0.15)'
+                                                                            }}>
+                                                                                <Text style={{
+                                                                                    fontSize: '9px',
+                                                                                    color: '#f57c00',
+                                                                                    fontWeight: 600,
+                                                                                    display: 'block',
+                                                                                    mb: 0.5,
+                                                                                    textTransform: 'uppercase'
+                                                                                }}>
+                                                                                    Logo
+                                                                                </Text>
+                                                                                <Text style={{
+                                                                                    fontSize: '10px',
+                                                                                    color: '#1e293b',
+                                                                                    fontWeight: 500
+                                                                                }}>
+                                                                                    {item.logoPosition || 'No logo'}
+                                                                                </Text>
+                                                                            </Box>
+
+                                                                                                                                                        {/* Note */}
+                                                                            <Box sx={{
+                                                                                p: 1,
+                                                                                background: 'rgba(236, 72, 153, 0.08)',
+                                                                                borderRadius: 4,
+                                                                                border: '1px solid rgba(236, 72, 153, 0.15)',
+                                                                                gridColumn: 'span 1'
+                                                                            }}>
+                                                                                <Text style={{
+                                                                                    fontSize: '9px',
+                                                                                    color: '#ec4899',
+                                                                                    fontWeight: 600,
+                                                                                    display: 'block',
+                                                                                    mb: 0.5,
+                                                                                    textTransform: 'uppercase'
+                                                                                }}>
+                                                                                    Note
+                                                                                </Text>
+                                                                                <Text style={{
+                                                                                    fontSize: '10px',
+                                                                                    color: '#1e293b',
+                                                                                    fontWeight: 500,
+                                                                                    fontStyle: 'italic'
+                                                                                }}>
+                                                                                    {item.note || 'No note'}
+                                                                                </Text>
+                                                                            </Box>
                                                     </Box>
 
-                                                    {/* Sample Images */}
+                                                                        {/* Compact Sample Images */}
                                                     {item.sampleImages && item.sampleImages.length > 0 && (
-                                                        <Box sx={{mt: 1.5, pt: 1, borderTop: '1px solid #f1f5f9'}}>
+                                                                            <Box sx={{
+                                                                                pt: 1,
+                                                                                borderTop: '1px solid #f1f5f9'
+                                                                            }}>
                                                             <Text style={{
                                                                 fontSize: '9px',
                                                                 fontWeight: 600,
@@ -914,28 +2211,54 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                                                 color: '#475569',
                                                                 textTransform: 'uppercase'
                                                             }}>
-                                                                Sample Images
+                                                                                    Samples ({item.sampleImages.length})
                                                             </Text>
-                                                            <Box sx={{display: 'flex', gap: 0.5, flexWrap: 'wrap'}}>
+                                                                                <Box sx={{
+                                                                                    display: 'flex',
+                                                                                    gap: 0.5,
+                                                                                    flexWrap: 'wrap'
+                                                                                }}>
                                                                 {item.sampleImages.map((image, imgIndex) => (
-                                                                    <DisplayImage
+                                                                                        <Box
                                                                         key={imgIndex}
+                                                                                            sx={{
+                                                                                                position: 'relative',
+                                                                                                overflow: 'hidden',
+                                                                                                height: '36px',
+                                                                                                width: '36px',
+                                                                                                border: '1px solid #e2e8f0',
+                                                                                                transition: 'all 0.2s ease',
+                                                                                                boxSizing: 'border-box',
+                                                                                                '&:hover': {
+                                                                                                    borderColor: '#f59e0b',
+                                                                                                    transform: 'scale(1.05)'
+                                                                                                }
+                                                                                            }}
+                                                                                        >
+                                                                                            <DisplayImage
                                                                         imageUrl={image.url}
                                                                         alt={`Sample ${imgIndex + 1}`}
-                                                                        width="32px"
-                                                                        height="32px"
+                                                                                                width="36px"
+                                                                                                height="36px"
                                                                     />
+                                                                                        </Box>
                                                                 ))}
                                                             </Box>
                                                         </Box>
                                                     )}
                                                 </Box>
-                                            </Col>
-                                        ))}
-                                    </Row>
+                                                                ))}
+                                                            </Box>
+                                                        </Box>
+                                                    </Box>
+                                                )}
+                                            </Box>
+                                        );
+                                    }
+                                    return null;
+                                })()}
+                            </Box>
                                 </Card>
-                            </Col>
-                        </Row>
 
                         {/* Feedback */}
                         {request.feedback && request.feedback !== '' && (
@@ -953,7 +2276,12 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                                     background: 'linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 152, 0, 0.15) 100%)'
                                 }}
                             >
-                                <Box sx={{p: 1.5, bgcolor: 'rgba(255, 193, 7, 0.1)', borderRadius: 6, border: '1px solid rgba(255, 193, 7, 0.2)'}}>
+                                <Box sx={{
+                                    p: 1.5,
+                                    bgcolor: 'rgba(255, 193, 7, 0.1)',
+                                    borderRadius: 6,
+                                    border: '1px solid rgba(255, 193, 7, 0.2)'
+                                }}>
                                     <Text style={{color: '#92400e', fontSize: '12px'}}>
                                         {request.feedback}
                                     </Text>
@@ -963,7 +2291,13 @@ export default function RequestDetailPopup({visible, onCancel, request}) {
                     </Box>
                 </DialogContent>
                 <DialogActions sx={{padding: '16px 24px', borderTop: '1px solid #f0f0f0'}}>
-                    {getFooterButtons(request.status)}
+                    {hideFooterButtons ? (
+                        <Button onClick={onCancel}>
+                            Close
+                        </Button>
+                    ) : (
+                        getFooterButtons(request.status)
+                    )}
                 </DialogActions>
             </Dialog>
 

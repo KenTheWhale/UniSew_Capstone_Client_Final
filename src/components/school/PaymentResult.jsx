@@ -14,17 +14,21 @@ import {
     UserOutlined
 } from '@ant-design/icons';
 import {parseID} from "../../utils/ParseIDUtil.jsx";
-import {pickQuotation} from "../../services/DesignService.jsx";
+import {pickQuotation, buyExtraRevision} from "../../services/DesignService.jsx";
 import {approveQuotation} from "../../services/OrderService.jsx";
 import {serviceFee} from "../../configs/FixedVariables.jsx";
 import {useEffect, useState} from 'react';
 
 export default function PaymentResult() {
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [hasProcessed, setHasProcessed] = useState(false);
-    
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
+    
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [hasProcessed, setHasProcessed] = useState(() => {
+        // Check if payment has already been processed from localStorage
+        const processedKey = `payment_processed_${urlParams.get('vnp_TxnRef')}`;
+        return localStorage.getItem(processedKey) === 'true';
+    });
 
     const vnpResponseCode = urlParams.get('vnp_ResponseCode');
     const vnpAmount = urlParams.get('vnp_Amount');
@@ -36,13 +40,16 @@ export default function PaymentResult() {
     let success = false;
     let quotationDetails = null;
     let orderDetails = null;
+    let revisionPurchaseDetails = null;
     let isOrderPayment = paymentType === 'order';
+    let isRevisionPurchase = paymentType === 'design';
 
     // Check if we have valid payment data
     const hasDesignPayment = sessionStorage.getItem('paymentQuotationDetails');
     const hasOrderPayment = isOrderPayment && sessionStorage.getItem('orderPaymentDetails');
+    const hasRevisionPurchase = isRevisionPurchase && sessionStorage.getItem('revisionPurchaseDetails');
 
-    if (!hasDesignPayment && !hasOrderPayment) {
+    if (!hasDesignPayment && !hasOrderPayment && !hasRevisionPurchase) {
         window.location.href = '/school/design';
     }
 
@@ -55,6 +62,12 @@ export default function PaymentResult() {
                     const storedOrderDetails = sessionStorage.getItem('orderPaymentDetails');
                     if (storedOrderDetails) {
                         orderDetails = JSON.parse(storedOrderDetails);
+                    }
+                } else if (isRevisionPurchase) {
+                    // For revision purchase payments, get from session storage
+                    const storedRevisionDetails = sessionStorage.getItem('revisionPurchaseDetails');
+                    if (storedRevisionDetails) {
+                        revisionPurchaseDetails = JSON.parse(storedRevisionDetails);
                     }
                 } else {
                     // For design payments, get from session storage
@@ -124,18 +137,36 @@ export default function PaymentResult() {
                     } else {
                             console.error('Failed to pick design quotation');
                         }
+                    } else if (isRevisionPurchase && revisionPurchaseDetails) {
+                        // For revision purchase: call buyExtraRevision API
+                        const response = await buyExtraRevision(
+                            revisionPurchaseDetails.requestId,
+                            revisionPurchaseDetails.revisionQuantity,
+                            revisionPurchaseDetails.requestData?.finalDesignQuotation?.designer?.customer?.id || revisionPurchaseDetails.requestData?.designer?.id,
+                            parseInt(vnpAmount) / 100,
+                            vnpResponseCode
+                        );
+                        if (response && response.status === 200) {
+                            console.log('Extra revisions purchased successfully');
+                        } else {
+                            console.error('Failed to purchase extra revisions');
+                        }
                     }
                 } catch (error) {
                     console.error('Error processing payment success:', error);
                 } finally {
                     setIsProcessing(false);
                     setHasProcessed(true);
+                    
+                    // Save processing status to localStorage to prevent duplicate API calls on reload
+                    const processedKey = `payment_processed_${vnpTxnRef}`;
+                    localStorage.setItem(processedKey, 'true');
                 }
             }
         };
 
         processPaymentSuccess();
-    }, [success, quotationDetails, hasProcessed, isProcessing, quotation, request, isOrderPayment, quotationId]);
+    }, [success, quotationDetails, hasProcessed, isProcessing, quotation, request, isOrderPayment, quotationId, isRevisionPurchase, revisionPurchaseDetails]);
 
     return (
         <Box sx={{ 
@@ -182,6 +213,8 @@ export default function PaymentResult() {
                                 <Typography.Paragraph style={{ fontSize: '16px', color: '#475569', margin: 0, maxWidth: '500px' }}>
                                     {isOrderPayment 
                                         ? 'Your payment for the order has been successfully processed.'
+                                        : isRevisionPurchase
+                                        ? 'Your payment for extra revisions has been successfully processed.'
                                         : 'Your payment for the design quotation has been successfully processed.'
                                     }
                                 </Typography.Paragraph>
@@ -435,7 +468,7 @@ export default function PaymentResult() {
                     </Paper>
 
                     {/* Order Summary Card */}
-                    {success && (quotationDetails || orderDetails) && (
+                    {success && (quotationDetails || orderDetails || revisionPurchaseDetails) && (
                         <Paper 
                             elevation={0}
                             sx={{ 
@@ -461,7 +494,7 @@ export default function PaymentResult() {
                                     <FileTextOutlined style={{ fontSize: '18px' }} />
                                 </Box>
                                 <Typography.Title level={4} style={{ margin: 0, color: '#1e293b' }}>
-                                    {isOrderPayment ? 'Order Payment Summary' : 'Design Order Summary'}
+                                    {isOrderPayment ? 'Order Payment Summary' : isRevisionPurchase ? 'Revision Purchase Summary' : 'Design Order Summary'}
                                 </Typography.Title>
                             </Box>
 
@@ -504,6 +537,66 @@ export default function PaymentResult() {
                                             </Box>
                                             <Typography.Text style={{ color: '#1e293b', fontSize: '14px', fontWeight: 600 }}>
                                                 {orderDetails?.description || 'Order Payment'}
+                                            </Typography.Text>
+                                        </Box>
+                                    </Box>
+                                ) : isRevisionPurchase ? (
+                                    /* Revision Purchase Info */
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                        <Box sx={{ 
+                                            display: 'flex', 
+                                            justifyContent: 'space-between', 
+                                            alignItems: 'center',
+                                            p: 2,
+                                            backgroundColor: '#f8fafc',
+                                            borderRadius: 2
+                                        }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                <FileTextOutlined style={{ color: '#64748b', fontSize: '16px' }} />
+                                                <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
+                                                    <strong>Request ID:</strong>
+                                                </Typography.Text>
+                                            </Box>
+                                            <Typography.Text style={{ color: '#1e293b', fontSize: '14px', fontWeight: 600 }}>
+                                                {parseID(revisionPurchaseDetails?.requestId, 'dr')}
+                                            </Typography.Text>
+                                        </Box>
+
+                                        <Box sx={{ 
+                                            display: 'flex', 
+                                            justifyContent: 'space-between', 
+                                            alignItems: 'center',
+                                            p: 2,
+                                            backgroundColor: '#f8fafc',
+                                            borderRadius: 2
+                                        }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                <EditOutlined style={{ color: '#64748b', fontSize: '16px' }} />
+                                                <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
+                                                    <strong>Revisions Purchased:</strong>
+                                                </Typography.Text>
+                                            </Box>
+                                            <Typography.Text style={{ color: '#1e293b', fontSize: '14px', fontWeight: 600 }}>
+                                                {revisionPurchaseDetails?.revisionQuantity} revision{revisionPurchaseDetails?.revisionQuantity !== 1 ? 's' : ''}
+                                            </Typography.Text>
+                                        </Box>
+
+                                        <Box sx={{ 
+                                            display: 'flex', 
+                                            justifyContent: 'space-between', 
+                                            alignItems: 'center',
+                                            p: 2,
+                                            backgroundColor: '#f8fafc',
+                                            borderRadius: 2
+                                        }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                <DollarOutlined style={{ color: '#64748b', fontSize: '16px' }} />
+                                                <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
+                                                    <strong>Price per Revision:</strong>
+                                                </Typography.Text>
+                                            </Box>
+                                            <Typography.Text style={{ color: '#1e293b', fontSize: '14px', fontWeight: 600 }}>
+                                                {revisionPurchaseDetails?.extraRevisionPrice?.toLocaleString('vi-VN')} VND
                                             </Typography.Text>
                                         </Box>
                                     </Box>
@@ -627,7 +720,7 @@ export default function PaymentResult() {
                                             </>
                                         )}
 
-                                        {!isOrderPayment && (
+                                        {!isOrderPayment && !isRevisionPurchase && (
                                             <>
                                                 {/* Service Fee for Design Payment */}
                                                 {designServiceFee && (
@@ -725,17 +818,30 @@ export default function PaymentResult() {
                                 borderColor: '#1976d2'
                             }}
                             onClick={() => {
-                                                                // Clear sessionStorage after successful processing
-                                if (!isOrderPayment) {
+                                // Clear sessionStorage and localStorage after successful processing
+                                if (isOrderPayment) {
+                                    sessionStorage.removeItem('orderPaymentDetails');
+                                    // Clear payment processed status
+                                    const processedKey = `payment_processed_${vnpTxnRef}`;
+                                    localStorage.removeItem(processedKey);
+                                    window.location.href = '/school/order';
+                                } else if (isRevisionPurchase) {
+                                    sessionStorage.removeItem('revisionPurchaseDetails');
+                                    // Clear payment processed status
+                                    const processedKey = `payment_processed_${vnpTxnRef}`;
+                                    localStorage.removeItem(processedKey);
+                                    window.location.href = '/school/chat';
+                                } else {
                                     sessionStorage.removeItem('paymentQuotationDetails');
                                     sessionStorage.removeItem('extraRevision');
-                                } else {
-                                    sessionStorage.removeItem('orderPaymentDetails');
+                                    // Clear payment processed status
+                                    const processedKey = `payment_processed_${vnpTxnRef}`;
+                                    localStorage.removeItem(processedKey);
+                                    window.location.href = '/school/design';
                                 }
-                                window.location.href = isOrderPayment ? '/school/order' : '/school/design'
                             }}
                         >
-                            {isOrderPayment ? 'Go to Order Management' : 'Go to Design Management'}
+                            {isOrderPayment ? 'Go to Order Management' : isRevisionPurchase ? 'Go to Design Chat' : 'Go to Design Management'}
                         </Button>
                         
                         {!success && (
@@ -748,7 +854,19 @@ export default function PaymentResult() {
                                     borderColor: '#d9d9d9',
                                     color: '#475569'
                                 }}
-                                onClick={() => window.location.href = isOrderPayment ? '/school/order' : '/school/pending/request'}
+                                onClick={() => {
+                                    // Clear payment processed status when trying again
+                                    const processedKey = `payment_processed_${vnpTxnRef}`;
+                                    localStorage.removeItem(processedKey);
+                                    
+                                    if (isOrderPayment) {
+                                        window.location.href = '/school/order';
+                                    } else if (isRevisionPurchase) {
+                                        window.location.href = '/school/chat';
+                                    } else {
+                                        window.location.href = '/school/pending/request';
+                                    }
+                                }}
                             >
                                 Try Again
                             </Button>

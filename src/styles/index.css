@@ -19,3 +19,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
+
+@keyframes unisew-chat-shake {
+  0% { transform: translateY(-2px) translateX(0); }
+  25% { transform: translateY(-2px) translateX(-1.5px); }
+  50% { transform: translateY(-2px) translateX(1.5px); }
+  75% { transform: translateY(-2px) translateX(-1px); }
+  100% { transform: translateY(-2px) translateX(0); }
+}
