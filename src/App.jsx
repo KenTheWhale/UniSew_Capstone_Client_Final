@@ -12,7 +12,6 @@ import {SnackbarProvider} from 'notistack';
 import SchoolChat from "./components/school/design/SchoolChat.jsx";
 import {Slide, ThemeProvider, createTheme, CssBaseline} from '@mui/material';
 import SchoolCreateDesign from './components/school/design/SchoolCreateDesign.jsx';
-import SchoolPendingDesign from "./components/school/design/SchoolPendingDesign.jsx";
 import PaymentResult from "./components/school/PaymentResult.jsx";
 import DesignerPendingDesign from "./components/designer/DesignerPendingDesign.jsx";
 import DesignerDashboardLayout from "./layouts/designer/DesignerDashboardLayout.jsx";
@@ -162,10 +161,6 @@ const router = createBrowserRouter([
             {
                 path: 'request/create',
                 element: <SchoolCreateDesign />
-            },
-            {
-                path: 'pending/request',
-                element: <SchoolPendingDesign />
             },
             {
                 path: 'payment/result',

@@ -146,7 +146,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
     // Function to render color with picker
     const renderColorWithPicker = (colorHex, themeColor) => {
         return (
-            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+            <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
                 <Box sx={{
                     width: 8,
                     height: 8,

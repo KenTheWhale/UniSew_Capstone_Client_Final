@@ -29,12 +29,13 @@ export default function PaymentResult() {
         const processedKey = `payment_processed_${urlParams.get('vnp_TxnRef')}`;
         return localStorage.getItem(processedKey) === 'true';
     });
+    const [isInitialRender, setIsInitialRender] = useState(true);
 
     const vnpResponseCode = urlParams.get('vnp_ResponseCode');
     const vnpAmount = urlParams.get('vnp_Amount');
     const vnpOrderInfo = urlParams.get('vnp_OrderInfo');
     const vnpTxnRef = urlParams.get('vnp_TxnRef');
-    const paymentType = urlParams.get('orderType') || 'design'; // Get payment type from URL
+    const paymentType = sessionStorage.getItem('currentPaymentType') || 'design'; // Get payment type from sessionStorage
     const quotationId = urlParams.get('quotationId'); // Get quotation ID for order payment
 
     let success = false;
@@ -49,7 +50,23 @@ export default function PaymentResult() {
     const hasOrderPayment = isOrderPayment && sessionStorage.getItem('orderPaymentDetails');
     const hasRevisionPurchase = isRevisionPurchase && sessionStorage.getItem('revisionPurchaseDetails');
 
-    if (!hasDesignPayment && !hasOrderPayment && !hasRevisionPurchase) {
+    // Debug logs
+    console.log('PaymentResult Debug:', {
+        paymentType,
+        isOrderPayment,
+        isRevisionPurchase,
+        hasDesignPayment: !!hasDesignPayment,
+        hasOrderPayment: !!hasOrderPayment,
+        hasRevisionPurchase: !!hasRevisionPurchase,
+        revisionPurchaseDetails: sessionStorage.getItem('revisionPurchaseDetails'),
+        currentPaymentType: sessionStorage.getItem('currentPaymentType'),
+        vnpResponseCode,
+        success: vnpResponseCode === '00'
+    });
+
+    // Only redirect if no payment data AND no VNPay response AND this is initial render
+    if (!hasDesignPayment && !hasOrderPayment && !hasRevisionPurchase && vnpResponseCode === null && isInitialRender) {
+        console.log('No valid payment data found and no VNPay response on initial render, redirecting to /school/design');
         window.location.href = '/school/design';
     }
 
@@ -81,15 +98,41 @@ export default function PaymentResult() {
             }
         }
     } else {
-        window.location.href = isOrderPayment ? '/school/order' : '/school/design';
+            // Only redirect if we have a payment type but no VNPay response AND this is initial render
+    if (paymentType && vnpResponseCode === null && isInitialRender) {
+        console.log('No VNPay response but have payment type on initial render, redirecting based on type');
+        if (isOrderPayment) {
+            window.location.href = '/school/order';
+        } else if (isRevisionPurchase) {
+            window.location.href = '/school/chat';
+        } else {
+            window.location.href = '/school/design';
+        }
+    }
     }
 
     const { quotation, request, serviceFee: designServiceFee, subtotal, totalAmount } = quotationDetails || {};
     const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
 
+    // Set isInitialRender to false after first render
+    useEffect(() => {
+        setIsInitialRender(false);
+    }, []);
+
     // Call appropriate API when payment is successful
     useEffect(() => {
         const processPaymentSuccess = async () => {
+            console.log('processPaymentSuccess called:', {
+                success,
+                hasProcessed,
+                isProcessing,
+                isOrderPayment,
+                isRevisionPurchase,
+                hasRevisionPurchase: !!revisionPurchaseDetails,
+                vnpResponseCode
+            });
+            
+            // Prevent redirect if we're processing a successful payment
             if (success && !hasProcessed && !isProcessing) {
                 setIsProcessing(true);
                 try {
@@ -115,15 +158,25 @@ export default function PaymentResult() {
                         }
                     } else if (isRevisionPurchase && revisionPurchaseDetails) {
                         // For revision purchase: call buyExtraRevision API
+                        console.log('Processing revision purchase:', {
+                            requestId: revisionPurchaseDetails.requestId,
+                            revisionQuantity: revisionPurchaseDetails.revisionQuantity,
+                            designerId: revisionPurchaseDetails.designerId,
+                            amount: parseInt(vnpAmount) / 100,
+                            responseCode: vnpResponseCode
+                        });
+                        
                         const response = await buyExtraRevision(
                             revisionPurchaseDetails.requestId,
                             revisionPurchaseDetails.revisionQuantity,
-                            revisionPurchaseDetails.requestData?.finalDesignQuotation?.designer?.customer?.id || revisionPurchaseDetails.requestData?.designer?.id,
+                            revisionPurchaseDetails.designerId,
                             parseInt(vnpAmount) / 100,
                             vnpResponseCode
                         );
                         if (response && response.status === 200) {
                             console.log('Extra revisions purchased successfully');
+                            // Add a small delay to ensure the API call completes
+                            await new Promise(resolve => setTimeout(resolve, 1000));
                         } else {
                             console.error('Failed to purchase extra revisions');
                         }
@@ -821,12 +874,14 @@ export default function PaymentResult() {
                                 // Clear sessionStorage and localStorage after successful processing
                                 if (isOrderPayment) {
                                     sessionStorage.removeItem('orderPaymentDetails');
+                                    sessionStorage.removeItem('currentPaymentType');
                                     // Clear payment processed status
                                     const processedKey = `payment_processed_${vnpTxnRef}`;
                                     localStorage.removeItem(processedKey);
                                     window.location.href = '/school/order';
                                 } else if (isRevisionPurchase) {
                                     sessionStorage.removeItem('revisionPurchaseDetails');
+                                    sessionStorage.removeItem('currentPaymentType');
                                     // Clear payment processed status
                                     const processedKey = `payment_processed_${vnpTxnRef}`;
                                     localStorage.removeItem(processedKey);
@@ -834,6 +889,7 @@ export default function PaymentResult() {
                                 } else {
                                     sessionStorage.removeItem('paymentQuotationDetails');
                                     sessionStorage.removeItem('extraRevision');
+                                    sessionStorage.removeItem('currentPaymentType');
                                     // Clear payment processed status
                                     const processedKey = `payment_processed_${vnpTxnRef}`;
                                     localStorage.removeItem(processedKey);
@@ -858,6 +914,7 @@ export default function PaymentResult() {
                                     // Clear payment processed status when trying again
                                     const processedKey = `payment_processed_${vnpTxnRef}`;
                                     localStorage.removeItem(processedKey);
+                                    sessionStorage.removeItem('currentPaymentType');
                                     
                                     if (isOrderPayment) {
                                         window.location.href = '/school/order';

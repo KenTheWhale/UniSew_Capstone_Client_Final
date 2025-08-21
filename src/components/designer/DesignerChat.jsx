@@ -354,20 +354,22 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                             Design Items
                         </Typography.Title>
                         <Tag color="blue" style={{margin: 0}}>
-                            {delivery.deliveryItems?.length || 0} items
+                            {(delivery.deliveryItems || delivery.items || []).length} items
                         </Tag>
                     </Box>
 
                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
                         {/* Group items by gender */}
                         {(() => {
-                            const boyItems = delivery.deliveryItems?.filter(item => 
+                            // Handle both old deliveryItems structure and new items structure
+                            const items = delivery.deliveryItems || delivery.items || [];
+                            const boyItems = items.filter(item => 
                                 item.designItem?.gender?.toLowerCase() === 'boy'
                             ) || [];
-                            const girlItems = delivery.deliveryItems?.filter(item => 
+                            const girlItems = items.filter(item => 
                                 item.designItem?.gender?.toLowerCase() === 'girl'
                             ) || [];
-                            const otherItems = delivery.deliveryItems?.filter(item => {
+                            const otherItems = items.filter(item => {
                                 const gender = item.designItem?.gender?.toLowerCase();
                                 return gender !== 'boy' && gender !== 'girl';
                             }) || [];
@@ -435,7 +437,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
 
                                 {/* Item Details Grid */}
                                 <Row gutter={[24, 16]}>
-                                    <Col span={8}>
+                                    <Col span={item.designItem?.logoPosition ? 8 : 12}>
                                         <Box sx={{
                                             p: 2,
                                             backgroundColor: '#f8fafc',
@@ -460,7 +462,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                             </Box>
                                         </Box>
                                     </Col>
-                                    <Col span={8}>
+                                    <Col span={item.designItem?.logoPosition ? 8 : 12}>
                                         <Box sx={{
                                             p: 2,
                                             backgroundColor: '#f8fafc',
@@ -475,21 +477,23 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                             </Typography.Text>
                                         </Box>
                                     </Col>
-                                    <Col span={8}>
-                                        <Box sx={{
-                                            p: 2,
-                                            backgroundColor: '#f8fafc',
-                                            borderRadius: 3,
-                                            border: '1px solid #e2e8f0'
-                                        }}>
-                                            <Typography.Text strong style={{fontSize: '13px', color: '#475569'}}>
-                                                Logo Position
-                                            </Typography.Text>
-                                            <Typography.Text style={{fontSize: '13px', display: 'block', mt: 1}}>
-                                                {item.designItem?.logoPosition || 'N/A'}
-                                            </Typography.Text>
-                                        </Box>
-                                    </Col>
+                                    {item.designItem?.logoPosition && (
+                                        <Col span={8}>
+                                            <Box sx={{
+                                                p: 2,
+                                                backgroundColor: '#f8fafc',
+                                                borderRadius: 3,
+                                                border: '1px solid #e2e8f0'
+                                            }}>
+                                                <Typography.Text strong style={{fontSize: '13px', color: '#475569'}}>
+                                                    Logo Position
+                                                </Typography.Text>
+                                                <Typography.Text style={{fontSize: '13px', display: 'block', mt: 1}}>
+                                                    {item.designItem.logoPosition}
+                                                </Typography.Text>
+                                            </Box>
+                                        </Col>
+                                    )}
                                 </Row>
 
                                 {/* Logo Dimensions for Shirt */}
@@ -512,7 +516,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                     fontWeight: 600,
                                                     color: '#92400e'
                                                 }}>
-                                                    {item.baseLogoHeight} cm
+                                                    {item.baseLogoHeight || item.logoHeight || 0} cm
                                                 </Typography.Text>
                                             </Box>
                                         </Col>
@@ -533,7 +537,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                     fontWeight: 600,
                                                     color: '#92400e'
                                                 }}>
-                                                    {item.baseLogoWidth} cm
+                                                    {item.baseLogoWidth || item.logoWidth || 0} cm
                                                 </Typography.Text>
                                             </Box>
                                         </Col>
@@ -629,7 +633,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                                     border: '1px solid #f9a8d4'
                                                                 }}>
                                                                     <Typography.Title level={4} style={{margin: 0, color: '#be185d', fontWeight: 700}}>
-                                                    GIRL
+                                                                                                                        GIRL
                                                                     </Typography.Title>
                                                                     <Tag color="magenta" style={{margin: 0, fontSize: '12px', fontWeight: 600}}>
                                                                         {girlItems.length} cloth{girlItems.length !== 1 ? 'es' : ''}
@@ -676,7 +680,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
 
                                                         {/* Item Details Grid */}
                                                         <Row gutter={[24, 16]}>
-                                                            <Col span={8}>
+                                                            <Col span={item.designItem?.logoPosition ? 8 : 12}>
                                                                 <Box sx={{
                                                                     p: 2,
                                                                     backgroundColor: '#f8fafc',
@@ -701,7 +705,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                                     </Box>
                                                                 </Box>
                                                             </Col>
-                                                            <Col span={8}>
+                                                            <Col span={item.designItem?.logoPosition ? 8 : 12}>
                                                                 <Box sx={{
                                                                     p: 2,
                                                                     backgroundColor: '#f8fafc',
@@ -716,21 +720,23 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                                     </Typography.Text>
                                                                 </Box>
                                                             </Col>
-                                                            <Col span={8}>
-                                                                <Box sx={{
-                                                                    p: 2,
-                                                                    backgroundColor: '#f8fafc',
-                                                                    borderRadius: 3,
-                                                                    border: '1px solid #e2e8f0'
-                                                                }}>
-                                                                    <Typography.Text strong style={{fontSize: '13px', color: '#475569'}}>
-                                                                        Logo Position
-                                                                    </Typography.Text>
-                                                                    <Typography.Text style={{fontSize: '13px', display: 'block', mt: 1}}>
-                                                                        {item.designItem?.logoPosition || 'N/A'}
-                                                                    </Typography.Text>
-                                                                </Box>
-                                                            </Col>
+                                                            {item.designItem?.logoPosition && (
+                                                                <Col span={8}>
+                                                                    <Box sx={{
+                                                                        p: 2,
+                                                                        backgroundColor: '#f8fafc',
+                                                                        borderRadius: 3,
+                                                                        border: '1px solid #e2e8f0'
+                                                                    }}>
+                                                                        <Typography.Text strong style={{fontSize: '13px', color: '#475569'}}>
+                                                                            Logo Position
+                                                                        </Typography.Text>
+                                                                        <Typography.Text style={{fontSize: '13px', display: 'block', mt: 1}}>
+                                                                            {item.designItem.logoPosition}
+                                                                        </Typography.Text>
+                                                                    </Box>
+                                                                </Col>
+                                                            )}
                                                         </Row>
 
                                                         {/* Design Images */}
@@ -869,7 +875,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
 
                                                         {/* Item Details Grid */}
                                                         <Row gutter={[24, 16]}>
-                                                            <Col span={8}>
+                                                            <Col span={item.designItem?.logoPosition ? 8 : 12}>
                                                                 <Box sx={{
                                                                     p: 2,
                                                                     backgroundColor: '#f8fafc',
@@ -894,7 +900,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                                     </Box>
                                                                 </Box>
                                                             </Col>
-                                                            <Col span={8}>
+                                                            <Col span={item.designItem?.logoPosition ? 8 : 12}>
                                                                 <Box sx={{
                                                                     p: 2,
                                                                     backgroundColor: '#f8fafc',
@@ -909,21 +915,23 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                                     </Typography.Text>
                                                                 </Box>
                                                             </Col>
-                                                            <Col span={8}>
-                                                                <Box sx={{
-                                                                    p: 2,
-                                                                    backgroundColor: '#f8fafc',
-                                                                    borderRadius: 3,
-                                                                    border: '1px solid #e2e8f0'
-                                                                }}>
-                                                                    <Typography.Text strong style={{fontSize: '13px', color: '#475569'}}>
-                                                                        Logo Position
-                                                                    </Typography.Text>
-                                                                    <Typography.Text style={{fontSize: '13px', display: 'block', mt: 1}}>
-                                                                        {item.designItem?.logoPosition || 'N/A'}
-                                                                    </Typography.Text>
-                                                                </Box>
-                                                            </Col>
+                                                            {item.designItem?.logoPosition && (
+                                                                <Col span={8}>
+                                                                    <Box sx={{
+                                                                        p: 2,
+                                                                        backgroundColor: '#f8fafc',
+                                                                        borderRadius: 3,
+                                                                        border: '1px solid #e2e8f0'
+                                                                    }}>
+                                                                        <Typography.Text strong style={{fontSize: '13px', color: '#475569'}}>
+                                                                            Logo Position
+                                                                        </Typography.Text>
+                                                                        <Typography.Text style={{fontSize: '13px', display: 'block', mt: 1}}>
+                                                                            {item.designItem.logoPosition}
+                                                                        </Typography.Text>
+                                                                    </Box>
+                                                                </Col>
+                                                            )}
                                                         </Row>
 
                                                         {/* Design Images */}
@@ -1068,6 +1076,7 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
     const [formKey, setFormKey] = useState(0);
     const validityTimerRef = useRef(null);
     const shirtIndexSetRef = useRef(new Set());
+    const [isSubmittingDelivery, setIsSubmittingDelivery] = useState(false);
 
     useEffect(() => {
         if (!visible) return;
@@ -1276,15 +1285,22 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
             return;
         }
 
-        const deliveryData = {
-            designRequestId: requestData.id,
-            revisionId: deliveryType === 'revision' ? values.revisionOf : -1,
-            name: values.deliveryName,
-            note: values.deliveryDescription,
-            itemList: values.itemList || [],
-            revision: deliveryType === 'revision'
-        };
-        onSubmit(deliveryData);
+        try {
+            setIsSubmittingDelivery(true);
+            const deliveryData = {
+                designRequestId: requestData.id,
+                revisionId: deliveryType === 'revision' ? values.revisionOf : -1,
+                name: values.deliveryName,
+                note: values.deliveryDescription,
+                itemList: values.itemList || [],
+                revision: deliveryType === 'revision'
+            };
+            await onSubmit(deliveryData);
+        } catch (error) {
+            console.error('Error submitting delivery:', error);
+        } finally {
+            setIsSubmittingDelivery(false);
+        }
     };
 
     // Group design items by gender to render sections in modal
@@ -1493,7 +1509,7 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
 
                     {modalBoyItems.length > 0 && (
                         <>
-                            <Typography.Title level={5} style={{marginTop: 0}}>Boy ({modalBoyItems.length})</Typography.Title>
+                            <Typography.Title level={5} style={{marginTop: 0}}>Boy ({modalBoyItems.length} clothes)</Typography.Title>
                             {modalBoyItems.map((item) => (
                                 <Card key={`boy-${item.__index}`} size="small" style={{marginBottom: '16px', border: '1px solid #e2e8f0'}}>
                                     <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
@@ -1611,7 +1627,7 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
 
                     {modalGirlItems.length > 0 && (
                         <>
-                            <Typography.Title level={5} style={{marginTop: 16}}>Girl ({modalGirlItems.length})</Typography.Title>
+                            <Typography.Title level={5} style={{marginTop: 16}}>Girl ({modalGirlItems.length} clothes)</Typography.Title>
                             {modalGirlItems.map((item) => (
                                 <Card key={`girl-${item.__index}`} size="small" style={{marginBottom: '16px', border: '1px solid #e2e8f0'}}>
                                     <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
@@ -1771,12 +1787,14 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                 <Button
                     type="primary"
                     onClick={handleOk}
+                    loading={isSubmittingDelivery}
+                    disabled={isSubmittingDelivery}
                     style={{
                         backgroundColor: '#1976d2',
                         borderColor: '#1976d2'
                     }}
                 >
-                    Submit Delivery
+                    {isSubmittingDelivery ? 'Submitting...' : 'Submit Delivery'}
                 </Button>
             </DialogActions>
         </Dialog>
@@ -1797,13 +1815,16 @@ export default function DesignerChat() {
     const [loadingDeliveries, setLoadingDeliveries] = useState(false);
     const [revisionRequests, setRevisionRequests] = useState([]);
     const [loadingRevisionRequests, setLoadingRevisionRequests] = useState(false);
+    const [finalDelivery, setFinalDelivery] = useState(null);
+    const [isFinalDesignSet, setIsFinalDesignSet] = useState(false);
     const roomId = requestData?.id;
     const {chatMessages, sendMessage} = UseDesignerChatMessages(roomId);
     const [newMessage, setNewMessage] = useState('');
     const [isChatOpen, setIsChatOpen] = useState(false);
     const isViewOnly = requestData?.status === 'completed';
-    const schoolName = requestData?.school?.name || requestData?.school?.business || 'School';
+    const schoolName = requestData?.school?.business || 'School';
     const [isOpenButtonHover, setIsOpenButtonHover] = useState(false);
+    const emojiPickerRef = useRef(null);
 
     // Fetch design deliveries from API
     const fetchDesignDeliveries = async (designRequestId) => {
@@ -1813,6 +1834,19 @@ export default function DesignerChat() {
             if (response && response.status === 200) {
                 const deliveries = response.data.body || [];
                 setDesignDeliveries(deliveries);
+
+                // Check if there's a final delivery from resultDelivery
+                if (requestData?.resultDelivery) {
+                    setFinalDelivery(requestData.resultDelivery);
+                    setIsFinalDesignSet(true);
+                } else {
+                    // Fallback to check if there's a final delivery in deliveries array
+                    const finalDelivery = deliveries.find(delivery => delivery.isFinal);
+                    if (finalDelivery) {
+                        setFinalDelivery(finalDelivery);
+                        setIsFinalDesignSet(true);
+                    }
+                }
             } else {
                 setDesignDeliveries([]);
             }
@@ -1878,6 +1912,34 @@ export default function DesignerChat() {
             window.location.href = '/designer/requests';
         }
     }, []);
+
+    // Update final delivery when requestData changes
+    useEffect(() => {
+        if (requestData?.resultDelivery) {
+            setFinalDelivery(requestData.resultDelivery);
+            setIsFinalDesignSet(true);
+        } else {
+            setFinalDelivery(null);
+            setIsFinalDesignSet(false);
+        }
+    }, [requestData?.resultDelivery]);
+
+    // Close emoji picker when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
+                setShowEmojiPicker(false);
+            }
+        };
+
+        if (showEmojiPicker) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showEmojiPicker]);
 
     const handleSendMessage = () => {
         if (newMessage.trim()) {
@@ -2085,7 +2147,7 @@ export default function DesignerChat() {
                                     size="large"
                                     style={{
                                         backgroundColor: requestData?.status === 'completed' ? '#1890ff' : 
-                                                       requestData?.status === 'processing' ? '#fa8c16' : '#52c41a',
+                                                       requestData?.status === 'processing' ? '#7c3aed' : '#52c41a',
                                         fontSize: '14px',
                                         fontWeight: 600,
                                         padding: '8px 16px',
@@ -2106,262 +2168,8 @@ export default function DesignerChat() {
                         height: '90vh',
                         position: 'relative'
                     }}>
-
-
-                        {/* Top Row - Chat and Deliveries */}
+                        {/* Top Row - My Deliveries and Revision Requests */}
                         <Box sx={{display: 'flex', gap: 3, flex: 2, alignItems: 'stretch'}}>
-
-                            {/* Left Half - School Chat */}
-                            <Paper elevation={0} sx={{display: 'none'}}>
-                                {/* Chat Header */}
-                                <Box sx={{
-                                    py: 2,
-                                    px: 4,
-                                    borderBottom: '2px solid #e2e8f0',
-                                    backgroundColor: 'linear-gradient(135deg, #f8fafc 0%, #e3f2fd 100%)',
-                                    position: 'relative'
-                                }}>
-                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 3}}>
-                                        <Box sx={{
-                                            width: 50,
-                                            height: 50,
-                                            borderRadius: '50%',
-                                            background: 'linear-gradient(135deg, #1976d2, #42a5f5)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            color: 'white',
-                                            fontSize: '20px',
-                                            boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)'
-                                        }}>
-                                            <BankOutlined/>
-                                        </Box>
-                                        <Box>
-                                            <Typography.Title level={4}
-                                                              style={{margin: 0, color: '#1e293b', fontWeight: 600}}>
-                                                School Chat
-                                            </Typography.Title>
-                                            <Typography.Text type="secondary"
-                                                             style={{fontSize: '14px', fontWeight: 500}}>
-                                                Communicate with the school
-                                            </Typography.Text>
-                                        </Box>
-                                    </Box>
-                                </Box>
-
-                                {/* Chat Messages */}
-                                <Box sx={{
-                                    flex: 1,
-                                    p: 3,
-                                    overflowY: 'auto',
-                                    backgroundColor: '#f8fafc',
-                                    maxHeight: '70vh',
-                                    opacity: requestData?.status === 'completed' ? 0.6 : 1,
-                                    pointerEvents: requestData?.status === 'completed' ? 'none' : 'auto'
-                                }}>
-                                    {chatMessages.length === 0 ? (
-                                        <Box sx={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            height: '100%',
-                                            color: '#64748b'
-                                        }}>
-                                            <MessageOutlined style={{fontSize: '48px', marginBottom: '16px'}}/>
-                                            <Typography.Text type="secondary" style={{fontSize: '16px'}}>
-                                                No messages yet. Start the conversation!
-                                            </Typography.Text>
-                                        </Box>
-                                    ) : (
-                                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
-                                            {chatMessages.map((msg, index) => (
-                                                <Box
-                                                    key={msg.id || index}
-                                                    sx={{
-                                                        display: 'flex',
-                                                        justifyContent: msg.user === (auth.currentUser?.displayName || "Designer") ? 'flex-end' : 'flex-start',
-                                                        mb: 2
-                                                    }}
-                                                >
-                                                    <Box sx={{
-                                                        display: 'flex',
-                                                        alignItems: 'flex-end',
-                                                        gap: 1,
-                                                        maxWidth: '70%'
-                                                    }}>
-                                                        {msg.user !== (auth.currentUser?.displayName || "Designer") && (
-                                                            <Avatar
-                                                                size="small"
-                                                                style={{backgroundColor: '#1976d2'}}
-                                                                icon={<BankOutlined/>}
-                                                            />
-                                                        )}
-                                                        <Box sx={{
-                                                            p: 2,
-                                                            borderRadius: 4,
-                                                            backgroundColor: msg.user === (auth.currentUser?.displayName || "Designer")
-                                                                ? 'linear-gradient(135deg, #1976d2, #42a5f5)'
-                                                                : 'white',
-                                                            color: msg.user === (auth.currentUser?.displayName || "Designer") ? 'white' : '#1e293b',
-                                                            border: msg.user !== (auth.currentUser?.displayName || "Designer") ? '2px solid #e2e8f0' : 'none',
-                                                            maxWidth: '100%',
-                                                            wordWrap: 'break-word',
-                                                            boxShadow: msg.user === (auth.currentUser?.displayName || "Designer")
-                                                                ? '0 4px 12px rgba(25, 118, 210, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                                            position: 'relative'
-                                                        }}>
-                                                            <Box
-                                                                sx={{
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    gap: 1,
-                                                                    mb: 1
-                                                                }}>
-                                                                <Typography.Text
-                                                                    style={{fontSize: '11px', color: '#94a3b8'}}
-                                                                >
-                                                                    {
-                                                                        msg.createdAt?.seconds
-                                                                            ? new Date(msg.createdAt.seconds * 1000).toLocaleString()
-                                                                            : ''
-                                                                    }
-                                                                </Typography.Text>
-                                                            </Box>
-                                                            {msg.text && (
-                                                                <Typography.Text style={{fontSize: '14px'}}>
-                                                                    {msg.text}
-                                                                </Typography.Text>
-                                                            )}
-                                                        </Box>
-                                                        {msg.user === (auth.currentUser?.displayName || "Designer") && (
-                                                            <Avatar
-                                                                size="small"
-                                                                style={{backgroundColor: '#52c41a'}}
-                                                                icon={<UserOutlined/>}
-                                                            />
-                                                        )}
-                                                    </Box>
-                                                </Box>
-                                            ))}
-                                        </Box>
-                                    )}
-                                </Box>
-
-                                {/* Message Input */}
-                                <Box sx={{
-                                    py: 2,
-                                    px: 2,
-                                    borderTop: '2px solid #e2e8f0',
-                                    backgroundColor: 'linear-gradient(135deg, #f8fafc 0%, #e3f2fd 100%)',
-                                    opacity: requestData?.status === 'completed' ? 0.6 : 1,
-                                    pointerEvents: requestData?.status === 'completed' ? 'none' : 'auto'
-                                }}>
-                                    <Box sx={{display: 'flex', gap: 3, alignItems: 'flex-end'}}>
-                                        <Box sx={{flex: 1, position: 'relative'}}>
-                                            <Input
-                                                placeholder="Type your message..."
-                                                value={newMessage}
-                                                onChange={(e) => setNewMessage(e.target.value)}
-                                                onPressEnter={handleSendMessage}
-                                                style={{
-                                                    borderRadius: '25px',
-                                                    padding: '16px 20px',
-                                                    fontSize: '16px',
-                                                    border: '2px solid #e2e8f0',
-                                                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                                    transition: 'all 0.3s ease',
-                                                    '&:focus': {
-                                                        borderColor: '#1976d2',
-                                                        boxShadow: '0 4px 12px rgba(25, 118, 210, 0.2)'
-                                                    }
-                                                }}
-                                            />
-                                            {showEmojiPicker && (
-                                                <Box sx={{
-                                                    position: 'absolute',
-                                                    bottom: '60px',
-                                                    right: '0px',
-                                                    zIndex: 10,
-                                                    borderRadius: '8px',
-                                                    overflow: 'hidden',
-                                                    boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
-                                                }}>
-                                                    <EmojiPicker onEmojiClick={onEmojiClick} height={300} width={280}/>
-                                                </Box>
-                                            )}
-                                        </Box>
-                                        <input
-                                            type="file"
-                                            accept=".jpg, .jpeg, .png, .gif"
-                                            style={{display: 'none'}}
-                                            id="image-upload-input"
-                                            onChange={handleImageUpload}
-                                        />
-                                        <Button
-                                            icon={<UploadOutlined/>}
-                                            onClick={() => document.getElementById('image-upload-input').click()}
-                                            style={{
-                                                borderRadius: '50%',
-                                                width: '50px',
-                                                height: '50px',
-                                                backgroundColor: '#f8fafc',
-                                                border: '2px solid #e2e8f0',
-                                                color: '#64748b',
-                                                fontSize: '18px',
-                                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                                transition: 'all 0.3s ease',
-                                                '&:hover': {
-                                                    backgroundColor: '#e3f2fd',
-                                                    borderColor: '#1976d2',
-                                                    transform: 'scale(1.05)'
-                                                }
-                                            }}
-                                        />
-                                        <Button
-                                            icon={<SmileOutlined/>}
-                                            onClick={() => setShowEmojiPicker(prev => !prev)}
-                                            style={{
-                                                borderRadius: '50%',
-                                                width: '50px',
-                                                height: '50px',
-                                                backgroundColor: '#f8fafc',
-                                                border: '2px solid #e2e8f0',
-                                                color: '#64748b',
-                                                fontSize: '18px',
-                                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                                transition: 'all 0.3s ease',
-                                                '&:hover': {
-                                                    backgroundColor: '#e3f2fd',
-                                                    borderColor: '#1976d2',
-                                                    transform: 'scale(1.05)'
-                                                }
-                                            }}
-                                        />
-                                        <Button
-                                            type="primary"
-                                            icon={<SendOutlined/>}
-                                            onClick={handleSendMessage}
-                                            style={{
-                                                borderRadius: '50%',
-                                                width: '50px',
-                                                height: '50px',
-                                                background: 'linear-gradient(135deg, #1976d2, #42a5f5)',
-                                                border: 'none',
-                                                fontSize: '18px',
-                                                boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
-                                                transition: 'all 0.3s ease',
-                                                '&:hover': {
-                                                    transform: 'scale(1.05)',
-                                                    boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)'
-                                                }
-                                            }}
-                                        />
-                                    </Box>
-                                </Box>
-                            </Paper>
-
-                            {/* Right Half - Deliveries and Revision Container */}
                             <Box sx={{
                                 flex: 1,
                                 display: 'flex',
@@ -2465,30 +2273,57 @@ export default function DesignerChat() {
                                                 </Typography.Text>
                                             </Box>
                                         ) : designDeliveries.length === 0 ? (
-                                                    <Box sx={{
-                                                        display: 'flex',
-                                                        justifyContent: 'center',
-                                                        alignItems: 'center',
-                                                        height: '100%',
-                                                        flexDirection: 'column',
-                                                        gap: 2,
-                                                        color: '#64748b'
-                                                    }}>
-                                                        <FileTextOutlined style={{fontSize: '48px', opacity: 0.5}}/>
-                                                        <Typography.Text type="secondary" style={{fontSize: '14px'}}>
-                                                            {requestData?.status === 'completed' ? 'Design request completed - no actions available' :
-                                                                'No deliveries yet. Start by adding your first delivery!'}
+                                            <Box sx={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                height: '100%',
+                                                gap: 3,
+                                                color: '#64748b'
+                                            }}>
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    alignItems: 'center',
+                                                    gap: 2
+                                                }}>
+                                                    <FileTextOutlined style={{fontSize: '48px', opacity: 0.5}}/>
+                                                    <Typography.Text type="secondary" style={{fontSize: '14px'}}>
+                                                        {requestData?.status === 'completed' ? 'Design request completed - no actions available' :
+                                                            'No deliveries yet. Start by adding your first delivery!'}
+                                                    </Typography.Text>
+                                                    {requestData?.status === 'completed' && (
+                                                        <Typography.Text type="secondary"
+                                                                         style={{
+                                                                             fontSize: '12px',
+                                                                             color: '#1890ff'
+                                                                         }}>
+                                                            This design request has been completed
                                                         </Typography.Text>
-                                                        {requestData?.status === 'completed' && (
-                                                            <Typography.Text type="secondary"
-                                                                             style={{
-                                                                                 fontSize: '12px',
-                                                                                 color: '#1890ff'
-                                                                             }}>
-                                                                This design request has been completed
-                                                            </Typography.Text>
-                                                        )}
-                                                    </Box>
+                                                    )}
+                                                </Box>
+                                                
+                                                {/* Add New Delivery Button for Empty State */}
+                                                {requestData?.status === 'processing' && (
+                                                    <Button
+                                                        type="dashed"
+                                                        icon={<FileTextOutlined/>}
+                                                        onClick={handleOpenDeliveryModal}
+                                                        style={{
+                                                            borderRadius: '8px',
+                                                            height: '48px',
+                                                            width: '100%',
+                                                            border: '2px dashed #d9d9d9',
+                                                            color: '#666',
+                                                            fontSize: '14px',
+                                                            fontWeight: 500
+                                                        }}
+                                                    >
+                                                        + Add New Delivery
+                                                    </Button>
+                                                )}
+                                            </Box>
                                                 ) : (
                                             <Box sx={{
                                                 display: 'grid',
@@ -2576,7 +2411,7 @@ export default function DesignerChat() {
                                                 }
 
                                                 {/* Add New Delivery Button */}
-                                                {requestData?.status !== 'completed' && (
+                                                {requestData?.status === 'processing' && (
                                                     <Box sx={{
                                                         gridColumn: '1 / -1',
                                                         mt: 2
@@ -2828,6 +2663,118 @@ export default function DesignerChat() {
                                 </Paper>
                             </Box>
                         </Box>
+
+                        {/* Bottom Row - Final Delivery */}
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                width: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                backgroundColor: 'white',
+                                borderRadius: 4,
+                                border: '2px solid #52c41a',
+                                overflow: 'hidden',
+                                boxShadow: '0 8px 32px rgba(82, 196, 26, 0.15)',
+                                position: 'relative',
+                                height: 'max-content',
+                                flex: 1
+                            }}
+                        >
+                            {/* Final Delivery Header */}
+                            <Box sx={{
+                                py: 2,
+                                px: 3,
+                                borderBottom: '2px solid #e2e8f0',
+                                backgroundColor: 'linear-gradient(135deg, #f6ffed 0%, #d9f7be 100%)',
+                                position: 'relative'
+                            }}>
+                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                    <Box sx={{
+                                        width: 32,
+                                        height: 32,
+                                        borderRadius: '50%',
+                                        background: 'linear-gradient(135deg, #52c41a, #73d13d)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: 'white',
+                                        fontSize: '14px',
+                                        boxShadow: '0 4px 12px rgba(82, 196, 26, 0.3)'
+                                    }}>
+                                        <CheckCircleOutlined/>
+                                    </Box>
+                                    <Typography.Title level={5}
+                                                      style={{margin: 0, color: '#52c41a', fontWeight: 600}}>
+                                        Final Delivery
+                                    </Typography.Title>
+                                </Box>
+                            </Box>
+
+                            {/* Final Delivery Content */}
+                            <Box sx={{
+                                p: 3,
+                                flex: 1,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                height: 'max-content'
+                            }}>
+                                {finalDelivery ? (
+                                    <>
+                                        <Typography.Title level={5} style={{margin: '0 0 8px 0', color: '#1e293b'}}>
+                                            {finalDelivery.name}
+                                        </Typography.Title>
+                                        <Typography.Text type="secondary"
+                                                         style={{fontSize: '12px', display: 'block', mb: 1}}>
+                                            {requestData?.status === 'completed' ? 'Final delivery - Design completed' :
+                                                finalDelivery.note || 'Final delivery selected'}
+                                        </Typography.Text>
+                                        <Typography.Text type="secondary"
+                                                         style={{fontSize: '11px', display: 'block', mb: 1}}>
+                                            {new Date(finalDelivery.submitDate).toLocaleDateString('vi-VN', {
+                                                day: '2-digit',
+                                                month: '2-digit',
+                                                year: 'numeric'
+                                            })}
+                                        </Typography.Text>
+                                        <Button
+                                            type="primary"
+                                            icon={<EyeOutlined/>}
+                                            onClick={() => handleOpenDeliveryDetailModal(finalDelivery)}
+                                            size="small"
+                                            style={{
+                                                backgroundColor: '#52c41a',
+                                                borderColor: '#52c41a',
+                                                borderRadius: '6px',
+                                                height: '32px',
+                                                fontSize: '12px',
+                                                fontWeight: 600,
+                                                marginTop: '8px'
+                                            }}
+                                        >
+                                            View Details
+                                        </Button>
+                                    </>
+                                ) : (
+                                    <Box sx={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        height: '100%',
+                                        flexDirection: 'column',
+                                        gap: 2,
+                                        color: '#64748b'
+                                    }}>
+                                        <FileTextOutlined style={{fontSize: '48px', opacity: 0.5}}/>
+                                        <Typography.Text type="secondary" style={{fontSize: '14px'}}>
+                                            {requestData?.status === 'completed' ? 'Design completed' : 'No final delivery selected'}
+                                        </Typography.Text>
+                                    </Box>
+                                )}
+                            </Box>
+                        </Paper>
                     </Box>
                 </Box>
             </Container>
@@ -2984,15 +2931,18 @@ export default function DesignerChat() {
                                         }}
                                     />
                                     {showEmojiPicker && (
-                                        <Box sx={{
-                                            position: 'absolute',
-                                            bottom: '46px',
-                                            right: 0,
-                                            zIndex: 10,
-                                            borderRadius: '8px',
-                                            overflow: 'hidden',
-                                            boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
-                                        }}>
+                                        <Box 
+                                            ref={emojiPickerRef}
+                                            sx={{
+                                                position: 'absolute',
+                                                bottom: '46px',
+                                                left: 0,
+                                                zIndex: 10,
+                                                borderRadius: '8px',
+                                                overflow: 'hidden',
+                                                boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+                                            }}
+                                        >
                                             <EmojiPicker onEmojiClick={onEmojiClick} height={300} width={280}/>
                                         </Box>
                                     )}
