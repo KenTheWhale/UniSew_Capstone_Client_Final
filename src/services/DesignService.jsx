@@ -77,3 +77,20 @@ export const getSchoolDesign = async () => {
     const response = await axiosClient.post("/design/final/designs")
     return response || null
 }
+
+export const buyExtraRevision = async (requestId, revisionTime, receiverId, totalPrice, gatewayCode) => {
+    const response = await axiosClient.put("/design/request/revision-time", {
+        requestId: requestId,
+        revisionTime: revisionTime,
+        createTransactionRequest: {
+            type: "design",
+            receiverId: receiverId,
+            itemId: requestId,
+            totalPrice: totalPrice,
+            gatewayCode: gatewayCode,
+            serviceFee: 0,
+            payFromWallet: false
+        }
+    })
+    return response || null
+}

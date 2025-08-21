@@ -17,7 +17,12 @@ import {
     Skeleton,
     Snackbar
 } from "@mui/material";
-import {Info as InfoIcon, Search as SearchIcon, FilterList as FilterIcon, Refresh as RefreshIcon} from '@mui/icons-material';
+import {
+    Info as InfoIcon,
+    Search as SearchIcon,
+    FilterList as FilterIcon,
+    Refresh as RefreshIcon
+} from '@mui/icons-material';
 import DesignServicesIcon from '@mui/icons-material/DesignServices';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -77,7 +82,7 @@ const calculateDaysDiff = (dateString) => {
 };
 
 // Extracted Components
-const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
+const StatCard = React.memo(({icon, value, label, color, bgColor}) => (
     <Card
         elevation={0}
         sx={{
@@ -92,7 +97,7 @@ const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
             }
         }}
     >
-        <CardContent sx={{ textAlign: "center", p: 2 }}>
+        <CardContent sx={{textAlign: "center", p: 2}}>
             <Box
                 sx={{
                     width: 50,
@@ -108,10 +113,10 @@ const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
             >
                 {icon}
             </Box>
-            <Typography variant="h5" sx={{ fontWeight: 700, color, mb: 0.5 }}>
+            <Typography variant="h5" sx={{fontWeight: 700, color, mb: 0.5}}>
                 {value}
             </Typography>
-            <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
+            <Typography variant="body2" sx={{color: "#64748b", fontWeight: 500}}>
                 {label}
             </Typography>
         </CardContent>
@@ -134,7 +139,7 @@ const LoadingState = React.memo(() => (
     </Box>
 ));
 
-const ErrorState = React.memo(({ error, onRetry, isRetrying }) => (
+const ErrorState = React.memo(({error, onRetry, isRetrying}) => (
     <Box sx={{
         display: 'flex',
         justifyContent: 'center',
@@ -161,7 +166,7 @@ const ErrorState = React.memo(({ error, onRetry, isRetrying }) => (
                 variant="contained"
                 onClick={onRetry}
                 disabled={isRetrying}
-                startIcon={isRetrying ? <CircularProgress size={16} /> : <RefreshIcon />}
+                startIcon={isRetrying ? <CircularProgress size={16}/> : <RefreshIcon/>}
                 sx={{
                     backgroundColor: '#dc2626',
                     '&:hover': {
@@ -184,7 +189,7 @@ const EmptyState = React.memo(() => (
         <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description={
-                <Typography variant="body1" sx={{ color: '#64748b', mt: 2 }}>
+                <Typography variant="body1" sx={{color: '#64748b', mt: 2}}>
                     No pending design requests available
                 </Typography>
             }
@@ -192,9 +197,9 @@ const EmptyState = React.memo(() => (
     </Box>
 ));
 
-const HeaderSection = React.memo(({ onRefresh }) => (
-    <Box 
-        sx={{ 
+const HeaderSection = React.memo(({onRefresh}) => (
+    <Box
+        sx={{
             mb: 4,
             position: "relative",
             p: 4,
@@ -215,15 +220,15 @@ const HeaderSection = React.memo(({ onRefresh }) => (
             }
         }}
     >
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-            <Box sx={{ display: "flex", alignItems: "center" }}>
-                <DesignServicesIcon sx={{ fontSize: 32, mr: 2, color: "#7c3aed" }} />
+        <Box sx={{display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2}}>
+            <Box sx={{display: "flex", alignItems: "center"}}>
+                <DesignServicesIcon sx={{fontSize: 32, mr: 2, color: "#7c3aed"}}/>
                 <Typography
                     variant="h4"
                     sx={{
                         fontWeight: 700,
                         color: "#1e293b",
-                        fontSize: { xs: "1.5rem", md: "2rem" }
+                        fontSize: {xs: "1.5rem", md: "2rem"}
                     }}
                 >
                     Available Design Requests
@@ -244,13 +249,13 @@ const HeaderSection = React.memo(({ onRefresh }) => (
     </Box>
 ));
 
-const TableSection = React.memo(({ 
-    columns, 
-    filteredDesignRequests, 
-    loading, 
-    stats,
-    onTableChange 
-}) => (
+const TableSection = React.memo(({
+                                     columns,
+                                     filteredDesignRequests,
+                                     loading,
+                                     stats,
+                                     onTableChange
+                                 }) => (
     <Paper
         elevation={0}
         sx={{
@@ -259,8 +264,8 @@ const TableSection = React.memo(({
             overflow: "hidden"
         }}
     >
-        <Box sx={{ p: 3, backgroundColor: "white" }}>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+        <Box sx={{p: 3, backgroundColor: "white"}}>
+            <Box sx={{display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3}}>
                 <Typography
                     variant="h6"
                     sx={{
@@ -281,7 +286,7 @@ const TableSection = React.memo(({
             </Box>
 
             {filteredDesignRequests.length === 0 ? (
-                <EmptyState />
+                <EmptyState/>
             ) : (
                 <Table
                     columns={columns}
@@ -294,9 +299,9 @@ const TableSection = React.memo(({
                         showSizeChanger: true,
                         showQuickJumper: true,
                         showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total} requests`,
-                        style: { marginTop: 16 }
+                        style: {marginTop: 16}
                     }}
-                    scroll={{ x: 'max-content' }}
+                    scroll={{x: 'max-content'}}
                     style={{
                         backgroundColor: 'white',
                         borderRadius: '8px'
@@ -366,7 +371,7 @@ export default function DesignerPendingDesign() {
         // Apply sorting
         filtered.sort((a, b) => {
             let aValue, bValue;
-            
+
             switch (sortBy) {
                 case 'creationDate':
                     aValue = new Date(a.creationDate);
@@ -409,8 +414,8 @@ export default function DesignerPendingDesign() {
             const now = new Date();
             return requestDate.getMonth() === now.getMonth() && requestDate.getFullYear() === now.getFullYear();
         }).length;
-        
-        return { total, thisWeek, thisMonth };
+
+        return {total, thisWeek, thisMonth};
     }, [filteredDesignRequests]);
 
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -454,8 +459,8 @@ export default function DesignerPendingDesign() {
             defaultSortOrder: 'descend',
             width: 120,
             render: (text) => (
-                <Typography variant="body2" sx={{ 
-                    color: '#7c3aed', 
+                <Typography variant="body2" sx={{
+                    color: '#7c3aed',
                     fontWeight: 600,
                     fontFamily: 'monospace'
                 }}>
@@ -482,10 +487,10 @@ export default function DesignerPendingDesign() {
                 const daysDiff = calculateDaysDiff(text);
                 return (
                     <Box>
-                        <Typography variant="body2" sx={{ color: '#475569' }}>
+                        <Typography variant="body2" sx={{color: '#475569'}}>
                             {formatDate(text)}
                         </Typography>
-                        <Typography variant="caption" sx={{ 
+                        <Typography variant="caption" sx={{
                             color: daysDiff < 1 ? '#059669' : daysDiff < 7 ? '#f59e0b' : '#dc2626',
                             fontWeight: 600
                         }}>
@@ -553,16 +558,16 @@ export default function DesignerPendingDesign() {
     ], [handleViewDetail]);
 
     if (loading) {
-        return <LoadingState />;
+        return <LoadingState/>;
     }
 
     if (error) {
-        return <ErrorState error={error} onRetry={handleRetry} isRetrying={isRetrying} />;
+        return <ErrorState error={error} onRetry={handleRetry} isRetrying={isRetrying}/>;
     }
 
     return (
-        <Box sx={{ height: '100%', overflowY: 'auto' }}>
-            <HeaderSection onRefresh={handleRefresh} />
+        <Box sx={{height: '100%', overflowY: 'auto'}}>
+            <HeaderSection onRefresh={handleRefresh}/>
 
             <TableSection
                 columns={columns}

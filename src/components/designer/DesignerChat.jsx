@@ -1,9 +1,26 @@
-import React, {useEffect, useState} from 'react';
-import {Avatar, Button, Card, Col, Divider, Form, Input, Radio, Row, Select, Space, Tag, Typography} from 'antd';
+import React, {useEffect, useRef, useState} from 'react';
+import {
+    Avatar,
+    Button,
+    Card,
+    Col,
+    Divider,
+    Form,
+    Input,
+    Radio,
+    Row,
+    Select,
+    Space,
+    Tag,
+    Tooltip,
+    Typography
+} from 'antd';
+import '@ant-design/v5-patch-for-react-19';
 import {
     BankOutlined,
     CheckCircleOutlined,
     ClockCircleOutlined,
+    CloseCircleOutlined,
     DollarOutlined,
     EditOutlined,
     EnvironmentOutlined,
@@ -16,6 +33,7 @@ import {
     SendOutlined,
     ShopOutlined,
     SmileOutlined,
+    SyncOutlined,
     UploadOutlined,
     UserOutlined
 } from '@ant-design/icons';
@@ -23,7 +41,7 @@ import {Box, Chip, Container, Dialog, DialogActions, DialogContent, DialogTitle,
 import EmojiPicker from 'emoji-picker-react';
 import {useSnackbar} from 'notistack';
 import {parseID} from '../../utils/ParseIDUtil.jsx';
-import {addDoc, collection, onSnapshot, query, serverTimestamp, where,doc,setDoc} from 'firebase/firestore';
+import {addDoc, collection, onSnapshot, query, serverTimestamp, where, doc, setDoc} from 'firebase/firestore';
 import {auth, db} from "../../configs/FirebaseConfig.jsx";
 import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
 import {GiSkirt} from "react-icons/gi";
@@ -35,8 +53,15 @@ import {
     getUndoneRevisionRequests
 } from "../../services/DesignService.jsx";
 import {uploadCloudinary} from "../../services/UploadImageService.jsx";
+import AppliedRequestDetail from './AppliedRequestDetail.jsx';
 
 const {TextArea} = Input;
+
+// Format design category for display across components
+const formatCategory = (category) => {
+    const v = (category || '').toLowerCase();
+    return v === 'pe' ? 'physical education' : (category || '');
+};
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function statusTag(status) {
@@ -59,6 +84,10 @@ export function statusTag(status) {
             color = 'purple';
             icon = <SyncOutlined/>;
             break;
+        case 'processing':
+            color = 'orange';
+            icon = <SyncOutlined/>;
+            break;
         case 'completed':
             color = 'cyan';
             icon = <CheckCircleOutlined/>;
@@ -68,7 +97,7 @@ export function statusTag(status) {
             icon = <CloseCircleOutlined/>;
             break;
         case 'pending':
-            color = 'processing';
+            color = 'orange';
             icon = <ClockCircleOutlined/>;
             break;
         case 'selected':
@@ -97,558 +126,7 @@ const getItemIcon = (itemType) => {
     }
 };
 
-function DesignDetailDialog({visible, onCancel, request}) {
-    if (!request) {
-        return (
-            <Dialog open={visible} onClose={onCancel} maxWidth="md" fullWidth>
-                <DialogContent>
-                    <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4}}>
-                        <Typography.Text>Loading request details...</Typography.Text>
-                    </Box>
-                </DialogContent>
-            </Dialog>
-        );
-    }
 
-    const {Text, Title} = Typography;
-
-    const getFooterButtons = (status) => {
-        let buttonText = '';
-        let buttonAction;
-
-        switch (status) {
-            case 'paid':
-                buttonText = 'Continue Working';
-                buttonAction = onCancel;
-                break;
-            case 'progressing':
-                buttonText = 'Continue Working';
-                buttonAction = onCancel;
-                break;
-            case 'completed':
-                buttonText = 'View Final Design';
-                buttonAction = onCancel;
-                break;
-            case 'rejected':
-                return null;
-            default:
-                return null;
-        }
-
-        return [
-            <Button key="action" type="primary" onClick={buttonAction}>
-                {buttonText}
-            </Button>,
-        ];
-    };
-
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('vi-VN', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
-    };
-
-    const formatCurrency = (amount) => {
-        return amount.toLocaleString("vi-VN");
-    };
-    return (
-        <>
-            <Dialog
-                open={visible}
-                onClose={onCancel}
-                maxWidth="lg"
-                fullWidth
-                slotProps={{
-                    paper: {
-                        sx: {
-                            borderRadius: 3,
-                            boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
-                            maxHeight: '85vh'
-                        }
-                    }
-                }}
-            >
-                <DialogTitle sx={{
-                    borderBottom: '1px solid #f0f0f0',
-                    padding: '16px 24px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    color: 'white'
-                }}>
-                    <InfoCircleOutlined style={{color: 'white', fontSize: '18px'}}/>
-                    <span style={{fontWeight: 600, fontSize: '16px'}}>
-                        Design Request: {parseID(request.id, 'dr')}
-                    </span>
-                </DialogTitle>
-                <DialogContent sx={{padding: '20px', overflowY: 'auto'}}>
-                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
-
-                        {/* Compact Header */}
-                        <Card
-                            size="small"
-                            style={{
-                                background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
-                                border: '1px solid #e2e8f0',
-                                borderRadius: 8
-                            }}
-                        >
-                            <Row gutter={[16, 8]} align="middle">
-                                <Col span={8}>
-                                    <Space direction="vertical" size="small">
-                                        <Text style={{fontWeight: 600, fontSize: '16px', color: '#1e293b'}}>
-                                            {request.name}
-                                        </Text>
-                                        <Text style={{color: '#64748b', fontSize: '12px'}}>
-                                            Working: {formatDate(request.creationDate)}
-                                        </Text>
-                                    </Space>
-                                </Col>
-                                <Col span={8} style={{textAlign: 'center'}}>
-                                    <Space direction="vertical" size="small">
-                                        <Text style={{fontSize: '12px', color: '#64748b'}}>
-                                            Design Request
-                                        </Text>
-                                        <Text style={{fontSize: '10px', color: '#94a3b8'}}>
-                                            Project Information
-                                        </Text>
-                                    </Space>
-                                </Col>
-                                <Col span={8} style={{display: 'flex', justifyContent: 'flex-end', textAlign: 'right'}}>
-                                    <Space direction="vertical" size="small">
-                                        {statusTag(request.status)}
-                                        <Text style={{color: '#64748b', fontSize: '12px'}}>
-                                            Privacy: {request.privacy ? 'Private' : 'Public'}
-                                        </Text>
-                                    </Space>
-                                </Col>
-                            </Row>
-                        </Card>
-
-                        {/* Main Content - Two Columns */}
-                        <Row gutter={[16, 16]}>
-                            {/* Left Column - School & Quotation */}
-                            <Col span={12}>
-                                <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
-
-                                    {/* School Info */}
-                                    <Card
-                                        title={
-                                            <Space>
-                                                <BankOutlined style={{color: '#1976d2'}}/>
-                                                <span style={{
-                                                    fontWeight: 600,
-                                                    fontSize: '14px'
-                                                }}>School Information</span>
-                                            </Space>
-                                        }
-                                        size="small"
-                                        style={{
-                                            border: '1px solid #e2e8f0',
-                                            borderRadius: 8
-                                        }}
-                                    >
-                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
-                                            <Avatar
-                                                sx={{
-                                                    width: 48,
-                                                    height: 48,
-                                                    backgroundColor: '#1976d2',
-                                                    fontSize: '18px',
-                                                    fontWeight: 600
-                                                }}
-                                                src={request.school?.avatar}
-                                                slotProps={{
-                                                    img: {
-                                                        referrerPolicy: 'no-referrer'
-                                                    }
-                                                }}
-                                            />
-                                            <Box sx={{flex: 1}}>
-                                                <Text style={{fontWeight: 600, fontSize: '14px', color: '#1e293b'}}>
-                                                    {request.school?.business || 'School Name'}
-                                                </Text>
-                                                <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mt: 0.5}}>
-                                                    <Text style={{fontSize: '10px', color: '#64748b'}}>
-                                                        School Client
-                                                    </Text>
-                                                </Box>
-                                            </Box>
-                                        </Box>
-
-                                        <Row gutter={[8, 8]}>
-                                            <Col span={12}>
-                                                <Space direction="vertical" size="small">
-                                                    <Space>
-                                                        <ShopOutlined style={{color: '#1976d2', fontSize: '12px'}}/>
-                                                        <Text style={{fontSize: '12px'}}>
-                                                            {request.school?.name || 'School Institution'}
-                                                        </Text>
-                                                    </Space>
-                                                    <Space>
-                                                        <PhoneOutlined style={{color: '#1976d2', fontSize: '12px'}}/>
-                                                        <Text style={{fontSize: '12px', color: '#64748b'}}>
-                                                            Contact: {request.school?.phone || 'Available'}
-                                                        </Text>
-                                                    </Space>
-                                                </Space>
-                                            </Col>
-                                            <Col span={12}>
-                                                <Space direction="vertical" size="small">
-                                                    <Space>
-                                                        <EnvironmentOutlined
-                                                            style={{color: '#64748b', fontSize: '12px'}}/>
-                                                        <Text style={{fontSize: '12px', color: '#64748b'}}>
-                                                            Location: {request.school?.address || 'Available'}
-                                                        </Text>
-                                                    </Space>
-                                                    <Space></Space>
-                                                </Space>
-                                            </Col>
-                                        </Row>
-                                    </Card>
-
-                                    {/* Quotation Summary */}
-                                    {request.finalDesignQuotation && request.price && (
-                                        <Card
-                                            title={
-                                                <Space>
-                                                    <DollarOutlined style={{color: '#1976d2'}}/>
-                                                    <span style={{
-                                                        fontWeight: 600,
-                                                        fontSize: '14px'
-                                                    }}>Your Quotation</span>
-                                                </Space>
-                                            }
-                                            size="small"
-                                            style={{
-                                                border: '1px solid #e2e8f0',
-                                                borderRadius: 8
-                                            }}
-                                        >
-                                            <Row gutter={[8, 8]} style={{display: 'flex'}}>
-                                                <Col span={8} style={{display: 'flex'}}>
-                                                    <Box sx={{
-                                                        p: 1.5,
-                                                        backgroundColor: '#f0fdf4',
-                                                        borderRadius: 6,
-                                                        border: '1px solid #bbf7d0',
-                                                        textAlign: 'center',
-                                                        width: '100%',
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        justifyContent: 'center'
-                                                    }}>
-                                                        <Text style={{
-                                                            fontSize: '10px',
-                                                            color: '#166534',
-                                                            fontWeight: 600
-                                                        }}>
-                                                            PRICE (VND)
-                                                        </Text>
-                                                        <Title level={4} style={{
-                                                            margin: '4px 0 0 0',
-                                                            color: '#166534',
-                                                            fontWeight: 700
-                                                        }}>
-                                                            {formatCurrency(request.price || 0)}
-                                                        </Title>
-                                                    </Box>
-                                                </Col>
-                                                <Col span={8} style={{display: 'flex'}}>
-                                                    <Box sx={{
-                                                        p: 1.5,
-                                                        backgroundColor: '#fef3c7',
-                                                        borderRadius: 6,
-                                                        border: '1px solid #fde68a',
-                                                        textAlign: 'center',
-                                                        width: '100%',
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        justifyContent: 'center'
-                                                    }}>
-                                                        <Text style={{
-                                                            fontSize: '10px',
-                                                            color: '#92400e',
-                                                            fontWeight: 600
-                                                        }}>
-                                                            DELIVERY
-                                                        </Text>
-                                                        <Title level={4} style={{
-                                                            margin: '4px 0 0 0',
-                                                            color: '#92400e',
-                                                            fontWeight: 700
-                                                        }}>
-                                                            {request.finalDesignQuotation?.deliveryWithIn || 7} days
-                                                        </Title>
-                                                    </Box>
-                                                </Col>
-                                                <Col span={8} style={{display: 'flex'}}>
-                                                    <Box sx={{
-                                                        p: 1.5,
-                                                        backgroundColor: '#dbeafe',
-                                                        borderRadius: 6,
-                                                        border: '1px solid #93c5fd',
-                                                        textAlign: 'center',
-                                                        width: '100%',
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        justifyContent: 'center'
-                                                    }}>
-                                                        <Text style={{
-                                                            fontSize: '10px',
-                                                            color: '#1e40af',
-                                                            fontWeight: 600
-                                                        }}>
-                                                            REVISIONS
-                                                        </Text>
-                                                        <Title level={4} style={{
-                                                            margin: '4px 0 0 0',
-                                                            color: '#1e40af',
-                                                            fontWeight: 700
-                                                        }}>
-                                                            {request.revisionTime === 9999 ? 'Unlimited' : request.revisionTime}
-                                                        </Title>
-                                                    </Box>
-                                                </Col>
-                                            </Row>
-                                            {request.finalDesignQuotation?.note && (
-                                                <Box sx={{
-                                                    mt: 1.5,
-                                                    p: 1.5,
-                                                    bgcolor: '#f8fafc',
-                                                    borderRadius: 6,
-                                                    border: '1px solid #e2e8f0'
-                                                }}>
-                                                    <Text style={{
-                                                        fontStyle: 'italic',
-                                                        color: '#475569',
-                                                        fontSize: '12px'
-                                                    }}>
-                                                        <strong>Your Note:</strong> {request.finalDesignQuotation.note}
-                                                    </Text>
-                                                </Box>
-                                            )}
-                                        </Card>
-                                    )}
-
-                                    {/* Logo Image */}
-                                    {request.logoImage && request.logoImage !== '' && (
-                                        <Card
-                                            title={
-                                                <Space>
-                                                    <PictureOutlined style={{color: '#1976d2'}}/>
-                                                    <span style={{fontWeight: 600, fontSize: '14px'}}>Logo Image</span>
-                                                </Space>
-                                            }
-                                            size="small"
-                                            style={{
-                                                border: '1px solid #e2e8f0',
-                                                borderRadius: 8
-                                            }}
-                                        >
-                                            <Box sx={{display: 'flex', justifyContent: 'center', p: 1}}>
-                                                <DisplayImage
-                                                    imageUrl={request.logoImage}
-                                                    alt="Logo Design"
-                                                    width="150px"
-                                                    height="150px"
-                                                />
-                                            </Box>
-                                        </Card>
-                                    )}
-                                </Box>
-                            </Col>
-
-                            {/* Right Column - Uniform Items */}
-                            <Col span={12}>
-                                <Card
-                                    title={
-                                        <Space>
-                                            <FileTextOutlined style={{color: '#1976d2'}}/>
-                                            <span style={{
-                                                fontWeight: 600,
-                                                fontSize: '14px'
-                                            }}>Design Requirements ({request.items?.length || 0})</span>
-                                        </Space>
-                                    }
-                                    size="small"
-                                    style={{
-                                        border: '1px solid #e2e8f0',
-                                        borderRadius: 8,
-                                        height: 'fit-content'
-                                    }}
-                                >
-                                    <Row gutter={[12, 12]}>
-                                        {request.items?.map((item, index) => (
-                                            <Col span={12} key={index}>
-                                                <Box sx={{
-                                                    p: 2,
-                                                    border: '1px solid #e2e8f0',
-                                                    borderRadius: 8,
-                                                    background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
-                                                    height: '100%',
-                                                    display: 'flex',
-                                                    flexDirection: 'column'
-                                                }}>
-                                                    {/* Header */}
-                                                    <Box sx={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: 1,
-                                                        mb: 1.5
-                                                    }}>
-                                                        <Box sx={{
-                                                            display: 'flex',
-                                                            justifyContent: 'center',
-                                                            alignItems: 'center',
-                                                            width: 32,
-                                                            height: 32,
-                                                            borderRadius: 6,
-                                                            bgcolor: '#e3f2fd',
-                                                            flexShrink: 0
-                                                        }}>
-                                                            {getItemIcon(item.type)}
-                                                        </Box>
-                                                        <Box sx={{flex: 1}}>
-                                                            <Text strong style={{
-                                                                fontSize: '13px',
-                                                                color: '#1e293b',
-                                                                display: 'block'
-                                                            }}>
-                                                                {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
-                                                            </Text>
-                                                            <Text style={{fontSize: '11px', color: '#64748b'}}>
-                                                                {item.category.toUpperCase()}
-                                                            </Text>
-                                                        </Box>
-                                                    </Box>
-
-                                                    {/* Details */}
-                                                    <Box sx={{
-                                                        flex: 1,
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        gap: 0.5
-                                                    }}>
-                                                        <Text style={{fontSize: '11px', color: '#64748b'}}>
-                                                            Fabric: {item.fabricName}
-                                                        </Text>
-
-                                                        <Box sx={{
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            gap: 0.5,
-                                                            mt: 0.5
-                                                        }}>
-                                                            <Text style={{fontSize: '11px', color: '#475569'}}>
-                                                                Color: {item.color}
-                                                            </Text>
-                                                            <Box sx={{
-                                                                width: 10,
-                                                                height: 10,
-                                                                borderRadius: '50%',
-                                                                bgcolor: item.color,
-                                                                border: '1px solid #e0e0e0'
-                                                            }}/>
-
-                                                        </Box>
-
-                                                        {item.logoPosition && (
-                                                            <Box sx={{
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                gap: 0.5,
-                                                                mt: 0.5
-                                                            }}>
-                                                                <Text style={{fontSize: '10px', color: '#64748b'}}>
-                                                                    Logo: {item.logoPosition}
-                                                                </Text>
-                                                            </Box>
-                                                        )}
-
-                                                        {item.note && (
-                                                            <Text style={{
-                                                                fontSize: '10px',
-                                                                fontStyle: 'italic',
-                                                                color: '#64748b',
-                                                                mt: 0.5
-                                                            }}>
-                                                                Note: {item.note}
-                                                            </Text>
-                                                        )}
-                                                    </Box>
-
-                                                    {/* Sample Images */}
-                                                    {item.sampleImages && item.sampleImages.length > 0 && (
-                                                        <Box sx={{mt: 1.5, pt: 1, borderTop: '1px solid #f1f5f9'}}>
-                                                            <Text style={{
-                                                                fontSize: '9px',
-                                                                fontWeight: 600,
-                                                                mb: 0.5,
-                                                                display: 'block',
-                                                                color: '#475569',
-                                                                textTransform: 'uppercase'
-                                                            }}>
-                                                                Reference Images
-                                                            </Text>
-                                                            <Box sx={{display: 'flex', gap: 0.5, flexWrap: 'wrap'}}>
-                                                                {item.sampleImages?.map((image, imgIndex) => (
-                                                                    <DisplayImage
-                                                                        key={image.id || imgIndex}
-                                                                        imageUrl={image.url}
-                                                                        alt={`Reference ${imgIndex + 1}`}
-                                                                        width="32px"
-                                                                        height="32px"
-                                                                    />
-                                                                ))}
-                                                            </Box>
-                                                        </Box>
-                                                    )}
-                                                </Box>
-                                            </Col>
-                                        ))}
-                                    </Row>
-                                </Card>
-                            </Col>
-                        </Row>
-
-                        {/* Feedback */}
-                        {request.feedback && request.feedback !== '' && request.feedback !== null && (
-                            <Card
-                                title={
-                                    <Space>
-                                        <InfoCircleOutlined style={{color: '#1976d2'}}/>
-                                        <span style={{fontWeight: 600, fontSize: '14px'}}>School Feedback</span>
-                                    </Space>
-                                }
-                                size="small"
-                                style={{
-                                    border: '1px solid #e2e8f0',
-                                    borderRadius: 8,
-                                    background: 'linear-gradient(135deg, #fff3cd 0%, #ffffff 100%)'
-                                }}
-                            >
-                                <Box sx={{p: 1.5, bgcolor: '#fff3cd', borderRadius: 6, border: '1px solid #ffeaa7'}}>
-                                    <Text style={{color: '#856404', fontSize: '12px'}}>
-                                        {request.feedback}
-                                    </Text>
-                                </Box>
-                            </Card>
-                        )}
-                    </Box>
-                </DialogContent>
-                <DialogActions sx={{padding: '16px 24px', borderTop: '1px solid #f0f0f0'}}>
-                    {getFooterButtons(request.status)}
-                </DialogActions>
-            </Dialog>
-        </>
-    );
-}
 
 export function UseDesignerChatMessages(roomId) {
     const [chatMessages, setChatMessages] = useState([]);
@@ -659,7 +137,7 @@ export function UseDesignerChatMessages(roomId) {
         const queryMessages = query(messageRef, where("room", "==", roomId));
         const unsubscribe = onSnapshot(queryMessages, (snapshot) => {
             const messages = [];
-            snapshot.forEach((d) => messages.push({ ...d.data(), id: d.id }));
+            snapshot.forEach((d) => messages.push({...d.data(), id: d.id}));
             messages.sort((a, b) => a.createdAt?.seconds - b.createdAt?.seconds);
             setChatMessages(messages);
         });
@@ -687,15 +165,15 @@ export function UseDesignerChatMessages(roomId) {
                 lastMessage: text,
                 updatedAt: serverTimestamp(),
             },
-            { merge: true }
+            {merge: true}
         );
     };
 
-    return { chatMessages, sendMessage };
+    return {chatMessages, sendMessage};
 }
 
 // New DeliverySubmissionModal component for designers
-function DeliveryDetailModal({visible, onCancel, delivery}) {
+function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton, onAddRevision}) {
     if (!delivery) return null;
 
     return (
@@ -881,7 +359,43 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                     </Box>
 
                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
-                        {delivery.deliveryItems?.map((item, index) => (
+                        {/* Group items by gender */}
+                        {(() => {
+                            const boyItems = delivery.deliveryItems?.filter(item => 
+                                item.designItem?.gender?.toLowerCase() === 'boy'
+                            ) || [];
+                            const girlItems = delivery.deliveryItems?.filter(item => 
+                                item.designItem?.gender?.toLowerCase() === 'girl'
+                            ) || [];
+                            const otherItems = delivery.deliveryItems?.filter(item => {
+                                const gender = item.designItem?.gender?.toLowerCase();
+                                return gender !== 'boy' && gender !== 'girl';
+                            }) || [];
+
+                            return (
+                                <>
+                                    {/* Boy Section */}
+                                    {boyItems.length > 0 && (
+                                        <Box sx={{mb: 3}}>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                mb: 2,
+                                                p: 2,
+                                                backgroundColor: '#dbeafe',
+                                                borderRadius: 2,
+                                                border: '1px solid #93c5fd'
+                                            }}>
+                                                <Typography.Title level={4} style={{margin: 0, color: '#1e40af', fontWeight: 700}}>
+                                                    BOY
+                                                </Typography.Title>
+                                                <Tag color="blue" style={{margin: 0, fontSize: '12px', fontWeight: 600}}>
+                                                    {boyItems.length} cloth{boyItems.length !== 1 ? 'es' : ''}
+                                                </Tag>
+                                            </Box>
+                                            <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                                                {boyItems.map((item, index) => (
                             <Box key={index} sx={{
                                 p: 3,
                                 backgroundColor: 'white',
@@ -911,7 +425,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                                     </Box>
                                     <Box>
                                         <Typography.Title level={5} style={{margin: 0, color: '#1e293b'}}>
-                                            {item.designItem?.type?.charAt(0).toUpperCase() + item.designItem?.type?.slice(1)} - {item.designItem?.category}
+                                            {item.designItem?.type?.charAt(0).toUpperCase() + item.designItem?.type?.slice(1)} - {formatCategory(item.designItem?.category)}
                                         </Typography.Title>
                                         <Typography.Text style={{color: '#64748b', fontSize: '12px'}}>
                                             Item #{index + 1}
@@ -1096,7 +610,399 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                                     </Box>
                                 )}
                             </Box>
-                        ))}
+                                                ))}
+                                            </Box>
+                                        </Box>
+                                    )}
+
+                                                                                                                                {/* Girl Section */}
+                                                        {girlItems.length > 0 && (
+                                                            <Box sx={{mb: 3}}>
+                                                                <Box sx={{
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'space-between',
+                                                                    mb: 2,
+                                                                    p: 2,
+                                                                    backgroundColor: '#fce7f3',
+                                                                    borderRadius: 2,
+                                                                    border: '1px solid #f9a8d4'
+                                                                }}>
+                                                                    <Typography.Title level={4} style={{margin: 0, color: '#be185d', fontWeight: 700}}>
+                                                    GIRL
+                                                                    </Typography.Title>
+                                                                    <Tag color="magenta" style={{margin: 0, fontSize: '12px', fontWeight: 600}}>
+                                                                        {girlItems.length} cloth{girlItems.length !== 1 ? 'es' : ''}
+                                                                    </Tag>
+                                                                </Box>
+                                                                <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                                                                    {girlItems.map((item, index) => (
+                                                                        <Box key={`girl-${index}`} sx={{
+                                                                            p: 3,
+                                                                            backgroundColor: 'white',
+                                                                            borderRadius: 4,
+                                                                            border: '1px solid #e2e8f0',
+                                                                            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                                                                            transition: 'all 0.3s ease',
+                                                                            '&:hover': {
+                                                                                boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+                                                                                transform: 'translateY(-2px)'
+                                                                            }
+                                                                        }}>
+                                                                            {/* Item Header */}
+                                                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
+                                                                                <Box sx={{
+                                                                                    width: 40,
+                                                                                    height: 40,
+                                                                                    borderRadius: '50%',
+                                                                                    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                                                                                    display: 'flex',
+                                                                                    alignItems: 'center',
+                                                                                    justifyContent: 'center',
+                                                                                    color: 'white',
+                                                                                    fontSize: '16px'
+                                                                                }}>
+                                                                                    {getItemIcon(item.designItem?.type)}
+                                                                                </Box>
+                                                                                <Box>
+                                                                                    <Typography.Title level={5} style={{margin: 0, color: '#1e293b'}}>
+                                                                                        {item.designItem?.type?.charAt(0).toUpperCase() + item.designItem?.type?.slice(1)} - {formatCategory(item.designItem?.category)}
+                                                                                    </Typography.Title>
+                                                                <Typography.Text style={{color: '#64748b', fontSize: '12px'}}>
+                                                                    Item #{index + 1}
+                                                                </Typography.Text>
+                                                            </Box>
+                                                        </Box>
+
+                                                        {/* Item Details Grid */}
+                                                        <Row gutter={[24, 16]}>
+                                                            <Col span={8}>
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    backgroundColor: '#f8fafc',
+                                                                    borderRadius: 3,
+                                                                    border: '1px solid #e2e8f0'
+                                                                }}>
+                                                                    <Typography.Text strong style={{fontSize: '13px', color: '#475569'}}>
+                                                                        Color
+                                                                    </Typography.Text>
+                                                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1.5, mt: 1}}>
+                                                                        <Box sx={{
+                                                                            width: 20,
+                                                                            height: 20,
+                                                                            borderRadius: '50%',
+                                                                            backgroundColor: item.designItem?.color,
+                                                                            border: '2px solid #e0e0e0',
+                                                                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                                                        }}/>
+                                                                        <Typography.Text style={{fontSize: '13px'}}>
+                                                                            {item.designItem?.color}
+                                                                        </Typography.Text>
+                                                                    </Box>
+                                                                </Box>
+                                                            </Col>
+                                                            <Col span={8}>
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    backgroundColor: '#f8fafc',
+                                                                    borderRadius: 3,
+                                                                    border: '1px solid #e2e8f0'
+                                                                }}>
+                                                                    <Typography.Text strong style={{fontSize: '13px', color: '#475569'}}>
+                                                                        Fabric
+                                                                    </Typography.Text>
+                                                                    <Typography.Text style={{fontSize: '13px', display: 'block', mt: 1}}>
+                                                                        {item.designItem?.fabricName}
+                                                                    </Typography.Text>
+                                                                </Box>
+                                                            </Col>
+                                                            <Col span={8}>
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    backgroundColor: '#f8fafc',
+                                                                    borderRadius: 3,
+                                                                    border: '1px solid #e2e8f0'
+                                                                }}>
+                                                                    <Typography.Text strong style={{fontSize: '13px', color: '#475569'}}>
+                                                                        Logo Position
+                                                                    </Typography.Text>
+                                                                    <Typography.Text style={{fontSize: '13px', display: 'block', mt: 1}}>
+                                                                        {item.designItem?.logoPosition || 'N/A'}
+                                                                    </Typography.Text>
+                                                                </Box>
+                                                            </Col>
+                                                        </Row>
+
+                                                        {/* Design Images */}
+                                                        <Row gutter={[24, 16]} style={{marginTop: 16}}>
+                                                            <Col span={12}>
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    backgroundColor: '#f0fdf4',
+                                                                    borderRadius: 3,
+                                                                    border: '1px solid #bbf7d0',
+                                                                    textAlign: 'center'
+                                                                }}>
+                                                                    <Typography.Text strong style={{
+                                                                        fontSize: '13px',
+                                                                        color: '#166534',
+                                                                        display: 'block',
+                                                                        mb: 1
+                                                                    }}>
+                                                                        Front Design
+                                                                    </Typography.Text>
+                                                                    <DisplayImage
+                                                                        imageUrl={item.frontImageUrl}
+                                                                        alt="Front Design"
+                                                                        width="100%"
+                                                                        height="200px"
+                                                                        style={{borderRadius: 8, objectFit: 'cover'}}
+                                                                    />
+                                                                </Box>
+                                                            </Col>
+                                                            <Col span={12}>
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    backgroundColor: '#fef2f2',
+                                                                    borderRadius: 3,
+                                                                    border: '1px solid #fca5a5',
+                                                                    textAlign: 'center'
+                                                                }}>
+                                                                    <Typography.Text strong style={{
+                                                                        fontSize: '13px',
+                                                                        color: '#991b1b',
+                                                                        display: 'block',
+                                                                        mb: 1
+                                                                    }}>
+                                                                        Back Design
+                                                                    </Typography.Text>
+                                                                    <DisplayImage
+                                                                        imageUrl={item.backImageUrl}
+                                                                        alt="Back Design"
+                                                                        width="100%"
+                                                                        height="200px"
+                                                                        style={{borderRadius: 8, objectFit: 'cover'}}
+                                                                    />
+                                                                </Box>
+                                                            </Col>
+                                                        </Row>
+
+                                                        {/* Item Note */}
+                                                        {item.designItem?.note && (
+                                                            <Box sx={{
+                                                                mt: 2,
+                                                                p: 2,
+                                                                backgroundColor: '#f8fafc',
+                                                                borderRadius: 3,
+                                                                border: '1px solid #e2e8f0'
+                                                            }}>
+                                                                <Typography.Text type="secondary"
+                                                                                 style={{fontSize: '12px', fontStyle: 'italic'}}>
+                                                                    <strong>Note:</strong> {item.designItem.note}
+                                                                </Typography.Text>
+                                                            </Box>
+                                                        )}
+                                                    </Box>
+                                                ))}
+                                            </Box>
+                                        </Box>
+                                    )}
+
+                                    {/* Others Section */}
+                                    {otherItems.length > 0 && (
+                                        <Box sx={{mb: 3}}>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                mb: 2,
+                                                p: 2,
+                                                backgroundColor: '#f3f4f6',
+                                                borderRadius: 2,
+                                                border: '1px solid #d1d5db'
+                                            }}>
+                                                <Typography.Title level={4} style={{margin: 0, color: '#374151', fontWeight: 700}}>
+                                                    OTHERS
+                                                </Typography.Title>
+                                                <Tag color="default" style={{margin: 0, fontSize: '12px', fontWeight: 600}}>
+                                                    {otherItems.length} cloth{otherItems.length !== 1 ? 'es' : ''}
+                                                </Tag>
+                                            </Box>
+                                            <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                                                {otherItems.map((item, index) => (
+                                                    <Box key={`other-${index}`} sx={{
+                                                        p: 3,
+                                                        backgroundColor: 'white',
+                                                        borderRadius: 4,
+                                                        border: '1px solid #e2e8f0',
+                                                        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                                                        transition: 'all 0.3s ease',
+                                                        '&:hover': {
+                                                            boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+                                                            transform: 'translateY(-2px)'
+                                                        }
+                                                    }}>
+                                                        {/* Item Header */}
+                                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
+                                                            <Box sx={{
+                                                                width: 40,
+                                                                height: 40,
+                                                                borderRadius: '50%',
+                                                                background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                color: 'white',
+                                                                fontSize: '16px'
+                                                            }}>
+                                                                {getItemIcon(item.designItem?.type)}
+                                                            </Box>
+                                                            <Box>
+                                                                <Typography.Title level={5} style={{margin: 0, color: '#1e293b'}}>
+                                                                    {item.designItem?.type?.charAt(0).toUpperCase() + item.designItem?.type?.slice(1)} - {formatCategory(item.designItem?.category)}
+                                                                </Typography.Title>
+                                                                <Typography.Text style={{color: '#64748b', fontSize: '12px'}}>
+                                                                    Item #{index + 1}
+                                                                </Typography.Text>
+                                                            </Box>
+                                                        </Box>
+
+                                                        {/* Item Details Grid */}
+                                                        <Row gutter={[24, 16]}>
+                                                            <Col span={8}>
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    backgroundColor: '#f8fafc',
+                                                                    borderRadius: 3,
+                                                                    border: '1px solid #e2e8f0'
+                                                                }}>
+                                                                    <Typography.Text strong style={{fontSize: '13px', color: '#475569'}}>
+                                                                        Color
+                                                                    </Typography.Text>
+                                                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1.5, mt: 1}}>
+                                                                        <Box sx={{
+                                                                            width: 20,
+                                                                            height: 20,
+                                                                            borderRadius: '50%',
+                                                                            backgroundColor: item.designItem?.color,
+                                                                            border: '2px solid #e0e0e0',
+                                                                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                                                        }}/>
+                                                                        <Typography.Text style={{fontSize: '13px'}}>
+                                                                            {item.designItem?.color}
+                                                                        </Typography.Text>
+                                                                    </Box>
+                                                                </Box>
+                                                            </Col>
+                                                            <Col span={8}>
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    backgroundColor: '#f8fafc',
+                                                                    borderRadius: 3,
+                                                                    border: '1px solid #e2e8f0'
+                                                                }}>
+                                                                    <Typography.Text strong style={{fontSize: '13px', color: '#475569'}}>
+                                                                        Fabric
+                                                                    </Typography.Text>
+                                                                    <Typography.Text style={{fontSize: '13px', display: 'block', mt: 1}}>
+                                                                        {item.designItem?.fabricName}
+                                                                    </Typography.Text>
+                                                                </Box>
+                                                            </Col>
+                                                            <Col span={8}>
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    backgroundColor: '#f8fafc',
+                                                                    borderRadius: 3,
+                                                                    border: '1px solid #e2e8f0'
+                                                                }}>
+                                                                    <Typography.Text strong style={{fontSize: '13px', color: '#475569'}}>
+                                                                        Logo Position
+                                                                    </Typography.Text>
+                                                                    <Typography.Text style={{fontSize: '13px', display: 'block', mt: 1}}>
+                                                                        {item.designItem?.logoPosition || 'N/A'}
+                                                                    </Typography.Text>
+                                                                </Box>
+                                                            </Col>
+                                                        </Row>
+
+                                                        {/* Design Images */}
+                                                        <Row gutter={[24, 16]} style={{marginTop: 16}}>
+                                                            <Col span={12}>
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    backgroundColor: '#f0fdf4',
+                                                                    borderRadius: 3,
+                                                                    border: '1px solid #bbf7d0',
+                                                                    textAlign: 'center'
+                                                                }}>
+                                                                    <Typography.Text strong style={{
+                                                                        fontSize: '13px',
+                                                                        color: '#166534',
+                                                                        display: 'block',
+                                                                        mb: 1
+                                                                    }}>
+                                                                        Front Design
+                                                                    </Typography.Text>
+                                                                    <DisplayImage
+                                                                        imageUrl={item.frontImageUrl}
+                                                                        alt="Front Design"
+                                                                        width="100%"
+                                                                        height="200px"
+                                                                        style={{borderRadius: 8, objectFit: 'cover'}}
+                                                                    />
+                                                                </Box>
+                                                            </Col>
+                                                            <Col span={12}>
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    backgroundColor: '#fef2f2',
+                                                                    borderRadius: 3,
+                                                                    border: '1px solid #fca5a5',
+                                                                    textAlign: 'center'
+                                                                }}>
+                                                                    <Typography.Text strong style={{
+                                                                        fontSize: '13px',
+                                                                        color: '#991b1b',
+                                                                        display: 'block',
+                                                                        mb: 1
+                                                                    }}>
+                                                                        Back Design
+                                                                    </Typography.Text>
+                                                                    <DisplayImage
+                                                                        imageUrl={item.backImageUrl}
+                                                                        alt="Back Design"
+                                                                        width="100%"
+                                                                        height="200px"
+                                                                        style={{borderRadius: 8, objectFit: 'cover'}}
+                                                                    />
+                                                                </Box>
+                                                            </Col>
+                                                        </Row>
+
+                                                        {/* Item Note */}
+                                                        {item.designItem?.note && (
+                                                            <Box sx={{
+                                                                mt: 2,
+                                                                p: 2,
+                                                                backgroundColor: '#f8fafc',
+                                                                borderRadius: 3,
+                                                                border: '1px solid #e2e8f0'
+                                                            }}>
+                                                                <Typography.Text type="secondary"
+                                                                                 style={{fontSize: '12px', fontStyle: 'italic'}}>
+                                                                    <strong>Note:</strong> {item.designItem.note}
+                                                                </Typography.Text>
+                                                            </Box>
+                                                        )}
+                                                    </Box>
+                                                ))}
+                                            </Box>
+                                        </Box>
+                                    )}
+                                </>
+                            );
+                        })()}
                     </Box>
                 </Box>
             </Box>
@@ -1107,8 +1013,32 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                 borderTop: '1px solid #e2e8f0',
                 backgroundColor: '#f8fafc',
                 display: 'flex',
-                justifyContent: 'flex-end'
+                justifyContent: showAddRevisionButton ? 'space-between' : 'flex-end',
+                alignItems: 'center'
             }}>
+                {showAddRevisionButton && (
+                    <Button
+                        type="primary"
+                        icon={<EditOutlined/>}
+                        onClick={onAddRevision}
+                        style={{
+                            borderRadius: 8,
+                            height: '40px',
+                            padding: '0 24px',
+                            fontWeight: 600,
+                            background: 'linear-gradient(135deg, #ff6b35, #ff8c42)',
+                            border: 'none',
+                            boxShadow: '0 2px 8px rgba(255, 107, 53, 0.2)',
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                                transform: 'translateY(-1px)',
+                                boxShadow: '0 4px 12px rgba(255, 107, 53, 0.3)'
+                            }
+                        }}
+                    >
+                        Add Revision Delivery
+                    </Button>
+                )}
                 <Button
                     onClick={onCancel}
                     style={{
@@ -1125,7 +1055,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
     );
 }
 
-function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, designDeliveries}) {
+function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, designDeliveries, initialDeliveryType = 'normal'}) {
     const [form] = Form.useForm();
     const [deliveryType, setDeliveryType] = useState('normal');
     const [uploading, setUploading] = useState(false);
@@ -1133,15 +1063,94 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
     const [revisionRequests, setRevisionRequests] = useState([]);
     const [loadingRevisions, setLoadingRevisions] = useState(false);
     const {enqueueSnackbar} = useSnackbar();
+    const [isFormValid, setIsFormValid] = useState(false);
+    const [formInitialValues, setFormInitialValues] = useState({ revisionOf: undefined, itemList: [] });
+    const [formKey, setFormKey] = useState(0);
+    const validityTimerRef = useRef(null);
+    const shirtIndexSetRef = useRef(new Set());
+
+    useEffect(() => {
+        if (!visible) return;
+        const set = new Set();
+        const arr = Array.isArray(requestData?.items) ? requestData.items : [];
+        arr.forEach((it, idx) => {
+            if (String(it?.type || '').toLowerCase().includes('shirt')) set.add(idx);
+        });
+        shirtIndexSetRef.current = set;
+    }, [visible, requestData?.items]);
+
+    const getItemLabel = (idx) => {
+        const src = Array.isArray(requestData?.items) ? requestData.items[idx] : null;
+        if (!src) return `item ${idx}`;
+        const gender = String(src.gender || '').toLowerCase();
+        const type = String(src.type || '').toLowerCase();
+        const category = String(formatCategory(src.category || '')).toLowerCase();
+        const parts = [gender, type, category].filter(Boolean);
+        return parts.join(' ');
+    };
+
+    const isFormComplete = (values, currentDeliveryType) => {
+        const deliveryNameOk = typeof values.deliveryName === 'string' && values.deliveryName.trim().length > 0;
+        const items = Array.isArray(values.itemList) ? values.itemList : [];
+        if (!deliveryNameOk) return { ok: false, reason: 'missing deliveryName' };
+        if (items.length === 0) return { ok: false, reason: 'itemList empty' };
+        for (let i = 0; i < items.length; i++) {
+            const it = items[i] || {};
+            const label = getItemLabel(i);
+            if (!it.frontUrl) return { ok: false, reason: `${label} missing front design image` };
+            if (!it.backUrl) return { ok: false, reason: `${label} missing back design image` };
+            // Require logo size only for original 'shirt' design items (by original index)
+            const requireLogoDims = shirtIndexSetRef.current.has(i);
+            if (requireLogoDims) {
+                const hOk = Number(it.logoHeight) > 0;
+                const wOk = Number(it.logoWidth) > 0;
+                if (!hOk) return { ok: false, reason: `${label}'s logo height invalid` };
+                if (!wOk) return { ok: false, reason: `${label}'s logo width invalid` };
+            }
+        }
+        // If deliveryType is revision, ensure revisionOf exists
+        if (currentDeliveryType === 'revision' && !values.revisionOf) {
+            return { ok: false, reason: 'missing revisionOf' };
+        }
+        return { ok: true };
+    };
+
+    const updateFormValidity = () => {
+        if (validityTimerRef.current) clearTimeout(validityTimerRef.current);
+        validityTimerRef.current = setTimeout(() => {
+            const hasErrors = form.getFieldsError().some((f) => (f.errors || []).length > 0);
+            const values = form.getFieldsValue(true);
+            const completeness = isFormComplete(values, deliveryType);
+            const nextValid = completeness.ok && !hasErrors;
+            // Debug logs to explain invalid reasons
+            // eslint-disable-next-line no-console
+            console.debug('[DeliverySubmissionModal] validity check:', {
+                hasErrors,
+                completeness,
+                valuesSummary: {
+                    deliveryName: values.deliveryName,
+                    revisionOf: values.revisionOf,
+                    itemCount: Array.isArray(values.itemList) ? values.itemList.length : 0,
+                }
+            });
+            setIsFormValid(nextValid);
+        }, 100);
+    };
 
     useEffect(() => {
         if (!visible) {
-            form.resetFields();
             setDeliveryType('normal');
             setUploadedFiles({});
             setRevisionRequests([]);
+            setIsFormValid(false);
+            setFormInitialValues({ revisionOf: undefined, itemList: [] });
+            setFormKey((k) => k + 1);
+        } else {
+            // Set initial delivery type when modal opens
+            setDeliveryType(initialDeliveryType);
         }
-    }, [visible, form]);
+        // When opening, validity will be updated by onValuesChange/onFieldsChange as fields populate
+    }, [visible, initialDeliveryType]);
 
     // Fetch revision requests when modal opens
     useEffect(() => {
@@ -1152,56 +1161,62 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
 
     // Clear revision field when delivery type changes
     useEffect(() => {
+        if (!visible) return;
         if (deliveryType === 'normal') {
-            form.setFieldsValue({ revisionOf: undefined });
-            form.setFieldsValue({ itemList: [] });
             setUploadedFiles({});
+            setFormInitialValues({ revisionOf: undefined, itemList: [] });
+            setFormKey((k) => k + 1);
         }
-    }, [deliveryType, form]);
+    }, [visible, deliveryType]);
 
     // Auto-fill form data when revision is selected
     useEffect(() => {
-        if (deliveryType === 'revision' && form.getFieldValue('revisionOf') && designDeliveries && Array.isArray(designDeliveries)) {
-            const selectedRevisionId = form.getFieldValue('revisionOf');
-            const selectedRevision = revisionRequests.find(r => r.id === selectedRevisionId);
-            
-            if (selectedRevision) {
-                // Find the delivery that matches the revision's deliveryId
-                const previousDelivery = designDeliveries.find(d => d.id === selectedRevision.deliveryId);
+        if (!visible) return;
+        if (deliveryType !== 'revision') return;
+        
+        // If there's a revision request available, automatically select it
+        if (revisionRequests.length > 0 && designDeliveries && Array.isArray(designDeliveries)) {
+            const selectedRevision = revisionRequests[0]; // Always use the first (and only) revision
+            const selectedRevisionId = selectedRevision.id;
+
+            const previousDelivery = designDeliveries.find(d => d.id === selectedRevision.deliveryId);
+            if (previousDelivery && previousDelivery.deliveryItems) {
+                // Create itemListData with correct indices based on requestData.items
+                const itemListData = Array(requestData?.items?.length || 0).fill(null);
                 
-                if (previousDelivery && previousDelivery.deliveryItems) {
-                    // Auto-fill the form with previous delivery data
-                    const itemListData = previousDelivery.deliveryItems.map(item => ({
-                        designItemId: item.designItem?.id,
-                        logoHeight: item.baseLogoHeight || 0,
-                        logoWidth: item.baseLogoWidth || 0,
-                        frontUrl: item.frontImageUrl,
-                        backUrl: item.backImageUrl
-                    }));
-                    
-                    form.setFieldsValue({
-                        itemList: itemListData
-                    });
-                    
-                    // Update uploaded files state to show the previous images
-                    const uploadedFilesData = {};
-                    previousDelivery.deliveryItems.forEach((item, index) => {
-                        if (item.frontImageUrl) {
-                            // Extract filename from URL
-                            const frontFileName = item.frontImageUrl.split('/').pop().split('?')[0];
-                            uploadedFilesData[`front-${index}`] = frontFileName || 'Front Design';
-                        }
-                        if (item.backImageUrl) {
-                            // Extract filename from URL
-                            const backFileName = item.backImageUrl.split('/').pop().split('?')[0];
-                            uploadedFilesData[`back-${index}`] = backFileName || 'Back Design';
-                        }
-                    });
-                    setUploadedFiles(uploadedFilesData);
-                }
+                previousDelivery.deliveryItems.forEach(prevItem => {
+                    // Find the corresponding item in requestData.items by designItemId
+                    const requestItemIndex = requestData?.items?.findIndex(reqItem => reqItem.id === prevItem.designItem?.id);
+                    if (requestItemIndex !== -1) {
+                        itemListData[requestItemIndex] = {
+                            designItemId: prevItem.designItem?.id,
+                            logoHeight: prevItem.baseLogoHeight || prevItem.logoHeight || 0,
+                            logoWidth: prevItem.baseLogoWidth || prevItem.logoWidth || 0,
+                            frontUrl: prevItem.frontImageUrl,
+                            backUrl: prevItem.backImageUrl
+                        };
+                    }
+                });
+
+                // Remount form with initial values
+                setFormInitialValues({ revisionOf: selectedRevisionId, itemList: itemListData });
+                setFormKey((k) => k + 1);
+                
+                // Also set form values directly after a short delay to ensure form is mounted
+                setTimeout(() => {
+                    form.setFieldsValue({ revisionOf: selectedRevisionId, itemList: itemListData });
+                }, 100);
+
+                // Update uploaded files state to show the previous images (use URLs)
+                const uploadedFilesData = {};
+                previousDelivery.deliveryItems.forEach((item, index) => {
+                    if (item.frontImageUrl) uploadedFilesData[`front-${index}`] = item.frontImageUrl;
+                    if (item.backImageUrl) uploadedFilesData[`back-${index}`] = item.backImageUrl;
+                });
+                setUploadedFiles(uploadedFilesData);
             }
         }
-    }, [deliveryType, form.getFieldValue('revisionOf'), revisionRequests, designDeliveries]);
+    }, [visible, deliveryType, revisionRequests, designDeliveries, requestData?.items]);
 
     const fetchRevisionRequests = async () => {
         try {
@@ -1236,44 +1251,52 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
 
     // Check if there are existing deliveries to allow revision type
     const handleOk = async () => {
-        try {
-            const values = await form.validateFields();
-
-            // Format data for createDesignDelivery API
-            const deliveryData = {
-                designRequestId: requestData.id,
-                revisionId: deliveryType === 'revision' ? values.revisionOf : -1,
-                name: values.deliveryName,
-                note: values.deliveryDescription,
-                itemList: values.itemList || [],
-                revision: deliveryType === 'revision'
-            };
-
-            onSubmit(deliveryData);
-        } catch (info) {
-            // Show error message using enqueueSnackbar
-            if (info.errorFields && info.errorFields.length > 0) {
-                const errorMessages = info.errorFields.map(field => field.errors[0]).join(', ');
-                enqueueSnackbar(`Please fix the following errors: ${errorMessages}`, {
-                    variant: 'error',
-                    autoHideDuration: 5000,
-                    anchorOrigin: {
-                        vertical: 'top',
-                        horizontal: 'right',
-                    }
-                });
-            } else {
-                enqueueSnackbar('Please check your input and try again.', {
-                    variant: 'error',
-                    autoHideDuration: 3000,
-                    anchorOrigin: {
-                        vertical: 'top',
-                        horizontal: 'right',
-                    }
-                });
-            }
+        const values = form.getFieldsValue(true);
+        const hasErrors = form.getFieldsError().some((f) => (f.errors || []).length > 0);
+        const completeness = isFormComplete(values, deliveryType);
+        if (hasErrors || !completeness.ok) {
+            const message = hasErrors ? 'Some fields are invalid. Please fix highlighted errors.' : `Missing/invalid data: ${completeness.reason}`;
+            enqueueSnackbar(message, {
+                variant: 'error',
+                autoHideDuration: 4000,
+                anchorOrigin: { vertical: 'top', horizontal: 'right' }
+            });
+            return;
         }
+
+        // As a safety, run validate to catch any rule issues
+        try {
+            await form.validateFields();
+        } catch (e) {
+            enqueueSnackbar('Some fields are invalid. Please fix highlighted errors.', {
+                variant: 'error',
+                autoHideDuration: 4000,
+                anchorOrigin: { vertical: 'top', horizontal: 'right' }
+            });
+            return;
+        }
+
+        const deliveryData = {
+            designRequestId: requestData.id,
+            revisionId: deliveryType === 'revision' ? values.revisionOf : -1,
+            name: values.deliveryName,
+            note: values.deliveryDescription,
+            itemList: values.itemList || [],
+            revision: deliveryType === 'revision'
+        };
+        onSubmit(deliveryData);
     };
+
+    // Group design items by gender to render sections in modal
+    const indexedItems = Array.isArray(requestData?.items)
+        ? requestData.items.map((it, idx) => ({...it, __index: idx}))
+        : [];
+    const modalBoyItems = indexedItems.filter(i => (i.gender || '').toLowerCase() === 'boy');
+    const modalGirlItems = indexedItems.filter(i => (i.gender || '').toLowerCase() === 'girl');
+    const modalOtherItems = indexedItems.filter(i => {
+        const g = (i.gender || '').toLowerCase();
+        return g !== 'boy' && g !== 'girl';
+    });
 
     return (
         <Dialog
@@ -1307,10 +1330,13 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
             </DialogTitle>
             <DialogContent sx={{padding: '24px'}}>
                 <Form
+                    key={formKey}
                     form={form}
                     layout="vertical"
                     name="delivery_submission_form"
                     style={{width: '100%'}}
+                    initialValues={formInitialValues}
+                    onFieldsChange={updateFormValidity}
                 >
                     {/* Delivery Type Selection */}
                     <Form.Item
@@ -1338,7 +1364,7 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                         )}
                     </Form.Item>
 
-                                        {/* Revision Selection - Only show if revision type is selected */}
+                    {/* Revision Display - Only show if revision type is selected */}
                     {deliveryType === 'revision' && (
                         <>
                             <Form.Item
@@ -1348,7 +1374,7 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                                     {
                                         validator: (_, value) => {
                                             if (deliveryType === 'revision' && (!value || value === '')) {
-                                                return Promise.reject(new Error('Please select a revision request ID!'));
+                                                return Promise.reject(new Error('No revision request available!'));
                                             }
                                             return Promise.resolve();
                                         }
@@ -1356,84 +1382,59 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                                 ]}
                             >
                                 <Box sx={{display: 'flex', flexDirection: 'column', gap: 1}}>
-                                    <Select
-                                        name="revisionOf"
-                                        placeholder={loadingRevisions ? "Loading revision requests..." : "Select a revision request ID..."}
-                                        style={{borderRadius: '8px'}}
-                                        loading={loadingRevisions}
-                                        disabled={loadingRevisions || revisionRequests.length === 0}
-                                        allowClear
-                                        styles={{
-                                            popup: {
-                                                root: {zIndex: 9999}
-                                            }
-                                        }}
-                                        onChange={(value) => {
-                                            // Set the form field value
-                                            form.setFieldsValue({ revisionOf: value });
-                                            
-                                            if (value && designDeliveries && Array.isArray(designDeliveries)) {
-                                                const selectedRevision = revisionRequests.find(r => r.id === value);
-                                                if (selectedRevision) {
-                                                    const previousDelivery = designDeliveries.find(d => d.id === selectedRevision.deliveryId);
-                                                    if (previousDelivery && previousDelivery.deliveryItems) {
-                                                        // Auto-fill the form with previous delivery data
-                                                        const itemListData = previousDelivery.deliveryItems.map(item => ({
-                                                            designItemId: item.designItem?.id,
-                                                            logoHeight: item.baseLogoHeight || 0,
-                                                            logoWidth: item.baseLogoWidth || 0,
-                                                            frontUrl: item.frontImageUrl,
-                                                            backUrl: item.backImageUrl
-                                                        }));
-                                                        
-                                                        form.setFieldsValue({
-                                                            itemList: itemListData
-                                                        });
-                                                        
-                                                        // Update uploaded files state to show the previous images
-                                                        const uploadedFilesData = {};
-                                                        previousDelivery.deliveryItems.forEach((item, index) => {
-                                                            if (item.frontImageUrl) {
-                                                                // Extract filename from URL
-                                                                const frontFileName = item.frontImageUrl.split('/').pop().split('?')[0];
-                                                                uploadedFilesData[`front-${index}`] = frontFileName || 'Front Design';
-                                                            }
-                                                            if (item.backImageUrl) {
-                                                                // Extract filename from URL
-                                                                const backFileName = item.backImageUrl.split('/').pop().split('?')[0];
-                                                                uploadedFilesData[`back-${index}`] = backFileName || 'Back Design';
-                                                            }
-                                                        });
-                                                        setUploadedFiles(uploadedFilesData);
+                                    {loadingRevisions ? (
+                                        <Box sx={{
+                                            p: 2,
+                                            backgroundColor: '#f8fafc',
+                                            borderRadius: 2,
+                                            border: '1px solid #e2e8f0',
+                                            textAlign: 'center'
+                                        }}>
+                                            <Typography.Text type="secondary" style={{fontSize: '14px'}}>
+                                                Loading revision requests...
+                                            </Typography.Text>
+                                        </Box>
+                                    ) : revisionRequests.length > 0 ? (
+                                        <Box sx={{
+                                            p: 2,
+                                            backgroundColor: '#fff5f0',
+                                            borderRadius: 2,
+                                            border: '1px solid #ff8c42',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 2
+                                        }}>
+                                            <EditOutlined style={{color: '#ff6b35', fontSize: '16px'}}/>
+                                            <Box sx={{flex: 1}}>
+                                                <Typography.Text strong style={{fontSize: '14px', color: '#ff6b35'}}>
+                                                    Revision #{revisionRequests[0].id}
+                                                </Typography.Text>
+                                                <Typography.Text style={{fontSize: '12px', color: '#ff6b35', display: 'block'}}>
+                                                    {designDeliveries && Array.isArray(designDeliveries) ? 
+                                                        (() => {
+                                                            const relatedDelivery = designDeliveries.find(d => d.id === revisionRequests[0].deliveryId);
+                                                            return relatedDelivery?.name || `Delivery ${revisionRequests[0].deliveryId}`;
+                                                        })() : 
+                                                        `Delivery ${revisionRequests[0].deliveryId}`
                                                     }
-                                                }
-                                            } else {
-                                                // Clear form when no revision is selected
-                                                form.setFieldsValue({
-                                                    itemList: []
-                                                });
-                                                setUploadedFiles({});
-                                            }
-                                        }}
-                                    >
-                                        {revisionRequests.length > 0 ? (
-                                            revisionRequests.map(revision => {
-                                                const relatedDelivery = designDeliveries && Array.isArray(designDeliveries) 
-                                                    ? designDeliveries.find(d => d.id === revision.deliveryId)
-                                                    : null;
-                                                return (
-                                                    <Select.Option key={revision.id} value={revision.id}>
-                                                        Revision #{revision.id} - {relatedDelivery?.name || `Delivery ${revision.deliveryId}`}
-                                                    </Select.Option>
-                                                );
-                                            })
+                                                </Typography.Text>
+                                            </Box>
+                                        </Box>
                                         ) : (
-                                            <Select.Option value="" disabled>
+                                        <Box sx={{
+                                            p: 2,
+                                            backgroundColor: '#fef2f2',
+                                            borderRadius: 2,
+                                            border: '1px solid #fca5a5',
+                                            textAlign: 'center'
+                                        }}>
+                                            <Typography.Text type="secondary" style={{fontSize: '14px', color: '#dc2626'}}>
                                                 No revision requests available
-                                            </Select.Option>
+                                            </Typography.Text>
+                                        </Box>
                                         )}
-                                    </Select>
-                                    {form.getFieldValue('revisionOf') && (
+                                    
+                                    {revisionRequests.length > 0 && (
                                         <Box sx={{
                                             p: 1.5,
                                             backgroundColor: '#e6f7ff',
@@ -1443,7 +1444,8 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                                             color: '#1890ff'
                                         }}>
                                             <Typography.Text style={{fontSize: '12px', color: '#1890ff'}}>
-                                                💡 Data from the previous delivery has been auto-filled. You can modify the values as needed.
+                                                💡 Data from the previous delivery has been auto-filled. You can modify
+                                                the values as needed.
                                             </Typography.Text>
                                         </Box>
                                     )}
@@ -1489,309 +1491,277 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                     {/* Design Items Section */}
                     <Divider>Design Items</Divider>
 
-                    {requestData?.items?.map((item, index) => (
-                        <Card key={index} size="small" style={{marginBottom: '16px', border: '1px solid #e2e8f0'}}>
-                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
-                                {getItemIcon(item.type)}
-                                <Typography.Title level={5} style={{margin: 0}}>
-                                    {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {item.category}
-                                </Typography.Title>
-                            </Box>
-
-                            {/* Logo Dimensions - Only show for shirt */}
-                            {item.type.toLowerCase().includes('shirt') && (
-                                <Row gutter={[16, 16]}>
-                                    <Col span={12}>
-                                        <Form.Item
-                                            name={['itemList', index, 'logoHeight']}
-                                            label="Logo Height (cm):"
-                                            rules={[
-                                                {required: true, message: 'Please enter logo height!'},
-                                                {
-                                                    validator: (_, value) => {
-                                                        if (value === undefined || value === '') {
-                                                            return Promise.resolve();
-                                                        }
+                    {modalBoyItems.length > 0 && (
+                        <>
+                            <Typography.Title level={5} style={{marginTop: 0}}>Boy ({modalBoyItems.length})</Typography.Title>
+                            {modalBoyItems.map((item) => (
+                                <Card key={`boy-${item.__index}`} size="small" style={{marginBottom: '16px', border: '1px solid #e2e8f0'}}>
+                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                        {getItemIcon(item.type)}
+                                        <Typography.Title level={5} style={{margin: 0}}>
+                                            {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {formatCategory(item.category)}
+                                         </Typography.Title>
+                                         <Tag color="blue" style={{marginLeft: 'auto'}}>Boy</Tag>
+                                    </Box>
+                                    {/* Logo Dimensions - Only show for shirt */}
+                                    {item.type.toLowerCase().includes('shirt') && (
+                                        <Row gutter={[16, 16]}>
+                                            <Col span={12}>
+                                                <Form.Item
+                                                    name={['itemList', item.__index, 'logoHeight']}
+                                                    label={<Space size={4} style={{overflow: 'visible'}}>Logo Height (cm): <Tooltip title="This height is for the smallest size of cloth" styles={{ root: { zIndex: 3000 } }} getPopupContainer={() => document.body}><InfoCircleOutlined style={{ color: '#64748b', cursor: 'pointer' }} /></Tooltip></Space>}
+                                                    rules={[{required: true, message: 'Please enter logo height!'}, { validator: (_, value) => {
+                                                        if (value === undefined || value === '') return Promise.resolve();
                                                         const numValue = Number(value);
                                                         if (isNaN(numValue) || numValue < 1 || numValue > 999) {
                                                             return Promise.reject(new Error('Logo height must be between 1 and 999 cm!'));
                                                         }
                                                         return Promise.resolve();
-                                                    }
-                                                }
-                                            ]}
-                                        >
-                                            <Input
-                                                type="number"
-                                                min={1}
-                                                max={999}
-                                                placeholder="e.g., 5"
-                                                style={{borderRadius: '8px'}}
-                                                autoComplete="off"
-                                            />
-                                        </Form.Item>
-                                    </Col>
-                                    <Col span={12}>
-                                        <Form.Item
-                                            name={['itemList', index, 'logoWidth']}
-                                            label="Logo Width (cm):"
-                                            rules={[
-                                                {required: true, message: 'Please enter logo width!'},
-                                                {
-                                                    validator: (_, value) => {
-                                                        if (value === undefined || value === '') {
-                                                            return Promise.resolve();
-                                                        }
+                                                    }}]}
+                                                >
+                                                    <Input type="number" min={1} max={999} placeholder="e.g., 5" style={{borderRadius: '8px'}} autoComplete="off" />
+                                                </Form.Item>
+                                            </Col>
+                                            <Col span={12}>
+                                                <Form.Item
+                                                    name={['itemList', item.__index, 'logoWidth']}
+                                                    label={<Space size={4} style={{overflow: 'visible'}}>Logo Width (cm): <Tooltip title="This width is for the smallest size of cloth" styles={{ root: { zIndex: 3000 } }} getPopupContainer={() => document.body}><InfoCircleOutlined style={{ color: '#64748b', cursor: 'pointer' }} /></Tooltip></Space>}
+                                                    rules={[{required: true, message: 'Please enter logo width!'}, { validator: (_, value) => {
+                                                        if (value === undefined || value === '') return Promise.resolve();
                                                         const numValue = Number(value);
                                                         if (isNaN(numValue) || numValue < 1 || numValue > 999) {
                                                             return Promise.reject(new Error('Logo width must be between 1 and 999 cm!'));
                                                         }
                                                         return Promise.resolve();
-                                                    }
-                                                }
-                                            ]}
-                                        >
-                                            <Input
-                                                type="number"
-                                                min={1}
-                                                max={999}
-                                                placeholder="e.g., 8"
-                                                style={{borderRadius: '8px'}}
-                                                autoComplete="off"
-                                            />
-                                        </Form.Item>
-                                    </Col>
-                                </Row>
-                            )}
-
-                            {/* Hidden fields for pants/skirt with default value 0 */}
-                            {!item.type.toLowerCase().includes('shirt') && (
-                                <>
-                                    <Form.Item
-                                        name={['itemList', index, 'logoHeight']}
-                                        initialValue={0}
-                                        hidden
-                                    >
-                                        <Input/>
-                                    </Form.Item>
-                                    <Form.Item
-                                        name={['itemList', index, 'logoWidth']}
-                                        initialValue={0}
-                                        hidden
-                                    >
-                                        <Input/>
-                                    </Form.Item>
-                                </>
-                            )}
-
-                            <Row gutter={[16, 16]}>
-                                <Col span={12}>
-                                    <Form.Item
-                                        name={['itemList', index, 'frontUrl']}
-                                        label="Front Design:"
-                                        rules={[{required: true, message: 'Please upload front design!'}]}
-                                    >
-                                        <Box sx={{position: 'relative'}}>
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                id={`front-upload-${index}`}
-                                                style={{display: 'none'}}
-                                                onChange={async (e) => {
-                                                    const file = e.target.files[0];
-                                                    if (file) {
-                                                        setUploading(true);
-                                                        try {
-                                                            const url = await uploadCloudinary(file);
-                                                            form.setFieldsValue({
-                                                                itemList: {
-                                                                    ...form.getFieldValue('itemList'),
-                                                                    [index]: {
-                                                                        ...form.getFieldValue('itemList')?.[index],
-                                                                        frontUrl: url
-                                                                    }
-                                                                }
-                                                            });
-                                                            // Save uploaded file name
-                                                            setUploadedFiles(prev => ({
-                                                                ...prev,
-                                                                [`front-${index}`]: file.name
-                                                            }));
-                                                        } catch (error) {
-                                                            enqueueSnackbar('Failed to upload front design image. Please try again.', {
-                                                                variant: 'error',
-                                                                autoHideDuration: 3000,
-                                                                anchorOrigin: {
-                                                                    vertical: 'top',
-                                                                    horizontal: 'right',
-                                                                }
-                                                            });
-                                                        } finally {
-                                                            setUploading(false);
-                                                        }
-                                                    }
-                                                }}
-                                            />
-                                            <Box sx={{width: '100%'}}>
-                                                <Button
-                                                    onClick={() => document.getElementById(`front-upload-${index}`).click()}
-                                                    icon={<UploadOutlined/>}
-                                                    loading={uploading}
-                                                    style={{
-                                                        width: '100%',
-                                                        height: '40px',
-                                                        borderRadius: '8px',
-                                                        border: '2px dashed #d9d9d9',
-                                                        backgroundColor: '#fafafa',
-                                                        color: '#666',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        gap: '8px',
-                                                        transition: 'all 0.3s ease',
-                                                        cursor: 'pointer'
-                                                    }}
-                                                    onMouseEnter={(e) => {
-                                                        e.target.style.borderColor = '#1976d2';
-                                                        e.target.style.backgroundColor = '#e3f2fd';
-                                                    }}
-                                                    onMouseLeave={(e) => {
-                                                        e.target.style.borderColor = '#d9d9d9';
-                                                        e.target.style.backgroundColor = '#fafafa';
-                                                    }}
+                                                    }}]}
                                                 >
-                                                    {uploading ? 'Uploading...' : 'Upload Front Design'}
-                                                </Button>
-                                                {uploadedFiles[`front-${index}`] && (
-                                                    <Box sx={{
-                                                        mt: 1,
-                                                        p: 1,
-                                                        backgroundColor: '#f6ffed',
-                                                        borderRadius: '4px',
-                                                        border: '1px solid #b7eb8f',
-                                                        fontSize: '12px',
-                                                        color: '#52c41a',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: 1
-                                                    }}>
-                                                        <CheckCircleOutlined style={{fontSize: '12px'}}/>
-                                                        {uploadedFiles[`front-${index}`]}
+                                                    <Input type="number" min={1} max={999} placeholder="e.g., 8" style={{borderRadius: '8px'}} autoComplete="off" />
+                                                </Form.Item>
+                                            </Col>
+                                        </Row>
+                                    )}
+                                    {/* Hidden fields for pants/skirt with default value 0 */}
+                                    {!item.type.toLowerCase().includes('shirt') && (
+                                        <>
+                                            <Form.Item name={['itemList', item.__index, 'logoHeight']} initialValue={0} hidden>
+                                                <Input />
+                                            </Form.Item>
+                                            <Form.Item name={['itemList', item.__index, 'logoWidth']} initialValue={0} hidden>
+                                                <Input />
+                                            </Form.Item>
+                                        </>
+                                    )}
+                                    <Row gutter={[16, 16]}>
+                                        <Col span={12}>
+                                            <Form.Item name={['itemList', item.__index, 'frontUrl']} label="Front Design:" rules={[{required: true, message: 'Please upload front design!'}]}>
+                                                <Box sx={{position: 'relative'}}>
+                                                    <input type="file" accept="image/*" id={`front-upload-${item.__index}`} style={{display: 'none'}} onChange={async (e) => {
+                                                        const file = e.target.files[0];
+                                                        if (file) {
+                                                            setUploading(true);
+                                                            try {
+                                                                const url = await uploadCloudinary(file);
+                                                                form.setFieldsValue({ itemList: { ...form.getFieldValue('itemList'), [item.__index]: { ...form.getFieldValue('itemList')?.[item.__index], frontUrl: url } } });
+                                                                setUploadedFiles(prev => ({ ...prev, [`front-${item.__index}`]: url }));
+                                                            } finally { setUploading(false);} }
+                                                    }} />
+                                                    <Box sx={{width: '100%'}}>
+                                                        <Button onClick={() => document.getElementById(`front-upload-${item.__index}`).click()} icon={<UploadOutlined/>} loading={uploading} style={{ width: '100%', height: '40px', borderRadius: '8px', border: '2px dashed #d9d9d9', backgroundColor: '#fafafa', color: '#666', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.3s ease', cursor: 'pointer' }}> {uploading ? 'Uploading...' : 'Upload Front Design'} </Button>
+                                                        {uploadedFiles[`front-${item.__index}`] && (
+                                                            <Box sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
+                                                                <DisplayImage imageUrl={uploadedFiles[`front-${item.__index}`]} alt="Front Design" width="120px" height="120px" />
+                                                            </Box>
+                                                        )}
                                                     </Box>
-                                                )}
-                                            </Box>
-                                        </Box>
-                                    </Form.Item>
-                                </Col>
-                                <Col span={12}>
-                                    <Form.Item
-                                        name={['itemList', index, 'backUrl']}
-                                        label="Back Design:"
-                                        rules={[{required: true, message: 'Please upload back design!'}]}
-                                    >
-                                        <Box sx={{position: 'relative'}}>
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                id={`back-upload-${index}`}
-                                                style={{display: 'none'}}
-                                                onChange={async (e) => {
-                                                    const file = e.target.files[0];
-                                                    if (file) {
-                                                        setUploading(true);
-                                                        try {
-                                                            const url = await uploadCloudinary(file);
-                                                            form.setFieldsValue({
-                                                                itemList: {
-                                                                    ...form.getFieldValue('itemList'),
-                                                                    [index]: {
-                                                                        ...form.getFieldValue('itemList')?.[index],
-                                                                        backUrl: url
-                                                                    }
-                                                                }
-                                                            });
-                                                            // Save uploaded file name
-                                                            setUploadedFiles(prev => ({
-                                                                ...prev,
-                                                                [`back-${index}`]: file.name
-                                                            }));
-                                                        } catch (error) {
-                                                            enqueueSnackbar('Failed to upload back design image. Please try again.', {
-                                                                variant: 'error',
-                                                                autoHideDuration: 3000,
-                                                                anchorOrigin: {
-                                                                    vertical: 'top',
-                                                                    horizontal: 'right',
-                                                                }
-                                                            });
-                                                        } finally {
-                                                            setUploading(false);
-                                                        }
-                                                    }
-                                                }}
-                                            />
-                                            <Box sx={{width: '100%'}}>
-                                                <Button
-                                                    onClick={() => document.getElementById(`back-upload-${index}`).click()}
-                                                    icon={<UploadOutlined/>}
-                                                    loading={uploading}
-                                                    style={{
-                                                        width: '100%',
-                                                        height: '40px',
-                                                        borderRadius: '8px',
-                                                        border: '2px dashed #d9d9d9',
-                                                        backgroundColor: '#fafafa',
-                                                        color: '#666',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        gap: '8px',
-                                                        transition: 'all 0.3s ease',
-                                                        cursor: 'pointer'
-                                                    }}
-                                                    onMouseEnter={(e) => {
-                                                        e.target.style.borderColor = '#1976d2';
-                                                        e.target.style.backgroundColor = '#e3f2fd';
-                                                    }}
-                                                    onMouseLeave={(e) => {
-                                                        e.target.style.borderColor = '#d9d9d9';
-                                                        e.target.style.backgroundColor = '#fafafa';
-                                                    }}
-                                                >
-                                                    {uploading ? 'Uploading...' : 'Upload Back Design'}
-                                                </Button>
-                                                {uploadedFiles[`back-${index}`] && (
-                                                    <Box sx={{
-                                                        mt: 1,
-                                                        p: 1,
-                                                        backgroundColor: '#f6ffed',
-                                                        borderRadius: '4px',
-                                                        border: '1px solid #b7eb8f',
-                                                        fontSize: '12px',
-                                                        color: '#52c41a',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: 1
-                                                    }}>
-                                                        <CheckCircleOutlined style={{fontSize: '12px'}}/>
-                                                        {uploadedFiles[`back-${index}`]}
+                                                </Box>
+                                            </Form.Item>
+                                        </Col>
+                                        <Col span={12}>
+                                            <Form.Item name={['itemList', item.__index, 'backUrl']} label="Back Design:" rules={[{required: true, message: 'Please upload back design!'}]}>
+                                                <Box sx={{position: 'relative'}}>
+                                                    <input type="file" accept="image/*" id={`back-upload-${item.__index}`} style={{display: 'none'}} onChange={async (e) => {
+                                                        const file = e.target.files[0];
+                                                        if (file) {
+                                                            setUploading(true);
+                                                            try {
+                                                                const url = await uploadCloudinary(file);
+                                                                form.setFieldsValue({ itemList: { ...form.getFieldValue('itemList'), [item.__index]: { ...form.getFieldValue('itemList')?.[item.__index], backUrl: url } } });
+                                                                setUploadedFiles(prev => ({ ...prev, [`back-${item.__index}`]: url }));
+                                                            } finally { setUploading(false);} }
+                                                    }} />
+                                                    <Box sx={{width: '100%'}}>
+                                                        <Button onClick={() => document.getElementById(`back-upload-${item.__index}`).click()} icon={<UploadOutlined/>} loading={uploading} style={{ width: '100%', height: '40px', borderRadius: '8px', border: '2px dashed #d9d9d9', backgroundColor: '#fafafa', color: '#666', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.3s ease', cursor: 'pointer' }}> {uploading ? 'Uploading...' : 'Upload Back Design'} </Button>
+                                                        {uploadedFiles[`back-${item.__index}`] && (
+                                                            <Box sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
+                                                                <DisplayImage imageUrl={uploadedFiles[`back-${item.__index}`]} alt="Back Design" width="120px" height="120px" />
+                                                            </Box>
+                                                        )}
                                                     </Box>
-                                                )}
-                                            </Box>
-                                        </Box>
+                                                </Box>
+                                            </Form.Item>
+                                        </Col>
+                                    </Row>
+                                    <Form.Item name={['itemList', item.__index, 'designItemId']} initialValue={item.id} hidden>
+                                        <Input />
                                     </Form.Item>
-                                </Col>
-                            </Row>
+                                </Card>
+                            ))}
+                        </>
+                    )}
 
-                            <Form.Item
-                                name={['itemList', index, 'designItemId']}
-                                initialValue={item.id}
-                                hidden
-                            >
-                                <Input/>
-                            </Form.Item>
-                        </Card>
-                    ))}
+                    {modalGirlItems.length > 0 && (
+                        <>
+                            <Typography.Title level={5} style={{marginTop: 16}}>Girl ({modalGirlItems.length})</Typography.Title>
+                            {modalGirlItems.map((item) => (
+                                <Card key={`girl-${item.__index}`} size="small" style={{marginBottom: '16px', border: '1px solid #e2e8f0'}}>
+                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                        {getItemIcon(item.type)}
+                                        <Typography.Title level={5} style={{margin: 0}}>
+                                            {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {formatCategory(item.category)}
+                                         </Typography.Title>
+                                         <Tag color="magenta" style={{marginLeft: 'auto'}}>Girl</Tag>
+                                    </Box>
+                                    {/* Reuse same content as above but with indices */}
+                                    {item.type.toLowerCase().includes('shirt') && (
+                                        <Row gutter={[16, 16]}>
+                                            <Col span={12}>
+                                                <Form.Item name={['itemList', item.__index, 'logoHeight']} label={<Space size={4} style={{overflow: 'visible'}}>Logo Height (cm): <Tooltip title="This height is for the smallest size of cloth" styles={{ root: { zIndex: 3000 } }} getPopupContainer={() => document.body}><InfoCircleOutlined style={{ color: '#64748b', cursor: 'pointer' }} /></Tooltip></Space>} rules={[{required: true, message: 'Please enter logo height!'}, { validator: (_, value) => { if (value === undefined || value === '') return Promise.resolve(); const numValue = Number(value); if (isNaN(numValue) || numValue < 1 || numValue > 999) { return Promise.reject(new Error('Logo height must be between 1 and 999 cm!')); } return Promise.resolve(); }}]}>
+                                                    <Input type="number" min={1} max={999} placeholder="e.g., 5" style={{borderRadius: '8px'}} autoComplete="off" />
+                                                </Form.Item>
+                                            </Col>
+                                            <Col span={12}>
+                                                <Form.Item name={['itemList', item.__index, 'logoWidth']} label={<Space size={4} style={{overflow: 'visible'}}>Logo Width (cm): <Tooltip title="This width is for the smallest size of cloth" styles={{ root: { zIndex: 3000 } }} getPopupContainer={() => document.body}><InfoCircleOutlined style={{ color: '#64748b', cursor: 'pointer' }} /></Tooltip></Space>} rules={[{required: true, message: 'Please enter logo width!'}, { validator: (_, value) => { if (value === undefined || value === '') return Promise.resolve(); const numValue = Number(value); if (isNaN(numValue) || numValue < 1 || numValue > 999) { return Promise.reject(new Error('Logo width must be between 1 and 999 cm!')); } return Promise.resolve(); }}]}>
+                                                    <Input type="number" min={1} max={999} placeholder="e.g., 8" style={{borderRadius: '8px'}} autoComplete="off" />
+                                                </Form.Item>
+                                            </Col>
+                                        </Row>
+                                    )}
+                                    {!item.type.toLowerCase().includes('shirt') && (
+                                        <>
+                                            <Form.Item name={['itemList', item.__index, 'logoHeight']} initialValue={0} hidden>
+                                                <Input />
+                                            </Form.Item>
+                                            <Form.Item name={['itemList', item.__index, 'logoWidth']} initialValue={0} hidden>
+                                                <Input />
+                                            </Form.Item>
+                                        </>
+                                    )}
+                                    <Row gutter={[16, 16]}>
+                                        <Col span={12}>
+                                            <Form.Item name={['itemList', item.__index, 'frontUrl']} label="Front Design:" rules={[{required: true, message: 'Please upload front design!'}]}>
+                                                <Box sx={{position: 'relative'}}>
+                                                    <input type="file" accept="image/*" id={`front-upload-${item.__index}`} style={{display: 'none'}} onChange={async (e) => { const file = e.target.files[0]; if (file) { setUploading(true); try { const url = await uploadCloudinary(file); form.setFieldsValue({ itemList: { ...form.getFieldValue('itemList'), [item.__index]: { ...form.getFieldValue('itemList')?.[item.__index], frontUrl: url } } }); setUploadedFiles(prev => ({ ...prev, [`front-${item.__index}`]: url })); } finally { setUploading(false);} } }} />
+                                                    <Box sx={{width: '100%'}}>
+                                                        <Button onClick={() => document.getElementById(`front-upload-${item.__index}`).click()} icon={<UploadOutlined/>} loading={uploading} style={{ width: '100%', height: '40px', borderRadius: '8px', border: '2px dashed #d9d9d9', backgroundColor: '#fafafa', color: '#666', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.3s ease', cursor: 'pointer' }}>{uploading ? 'Uploading...' : 'Upload Front Design'}</Button>
+                                                        {uploadedFiles[`front-${item.__index}`] && (
+                                                            <Box sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
+                                                                <DisplayImage imageUrl={uploadedFiles[`front-${item.__index}`]} alt="Front Design" width="120px" height="120px" />
+                                                            </Box>
+                                                        )}
+                                                    </Box>
+                                                </Box>
+                                            </Form.Item>
+                                        </Col>
+                                        <Col span={12}>
+                                            <Form.Item name={['itemList', item.__index, 'backUrl']} label="Back Design:" rules={[{required: true, message: 'Please upload back design!'}]}>
+                                                <Box sx={{position: 'relative'}}>
+                                                    <input type="file" accept="image/*" id={`back-upload-${item.__index}`} style={{display: 'none'}} onChange={async (e) => { const file = e.target.files[0]; if (file) { setUploading(true); try { const url = await uploadCloudinary(file); form.setFieldsValue({ itemList: { ...form.getFieldValue('itemList'), [item.__index]: { ...form.getFieldValue('itemList')?.[item.__index], backUrl: url } } }); setUploadedFiles(prev => ({ ...prev, [`back-${item.__index}`]: url })); } finally { setUploading(false);} } }} />
+                                                    <Box sx={{width: '100%'}}>
+                                                        <Button onClick={() => document.getElementById(`back-upload-${item.__index}`).click()} icon={<UploadOutlined/>} loading={uploading} style={{ width: '100%', height: '40px', borderRadius: '8px', border: '2px dashed #d9d9d9', backgroundColor: '#fafafa', color: '#666', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.3s ease', cursor: 'pointer' }}>{uploading ? 'Uploading...' : 'Upload Back Design'}</Button>
+                                                        {uploadedFiles[`back-${item.__index}`] && (
+                                                            <Box sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
+                                                                <DisplayImage imageUrl={uploadedFiles[`back-${item.__index}`]} alt="Back Design" width="120px" height="120px" />
+                                                            </Box>
+                                                        )}
+                                                    </Box>
+                                                </Box>
+                                            </Form.Item>
+                                        </Col>
+                                    </Row>
+                                    <Form.Item name={['itemList', item.__index, 'designItemId']} initialValue={item.id} hidden>
+                                        <Input />
+                                    </Form.Item>
+                                </Card>
+                            ))}
+                        </>
+                    )}
+
+                    {modalOtherItems.length > 0 && (
+                        <>
+                            <Typography.Title level={5} style={{marginTop: 16}}>Others ({modalOtherItems.length})</Typography.Title>
+                            {modalOtherItems.map((item) => (
+                                <Card key={`other-${item.__index}`} size="small" style={{marginBottom: '16px', border: '1px solid #e2e8f0'}}>
+                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                        {getItemIcon(item.type)}
+                                        <Typography.Title level={5} style={{margin: 0}}>
+                                            {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {formatCategory(item.category)}
+                                         </Typography.Title>
+                                         <Tag style={{marginLeft: 'auto'}}>Unspecified</Tag>
+                                    </Box>
+                                    {/* Non-shirt hidden fields */}
+                                    {!item.type.toLowerCase().includes('shirt') && (
+                                        <>
+                                            <Form.Item name={['itemList', item.__index, 'logoHeight']} initialValue={0} hidden>
+                                                <Input />
+                                            </Form.Item>
+                                            <Form.Item name={['itemList', item.__index, 'logoWidth']} initialValue={0} hidden>
+                                                <Input />
+                                            </Form.Item>
+                                        </>
+                                    )}
+                                    {item.type.toLowerCase().includes('shirt') && (
+                                        <Row gutter={[16, 16]}>
+                                            <Col span={12}>
+                                                <Form.Item name={['itemList', item.__index, 'logoHeight']} label={<Space size={4} style={{overflow: 'visible'}}>Logo Height (cm): <Tooltip title="This height is for the smallest size of cloth" styles={{ root: { zIndex: 3000 } }} getPopupContainer={() => document.body}><InfoCircleOutlined style={{ color: '#64748b', cursor: 'pointer' }} /></Tooltip></Space>} rules={[{required: true, message: 'Please enter logo height!'}]}>
+                                                    <Input type="number" min={1} max={999} placeholder="e.g., 5" style={{borderRadius: '8px'}} autoComplete="off" />
+                                                </Form.Item>
+                                            </Col>
+                                            <Col span={12}>
+                                                <Form.Item name={['itemList', item.__index, 'logoWidth']} label={<Space size={4} style={{overflow: 'visible'}}>Logo Width (cm): <Tooltip title="This width is for the smallest size of cloth" styles={{ root: { zIndex: 3000 } }} getPopupContainer={() => document.body}><InfoCircleOutlined style={{ color: '#64748b', cursor: 'pointer' }} /></Tooltip></Space>} rules={[{required: true, message: 'Please enter logo width!'}]}>
+                                                    <Input type="number" min={1} max={999} placeholder="e.g., 8" style={{borderRadius: '8px'}} autoComplete="off" />
+                                                </Form.Item>
+                                            </Col>
+                                        </Row>
+                                    )}
+                                    <Row gutter={[16, 16]}>
+                                        <Col span={12}>
+                                            <Form.Item name={['itemList', item.__index, 'frontUrl']} label="Front Design:" rules={[{required: true, message: 'Please upload front design!'}]}>
+                                                <Box sx={{position: 'relative'}}>
+                                                    <input type="file" accept="image/*" id={`front-upload-${item.__index}`} style={{display: 'none'}} onChange={async (e) => { const file = e.target.files[0]; if (file) { setUploading(true); try { const url = await uploadCloudinary(file); form.setFieldsValue({ itemList: { ...form.getFieldValue('itemList'), [item.__index]: { ...form.getFieldValue('itemList')?.[item.__index], frontUrl: url } } }); setUploadedFiles(prev => ({ ...prev, [`front-${item.__index}`]: url })); } finally { setUploading(false);} } }} />
+                                                    <Box sx={{width: '100%'}}>
+                                                        <Button onClick={() => document.getElementById(`front-upload-${item.__index}`).click()} icon={<UploadOutlined/>} loading={uploading} style={{ width: '100%', height: '40px', borderRadius: '8px', border: '2px dashed #d9d9d9', backgroundColor: '#fafafa', color: '#666', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.3s ease', cursor: 'pointer' }}>{uploading ? 'Uploading...' : 'Upload Front Design'}</Button>
+                                                        {uploadedFiles[`front-${item.__index}`] && (
+                                                            <Box sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
+                                                                <DisplayImage imageUrl={uploadedFiles[`front-${item.__index}`]} alt="Front Design" width="120px" height="120px" />
+                                                            </Box>
+                                                        )}
+                                                    </Box>
+                                                </Box>
+                                            </Form.Item>
+                                        </Col>
+                                        <Col span={12}>
+                                            <Form.Item name={['itemList', item.__index, 'backUrl']} label="Back Design:" rules={[{required: true, message: 'Please upload back design!'}]}>
+                                                <Box sx={{position: 'relative'}}>
+                                                    <input type="file" accept="image/*" id={`back-upload-${item.__index}`} style={{display: 'none'}} onChange={async (e) => { const file = e.target.files[0]; if (file) { setUploading(true); try { const url = await uploadCloudinary(file); form.setFieldsValue({ itemList: { ...form.getFieldValue('itemList'), [item.__index]: { ...form.getFieldValue('itemList')?.[item.__index], backUrl: url } } }); setUploadedFiles(prev => ({ ...prev, [`back-${item.__index}`]: url })); } finally { setUploading(false);} } }} />
+                                                    <Box sx={{width: '100%'}}>
+                                                        <Button onClick={() => document.getElementById(`back-upload-${item.__index}`).click()} icon={<UploadOutlined/>} loading={uploading} style={{ width: '100%', height: '40px', borderRadius: '8px', border: '2px dashed #d9d9d9', backgroundColor: '#fafafa', color: '#666', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.3s ease', cursor: 'pointer' }}>{uploading ? 'Uploading...' : 'Upload Back Design'}</Button>
+                                                        {uploadedFiles[`back-${item.__index}`] && (
+                                                            <Box sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
+                                                                <DisplayImage imageUrl={uploadedFiles[`back-${item.__index}`]} alt="Back Design" width="120px" height="120px" />
+                                                            </Box>
+                                                        )}
+                                                    </Box>
+                                                </Box>
+                                            </Form.Item>
+                                        </Col>
+                                    </Row>
+                                    <Form.Item name={['itemList', item.__index, 'designItemId']} initialValue={item.id} hidden>
+                                        <Input />
+                                    </Form.Item>
+                                </Card>
+                            ))}
+                        </>
+                    )}
                 </Form>
             </DialogContent>
             <DialogActions sx={{padding: '16px 24px', borderTop: '1px solid #f0f0f0'}}>
@@ -1819,15 +1789,21 @@ export default function DesignerChat() {
     const [isDeliveryModalVisible, setIsDeliveryModalVisible] = useState(false);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const {enqueueSnackbar} = useSnackbar();
-    const [isDesignDetailModalVisible, setIsDesignDetailModalVisible] = useState(false);
+    const [isAppliedRequestDetailVisible, setIsAppliedRequestDetailVisible] = useState(false);
     const [isDeliveryDetailModalVisible, setIsDeliveryDetailModalVisible] = useState(false);
     const [selectedDelivery, setSelectedDelivery] = useState(null);
+    const [isDeliveryFromRevision, setIsDeliveryFromRevision] = useState(false);
+    const [openDeliveryAsRevision, setOpenDeliveryAsRevision] = useState(false);
     const [loadingDeliveries, setLoadingDeliveries] = useState(false);
     const [revisionRequests, setRevisionRequests] = useState([]);
     const [loadingRevisionRequests, setLoadingRevisionRequests] = useState(false);
     const roomId = requestData?.id;
     const {chatMessages, sendMessage} = UseDesignerChatMessages(roomId);
     const [newMessage, setNewMessage] = useState('');
+    const [isChatOpen, setIsChatOpen] = useState(false);
+    const isViewOnly = requestData?.status === 'completed';
+    const schoolName = requestData?.school?.name || requestData?.school?.business || 'School';
+    const [isOpenButtonHover, setIsOpenButtonHover] = useState(false);
 
     // Fetch design deliveries from API
     const fetchDesignDeliveries = async (designRequestId) => {
@@ -1943,49 +1919,60 @@ export default function DesignerChat() {
     };
 
     const handleOpenDeliveryModal = async () => {
-        // Fetch updated request data before opening modal
-        if (requestData?.id) {
-            try {
-                const latestResponse = await getDesignRequestDetailForDesigner(requestData.id);
-                if (latestResponse && latestResponse.status === 200) {
-                    const updatedRequest = latestResponse.data.body;
-                    if (updatedRequest) {
-                        // Check if request status is completed - redirect to applied requests
-                        if (updatedRequest.status === 'completed') {
-                            window.location.href = '/designer/applied/requests';
-                            return;
-                        }
-                        setRequestData(updatedRequest);
-                    }
-                }
-            } catch (error) {
-                // Error fetching latest request data
-            }
-        }
+        // Open modal immediately
         setIsDeliveryModalVisible(true);
+        // Fetch updated request data in background
+        if (requestData?.id) {
+            getDesignRequestDetailForDesigner(requestData.id)
+                .then((latestResponse) => {
+                    if (latestResponse && latestResponse.status === 200) {
+                        const updatedRequest = latestResponse.data.body;
+                        if (updatedRequest) {
+                            if (updatedRequest.status === 'completed') {
+                                setIsDeliveryModalVisible(false);
+                                window.location.href = '/designer/applied/requests';
+                                return;
+                            }
+                            setRequestData(updatedRequest);
+                        }
+                    }
+                })
+                .catch(() => {
+                    // ignore background fetch errors for UX
+                });
+        }
     };
 
     const handleCloseDeliveryModal = () => {
         setIsDeliveryModalVisible(false);
+        setOpenDeliveryAsRevision(false);
     };
 
 
-    const handleOpenDesignDetailModal = () => {
-        setIsDesignDetailModalVisible(true);
+    const handleOpenAppliedRequestDetail = () => {
+        setIsAppliedRequestDetailVisible(true);
     };
 
-    const handleCloseDesignDetailModal = () => {
-        setIsDesignDetailModalVisible(false);
+    const handleCloseAppliedRequestDetail = () => {
+        setIsAppliedRequestDetailVisible(false);
     };
 
-    const handleOpenDeliveryDetailModal = (delivery) => {
+    const handleOpenDeliveryDetailModal = (delivery, fromRevision = false) => {
         setSelectedDelivery(delivery);
+        setIsDeliveryFromRevision(fromRevision);
         setIsDeliveryDetailModalVisible(true);
     };
 
     const handleCloseDeliveryDetailModal = () => {
         setIsDeliveryDetailModalVisible(false);
         setSelectedDelivery(null);
+        setIsDeliveryFromRevision(false);
+    };
+
+    const handleAddRevisionDelivery = () => {
+        handleCloseDeliveryDetailModal();
+        setOpenDeliveryAsRevision(true);
+        handleOpenDeliveryModal();
     };
 
 
@@ -2073,7 +2060,7 @@ export default function DesignerChat() {
                                 <Button
                                     type="primary"
                                     icon={<InfoCircleOutlined/>}
-                                    onClick={handleOpenDesignDetailModal}
+                                    onClick={handleOpenAppliedRequestDetail}
                                     style={{
                                         background: 'linear-gradient(135deg, #1976d2, #42a5f5)',
                                         border: 'none',
@@ -2094,10 +2081,11 @@ export default function DesignerChat() {
                                 </Button>
                                 <Chip
                                     label={requestData?.status?.toUpperCase() || 'UNKNOWN'}
-                                    color={requestData?.status === 'completed' ? 'default' : 'success'}
+                                    color={requestData?.status === 'completed' ? 'default' : 'warning'}
                                     size="large"
                                     style={{
-                                        backgroundColor: requestData?.status === 'completed' ? '#1890ff' : '#52c41a',
+                                        backgroundColor: requestData?.status === 'completed' ? '#1890ff' : 
+                                                       requestData?.status === 'processing' ? '#fa8c16' : '#52c41a',
                                         fontSize: '14px',
                                         fontWeight: 600,
                                         padding: '8px 16px',
@@ -2109,59 +2097,22 @@ export default function DesignerChat() {
                     </Box>
 
                     {/* Main Content */}
-                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 3, flex: 1, minHeight: 0, height: '90vh', position: 'relative'}}>
-                        {/* Completed Overlay */}
-                        {requestData?.status === 'completed' && (
-                            <Box sx={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                bottom: 0,
-                                borderRadius: 2,
-                                zIndex: 1,
-                                pointerEvents: 'none',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}>
-                                <Box sx={{
-                                    backgroundColor: 'rgba(25, 118, 210, 0.9)',
-                                    color: 'white',
-                                    px: 4,
-                                    py: 2,
-                                    borderRadius: 2,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 2,
-                                    boxShadow: '0 4px 20px rgba(25, 118, 210, 0.3)'
-                                }}>
-                                    <CheckCircleOutlined style={{fontSize: '24px'}} />
-                                    <Typography.Text style={{fontSize: '16px', fontWeight: 600}}>
-                                        Design Request Completed - View Only Mode
-                                    </Typography.Text>
-                                </Box>
-                            </Box>
-                        )}
+                    <Box sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 3,
+                        flex: 1,
+                        minHeight: 0,
+                        height: '90vh',
+                        position: 'relative'
+                    }}>
+
 
                         {/* Top Row - Chat and Deliveries */}
-                        <Box sx={{display: 'flex', gap: 3, flex: 2}}>
+                        <Box sx={{display: 'flex', gap: 3, flex: 2, alignItems: 'stretch'}}>
 
                             {/* Left Half - School Chat */}
-                            <Paper
-                                elevation={0}
-                                sx={{
-                                    flex: 1,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    backgroundColor: 'white',
-                                    borderRadius: 4,
-                                    border: '2px solid #1976d2',
-                                    overflow: 'hidden',
-                                    boxShadow: '0 8px 32px rgba(25, 118, 210, 0.15)',
-                                    position: 'relative'
-                                }}
-                            >
+                            <Paper elevation={0} sx={{display: 'none'}}>
                                 {/* Chat Header */}
                                 <Box sx={{
                                     py: 2,
@@ -2411,7 +2362,15 @@ export default function DesignerChat() {
                             </Paper>
 
                             {/* Right Half - Deliveries and Revision Container */}
-                            <Box sx={{flex: 1, display: 'flex', flexDirection: 'column', gap: 3, maxHeight: '100vh'}}>
+                            <Box sx={{
+                                flex: 1,
+                                display: 'flex',
+                                flexDirection: 'row',
+                                alignItems: 'stretch',
+                                gap: 3,
+                                maxHeight: '100vh',
+                                minWidth: 0
+                            }}>
 
                                 {/* My Deliveries Section */}
                                 <Paper
@@ -2486,7 +2445,12 @@ export default function DesignerChat() {
                                     </Box>
 
                                     {/* Deliveries List */}
-                                    <Box sx={{flex: 1, p: 2, overflowY: 'auto'}}>
+                                    <Box sx={{
+                                        flex: 1, 
+                                        p: 2, 
+                                        overflowY: 'auto',
+                                        maxHeight: 'calc(4 * 140px + 2 * 16px)'
+                                    }}>
                                         {loadingDeliveries ? (
                                             <Box sx={{
                                                 display: 'flex',
@@ -2500,44 +2464,57 @@ export default function DesignerChat() {
                                                     Loading deliveries...
                                                 </Typography.Text>
                                             </Box>
-                                        ) : (
-                                            <Box sx={{display: 'flex', flexDirection: 'column', gap: 1.5}}>
-                                                {designDeliveries.length === 0 ? (
-                                                                                                <Box sx={{
-                                                display: 'flex',
-                                                justifyContent: 'center',
-                                                alignItems: 'center',
-                                                height: '100%',
-                                                flexDirection: 'column',
-                                                gap: 2,
-                                                color: '#64748b'
-                                            }}>
-                                                <FileTextOutlined style={{fontSize: '48px', opacity: 0.5}}/>
-                                                <Typography.Text type="secondary" style={{fontSize: '14px'}}>
-                                                    {requestData?.status === 'completed' ? 'Design request completed - no actions available' : 
-                                                     'No deliveries yet. Start by adding your first delivery!'}
-                                                </Typography.Text>
-                                                {requestData?.status === 'completed' && (
-                                                    <Typography.Text type="secondary"
-                                                                     style={{fontSize: '12px', color: '#1890ff'}}>
-                                                        This design request has been completed
-                                                    </Typography.Text>
-                                                )}
-                                            </Box>
+                                        ) : designDeliveries.length === 0 ? (
+                                                    <Box sx={{
+                                                        display: 'flex',
+                                                        justifyContent: 'center',
+                                                        alignItems: 'center',
+                                                        height: '100%',
+                                                        flexDirection: 'column',
+                                                        gap: 2,
+                                                        color: '#64748b'
+                                                    }}>
+                                                        <FileTextOutlined style={{fontSize: '48px', opacity: 0.5}}/>
+                                                        <Typography.Text type="secondary" style={{fontSize: '14px'}}>
+                                                            {requestData?.status === 'completed' ? 'Design request completed - no actions available' :
+                                                                'No deliveries yet. Start by adding your first delivery!'}
+                                                        </Typography.Text>
+                                                        {requestData?.status === 'completed' && (
+                                                            <Typography.Text type="secondary"
+                                                                             style={{
+                                                                                 fontSize: '12px',
+                                                                                 color: '#1890ff'
+                                                                             }}>
+                                                                This design request has been completed
+                                                            </Typography.Text>
+                                                        )}
+                                                    </Box>
                                                 ) : (
+                                            <Box sx={{
+                                                display: 'grid',
+                                                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                                                gap: 2,
+                                                p: 1
+                                            }}>
+                                                {
                                                     designDeliveries.map(item => (
                                                         <Paper
                                                             key={item.id}
                                                             elevation={0}
                                                             sx={{
-                                                                p: 2,
+                                                                p: 2.5,
                                                                 border: '1px solid #e2e8f0',
-                                                                borderRadius: 2,
+                                                                borderRadius: 3,
                                                                 backgroundColor: 'white',
                                                                 transition: 'all 0.3s ease',
+                                                                height: 'fit-content',
+                                                                minHeight: '120px',
+                                                                display: 'flex',
+                                                                flexDirection: 'column',
                                                                 '&:hover': {
                                                                     borderColor: '#1976d2',
-                                                                    boxShadow: '0 2px 8px rgba(25, 118, 210, 0.1)'
+                                                                    boxShadow: '0 4px 12px rgba(25, 118, 210, 0.15)',
+                                                                    transform: 'translateY(-2px)'
                                                                 }
                                                             }}
                                                         >
@@ -2545,7 +2522,8 @@ export default function DesignerChat() {
                                                                 display: 'flex',
                                                                 justifyContent: 'space-between',
                                                                 alignItems: 'flex-start',
-                                                                mb: 1.5
+                                                                mb: 2,
+                                                                flex: 1
                                                             }}>
                                                                 <Box sx={{flex: 1}}>
                                                                     <Typography.Title level={5}
@@ -2572,38 +2550,54 @@ export default function DesignerChat() {
                                                             <Box sx={{
                                                                 display: 'flex',
                                                                 gap: 1,
-                                                                justifyContent: 'space-between'
+                                                                justifyContent: 'center',
+                                                                mt: 'auto'
                                                             }}>
                                                                 <Button
                                                                     size="small"
                                                                     icon={<EyeOutlined/>}
                                                                     onClick={() => handleOpenDeliveryDetailModal(item)}
-                                                                    style={{borderRadius: '6px', flex: 1}}
+                                                                    style={{
+                                                                        borderRadius: '8px',
+                                                                        minWidth: '120px',
+                                                                        height: '36px',
+                                                                        background: 'linear-gradient(135deg, #1976d2, #42a5f5)',
+                                                                        border: 'none',
+                                                                        color: 'white',
+                                                                        fontWeight: 600,
+                                                                        boxShadow: '0 2px 8px rgba(25, 118, 210, 0.2)'
+                                                                    }}
                                                                 >
                                                                     View Details
                                                                 </Button>
                                                             </Box>
                                                         </Paper>
                                                     ))
-                                                )}
+                                                }
 
                                                 {/* Add New Delivery Button */}
                                                 {requestData?.status !== 'completed' && (
-                                                    <Button
-                                                        type="dashed"
-                                                        icon={<FileTextOutlined/>}
-                                                        onClick={handleOpenDeliveryModal}
-                                                        style={{
-                                                            borderRadius: '8px',
-                                                            height: '48px',
-                                                            border: '2px dashed #d9d9d9',
-                                                            color: '#666',
-                                                            fontSize: '14px',
-                                                            fontWeight: 500
-                                                        }}
-                                                    >
-                                                        + Add New Delivery
-                                                    </Button>
+                                                    <Box sx={{
+                                                        gridColumn: '1 / -1',
+                                                        mt: 2
+                                                    }}>
+                                                        <Button
+                                                            type="dashed"
+                                                            icon={<FileTextOutlined/>}
+                                                            onClick={handleOpenDeliveryModal}
+                                                            style={{
+                                                                borderRadius: '8px',
+                                                                height: '48px',
+                                                                width: '100%',
+                                                                border: '2px dashed #d9d9d9',
+                                                                color: '#666',
+                                                                fontSize: '14px',
+                                                                fontWeight: 500
+                                                            }}
+                                                        >
+                                                            + Add New Delivery
+                                                        </Button>
+                                                    </Box>
                                                 )}
                                             </Box>
                                         )}
@@ -2614,6 +2608,7 @@ export default function DesignerChat() {
                                 <Paper
                                     elevation={0}
                                     sx={{
+                                        flex: 1,
                                         display: 'flex',
                                         flexDirection: 'column',
                                         backgroundColor: 'white',
@@ -2622,49 +2617,74 @@ export default function DesignerChat() {
                                         overflow: 'hidden',
                                         boxShadow: '0 8px 32px rgba(255, 107, 53, 0.15)',
                                         position: 'relative',
-                                        height: 'max-content'
+                                        minWidth: 0
                                     }}
                                 >
                                     {/* Revision Requests Header */}
                                     <Box sx={{
-                                        py: 2,
-                                        px: 3,
+                                        py: 2.5,
+                                        px: 4,
                                         borderBottom: '2px solid #e2e8f0',
                                         backgroundColor: 'linear-gradient(135deg, #fff5f0 0%, #ffe4d6 100%)',
                                         position: 'relative'
                                     }}>
-                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                                             <Box sx={{
-                                                width: 32,
-                                                height: 32,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between'
+                                        }}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 3}}>
+                                                <Box sx={{
+                                                    width: 40,
+                                                    height: 40,
                                                 borderRadius: '50%',
                                                 background: 'linear-gradient(135deg, #ff6b35, #ff8c42)',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
                                                 color: 'white',
-                                                fontSize: '14px',
+                                                    fontSize: '16px',
                                                 boxShadow: '0 4px 12px rgba(255, 107, 53, 0.3)'
                                             }}>
                                                 <EditOutlined/>
                                             </Box>
-                                            <Typography.Title level={5}
-                                                              style={{margin: 0, color: '#ff6b35', fontWeight: 600}}>
+                                                <Box>
+                                                    <Typography.Title level={4}
+                                                                      style={{
+                                                                          margin: 0,
+                                                                          color: '#ff6b35',
+                                                                          fontWeight: 600
+                                                                      }}>
                                                 Revision Requests
                                             </Typography.Title>
+                                                    <Typography.Text type="secondary"
+                                                                     style={{fontSize: '12px', color: '#ff6b35'}}>
+                                                        Track revision requests from school
+                                                    </Typography.Text>
+                                        </Box>
+                                    </Box>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                                justifyContent: 'center',
+                                                minWidth: 32,
+                                                height: 32,
+                                                px: 2,
+                                                borderRadius: '16px',
+                                                background: 'linear-gradient(135deg, #ff6b35, #ff8c42)',
+                                                color: 'white',
+                                                fontSize: '14px',
+                                                fontWeight: 600,
+                                                boxShadow: '0 2px 8px rgba(255, 107, 53, 0.3)',
+                                                border: '2px solid rgba(255, 255, 255, 0.2)'
+                                    }}>
+                                                Amount: {revisionRequests.length}
+                                            </Box>
                                         </Box>
                                     </Box>
 
-                                    {/* Revision Requests Content */}
-                                    <Box sx={{
-                                        p: 3,
-                                        flex: 1,
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        marginBottom: '2vh'
-                                    }}>
+                                    {/* Revision Requests List */}
+                                    <Box sx={{flex: 1, p: 2, overflowY: 'auto'}}>
                                         {loadingRevisionRequests ? (
                                             <Box sx={{
                                                 display: 'flex',
@@ -2678,21 +2698,53 @@ export default function DesignerChat() {
                                                     Loading revision requests...
                                                 </Typography.Text>
                                             </Box>
-                                        ) : revisionRequests.length > 0 ? (
-                                            <Box sx={{display: 'flex', flexDirection: 'column', gap: 2, width: '100%'}}>
+                                        ) : revisionRequests.length === 0 ? (
+                                            <Box sx={{
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                height: '100%',
+                                                flexDirection: 'column',
+                                                gap: 2,
+                                                color: '#64748b'
+                                            }}>
+                                                <EditOutlined style={{fontSize: '48px', opacity: 0.5}}/>
+                                                <Typography.Text type="secondary" style={{fontSize: '14px'}}>
+                                                    {requestData?.status === 'completed' ? 'Design request completed - no actions available' :
+                                                        'No revision requests'}
+                                                </Typography.Text>
+                                                {requestData?.status === 'completed' && (
+                                                    <Typography.Text type="secondary"
+                                                                     style={{fontSize: '12px', color: '#ff6b35'}}>
+                                                        This design request has been completed
+                                                    </Typography.Text>
+                                                )}
+                                            </Box>
+                                        ) : (
+                                            <Box sx={{
+                                                display: 'grid',
+                                                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                                                gap: 2,
+                                                p: 1
+                                            }}>
                                                 {revisionRequests.map((revision, index) => (
                                                     <Paper
                                                         key={revision.id}
                                                         elevation={0}
                                                         sx={{
-                                                            p: 2,
+                                                            p: 2.5,
                                                             border: '1px solid #e2e8f0',
-                                                            borderRadius: 2,
+                                                            borderRadius: 3,
                                                             backgroundColor: 'white',
                                                             transition: 'all 0.3s ease',
+                                                            height: 'fit-content',
+                                                            minHeight: '120px',
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
                                                             '&:hover': {
                                                                 borderColor: '#ff6b35',
-                                                                boxShadow: '0 2px 8px rgba(255, 107, 53, 0.1)'
+                                                                boxShadow: '0 4px 12px rgba(255, 107, 53, 0.15)',
+                                                                transform: 'translateY(-2px)'
                                                             }
                                                         }}
                                                     >
@@ -2700,11 +2752,15 @@ export default function DesignerChat() {
                                                             display: 'flex',
                                                             justifyContent: 'space-between',
                                                             alignItems: 'flex-start',
-                                                            mb: 1.5
+                                                            mb: 2,
+                                                            flex: 1
                                                         }}>
                                                             <Box sx={{flex: 1}}>
                                                                 <Typography.Title level={5}
-                                                                                  style={{margin: 0, color: '#1e293b'}}>
+                                                                                  style={{
+                                                                                      margin: 0,
+                                                                                      color: '#1e293b'
+                                                                                  }}>
                                                                     Revision #{index + 1}
                                                                 </Typography.Title>
                                                                 <Typography.Text type="secondary"
@@ -2720,57 +2776,52 @@ export default function DesignerChat() {
                                                                 {parseID(revision.deliveryId, 'rr')}
                                                             </Tag>
                                                         </Box>
+
+                                                        <Box sx={{
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
+                                                            gap: 1,
+                                                            justifyContent: 'center',
+                                                            mt: 'auto'
+                                                        }}>
                                                         <Typography.Text style={{
                                                             fontSize: '13px',
                                                             color: '#475569',
-                                                            lineHeight: 1.5
+                                                                lineHeight: 1.5,
+                                                                display: '-webkit-box',
+                                                                WebkitLineClamp: 2,
+                                                                WebkitBoxOrient: 'vertical',
+                                                                overflow: 'hidden',
+                                                                textOverflow: 'ellipsis',
+                                                                mb: 1
                                                         }}>
                                                             {revision.note}
                                                         </Typography.Text>
-                                                        <Box sx={{
-                                                            display: 'flex',
-                                                            gap: 1,
-                                                            justifyContent: 'flex-end',
-                                                            mt: 1.5
-                                                        }}>
                                                             <Button
                                                                 size="small"
                                                                 icon={<EyeOutlined/>}
                                                                 onClick={() => {
                                                                     const delivery = designDeliveries.find(d => d.id === revision.deliveryId);
                                                                     if (delivery) {
-                                                                        handleOpenDeliveryDetailModal(delivery);
+                                                                        handleOpenDeliveryDetailModal(delivery, true);
                                                                     }
                                                                 }}
-                                                                style={{borderRadius: '6px'}}
+                                                                style={{
+                                                                    borderRadius: '8px',
+                                                                    width: '100%',
+                                                                    height: '32px',
+                                                                    background: 'linear-gradient(135deg, #ff6b35, #ff8c42)',
+                                                                    border: 'none',
+                                                                    color: 'white',
+                                                                    fontWeight: 600,
+                                                                    boxShadow: '0 2px 8px rgba(255, 107, 53, 0.2)'
+                                                                }}
                                                             >
                                                                 View Delivery
                                                             </Button>
                                                         </Box>
                                                     </Paper>
                                                 ))}
-                                            </Box>
-                                        ) : (
-                                            <Box sx={{
-                                                display: 'flex',
-                                                justifyContent: 'center',
-                                                alignItems: 'center',
-                                                height: '100%',
-                                                flexDirection: 'column',
-                                                gap: 2,
-                                                color: '#64748b'
-                                            }}>
-                                                <EditOutlined style={{fontSize: '48px', opacity: 0.5}}/>
-                                                <Typography.Text type="secondary" style={{fontSize: '14px'}}>
-                                                    {requestData?.status === 'completed' ? 'Design request completed - no actions available' : 
-                                                     'No revision requests'}
-                                                </Typography.Text>
-                                                {requestData?.status === 'completed' && (
-                                                    <Typography.Text type="secondary"
-                                                                     style={{fontSize: '12px', color: '#ff6b35'}}>
-                                                        This design request has been completed
-                                                    </Typography.Text>
-                                                )}
                                             </Box>
                                         )}
                                     </Box>
@@ -2787,20 +2838,218 @@ export default function DesignerChat() {
                 onSubmit={handleDeliverySubmit}
                 designDeliveries={designDeliveries}
                 requestData={requestData}
+                initialDeliveryType={openDeliveryAsRevision ? 'revision' : 'normal'}
             />
 
 
-            <DesignDetailDialog
-                visible={isDesignDetailModalVisible}
-                onCancel={handleCloseDesignDetailModal}
+            <AppliedRequestDetail
+                visible={isAppliedRequestDetailVisible}
+                onCancel={handleCloseAppliedRequestDetail}
                 request={requestData}
+                hideFooterButtons={true}
             />
 
             <DeliveryDetailModal
                 visible={isDeliveryDetailModalVisible}
                 onCancel={handleCloseDeliveryDetailModal}
                 delivery={selectedDelivery}
+                showAddRevisionButton={isDeliveryFromRevision}
+                onAddRevision={handleAddRevisionDelivery}
             />
+
+            {/* Floating Chat Bubble - only on DesignerChat page */}
+            <Box sx={{position: 'fixed', bottom: 24, right: 24, zIndex: 2000}}>
+                {isChatOpen ? (
+                    <Paper
+                        elevation={4}
+                        sx={{
+                            width: 380,
+                            height: '65vh',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            borderRadius: 3,
+                            overflow: 'hidden',
+                            border: '2px solid #1976d2',
+                            boxShadow: '0 8px 24px rgba(25, 118, 210, 0.3)',
+                            opacity: 1,
+                            backgroundColor: '#ffffff'
+                        }}
+                    >
+                        <Box sx={{
+                            py: 1,
+                            px: 2,
+                            borderBottom: '2px solid #e2e8f0',
+                            background: 'linear-gradient(135deg, #f8fafc 0%, #e3f2fd 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between'
+                        }}>
+                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1.5}}>
+                                <BankOutlined/>
+                                <Typography.Text style={{fontWeight: 600}}>
+                                    School: {schoolName}
+                                </Typography.Text>
+                            </Box>
+                            <Button type="text" icon={<CloseCircleOutlined style={{color: '#ff4d4f'}}/>}
+                                    onClick={() => setIsChatOpen(false)}/>
+                        </Box>
+
+                        <Box sx={{flex: 1, p: 2, overflowY: 'auto', backgroundColor: '#f8fafc'}}>
+                            {chatMessages.length === 0 ? (
+                                <Box sx={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    height: '100%',
+                                    color: '#64748b'
+                                }}>
+                                    <MessageOutlined style={{fontSize: '36px', marginBottom: '12px'}}/>
+                                    <Typography.Text type="secondary" style={{fontSize: '14px'}}>
+                                        No messages yet. Start the conversation!
+                                    </Typography.Text>
+                                </Box>
+                            ) : (
+                                <Box sx={{display: 'flex', flexDirection: 'column', gap: 1.5}}>
+                                    {chatMessages.map((msg, index) => (
+                                        <Box key={msg.id || index} sx={{
+                                            display: 'flex',
+                                            justifyContent: msg.user === (auth.currentUser?.displayName || 'Designer') ? 'flex-end' : 'flex-start'
+                                        }}>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                alignItems: 'flex-end',
+                                                gap: 0.5,
+                                                maxWidth: '80%'
+                                            }}>
+                                                {msg.user !== (auth.currentUser?.displayName || 'Designer') && (
+                                                    <Avatar size="small" style={{backgroundColor: '#1976d2'}}
+                                                            icon={<BankOutlined/>}/>
+                                                )}
+                                                <Box sx={{
+                                                    p: 1.5,
+                                                    borderRadius: 3,
+                                                    backgroundColor: msg.user === (auth.currentUser?.displayName || 'Designer') ? '#1976d2' : '#ffffff',
+                                                    background: msg.user === (auth.currentUser?.displayName || 'Designer') ? 'linear-gradient(135deg, #1976d2, #42a5f5)' : 'linear-gradient(135deg, #ffffff, #f8fafc)',
+                                                    color: msg.user === (auth.currentUser?.displayName || 'Designer') ? 'white' : '#1e293b',
+                                                    border: msg.user !== (auth.currentUser?.displayName || 'Designer') ? '1px solid #e2e8f0' : 'none',
+                                                    boxShadow: msg.user === (auth.currentUser?.displayName || 'Designer') ? '0 2px 8px rgba(25, 118, 210, 0.3)' : '0 1px 4px rgba(0,0,0,0.1)'
+                                                }}>
+                                                    <Typography.Text style={{
+                                                        fontSize: '10px',
+                                                        color: msg.user === (auth.currentUser?.displayName || 'Designer') ? 'rgba(255,255,255,0.8)' : '#94a3b8'
+                                                    }}>
+                                                        {msg.createdAt?.seconds ? new Date(msg.createdAt.seconds * 1000).toLocaleString() : ''}
+                                                    </Typography.Text>
+                                                    {msg.text && (
+                                                        <Typography.Text style={{
+                                                            fontSize: '14px',
+                                                            display: 'block',
+                                                            color: (msg.user === (auth.currentUser?.displayName || 'Designer')) ? 'white' : '#1e293b'
+                                                        }}>
+                                                            {msg.text}
+                                                        </Typography.Text>
+                                                    )}
+                                                </Box>
+                                                {msg.user === (auth.currentUser?.displayName || 'Designer') && (
+                                                    <Avatar size="small" style={{backgroundColor: '#52c41a'}}
+                                                            icon={<UserOutlined/>}/>
+                                                )}
+                                            </Box>
+                                        </Box>
+                                    ))}
+                                </Box>
+                            )}
+                        </Box>
+
+                        <Box sx={{
+                            p: 1.5,
+                            borderTop: '2px solid #e2e8f0',
+                            background: 'linear-gradient(135deg, #f8fafc 0%, #e3f2fd 100%)'
+                        }}>
+                            <Box sx={{display: 'flex', gap: 1, alignItems: 'center'}}>
+                                <Box sx={{flex: 1, position: 'relative'}}>
+                                    <Input
+                                        size="large"
+                                        placeholder="Type your message..."
+                                        value={newMessage}
+                                        onChange={(e) => setNewMessage(e.target.value)}
+                                        onPressEnter={handleSendMessage}
+                                        disabled={isViewOnly}
+                                        style={{
+                                            borderRadius: '24px',
+                                            padding: '14px 18px',
+                                            border: '1px solid #e2e8f0',
+                                            height: 48
+                                        }}
+                                    />
+                                    {showEmojiPicker && (
+                                        <Box sx={{
+                                            position: 'absolute',
+                                            bottom: '46px',
+                                            right: 0,
+                                            zIndex: 10,
+                                            borderRadius: '8px',
+                                            overflow: 'hidden',
+                                            boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+                                        }}>
+                                            <EmojiPicker onEmojiClick={onEmojiClick} height={300} width={280}/>
+                                        </Box>
+                                    )}
+                                </Box>
+                                <input type="file" accept=".jpg, .jpeg, .png, .gif" style={{display: 'none'}}
+                                       id="image-upload-input-designer-bubble" onChange={handleImageUpload}/>
+                                <Button disabled={isViewOnly} shape="circle" size="large" icon={<UploadOutlined/>}
+                                        onClick={() => document.getElementById('image-upload-input-designer-bubble').click()}
+                                        style={{
+                                            width: 48,
+                                            height: 48,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}/>
+                                <Button disabled={isViewOnly} shape="circle" size="large" icon={<SmileOutlined/>}
+                                        onClick={() => setShowEmojiPicker(prev => !prev)} style={{
+                                    width: 48,
+                                    height: 48,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}/>
+                                <Button disabled={isViewOnly} type="primary" shape="circle" size="large"
+                                        icon={<SendOutlined/>} onClick={handleSendMessage} style={{
+                                    width: 48,
+                                    height: 48,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}/>
+                            </Box>
+                        </Box>
+                    </Paper>
+                ) : (
+                    <Button
+                        type="primary"
+                        shape="circle"
+                        size="large"
+                        icon={<MessageOutlined/>}
+                        onClick={() => setIsChatOpen(true)}
+                        onMouseEnter={() => setIsOpenButtonHover(true)}
+                        onMouseLeave={() => setIsOpenButtonHover(false)}
+                        style={{
+                            width: isOpenButtonHover ? '60px' : '56px',
+                            height: isOpenButtonHover ? '60px' : '56px',
+                            transform: isOpenButtonHover ? 'translateY(-2px)' : 'none',
+                            transition: 'all 150ms ease',
+                            boxShadow: isOpenButtonHover ? '0 10px 28px rgba(25, 118, 210, 0.5)' : '0 8px 24px rgba(25, 118, 210, 0.4)',
+                            background: isOpenButtonHover ? 'linear-gradient(135deg, #1976d2, #1e88e5)' : 'linear-gradient(135deg, #1976d2, #42a5f5)',
+                            animation: isOpenButtonHover ? 'unisew-chat-shake 220ms ease-in-out' : 'none',
+                            willChange: 'transform',
+                            border: 'none'
+                        }}
+                    />
+                )}
+            </Box>
         </Box>
     );
 }
