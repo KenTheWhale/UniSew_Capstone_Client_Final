@@ -25,6 +25,7 @@ import {ColorPicker} from 'antd';
 import {enqueueSnackbar} from "notistack";
 import {createDesignRequest, getFabrics} from "../../../services/DesignService.jsx";
 import {uploadCloudinary} from "../../../services/UploadImageService.jsx";
+import DisplayImage from "../../ui/DisplayImage.jsx";
 
 
 export default function SchoolCreateDesign() {
@@ -134,8 +135,8 @@ export default function SchoolCreateDesign() {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const MAX_IMAGES = 4;
-    const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
-    const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif'];
+    const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+    const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
     const [uniformFabrics, setUniformFabrics] = useState([]);
 
@@ -185,7 +186,7 @@ export default function SchoolCreateDesign() {
             // Validate file type
             const ext = file.name.split('.').pop().toLowerCase();
             if (!ALLOWED_EXTENSIONS.includes(ext)) {
-                enqueueSnackbar('Only JPG, JPEG, PNG, GIF files are allowed for logo.', {variant: 'error'});
+                enqueueSnackbar('Only JPG, JPEG, PNG, GIF, WEBP files are allowed for logo.', {variant: 'error'});
                 return;
             }
 
@@ -237,11 +238,11 @@ export default function SchoolCreateDesign() {
         const validFiles = files.filter(file => {
             const ext = file.name.split('.').pop().toLowerCase();
             if (!ALLOWED_EXTENSIONS.includes(ext)) {
-                enqueueSnackbar('Only JPG, JPEG, PNG, GIF files are allowed.', {variant: 'error'});
+                enqueueSnackbar('Only JPG, JPEG, PNG, GIF, WEBP files are allowed.', {variant: 'error'});
                 return false;
             }
             if (file.size > MAX_IMAGE_SIZE) {
-                enqueueSnackbar('Each image must be less than 2MB.', {variant: 'error'});
+                enqueueSnackbar('Each image must be less than 10MB.', {variant: 'error'});
                 return false;
             }
             return true;
@@ -769,7 +770,7 @@ export default function SchoolCreateDesign() {
                                         />
                                     </Button>
                                     <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
-                                        JPG, PNG, GIF up to 2MB each
+                                        JPG, PNG, GIF, WEBP up to 10MB each
                                     </Typography>
 
                                     {shirtImages.length > 0 && (
@@ -779,18 +780,14 @@ export default function SchoolCreateDesign() {
                                                     position: 'relative',
                                                     width: 80,
                                                     height: 80,
-                                                    border: '1px solid #ddd',
                                                     borderRadius: '8px',
                                                     overflow: 'hidden'
                                                 }}>
-                                                    <img
-                                                        src={URL.createObjectURL(file)}
+                                                    <DisplayImage
+                                                        imageUrl={URL.createObjectURL(file)}
                                                         alt={`preview-${idx}`}
-                                                        style={{
-                                                            width: '100%',
-                                                            height: '100%',
-                                                            objectFit: 'cover'
-                                                        }}
+                                                        width="80px"
+                                                        height="80px"
                                                     />
                                                     <Button
                                                         size="small"
@@ -804,7 +801,8 @@ export default function SchoolCreateDesign() {
                                                             height: 20,
                                                             borderRadius: '50%',
                                                             backgroundColor: 'rgba(255,255,255,0.9)',
-                                                            fontSize: 12
+                                                            fontSize: 12,
+                                                            zIndex: 2
                                                         }}
                                                         onClick={() => handleRemoveImage(idx, uniformType, 'boy', 'shirt')}
                                                     >
@@ -1173,51 +1171,48 @@ export default function SchoolCreateDesign() {
                                     />
                                 </Button>
                                 <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
-                                    JPG, PNG, GIF up to 2MB each
+                                    JPG, PNG, GIF, WEBP up to 10MB each
                                 </Typography>
 
-                                {pantsImages.length > 0 && (
-                                    <Box sx={{display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center'}}>
-                                        {pantsImages.map((file, idx) => (
-                                            <Box key={idx} sx={{
-                                                position: 'relative',
-                                                width: 80,
-                                                height: 80,
-                                                border: '1px solid #ddd',
-                                                borderRadius: '8px',
-                                                overflow: 'hidden'
-                                            }}>
-                                                <img
-                                                    src={URL.createObjectURL(file)}
-                                                    alt={`preview-${idx}`}
-                                                    style={{
-                                                        width: '100%',
-                                                        height: '100%',
-                                                        objectFit: 'cover'
-                                                    }}
-                                                />
-                                                <Button
-                                                    size="small"
-                                                    color="error"
-                                                    sx={{
-                                                        position: 'absolute',
-                                                        top: 2,
-                                                        right: 2,
-                                                        minWidth: 0,
-                                                        width: 20,
-                                                        height: 20,
-                                                        borderRadius: '50%',
-                                                        backgroundColor: 'rgba(255,255,255,0.9)',
-                                                        fontSize: 12
-                                                    }}
-                                                    onClick={() => handleRemoveImage(idx, uniformType, 'boy', 'pants')}
-                                                >
-                                                    ×
-                                                </Button>
-                                            </Box>
-                                        ))}
-                                    </Box>
-                                )}
+                                                                    {pantsImages.length > 0 && (
+                                        <Box sx={{display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center'}}>
+                                            {pantsImages.map((file, idx) => (
+                                                <Box key={idx} sx={{
+                                                    position: 'relative',
+                                                    width: 80,
+                                                    height: 80,
+                                                    borderRadius: '8px',
+                                                    overflow: 'hidden'
+                                                }}>
+                                                    <DisplayImage
+                                                        imageUrl={URL.createObjectURL(file)}
+                                                        alt={`preview-${idx}`}
+                                                        width="80px"
+                                                        height="80px"
+                                                    />
+                                                    <Button
+                                                        size="small"
+                                                        color="error"
+                                                        sx={{
+                                                            position: 'absolute',
+                                                            top: 2,
+                                                            right: 2,
+                                                            minWidth: 0,
+                                                            width: 20,
+                                                            height: 20,
+                                                            borderRadius: '50%',
+                                                            backgroundColor: 'rgba(255,255,255,0.9)',
+                                                            fontSize: 12,
+                                                            zIndex: 2
+                                                        }}
+                                                        onClick={() => handleRemoveImage(idx, uniformType, 'boy', 'pants')}
+                                                    >
+                                                        ×
+                                                    </Button>
+                                                </Box>
+                                            ))}
+                                        </Box>
+                                    )}
                             </Box>
                         </Box>
                     )}
@@ -1501,7 +1496,7 @@ export default function SchoolCreateDesign() {
                                         />
                                     </Button>
                                     <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
-                                        JPG, PNG, GIF up to 2MB each
+                                        JPG, PNG, GIF, WEBP up to 10MB each
                                     </Typography>
 
                                     {shirtImages.length > 0 && (
@@ -1511,18 +1506,14 @@ export default function SchoolCreateDesign() {
                                                     position: 'relative',
                                                     width: 80,
                                                     height: 80,
-                                                    border: '1px solid #ddd',
                                                     borderRadius: '8px',
                                                     overflow: 'hidden'
                                                 }}>
-                                                    <img
-                                                        src={URL.createObjectURL(file)}
+                                                    <DisplayImage
+                                                        imageUrl={URL.createObjectURL(file)}
                                                         alt={`preview-${idx}`}
-                                                        style={{
-                                                            width: '100%',
-                                                            height: '100%',
-                                                            objectFit: 'cover'
-                                                        }}
+                                                        width="80px"
+                                                        height="80px"
                                                     />
                                                     <Button
                                                         size="small"
@@ -1536,7 +1527,8 @@ export default function SchoolCreateDesign() {
                                                             height: 20,
                                                             borderRadius: '50%',
                                                             backgroundColor: 'rgba(255,255,255,0.9)',
-                                                            fontSize: 12
+                                                            fontSize: 12,
+                                                            zIndex: 2
                                                         }}
                                                         onClick={() => handleRemoveImage(idx, uniformType, 'girl', 'shirt')}
                                                     >
@@ -1961,7 +1953,7 @@ export default function SchoolCreateDesign() {
                                         />
                                     </Button>
                                     <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
-                                        JPG, PNG, GIF up to 2MB each
+                                        JPG, PNG, GIF, WEBP up to 10MB each
                                     </Typography>
 
                                     {bottomImages.length > 0 && (
@@ -1971,18 +1963,14 @@ export default function SchoolCreateDesign() {
                                                     position: 'relative',
                                                     width: 80,
                                                     height: 80,
-                                                    border: '1px solid #ddd',
                                                     borderRadius: '8px',
                                                     overflow: 'hidden'
                                                 }}>
-                                                    <img
-                                                        src={URL.createObjectURL(file)}
+                                                    <DisplayImage
+                                                        imageUrl={URL.createObjectURL(file)}
                                                         alt={`preview-${idx}`}
-                                                        style={{
-                                                            width: '100%',
-                                                            height: '100%',
-                                                            objectFit: 'cover'
-                                                        }}
+                                                        width="80px"
+                                                        height="80px"
                                                     />
                                                     <Button
                                                         size="small"
@@ -1996,7 +1984,8 @@ export default function SchoolCreateDesign() {
                                                             height: 20,
                                                             borderRadius: '50%',
                                                             backgroundColor: 'rgba(255,255,255,0.9)',
-                                                            fontSize: 12
+                                                            fontSize: 12,
+                                                            zIndex: 2
                                                         }}
                                                         onClick={() => handleRemoveImage(idx, uniformType, 'girl', bottomType)}
                                                     >
@@ -2350,20 +2339,15 @@ export default function SchoolCreateDesign() {
                                 </Button>
                             </label>
                             <Typography variant="body2" sx={{color: '#64748b'}}>
-                                Supported formats: JPG, PNG, GIF (Max 5MB)
+                                Supported formats: JPG, PNG, GIF, WEBP (Max 5MB)
                             </Typography>
                             {designRequest.logo.preview && (
                                 <Box sx={{mt: 2}}>
-                                    <img
-                                        src={designRequest.logo.preview}
+                                    <DisplayImage
+                                        imageUrl={designRequest.logo.preview}
                                         alt="Logo Preview"
-                                        style={{
-                                            maxWidth: '150px',
-                                            height: 'auto',
-                                            borderRadius: '8px',
-                                            border: '2px solid #e2e8f0',
-                                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                                        }}
+                                        width="150px"
+                                        height="auto"
                                     />
                                 </Box>
                             )}
