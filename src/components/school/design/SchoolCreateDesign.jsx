@@ -140,6 +140,85 @@ export default function SchoolCreateDesign() {
 
     const [uniformFabrics, setUniformFabrics] = useState([]);
 
+    // Helper functions to check if all required fields are filled
+    const isBoyInfoComplete = (uniformType) => {
+        const boyDetails = designRequest.uniformTypes[uniformType].details.boy;
+        const shirt = boyDetails.shirt;
+        const pants = boyDetails.pants;
+        
+        return shirt.fabric && shirt.logoPlacement && pants.fabric;
+    };
+
+    const isGirlInfoComplete = (uniformType) => {
+        const girlDetails = designRequest.uniformTypes[uniformType].details.girl;
+        const shirt = girlDetails.shirt;
+        
+        if (uniformType === 'regular') {
+            const bottomType = designRequest.uniformTypes.regular.details.girl.bottomType;
+            const bottomFabric = bottomType === 'skirt' ? girlDetails.skirt.fabric : girlDetails.pants.fabric;
+            return shirt.fabric && shirt.logoPlacement && bottomFabric && bottomType;
+        } else {
+            // Physical education uniform - girl only has pants
+            return shirt.fabric && shirt.logoPlacement && girlDetails.pants.fabric;
+        }
+    };
+
+    // Helper functions to check missing fields
+    const getMissingFields = (uniformType, gender) => {
+        const missing = [];
+        
+        if (gender === 'boy') {
+            const boyDetails = designRequest.uniformTypes[uniformType].details.boy;
+            if (!boyDetails.shirt.fabric) missing.push('Shirt Fabric');
+            if (!boyDetails.shirt.logoPlacement) missing.push('Shirt Logo Placement');
+            if (!boyDetails.pants.fabric) missing.push('Pants Fabric');
+        } else {
+            const girlDetails = designRequest.uniformTypes[uniformType].details.girl;
+            if (!girlDetails.shirt.fabric) missing.push('Shirt Fabric');
+            if (!girlDetails.shirt.logoPlacement) missing.push('Shirt Logo Placement');
+            
+            if (uniformType === 'regular') {
+                if (!designRequest.uniformTypes.regular.details.girl.bottomType) {
+                    missing.push('Bottom Type');
+                } else {
+                    const bottomType = designRequest.uniformTypes.regular.details.girl.bottomType;
+                    const bottomFabric = bottomType === 'skirt' ? girlDetails.skirt.fabric : girlDetails.pants.fabric;
+                    if (!bottomFabric) missing.push(`${bottomType === 'skirt' ? 'Skirt' : 'Pants'} Fabric`);
+                }
+            } else {
+                if (!girlDetails.pants.fabric) missing.push('Pants Fabric');
+            }
+        }
+        
+        return missing;
+    };
+
+    const isFieldMissing = (uniformType, gender, fieldType, itemType = null) => {
+        if (gender === 'boy') {
+            const boyDetails = designRequest.uniformTypes[uniformType].details.boy;
+            if (fieldType === 'shirtFabric') return !boyDetails.shirt.fabric;
+            if (fieldType === 'shirtLogoPlacement') return !boyDetails.shirt.logoPlacement;
+            if (fieldType === 'pantsFabric') return !boyDetails.pants.fabric;
+        } else {
+            const girlDetails = designRequest.uniformTypes[uniformType].details.girl;
+            if (fieldType === 'shirtFabric') return !girlDetails.shirt.fabric;
+            if (fieldType === 'shirtLogoPlacement') return !girlDetails.shirt.logoPlacement;
+            
+            if (uniformType === 'regular') {
+                if (fieldType === 'bottomType') return !designRequest.uniformTypes.regular.details.girl.bottomType;
+                if (fieldType === 'bottomFabric') {
+                    const bottomType = designRequest.uniformTypes.regular.details.girl.bottomType;
+                    if (!bottomType) return true;
+                    const bottomFabric = bottomType === 'skirt' ? girlDetails.skirt.fabric : girlDetails.pants.fabric;
+                    return !bottomFabric;
+                }
+            } else if (uniformType === 'physicalEducation') {
+                if (fieldType === 'pantsFabric') return !girlDetails.pants.fabric;
+            }
+        }
+        return false;
+    };
+
     useEffect(() => {
         async function FetchFabrics() {
             return await getFabrics()
@@ -629,7 +708,7 @@ export default function SchoolCreateDesign() {
             if (createResponse && createResponse.status === 201) {
                 enqueueSnackbar(createResponse.data.message, {variant: 'success', autoHideDuration: 1000})
                 setTimeout(() => {
-                    window.location.href = '/school/pending/request'; // Go to SchoolPendingDesign.jsx after submission
+                    window.location.href = '/school/design'; // Go to SchoolPendingDesign.jsx after submission
                 }, 1000)
             } else {
                 enqueueSnackbar("Fail to create design request", {variant: 'error'})
@@ -818,7 +897,11 @@ export default function SchoolCreateDesign() {
 
                         {/* Fabric Selection */}
                         <Box>
-                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
+                            <Typography variant="subtitle2" sx={{
+                                mb: 1, 
+                                fontWeight: '600',
+                                color: isFieldMissing(uniformType, 'boy', 'shirtFabric') ? '#d32f2f' : '#1e293b'
+                            }}>
                                 Fabric Type *
                             </Typography>
                             <FormControl fullWidth size="small">
@@ -850,6 +933,19 @@ export default function SchoolCreateDesign() {
                                         if (!selected) return <em>Select fabric type</em>;
                                         const fabric = uniformFabrics.find(f => f.id === selected);
                                         return fabric ? fabric.name : '';
+                                    }}
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            '& fieldset': {
+                                                borderColor: isFieldMissing(uniformType, 'boy', 'shirtFabric') ? '#d32f2f' : '#c0c0c0',
+                                            },
+                                            '&:hover fieldset': {
+                                                borderColor: isFieldMissing(uniformType, 'boy', 'shirtFabric') ? '#d32f2f' : '#2e7d32',
+                                            },
+                                            '&.Mui-focused fieldset': {
+                                                borderColor: isFieldMissing(uniformType, 'boy', 'shirtFabric') ? '#d32f2f' : '#2e7d32',
+                                            },
+                                        },
                                     }}
                                     variant='outlined'>
                                     {uniformFabrics
@@ -949,7 +1045,11 @@ export default function SchoolCreateDesign() {
                         </Box>
 
                         <Box>
-                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
+                            <Typography variant="subtitle2" sx={{
+                                mb: 1, 
+                                fontWeight: '600',
+                                color: isFieldMissing(uniformType, 'boy', 'shirtLogoPlacement') ? '#d32f2f' : '#1e293b'
+                            }}>
                                 Placement Position *
                             </Typography>
                             <FormControl fullWidth size="small">
@@ -978,18 +1078,32 @@ export default function SchoolCreateDesign() {
                                     }}
                                     displayEmpty
                                     renderValue={(selected) => selected || 'Select logo placement'}
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            '& fieldset': {
+                                                borderColor: isFieldMissing(uniformType, 'boy', 'shirtLogoPlacement') ? '#d32f2f' : '#c0c0c0',
+                                            },
+                                            '&:hover fieldset': {
+                                                borderColor: isFieldMissing(uniformType, 'boy', 'shirtLogoPlacement') ? '#d32f2f' : '#2e7d32',
+                                            },
+                                            '&.Mui-focused fieldset': {
+                                                borderColor: isFieldMissing(uniformType, 'boy', 'shirtLogoPlacement') ? '#d32f2f' : '#2e7d32',
+                                            },
+                                        },
+                                    }}
                                     variant='outlined'>
                                     <MenuItem value="">
                                         <em>No logo placement</em>
                                     </MenuItem>
-                                    <MenuItem value="Left Chest">Left Chest</MenuItem>
-                                    <MenuItem value="Center Chest">Center Chest</MenuItem>
-                                    <MenuItem value="Full Front">Full Front</MenuItem>
-                                    <MenuItem value="Upper Back">Upper Back</MenuItem>
-                                    <MenuItem value="Full Back">Full Back</MenuItem>
                                     <MenuItem value="Left Sleeve">Left Sleeve</MenuItem>
                                     <MenuItem value="Right Sleeve">Right Sleeve</MenuItem>
-                                    <MenuItem value="Back Collar">Back Collar</MenuItem>
+                                    <MenuItem value="Left Chest">Left Chest</MenuItem>
+                                    <MenuItem value="Right Chest">Right Chest</MenuItem>
+                                    <MenuItem value="Front Hip">Front Hip</MenuItem>
+                                    <MenuItem value="Back Neck">Back Neck</MenuItem>
+                                    <MenuItem value="Back Through Shoulders">Back Through Shoulders</MenuItem>
+                                    <MenuItem value="Center Back">Center Back</MenuItem>
+                                    <MenuItem value="Bottom Back">Bottom Back</MenuItem>
                                 </Select>
                             </FormControl>
                         </Box>
@@ -1219,7 +1333,11 @@ export default function SchoolCreateDesign() {
                     <Box sx={{display: 'grid', gap: 3}}>
                         {/* Fabric Selection */}
                         <Box>
-                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
+                            <Typography variant="subtitle2" sx={{
+                                mb: 1, 
+                                fontWeight: '600',
+                                color: isFieldMissing(uniformType, 'boy', 'pantsFabric') ? '#d32f2f' : '#1e293b'
+                            }}>
                                 Fabric Type *
                             </Typography>
                             <FormControl fullWidth size="small">
@@ -1251,6 +1369,19 @@ export default function SchoolCreateDesign() {
                                         if (!selected) return <em>Select fabric type</em>;
                                         const fabric = uniformFabrics.find(f => f.id === selected);
                                         return fabric ? fabric.name : '';
+                                    }}
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            '& fieldset': {
+                                                borderColor: isFieldMissing(uniformType, 'boy', 'pantsFabric') ? '#d32f2f' : '#c0c0c0',
+                                            },
+                                            '&:hover fieldset': {
+                                                borderColor: isFieldMissing(uniformType, 'boy', 'pantsFabric') ? '#d32f2f' : '#2e7d32',
+                                            },
+                                            '&.Mui-focused fieldset': {
+                                                borderColor: isFieldMissing(uniformType, 'boy', 'pantsFabric') ? '#d32f2f' : '#2e7d32',
+                                            },
+                                        },
                                     }}
                                     variant='outlined'>
                                     {uniformFabrics
@@ -1544,7 +1675,11 @@ export default function SchoolCreateDesign() {
 
                         {/* Fabric Selection */}
                         <Box>
-                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
+                            <Typography variant="subtitle2" sx={{
+                                mb: 1, 
+                                fontWeight: '600',
+                                color: isFieldMissing(uniformType, 'girl', 'shirtFabric') ? '#d32f2f' : '#1e293b'
+                            }}>
                                 Fabric Type *
                             </Typography>
                             <FormControl fullWidth size="small">
@@ -1576,6 +1711,19 @@ export default function SchoolCreateDesign() {
                                         if (!selected) return <em>Select fabric type</em>;
                                         const fabric = uniformFabrics.find(f => f.id === selected);
                                         return fabric ? fabric.name : '';
+                                    }}
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            '& fieldset': {
+                                                borderColor: isFieldMissing(uniformType, 'girl', 'shirtFabric') ? '#d32f2f' : '#c0c0c0',
+                                            },
+                                            '&:hover fieldset': {
+                                                borderColor: isFieldMissing(uniformType, 'girl', 'shirtFabric') ? '#d32f2f' : '#2e7d32',
+                                            },
+                                            '&.Mui-focused fieldset': {
+                                                borderColor: isFieldMissing(uniformType, 'girl', 'shirtFabric') ? '#d32f2f' : '#2e7d32',
+                                            },
+                                        },
                                     }}
                                     variant='outlined'>
                                     {uniformFabrics
@@ -1676,7 +1824,11 @@ export default function SchoolCreateDesign() {
                         </Box>
 
                         <Box>
-                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
+                            <Typography variant="subtitle2" sx={{
+                                mb: 1, 
+                                fontWeight: '600',
+                                color: isFieldMissing(uniformType, 'girl', 'shirtLogoPlacement') ? '#d32f2f' : '#1e293b'
+                            }}>
                                 Placement Position *
                             </Typography>
                             <FormControl fullWidth size="small">
@@ -1705,6 +1857,19 @@ export default function SchoolCreateDesign() {
                                     }}
                                     displayEmpty
                                     renderValue={(selected) => selected || 'Select logo placement'}
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            '& fieldset': {
+                                                borderColor: isFieldMissing(uniformType, 'girl', 'shirtLogoPlacement') ? '#d32f2f' : '#c0c0c0',
+                                            },
+                                            '&:hover fieldset': {
+                                                borderColor: isFieldMissing(uniformType, 'girl', 'shirtLogoPlacement') ? '#d32f2f' : '#2e7d32',
+                                            },
+                                            '&.Mui-focused fieldset': {
+                                                borderColor: isFieldMissing(uniformType, 'girl', 'shirtLogoPlacement') ? '#d32f2f' : '#2e7d32',
+                                            },
+                                        },
+                                    }}
                                     variant='outlined'>
                                     <MenuItem value="">
                                         <em>No logo placement</em>
@@ -1842,7 +2007,11 @@ export default function SchoolCreateDesign() {
                             👗 Bottom Type Selection
                         </Typography>
                         <FormControl component="fieldset" fullWidth>
-                            <FormLabel component="legend" sx={{mb: 1, fontWeight: '600'}}>
+                            <FormLabel component="legend" sx={{
+                                mb: 1, 
+                                fontWeight: '600',
+                                color: isFieldMissing(uniformType, 'girl', 'bottomType') ? '#d32f2f' : '#1e293b'
+                            }}>
                                 Choose Bottom Type *
                             </FormLabel>
                             <RadioGroup
@@ -2001,7 +2170,11 @@ export default function SchoolCreateDesign() {
 
                         {/* Fabric Selection */}
                         <Box>
-                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
+                            <Typography variant="subtitle2" sx={{
+                                mb: 1, 
+                                fontWeight: '600',
+                                color: isFieldMissing(uniformType, 'girl', uniformType === 'regular' ? 'bottomFabric' : 'pantsFabric') ? '#d32f2f' : '#1e293b'
+                            }}>
                                 Fabric Type *
                             </Typography>
                             <FormControl fullWidth size="small">
@@ -2039,6 +2212,19 @@ export default function SchoolCreateDesign() {
                                         if (!selected) return <em>Select fabric type</em>;
                                         const fabric = uniformFabrics.find(f => f.id === selected);
                                         return fabric ? fabric.name : '';
+                                    }}
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            '& fieldset': {
+                                                borderColor: isFieldMissing(uniformType, 'girl', uniformType === 'regular' ? 'bottomFabric' : 'pantsFabric') ? '#d32f2f' : '#c0c0c0',
+                                            },
+                                            '&:hover fieldset': {
+                                                borderColor: isFieldMissing(uniformType, 'girl', uniformType === 'regular' ? 'bottomFabric' : 'pantsFabric') ? '#d32f2f' : '#2e7d32',
+                                            },
+                                            '&.Mui-focused fieldset': {
+                                                borderColor: isFieldMissing(uniformType, 'girl', uniformType === 'regular' ? 'bottomFabric' : 'pantsFabric') ? '#d32f2f' : '#2e7d32',
+                                            },
+                                        },
                                     }}
                                     variant='outlined'>
                                     {uniformFabrics
@@ -2516,6 +2702,20 @@ export default function SchoolCreateDesign() {
                                                 <Typography variant="body2" color="text.secondary">
                                                     Design uniform for male students
                                                 </Typography>
+                                                {designRequest.uniformTypes.regular.genders.boy && (
+                                                    <Typography 
+                                                        variant="caption" 
+                                                        sx={{
+                                                            color: isBoyInfoComplete('regular') ? '#2e7d32' : '#d32f2f',
+                                                            fontWeight: '600',
+                                                            fontSize: '0.75rem',
+                                                            mt: 0.5,
+                                                            display: 'block'
+                                                        }}
+                                                    >
+                                                        {isBoyInfoComplete('regular') ? '✓ All information filled' : '⚠ Information missing'}
+                                                    </Typography>
+                                                )}
                                             </Box>
                                             <Box sx={{
                                                 fontSize: '1.5rem',
@@ -2592,6 +2792,20 @@ export default function SchoolCreateDesign() {
                                                 <Typography variant="body2" color="text.secondary">
                                                     Design uniform for female students
                                                 </Typography>
+                                                {designRequest.uniformTypes.regular.genders.girl && (
+                                                    <Typography 
+                                                        variant="caption" 
+                                                        sx={{
+                                                            color: isGirlInfoComplete('regular') ? '#2e7d32' : '#d32f2f',
+                                                            fontWeight: '600',
+                                                            fontSize: '0.75rem',
+                                                            mt: 0.5,
+                                                            display: 'block'
+                                                        }}
+                                                    >
+                                                        {isGirlInfoComplete('regular') ? '✓ All information filled' : '⚠ Information missing'}
+                                                    </Typography>
+                                                )}
                                             </Box>
                                             <Box sx={{
                                                 fontSize: '1.5rem',
@@ -2762,6 +2976,20 @@ export default function SchoolCreateDesign() {
                                                 <Typography variant="body2" color="text.secondary">
                                                     Physical education uniform for male students
                                                 </Typography>
+                                                {designRequest.uniformTypes.physicalEducation.genders.boy && (
+                                                    <Typography 
+                                                        variant="caption" 
+                                                        sx={{
+                                                            color: isBoyInfoComplete('physicalEducation') ? '#2e7d32' : '#d32f2f',
+                                                            fontWeight: '600',
+                                                            fontSize: '0.75rem',
+                                                            mt: 0.5,
+                                                            display: 'block'
+                                                        }}
+                                                    >
+                                                        {isBoyInfoComplete('physicalEducation') ? '✓ All information filled' : '⚠ Information missing'}
+                                                    </Typography>
+                                                )}
                                             </Box>
                                             <Box sx={{
                                                 fontSize: '1.5rem',
@@ -2838,6 +3066,20 @@ export default function SchoolCreateDesign() {
                                                 <Typography variant="body2" color="text.secondary">
                                                     Physical education uniform for female students
                                                 </Typography>
+                                                {designRequest.uniformTypes.physicalEducation.genders.girl && (
+                                                    <Typography 
+                                                        variant="caption" 
+                                                        sx={{
+                                                            color: isGirlInfoComplete('physicalEducation') ? '#2e7d32' : '#d32f2f',
+                                                            fontWeight: '600',
+                                                            fontSize: '0.75rem',
+                                                            mt: 0.5,
+                                                            display: 'block'
+                                                        }}
+                                                    >
+                                                        {isGirlInfoComplete('physicalEducation') ? '✓ All information filled' : '⚠ Information missing'}
+                                                    </Typography>
+                                                )}
                                             </Box>
                                             <Box sx={{
                                                 fontSize: '1.5rem',

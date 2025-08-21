@@ -101,8 +101,12 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                 };
                 break;
             case 'completed':
-                buttonText = 'View Final Design';
-                buttonAction = onCancel;
+                buttonText = 'View School Chat';
+                buttonAction = () => {
+                    localStorage.setItem('currentDesignRequestId', request.id);
+                    onCancel();
+                    window.location.href = '/designer/chat';
+                };
                 break;
             case 'canceled':
                 return null;
@@ -1207,21 +1211,22 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                         </Box>
 
                                                                         {/* Compact Sample Images */}
-                                                                        {item.sampleImages && item.sampleImages.length > 0 && (
-                                                                            <Box sx={{
-                                                                                pt: 1,
-                                                                                borderTop: '1px solid #f1f5f9'
+                                                                        <Box sx={{
+                                                                            pt: 1,
+                                                                            borderTop: '1px solid #f1f5f9'
+                                                                        }}>
+                                                                            <Text style={{
+                                                                                fontSize: '9px',
+                                                                                fontWeight: 600,
+                                                                                mb: 0.5,
+                                                                                display: 'block',
+                                                                                color: '#475569',
+                                                                                textTransform: 'uppercase'
                                                                             }}>
-                                                                                <Text style={{
-                                                                                    fontSize: '9px',
-                                                                                    fontWeight: 600,
-                                                                                    mb: 0.5,
-                                                                                    display: 'block',
-                                                                                    color: '#475569',
-                                                                                    textTransform: 'uppercase'
-                                                                                }}>
-                                                                                    Samples ({item.sampleImages.length})
-                                                                                </Text>
+                                                                                Samples
+                                                                                {item.sampleImages && item.sampleImages.length > 0 ? ` (${item.sampleImages.length})` : ' (0)'}
+                                                                            </Text>
+                                                                            {item.sampleImages && item.sampleImages.length > 0 ? (
                                                                                 <Box sx={{
                                                                                     display: 'flex',
                                                                                     gap: 0.5,
@@ -1253,8 +1258,20 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                                         </Box>
                                                                                     ))}
                                                                                 </Box>
-                                                                            </Box>
-                                                                        )}
+                                                                            ) : (
+                                                                                <Box sx={{
+                                                                                    height: '36px',
+                                                                                }}>
+                                                                                    <Text style={{
+                                                                                        fontSize: '10px',
+                                                                                        color: '#94a3b8',
+                                                                                        fontStyle: 'italic'
+                                                                                    }}>
+                                                                                        No samples available
+                                                                                    </Text>
+                                                                                </Box>
+                                                                            )}
+                                                                        </Box>
                                                                     </Box>
                                                                 ))}
                                                             </Box>
@@ -1965,21 +1982,22 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                         </Box>
 
                                                                         {/* Compact Sample Images */}
-                                                                        {item.sampleImages && item.sampleImages.length > 0 && (
-                                                                            <Box sx={{
-                                                                                pt: 1,
-                                                                                borderTop: '1px solid #f1f5f9'
+                                                                        <Box sx={{
+                                                                            pt: 1,
+                                                                            borderTop: '1px solid #f1f5f9'
+                                                                        }}>
+                                                                            <Text style={{
+                                                                                fontSize: '9px',
+                                                                                fontWeight: 600,
+                                                                                mb: 0.5,
+                                                                                display: 'block',
+                                                                                color: '#475569',
+                                                                                textTransform: 'uppercase'
                                                                             }}>
-                                                                                <Text style={{
-                                                                                    fontSize: '9px',
-                                                                                    fontWeight: 600,
-                                                                                    mb: 0.5,
-                                                                                    display: 'block',
-                                                                                    color: '#475569',
-                                                                                    textTransform: 'uppercase'
-                                                                                }}>
-                                                                                    Samples ({item.sampleImages.length})
-                                                                                </Text>
+                                                                                Samples
+                                                                                {item.sampleImages && item.sampleImages.length > 0 ? ` (${item.sampleImages.length})` : ' (0)'}
+                                                                            </Text>
+                                                                            {item.sampleImages && item.sampleImages.length > 0 ? (
                                                                                 <Box sx={{
                                                                                     display: 'flex',
                                                                                     gap: 0.5,
@@ -2011,8 +2029,20 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                                         </Box>
                                                                                     ))}
                                                                                 </Box>
-                                                                            </Box>
-                                                                        )}
+                                                                            ) : (
+                                                                                <Box sx={{
+                                                                                    height: '36px',
+                                                                                }}>
+                                                                                    <Text style={{
+                                                                                        fontSize: '10px',
+                                                                                        color: '#94a3b8',
+                                                                                        fontStyle: 'italic'
+                                                                                    }}>
+                                                                                        No samples available
+                                                                                    </Text>
+                                                                                </Box>
+                                                                            )}
+                                                                        </Box>
                                                                     </Box>
                                                                 ))}
                                                             </Box>

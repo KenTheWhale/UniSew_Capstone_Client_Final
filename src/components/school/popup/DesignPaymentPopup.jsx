@@ -50,10 +50,13 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
             };
             sessionStorage.setItem('paymentQuotationDetails', JSON.stringify(quotationDetailsToStore));
             
+            // Store payment type in sessionStorage for PaymentResult component
+            sessionStorage.setItem('currentPaymentType', 'design');
+            
             const response = await getPaymentUrl(
                 totalAmount,
                 `Payment for design quotation - Design Request ${parseID(request.id, 'dr')}`,
-                'design_request',
+                'design',
                 '/school/payment/result'
             );
             

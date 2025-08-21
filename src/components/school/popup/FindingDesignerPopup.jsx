@@ -165,7 +165,13 @@ const DesignerCard = React.memo(({ designer, isSelected, onSelect }) => {
                 <Divider orientation="vertical" flexItem sx={{ borderColor: '#e2e8f0' }} />
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <PhoneOutlined style={{color: '#64748b'}}/>
-                    <Typography.Text style={{fontSize: '12px'}}>{designer.designer.customer.phone}</Typography.Text>
+                    <Typography.Text 
+                        style={{fontSize: '12px', cursor: 'pointer'}} 
+                        onClick={() => window.open(`https://zalo.me/${designer.designer.customer.phone}`, "_blank")}
+                        title="Click to contact"
+                    >
+                        {designer.designer.customer.phone}
+                    </Typography.Text>
                 </Box>
             </Box>
 
@@ -243,8 +249,8 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
     const feeAmount = useMemo(() => Math.round(serviceFee(baseAndExtra.base + baseAndExtra.extra)), [baseAndExtra]);
     const exceedsCap = totalCost > 200000000;
 
-    const regularItems = useMemo(() => (request?.items || []).filter(i => i.category === 'regular'), [request]);
-    const peItems = useMemo(() => (request?.items || []).filter(i => i.category === 'pe'), [request]);
+    const boyItems = useMemo(() => (request?.items || []).filter(i => i.gender === 'boy'), [request]);
+    const girlItems = useMemo(() => (request?.items || []).filter(i => i.gender === 'girl'), [request]);
 
     useEffect(() => {
         setSelectedQuotation(null);
@@ -602,7 +608,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
 
                     {/* Request Detail Panel */}
                     {showRequestDetail && (
-                        <Box sx={{ mb: 3, p: 3, backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: 2, maxWidth: 900, mx: 'auto' }}>
+                        <Box sx={{ mb: 3, p: 3, backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: 2, width: '100%' }}>
                             {/* Header with Logo and Metadata */}
                             <Box sx={{ display: 'grid', gridTemplateColumns: 'auto 1fr', alignItems: 'center', gap: 2, mb: 2 }}>
                                 {request.logoImage && (
@@ -623,82 +629,221 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                 </Box>
                             </Box>
 
-                            {/* Items grouped by category */}
-                            {regularItems.length > 0 && (
+                            {/* Items grouped by gender */}
+                            {boyItems.length > 0 && (
                                 <Box sx={{ mb: 2 }}>
-                                    <Typography.Title level={5} style={{ margin: 0, color: '#1e293b' }}>Regular</Typography.Title>
-                                    <Box sx={{ mt: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 2 }}>
-                                        {regularItems.map((item) => (
-                                            <Paper key={item.id} elevation={0} sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: 2 }}>
-                                                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 56px', alignItems: 'start', gap: 1 }}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-                                                        {/* Small color dot and info */}
-                                                        <Box sx={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: item.color, border: '1px solid #e2e8f0', mt: '6px' }} />
-                                                        <Box>
-                                                            <Typography.Title level={5} style={{ margin: 0, color: '#1e293b' }}>
-                                                                {item.type} - {(item.category === 'pe' ? 'physical education' : item.category)}
-                                                            </Typography.Title>
-                                                            <Box sx={{ display: 'flex', gap: 1, mt: 0.5, flexWrap: 'wrap' }}>
-                                                                <Tag>{item.gender}</Tag>
-                                                                <Tag color="success">{item.fabricName}</Tag>
-                                                                {item.logoPosition && <Tag color="gold">Logo: {item.logoPosition}</Tag>}
-                                                            </Box>
-                                                            {item.note && (
-                                                                <Typography.Text type="secondary" style={{ fontSize: '12px', marginTop: 4, display: 'block' }}>
-                                                                    Note: {item.note}
-                                                                </Typography.Text>
-                                                            )}
-                                                        </Box>
-                                                    </Box>
-
-                                                {/* Thumbnail (first sample image) */}
-                                                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                                    {(item.sampleImages && item.sampleImages.length > 0) ? (
-                                                        <DisplayImage imageUrl={item.sampleImages[0].url} alt="Sample" width={48} height={48} />
-                                                    ) : null}
+                                    <Typography.Title level={5} style={{ margin: 0, color: '#1e293b' }}>Boy</Typography.Title>
+                                    <Box sx={{ mt: 1, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
+                                        {boyItems.map((item) => (
+                                            <Paper key={item.id} elevation={0} sx={{ 
+                                                p: 2, 
+                                                border: '1px solid #e2e8f0', 
+                                                borderRadius: 2,
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                height: 280,
+                                                transition: 'all 0.2s ease',
+                                                '&:hover': {
+                                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                                    transform: 'translateY(-2px)'
+                                                }
+                                            }}>
+                                                {/* Header with color dot and title */}
+                                                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1.5 }}>
+                                                    <Box sx={{ 
+                                                        width: 12, 
+                                                        height: 12, 
+                                                        borderRadius: '50%', 
+                                                        backgroundColor: item.color, 
+                                                        border: '1px solid #e2e8f0', 
+                                                        mt: '6px',
+                                                        flexShrink: 0
+                                                    }} />
+                                                    <Typography.Title level={5} style={{ 
+                                                        margin: 0, 
+                                                        color: '#1e293b',
+                                                        fontSize: '14px',
+                                                        lineHeight: '1.3'
+                                                    }}>
+                                                        {item.type} - {(item.category === 'pe' ? 'physical education' : item.category)}
+                                                    </Typography.Title>
                                                 </Box>
-                                            </Box>
-                                        </Paper>
+
+                                                {/* Sample Image */}
+                                                <Box sx={{ 
+                                                    display: 'flex',
+                                                    justifyContent: 'center',
+                                                    alignItems: 'center',
+                                                    mb: 1.5,
+                                                    minHeight: 120
+                                                }}>
+                                                    {(item.sampleImages && item.sampleImages.length > 0) ? (
+                                                        <DisplayImage 
+                                                            imageUrl={item.sampleImages[0].url} 
+                                                            alt="Sample" 
+                                                            width="100px" 
+                                                            height="100px"
+                                                            style={{ objectFit: 'cover', borderRadius: '8px' }}
+                                                        />
+                                                    ) : (
+                                                        <Box sx={{
+                                                            width: '100%',
+                                                            height: 100,
+                                                            backgroundColor: '#f8fafc',
+                                                            border: '2px dashed #e2e8f0',
+                                                            borderRadius: '8px',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center'
+                                                        }}>
+                                                            <Typography.Text style={{ color: '#64748b', fontSize: '12px' }}>
+                                                                No reference image
+                                                            </Typography.Text>
+                                                        </Box>
+                                                    )}
+                                                </Box>
+
+                                                {/* Tags */}
+                                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mb: 1 }}>
+                                                    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                                                        <Tag color="blue" style={{ fontSize: '10px', padding: '2px 6px' }}>{item.gender}</Tag>
+                                                        <Tag color="success" style={{ fontSize: '10px', padding: '2px 6px' }}>{item.fabricName}</Tag>
+                                                        {item.logoPosition && (
+                                                            <Tag color="gold" style={{ fontSize: '10px', padding: '2px 6px', alignSelf: 'flex-start' }}>
+                                                                Logo: {item.logoPosition}
+                                                            </Tag>
+                                                        )}
+                                                    </Box>
+                                                </Box>
+
+                                                {/* Note */}
+                                                <Box sx={{ 
+                                                        mt: 'auto',
+                                                        p: 1,
+                                                        backgroundColor: '#f8fafc',
+                                                        borderRadius: 1,
+                                                        border: '1px solid #e2e8f0'
+                                                    }}>
+                                                        <Typography.Text style={{ 
+                                                            fontSize: '10px', 
+                                                            color: '#64748b',
+                                                            display: 'block',
+                                                            lineHeight: '1.3'
+                                                        }}>
+                                                            {item.note || 'N/A'}
+                                                        </Typography.Text>
+                                                    </Box>
+                                            </Paper>
                                         ))}
                                     </Box>
                                 </Box>
                             )}
 
-                            {peItems.length > 0 && (
+                            {girlItems.length > 0 && (
                                 <Box sx={{ mb: 2 }}>
-                                    <Typography.Title level={5} style={{ margin: 0, color: '#1e293b' }}>Physical Education</Typography.Title>
-                                    <Box sx={{ mt: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 2 }}>
-                                        {peItems.map((item) => (
-                                            <Paper key={item.id} elevation={0} sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: 2 }}>
-                                                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 56px', alignItems: 'start', gap: 1 }}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-                                                        {/* Small color dot and info */}
-                                                        <Box sx={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: item.color, border: '1px solid #e2e8f0', mt: '6px' }} />
-                                                        <Box>
-                                                            <Typography.Title level={5} style={{ margin: 0, color: '#1e293b' }}>
-                                                                {item.type} - {(item.category === 'pe' ? 'physical education' : item.category)}
-                                                            </Typography.Title>
-                                                            <Box sx={{ display: 'flex', gap: 1, mt: 0.5, flexWrap: 'wrap' }}>
-                                                                <Tag>{item.gender}</Tag>
-                                                                <Tag color="success">{item.fabricName}</Tag>
-                                                                {item.logoPosition && <Tag color="gold">Logo: {item.logoPosition}</Tag>}
-                                                            </Box>
-                                                            {item.note && (
-                                                                <Typography.Text type="secondary" style={{ fontSize: '12px', marginTop: 4, display: 'block' }}>
-                                                                    Note: {item.note}
-                                                                </Typography.Text>
-                                                            )}
-                                                        </Box>
-                                                    </Box>
-
-                                                {/* Thumbnail (first sample image) */}
-                                                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                                    {(item.sampleImages && item.sampleImages.length > 0) ? (
-                                                        <DisplayImage imageUrl={item.sampleImages[0].url} alt="Sample" width={48} height={48} />
-                                                    ) : null}
+                                    <Typography.Title level={5} style={{ margin: 0, color: '#1e293b' }}>Girl</Typography.Title>
+                                    <Box sx={{ mt: 1, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
+                                        {girlItems.map((item) => (
+                                            <Paper key={item.id} elevation={0} sx={{ 
+                                                p: 2, 
+                                                border: '1px solid #e2e8f0', 
+                                                borderRadius: 2,
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                height: 280,
+                                                transition: 'all 0.2s ease',
+                                                '&:hover': {
+                                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                                    transform: 'translateY(-2px)'
+                                                }
+                                            }}>
+                                                {/* Header with color dot and title */}
+                                                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1.5 }}>
+                                                    <Box sx={{ 
+                                                        width: 12, 
+                                                        height: 12, 
+                                                        borderRadius: '50%', 
+                                                        backgroundColor: item.color, 
+                                                        border: '1px solid #e2e8f0', 
+                                                        mt: '6px',
+                                                        flexShrink: 0
+                                                    }} />
+                                                    <Typography.Title level={5} style={{ 
+                                                        margin: 0, 
+                                                        color: '#1e293b',
+                                                        fontSize: '14px',
+                                                        lineHeight: '1.3'
+                                                    }}>
+                                                        {item.type} - {(item.category === 'pe' ? 'physical education' : item.category)}
+                                                    </Typography.Title>
                                                 </Box>
-                                            </Box>
-                                        </Paper>
+
+                                                {/* Sample Image */}
+                                                <Box sx={{ 
+                                                    display: 'flex',
+                                                    justifyContent: 'center',
+                                                    alignItems: 'center',
+                                                    mb: 1.5,
+                                                    minHeight: 120
+                                                }}>
+                                                    {(item.sampleImages && item.sampleImages.length > 0) ? (
+                                                        <DisplayImage 
+                                                            imageUrl={item.sampleImages[0].url} 
+                                                            alt="Sample" 
+                                                            width="100px" 
+                                                            height="100px"
+                                                            style={{ objectFit: 'cover', borderRadius: '8px' }}
+                                                        />
+                                                    ) : (
+                                                        <Box sx={{
+                                                            width: '100%',
+                                                            height: 100,
+                                                            backgroundColor: '#f8fafc',
+                                                            border: '2px dashed #e2e8f0',
+                                                            borderRadius: '8px',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center'
+                                                        }}>
+                                                            <Typography.Text style={{ color: '#64748b', fontSize: '12px' }}>
+                                                                No reference image
+                                                            </Typography.Text>
+                                                        </Box>
+                                                    )}
+                                                </Box>
+
+                                                {/* Tags */}
+                                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mb: 1 }}>
+                                                    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                                                        <Tag color="pink" style={{ fontSize: '10px', padding: '2px 6px' }}>{item.gender}</Tag>
+                                                        <Tag color="success" style={{ fontSize: '10px', padding: '2px 6px' }}>{item.fabricName}</Tag>
+                                                        {item.logoPosition && (
+                                                            <Tag color="gold" style={{ fontSize: '10px', padding: '2px 6px', alignSelf: 'flex-start' }}>
+                                                                Logo: {item.logoPosition}
+                                                            </Tag>
+                                                        )}
+                                                    </Box>
+                                                    
+                                                </Box>
+
+                                                {/* Note */}
+                                                <Box sx={{ 
+                                                        mt: 'auto',
+                                                        p: 1,
+                                                        backgroundColor: '#f8fafc',
+                                                        borderRadius: 1,
+                                                        border: '1px solid #e2e8f0'
+                                                    }}>
+                                                        <Typography.Text style={{ 
+                                                            fontSize: '10px', 
+                                                            color: '#64748b',
+                                                            display: 'block',
+                                                            lineHeight: '1.3'
+                                                        }}>
+                                                            {item.note || 'N/A'}
+                                                        </Typography.Text>
+                                                    </Box>
+                                            </Paper>
                                         ))}
                                     </Box>
                                 </Box>
@@ -1033,7 +1178,9 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                 </Box>
                                             )}
                                             <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
-                                                <Typography.Text style={{ color: '#475569' }}>Service fee</Typography.Text>
+                                                <Typography.Text style={{ color: '#475569' }}>
+                                                    Service fee {baseAndExtra.base + baseAndExtra.extra <= 10000000 ? '(2% total)' : ''}
+                                                </Typography.Text>
                                                 <Typography.Text style={{ color: '#1e293b', fontWeight: 600 }}>
                                                     {feeAmount.toLocaleString('vi-VN')} VND
                                                 </Typography.Text>

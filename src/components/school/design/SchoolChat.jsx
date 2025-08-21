@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {
     Avatar,
     Avatar as AntAvatar,
@@ -1437,6 +1437,7 @@ export default function SchoolChat() {
         || requestData?.designer?.customer?.name
         || 'Designer';
     const [isOpenButtonHover, setIsOpenButtonHover] = useState(false);
+    const emojiPickerRef = useRef(null);
 
     const {chatMessages, unreadCount, sendMessage, markAsRead} = UseDesignChatMessages(roomId);
     useEffect(() => {
@@ -1528,6 +1529,23 @@ export default function SchoolChat() {
         }
     }, []);
 
+    // Close emoji picker when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
+                setShowEmojiPicker(false);
+            }
+        };
+
+        if (showEmojiPicker) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showEmojiPicker]);
+
     const handleSendMessage = () => {
         if (newMessage.trim()) {
             sendMessage(newMessage.trim());
@@ -1597,15 +1615,18 @@ export default function SchoolChat() {
                 revisionQuantity: quantity,
                 extraRevisionPrice: extraRevisionPrice,
                 totalAmount: price,
-                requestData: requestData
+                designerId: requestData?.finalDesignQuotation?.designer?.customer?.id || requestData?.designer?.id
             };
             sessionStorage.setItem('revisionPurchaseDetails', JSON.stringify(revisionPurchaseDetails));
 
             // Get payment URL using getPaymentUrl API
             const amount = price;
             const description = "buy extra revision";
-            const orderType = "DESIGN";
+            const orderType = "revision";
             const returnURL = "/school/payment/result";
+
+            // Store payment type in sessionStorage for PaymentResult component
+            sessionStorage.setItem('currentPaymentType', orderType);
 
             const paymentResponse = await getPaymentUrl(amount, description, orderType, returnURL);
 
@@ -1800,7 +1821,7 @@ export default function SchoolChat() {
                                     color="success"
                                     size="large"
                                     style={{
-                                        backgroundColor: '#2e7d32',
+                                        backgroundColor: requestData?.status === 'processing' ? '#7c3aed' : '#2e7d32',
                                         color: 'white',
                                         fontSize: '14px',
                                         fontWeight: 600,
@@ -1826,264 +1847,7 @@ export default function SchoolChat() {
                         {/* Top Row - Chat and Deliveries */}
                         <Box sx={{display: 'flex', gap: 3, flex: 2}}>
 
-                            {/* Left Half - Designer Chat */}
-                            <Paper
-                                elevation={0}
-                                sx={{display: 'none'}}
-                            >
-                                {/* Chat Header */}
-                                <Box sx={{
-                                    py: 2,
-                                    px: 4,
-                                    borderBottom: '2px solid #e2e8f0',
-                                    backgroundColor: 'linear-gradient(135deg, #f8fafc 0%, #e3f2fd 100%)',
-                                    position: 'relative'
-                                }}>
-                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 3}}>
-                                        <Box sx={{
-                                            width: 50,
-                                            height: 50,
-                                            borderRadius: '50%',
-                                            background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            color: 'white',
-                                            fontSize: '20px',
-                                            boxShadow: '0 4px 12px rgba(46, 125, 50, 0.3)'
-                                        }}>
-                                            <UserSwitchOutlined/>
-                                        </Box>
-                                        <Box>
-                                            <Typography.Title level={4}
-                                                              style={{margin: 0, color: '#1e293b', fontWeight: 600}}>
-                                                Designer: {designerName}
-                                            </Typography.Title>
-                                            <Typography.Text type="secondary"
-                                                             style={{fontSize: '14px', fontWeight: 500}}>
-                                                Communicate with your designer
-                                            </Typography.Text>
-                                        </Box>
-                                    </Box>
-                                </Box>
 
-                                {/* Chat Messages */}
-                                <Box sx={{
-                                    flex: 1,
-                                    p: 3,
-                                    overflowY: 'auto',
-                                    backgroundColor: '#f8fafc',
-                                    maxHeight: '70vh',
-                                    opacity: (isFinalDesignSet || requestData?.status === 'completed') ? 0.6 : 1,
-                                    pointerEvents: (isFinalDesignSet || requestData?.status === 'completed') ? 'none' : 'auto'
-                                }}>
-                                    {chatMessages.length === 0 ? (
-                                        <Box sx={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            height: '100%',
-                                            color: '#64748b'
-                                        }}>
-                                            <MessageOutlined style={{fontSize: '48px', marginBottom: '16px'}}/>
-                                            <Typography.Text type="secondary" style={{fontSize: '16px'}}>
-                                                No messages yet. Start the conversation!
-                                            </Typography.Text>
-                                        </Box>
-                                    ) : (
-                                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
-                                            {chatMessages.map((msg, index) => (
-                                                <Box
-                                                    key={msg.id || index}
-                                                    sx={{
-                                                        display: 'flex',
-                                                        justifyContent: msg.user === (auth.currentUser?.displayName || "User") ? 'flex-end' : 'flex-start',
-                                                        mb: 2
-                                                    }}
-                                                >
-                                                    {/* ... Bubble/chat UI như cũ, chỉ đổi chỗ lấy sender/message */}
-                                                    <Box sx={{
-                                                        display: 'flex',
-                                                        alignItems: 'flex-end',
-                                                        gap: 1,
-                                                        maxWidth: '70%'
-                                                    }}>
-                                                        {msg.user !== (auth.currentUser?.displayName || "User") && (
-                                                            <Avatar
-                                                                size="small"
-                                                                style={{backgroundColor: '#1976d2'}}
-                                                                icon={<UserSwitchOutlined/>}
-                                                            />
-                                                        )}
-                                                        <Box sx={{
-                                                            p: 2,
-                                                            borderRadius: 4,
-                                                            backgroundColor: msg.user === (auth.currentUser?.displayName || "User")
-                                                                ? 'linear-gradient(135deg, #2e7d32, #4caf50)'
-                                                                : 'white',
-                                                            color: msg.user === (auth.currentUser?.displayName || "User") ? 'white' : '#1e293b',
-                                                            border: msg.user !== (auth.currentUser?.displayName || "User") ? '2px solid #e2e8f0' : 'none',
-                                                            maxWidth: '100%',
-                                                            wordWrap: 'break-word',
-                                                            boxShadow: msg.user === (auth.currentUser?.displayName || "User")
-                                                                ? '0 4px 12px rgba(46, 125, 50, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                                            position: 'relative'
-                                                        }}>
-                                                            <Box
-                                                                sx={{
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    gap: 1,
-                                                                    mb: 1
-                                                                }}>
-                                                                <Typography.Text
-                                                                    style={{fontSize: '11px', color: '#94a3b8'}}
-                                                                >
-                                                                    {
-                                                                        msg.createdAt?.seconds
-                                                                            ? new Date(msg.createdAt.seconds * 1000).toLocaleString()
-                                                                            : ''
-                                                                    }
-                                                                </Typography.Text>
-                                                            </Box>
-                                                            {msg.text && (
-                                                                <Typography.Text style={{
-                                                                    fontSize: '14px',
-                                                                    color: (msg.user === (auth.currentUser?.displayName || "User")) ? 'white' : '#1e293b'
-                                                                }}>
-                                                                    {msg.text}
-                                                                </Typography.Text>
-                                                            )}
-                                                        </Box>
-                                                        {msg.user === (auth.currentUser?.displayName || "User") && (
-                                                            <Avatar
-                                                                size="small"
-                                                                style={{backgroundColor: '#52c41a'}}
-                                                                icon={<UserOutlined/>}
-                                                            />
-                                                        )}
-                                                    </Box>
-                                                </Box>
-                                            ))}
-                                        </Box>
-                                    )}
-                                </Box>
-
-                                {/* Message Input */}
-                                <Box sx={{
-                                    py: 2,
-                                    px: 2,
-                                    borderTop: '2px solid #e2e8f0',
-                                    backgroundColor: 'linear-gradient(135deg, #f8fafc 0%, #e3f2fd 100%)',
-                                    opacity: (isFinalDesignSet || requestData?.status === 'completed') ? 0.6 : 1,
-                                    pointerEvents: (isFinalDesignSet || requestData?.status === 'completed') ? 'none' : 'auto'
-                                }}>
-                                    <Box sx={{display: 'flex', gap: 3, alignItems: 'flex-end'}}>
-                                        <Box sx={{flex: 1, position: 'relative'}}>
-                                            <Input
-                                                placeholder="Type your message..."
-                                                value={newMessage}
-                                                onChange={(e) => setNewMessage(e.target.value)}
-                                                onPressEnter={handleSendMessage}
-                                                style={{
-                                                    borderRadius: '25px',
-                                                    padding: '16px 20px',
-                                                    fontSize: '16px',
-                                                    border: '2px solid #e2e8f0',
-                                                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                                    transition: 'all 0.3s ease',
-                                                    '&:focus': {
-                                                        borderColor: '#1976d2',
-                                                        boxShadow: '0 4px 12px rgba(25, 118, 210, 0.2)'
-                                                    }
-                                                }}
-                                            />
-                                            {showEmojiPicker && (
-                                                <Box sx={{
-                                                    position: 'absolute',
-                                                    bottom: '60px',
-                                                    right: '0px',
-                                                    zIndex: 10,
-                                                    borderRadius: '8px',
-                                                    overflow: 'hidden',
-                                                    boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
-                                                }}>
-                                                    <EmojiPicker onEmojiClick={onEmojiClick} height={300} width={280}/>
-                                                </Box>
-                                            )}
-                                        </Box>
-                                        <input
-                                            type="file"
-                                            accept=".jpg, .jpeg, .png, .gif"
-                                            style={{display: 'none'}}
-                                            id="image-upload-input"
-                                            onChange={handleImageUpload}
-                                        />
-                                        <Button
-                                            icon={<UploadOutlined/>}
-                                            onClick={() => document.getElementById('image-upload-input').click()}
-                                            style={{
-                                                borderRadius: '50%',
-                                                width: '50px',
-                                                height: '50px',
-                                                backgroundColor: '#f8fafc',
-                                                border: '2px solid #e2e8f0',
-                                                color: '#64748b',
-                                                fontSize: '18px',
-                                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                                transition: 'all 0.3s ease',
-                                                '&:hover': {
-                                                    backgroundColor: '#e3f2fd',
-                                                    borderColor: '#1976d2',
-                                                    transform: 'scale(1.05)'
-                                                }
-                                            }}
-                                        />
-                                        <Button
-                                            icon={<SmileOutlined/>}
-                                            onClick={() => setShowEmojiPicker(prev => !prev)}
-                                            style={{
-                                                borderRadius: '50%',
-                                                width: '50px',
-                                                height: '50px',
-                                                backgroundColor: '#f8fafc',
-                                                border: '2px solid #e2e8f0',
-                                                color: '#64748b',
-                                                fontSize: '18px',
-                                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                                transition: 'all 0.3s ease',
-                                                '&:hover': {
-                                                    backgroundColor: '#e3f2fd',
-                                                    borderColor: '#1976d2',
-                                                    transform: 'scale(1.05)'
-                                                }
-                                            }}
-                                        />
-                                        <Button
-                                            type="primary"
-                                            icon={<SendOutlined/>}
-                                            onClick={handleSendMessage}
-                                            style={{
-                                                borderRadius: '50%',
-                                                width: '50px',
-                                                height: '50px',
-                                                background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
-                                                border: 'none',
-                                                fontSize: '18px',
-                                                boxShadow: '0 4px 12px rgba(46, 125, 50, 0.3)',
-                                                transition: 'all 0.3s ease',
-                                                '&:hover': {
-                                                    transform: 'scale(1.05)',
-                                                    boxShadow: '0 6px 16px rgba(46, 125, 50, 0.4)'
-                                                }
-                                            }}
-                                        />
-                                    </Box>
-                                </Box>
-                            </Paper>
-
-                            {/* Right Half - Deliveries and Revision Container */}
                             <Box sx={{
                                 flex: 1,
                                 display: 'flex',
@@ -2927,15 +2691,18 @@ export default function SchoolChat() {
                                         }}
                                     />
                                     {showEmojiPicker && (
-                                        <Box sx={{
-                                            position: 'absolute',
-                                            bottom: '46px',
-                                            right: 0,
-                                            zIndex: 10,
-                                            borderRadius: '8px',
-                                            overflow: 'hidden',
-                                            boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
-                                        }}>
+                                        <Box
+                                            ref={emojiPickerRef}
+                                            sx={{
+                                                position: 'absolute',
+                                                bottom: '46px',
+                                                left: 0,
+                                                zIndex: 10,
+                                                borderRadius: '8px',
+                                                overflow: 'hidden',
+                                                boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+                                            }}
+                                        >
                                             <EmojiPicker onEmojiClick={onEmojiClick} height={300} width={280}/>
                                         </Box>
                                     )}
