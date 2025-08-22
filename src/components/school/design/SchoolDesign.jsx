@@ -8,7 +8,8 @@ import {
     Paper,
     Card,
     CardContent,
-    Chip
+    Chip,
+    CircularProgress
 } from "@mui/material";
 import InfoIcon from '@mui/icons-material/Info';
 import AddIcon from '@mui/icons-material/Add';
@@ -16,14 +17,15 @@ import DesignServicesIcon from '@mui/icons-material/DesignServices';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PendingIcon from '@mui/icons-material/Pending';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import { Table, Space, Empty } from 'antd';
 import FeedbackIcon from '@mui/icons-material/Feedback';
 import ReportIcon from '@mui/icons-material/Report';
-import { Table, Space } from 'antd';
 import 'antd/dist/reset.css';
+import RequestDetailPopup, { statusTag } from './dialog/RequestDetailPopup.jsx';
+import FindingDesignerPopup from './dialog/FindingDesignerPopup.jsx';
+import DesignPaymentPopup from './dialog/DesignPaymentPopup.jsx';
 import { enqueueSnackbar } from 'notistack';
-import RequestDetailPopup, { statusTag } from '../popup/RequestDetailPopup';
-import FindingDesignerPopup from '../popup/FindingDesignerPopup.jsx';
-import DesignPaymentPopup from '../popup/DesignPaymentPopup';
 import FeedbackReportPopup from '../popup/FeedbackReportPopup';
 import { useNavigate } from 'react-router-dom';
 import {getSchoolDesignRequests} from "../../../services/DesignService.jsx";
@@ -89,6 +91,83 @@ const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
     </Card>
 ));
 
+// Loading State Component
+const LoadingState = React.memo(() => (
+    <Box sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '60vh',
+        flexDirection: 'column',
+        gap: 3
+    }}>
+        <CircularProgress size={60} sx={{color: '#2e7d32'}}/>
+        <Typography variant="h6" sx={{color: '#1e293b', fontWeight: 600}}>
+            Loading Design Requests...
+        </Typography>
+    </Box>
+));
+
+// Error State Component
+const ErrorState = React.memo(({error, onRetry, isRetrying}) => (
+    <Box sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '60vh',
+        flexDirection: 'column',
+        gap: 3
+    }}>
+        <Box sx={{
+            textAlign: 'center',
+            p: 4,
+            borderRadius: 2,
+            border: '1px solid #fecaca',
+            backgroundColor: '#fef2f2',
+            maxWidth: 500
+        }}>
+            <Typography variant="h6" sx={{color: '#dc2626', fontWeight: 600, mb: 2}}>
+                Error Loading Data
+            </Typography>
+            <Typography variant="body1" sx={{color: '#7f1d1d', mb: 3}}>
+                {error}
+            </Typography>
+            <Button
+                variant="contained"
+                onClick={onRetry}
+                disabled={isRetrying}
+                startIcon={isRetrying ? <CircularProgress size={16}/> : <RefreshIcon/>}
+                sx={{
+                    backgroundColor: '#dc2626',
+                    '&:hover': {
+                        backgroundColor: '#b91c1c'
+                    }
+                }}
+            >
+                {isRetrying ? 'Retrying...' : 'Retry'}
+            </Button>
+        </Box>
+    </Box>
+));
+
+// Empty State Component
+const EmptyState = React.memo(() => (
+    <Box sx={{
+        textAlign: 'center',
+        py: 8,
+        px: 4
+    }}>
+        <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={
+                <Typography variant="body1" sx={{color: '#64748b', mt: 2}}>
+                    No design requests available
+                </Typography>
+            }
+        />
+    </Box>
+));
+
 export default function SchoolDesign() {
     useEffect(() => {
         localStorage.removeItem('currentDesignRequest');
@@ -98,22 +177,26 @@ export default function SchoolDesign() {
     const [designRequests, setDesignRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isRetrying, setIsRetrying] = useState(false);
 
-    const FetchSchoolDesign = useCallback(async () => {
+    const FetchSchoolDesign = useCallback(async (showLoading = true) => {
         try {
-            setLoading(true);
+            if (showLoading) setLoading(true);
             setError(null);
             const response = await getSchoolDesignRequests();
             if(response && response.status === 200){
                 console.log("Design request: ", response.data.body);
                 const newData = response.data.body || [];
                 setDesignRequests(newData);
+            } else {
+                setError('Failed to fetch design requests');
             }
         } catch (error) {
             console.error("Error fetching design requests:", error);
             setError("Failed to load design requests");
         } finally {
             setLoading(false);
+            setIsRetrying(false);
         }
     }, []);
 
@@ -124,13 +207,22 @@ export default function SchoolDesign() {
     // Refresh data when user returns from other pages
     useEffect(() => {
         const handleFocus = () => {
-            FetchSchoolDesign();
+            FetchSchoolDesign(false);
         };
 
         window.addEventListener('focus', handleFocus);
         return () => {
             window.removeEventListener('focus', handleFocus);
         };
+    }, [FetchSchoolDesign]);
+
+    const handleRetry = useCallback(() => {
+        setIsRetrying(true);
+        FetchSchoolDesign();
+    }, [FetchSchoolDesign]);
+
+    const handleRefresh = useCallback(() => {
+        FetchSchoolDesign(false);
     }, [FetchSchoolDesign]);
 
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -140,7 +232,7 @@ export default function SchoolDesign() {
     const [isFeedbackModalVisible, setIsFeedbackModalVisible] = useState(false);
     const [isReportModalVisible, setIsReportModalVisible] = useState(false);
     const [selectedRequestForFeedback, setSelectedRequestForFeedback] = useState(null);
-    
+
     // Memoized filtered data - now includes all requests
     const filteredDesignRequests = useMemo(() => 
         designRequests, // Show all requests including pending
@@ -333,7 +425,7 @@ export default function SchoolDesign() {
                         record.feedback ? "Feedback already submitted" :
                         "Give Feedback"
                     }>
-                        <IconButton 
+                        <IconButton
                             onClick={() => handleOpenFeedback(record)}
                             disabled={record.status !== 'completed' || !!record.feedback}
                             sx={{
@@ -354,7 +446,7 @@ export default function SchoolDesign() {
                         </IconButton>
                     </Tooltip>
                     <Tooltip title={record.feedback ? "Report not available for feedbacked requests" : "Report Issue"}>
-                        <IconButton 
+                        <IconButton
                             onClick={() => handleOpenReport(record)}
                             disabled={!!record.feedback}
                             sx={{
@@ -378,6 +470,14 @@ export default function SchoolDesign() {
             ),
         },
     ], [filteredDesignRequests, handleViewDetail]);
+
+    if (loading) {
+        return <LoadingState/>;
+    }
+
+    if (error) {
+        return <ErrorState error={error} onRetry={handleRetry} isRetrying={isRetrying}/>;
+    }
 
     return (
         <Box sx={{ height: '100%', overflowY: 'auto' }}>
@@ -525,25 +625,29 @@ export default function SchoolDesign() {
                         />
                     </Box>
 
-                    <Table 
-                        columns={columns} 
-                        dataSource={filteredDesignRequests} 
-                        rowKey="id" 
-                        loading={loading}
-                        pagination={{ 
-                            defaultPageSize: 5,
-                            pageSizeOptions: TABLE_PAGE_SIZE_OPTIONS,
-                            showSizeChanger: true,
-                            showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total} design requests`,
-                            style: { marginTop: 16 }
-                        }}
-                        scroll={{ x: 'max-content' }}
-                        style={{ 
-                            backgroundColor: 'white',
-                            borderRadius: '8px'
-                        }}
-                        rowHoverColor="#f8fafc"
-                    />
+                    {filteredDesignRequests.length === 0 ? (
+                        <EmptyState/>
+                    ) : (
+                        <Table
+                            columns={columns}
+                            dataSource={filteredDesignRequests}
+                            rowKey="id"
+                            loading={loading}
+                            pagination={{
+                                defaultPageSize: 5,
+                                pageSizeOptions: TABLE_PAGE_SIZE_OPTIONS,
+                                showSizeChanger: true,
+                                showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total} design requests`,
+                                style: { marginTop: 16 }
+                            }}
+                            scroll={{ x: 'max-content' }}
+                            style={{
+                                backgroundColor: 'white',
+                                borderRadius: '8px'
+                            }}
+                            rowHoverColor="#f8fafc"
+                        />
+                    )}
                 </Box>
             </Paper>
 

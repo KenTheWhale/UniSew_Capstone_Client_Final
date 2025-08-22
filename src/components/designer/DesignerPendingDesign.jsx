@@ -30,7 +30,7 @@ import PendingIcon from '@mui/icons-material/Pending';
 import AddIcon from '@mui/icons-material/Add';
 import {Space, Table, Select, Empty} from 'antd';
 import 'antd/dist/reset.css';
-import {statusTag} from '../school/popup/RequestDetailPopup';
+import {statusTag} from '../school/design/dialog/RequestDetailPopup.jsx';
 import DesignerPendingDesignDetail from './DesignerPendingDesignDetail.jsx';
 import {parseID} from "../../utils/ParseIDUtil.jsx";
 import {getDesignRequests} from "../../services/DesignService.jsx";

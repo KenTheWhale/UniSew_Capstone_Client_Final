@@ -14,7 +14,7 @@ import {
 } from '@mui/icons-material';
 import {useSnackbar} from "notistack";
 import {signout, updateSchoolInfo} from "../../services/AccountService.jsx";
-import UpdateSchoolInfoDialog from "../../components/school/popup/UpdateSchoolInfoDialog.jsx";
+import UpdateSchoolInfoDialog from "../../components/school/design/dialog/UpdateSchoolInfoDialog.jsx";
 import { Tag } from "antd";
 
 function Navbar({school, enqueueSnackbar}) {
