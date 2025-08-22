@@ -10,10 +10,10 @@ import {
     SafetyCertificateOutlined
 } from '@ant-design/icons';
 import {Box, Chip, Paper} from '@mui/material';
-import {parseID} from "../../../utils/ParseIDUtil.jsx";
-import {getPaymentUrl} from "../../../services/PaymentService.jsx";
+import {parseID} from "../../../../utils/ParseIDUtil.jsx";
+import {getPaymentUrl} from "../../../../services/PaymentService.jsx";
 import {enqueueSnackbar} from "notistack";
-import {serviceFee} from "../../../configs/FixedVariables.jsx";
+import {serviceFee} from "../../../../configs/FixedVariables.jsx";
 
 export default function DesignPaymentPopup({ visible, onCancel, selectedQuotationDetails }) {
 

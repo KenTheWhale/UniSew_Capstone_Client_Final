@@ -17,10 +17,10 @@ import {
 import {Box, Chip, Divider, Paper, Avatar} from '@mui/material';
 import {useEffect, useState, useMemo, useCallback} from 'react';
 import React from 'react';
-import DesignPaymentPopup from './DesignPaymentPopup';
-import {parseID} from "../../../utils/ParseIDUtil.jsx";
-import DisplayImage from '../../ui/DisplayImage.jsx';
-import { serviceFee } from '../../../configs/FixedVariables.jsx';
+import DesignPaymentPopup from './DesignPaymentPopup.jsx';
+import {parseID} from "../../../../utils/ParseIDUtil.jsx";
+import DisplayImage from '../../../ui/DisplayImage.jsx';
+import { serviceFee } from '../../../../configs/FixedVariables.jsx';
 
 // Constants
 const STATUS_CONFIG = {
