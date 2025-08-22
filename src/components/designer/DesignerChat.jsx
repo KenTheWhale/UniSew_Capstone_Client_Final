@@ -1327,8 +1327,7 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
             const message = hasErrors ? 'Some fields are invalid. Please fix highlighted errors.' : `Missing/invalid data: ${completeness.reason}`;
             enqueueSnackbar(message, {
                 variant: 'error',
-                autoHideDuration: 4000,
-                anchorOrigin: { vertical: 'top', horizontal: 'right' }
+                autoHideDuration: 4000
             });
             return;
         }

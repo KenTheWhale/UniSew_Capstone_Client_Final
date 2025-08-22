@@ -17,10 +17,10 @@ import {
     SyncOutlined,
     UserOutlined
 } from '@ant-design/icons';
-import {parseID} from "../../../utils/ParseIDUtil.jsx";
+import {parseID} from "../../../../utils/ParseIDUtil.jsx";
 import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
 import {GiSkirt} from "react-icons/gi";
-import DisplayImage from '../../ui/DisplayImage.jsx';
+import DisplayImage from '../../../ui/DisplayImage.jsx';
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function statusTag(status) {

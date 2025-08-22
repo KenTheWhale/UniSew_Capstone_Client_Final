@@ -21,7 +21,7 @@ import {
 } from '@mui/icons-material';
 import {Space, Table, Empty} from 'antd';
 import 'antd/dist/reset.css';
-import {statusTag} from '../school/popup/RequestDetailPopup';
+import {statusTag} from '../school/design/dialog/RequestDetailPopup.jsx';
 import AppliedRequestDetail from './AppliedRequestDetail';
 import {parseID} from "../../utils/ParseIDUtil.jsx";
 import {getAppliedDesignerDesignRequests} from "../../services/DesignService.jsx";
@@ -499,7 +499,7 @@ export default function AppliedRequestList() {
             <HeaderSection onRefresh={handleRefresh}/>
 
             <TableSection
-                columns={columns}
+                        columns={columns}
                 filteredDesignRequests={filteredDesignRequests}
                 loading={loading}
             />

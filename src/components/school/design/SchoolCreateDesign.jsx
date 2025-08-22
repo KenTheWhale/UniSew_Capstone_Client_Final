@@ -1874,14 +1874,15 @@ export default function SchoolCreateDesign() {
                                     <MenuItem value="">
                                         <em>No logo placement</em>
                                     </MenuItem>
-                                    <MenuItem value="Left Chest">Left Chest</MenuItem>
-                                    <MenuItem value="Center Chest">Center Chest</MenuItem>
-                                    <MenuItem value="Full Front">Full Front</MenuItem>
-                                    <MenuItem value="Upper Back">Upper Back</MenuItem>
-                                    <MenuItem value="Full Back">Full Back</MenuItem>
                                     <MenuItem value="Left Sleeve">Left Sleeve</MenuItem>
                                     <MenuItem value="Right Sleeve">Right Sleeve</MenuItem>
-                                    <MenuItem value="Back Collar">Back Collar</MenuItem>
+                                    <MenuItem value="Left Chest">Left Chest</MenuItem>
+                                    <MenuItem value="Right Chest">Right Chest</MenuItem>
+                                    <MenuItem value="Front Hip">Front Hip</MenuItem>
+                                    <MenuItem value="Back Neck">Back Neck</MenuItem>
+                                    <MenuItem value="Back Through Shoulders">Back Through Shoulders</MenuItem>
+                                    <MenuItem value="Center Back">Center Back</MenuItem>
+                                    <MenuItem value="Bottom Back">Bottom Back</MenuItem>
                                 </Select>
                             </FormControl>
                         </Box>
