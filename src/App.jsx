@@ -38,6 +38,7 @@ import AdminAccount from "./components/admin/AdminAccount.jsx";
 import AdminTransaction from "./components/admin/AdminTransaction.jsx";
 import AdminDashboardLayout from "./layouts/admin/AdminDashboardLayout.jsx";
 import MilestoneManagement from "./components/garment/MilestoneManagement.jsx";
+import AdminReport from "./components/admin/AdminReport.jsx";
 
 const theme = createTheme({
   typography: {
@@ -203,6 +204,10 @@ const router = createBrowserRouter([
             {
                 path: 'transactions',
                 element: <AdminTransaction/>
+            },
+            {
+                path: 'reports',
+                element: <AdminReport/>
             }
         ]
     },

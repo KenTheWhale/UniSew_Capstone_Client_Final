@@ -2292,7 +2292,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                 </Card>
 
                         {/* Feedback */}
-                        {request.feedback && request.feedback !== '' && (
+                        {request.feedback && (
                             <Card
                                 title={
                                     <Space>
@@ -2313,9 +2313,41 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                     borderRadius: 6,
                                     border: '1px solid rgba(255, 193, 7, 0.2)'
                                 }}>
-                                    <Text style={{color: '#92400e', fontSize: '12px'}}>
-                                        {request.feedback}
-                                    </Text>
+                                    {typeof request.feedback === 'string' ? (
+                                        <Text style={{color: '#92400e', fontSize: '12px'}}>
+                                            {request.feedback}
+                                        </Text>
+                                    ) : request.feedback && typeof request.feedback === 'object' ? (
+                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                            {request.feedback.rating && (
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                    <Text style={{color: '#92400e', fontSize: '12px', fontWeight: 'bold'}}>
+                                                        Rating:
+                                                    </Text>
+                                                    <Rate 
+                                                        disabled 
+                                                        defaultValue={request.feedback.rating} 
+                                                        size="small"
+                                                        style={{ fontSize: '12px' }}
+                                                    />
+                                                </Box>
+                                            )}
+                                            {request.feedback.content && (
+                                                <Text style={{color: '#92400e', fontSize: '12px'}}>
+                                                    {request.feedback.content}
+                                                </Text>
+                                            )}
+                                            {request.feedback.creationDate && (
+                                                <Text style={{color: '#92400e', fontSize: '10px', opacity: 0.7}}>
+                                                    {new Date(request.feedback.creationDate).toLocaleDateString('vi-VN')}
+                                                </Text>
+                                            )}
+                                        </Box>
+                                    ) : (
+                                        <Text style={{color: '#92400e', fontSize: '12px'}}>
+                                            {String(request.feedback)}
+                                        </Text>
+                                    )}
                                 </Box>
                             </Card>
                         )}

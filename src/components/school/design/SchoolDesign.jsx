@@ -16,11 +16,15 @@ import DesignServicesIcon from '@mui/icons-material/DesignServices';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PendingIcon from '@mui/icons-material/Pending';
+import FeedbackIcon from '@mui/icons-material/Feedback';
+import ReportIcon from '@mui/icons-material/Report';
 import { Table, Space } from 'antd';
 import 'antd/dist/reset.css';
+import { enqueueSnackbar } from 'notistack';
 import RequestDetailPopup, { statusTag } from '../popup/RequestDetailPopup';
 import FindingDesignerPopup from '../popup/FindingDesignerPopup.jsx';
 import DesignPaymentPopup from '../popup/DesignPaymentPopup';
+import FeedbackReportPopup from '../popup/FeedbackReportPopup';
 import { useNavigate } from 'react-router-dom';
 import {getSchoolDesignRequests} from "../../../services/DesignService.jsx";
 import { parseID } from "../../../utils/ParseIDUtil.jsx";
@@ -133,6 +137,9 @@ export default function SchoolDesign() {
     const [selectedRequest, setSelectedRequest] = useState(null);
     const [isPaymentModalVisible, setIsPaymentModalVisible] = useState(false);
     const [paymentRequestDetails, setPaymentRequestDetails] = useState(null);
+    const [isFeedbackModalVisible, setIsFeedbackModalVisible] = useState(false);
+    const [isReportModalVisible, setIsReportModalVisible] = useState(false);
+    const [selectedRequestForFeedback, setSelectedRequestForFeedback] = useState(null);
     
     // Memoized filtered data - now includes all requests
     const filteredDesignRequests = useMemo(() => 
@@ -184,6 +191,45 @@ export default function SchoolDesign() {
         setIsPaymentModalVisible(false);
         setPaymentRequestDetails(null);
     }, []);
+
+    const handleOpenFeedback = useCallback((request) => {
+        // Only allow feedback for completed requests
+        if (request.status !== 'completed') {
+            enqueueSnackbar('Feedback is only available for completed requests', { variant: 'warning' });
+            return;
+        }
+        // Only allow feedback once per request
+        if (request.feedback) {
+            enqueueSnackbar('Feedback has already been submitted for this request', { variant: 'warning' });
+            return;
+        }
+        setSelectedRequestForFeedback(request);
+        setIsFeedbackModalVisible(true);
+    }, []);
+
+    const handleOpenReport = useCallback((request) => {
+        // Don't allow report for requests that already have feedback
+        if (request.feedback) {
+            enqueueSnackbar('Report is not available for requests that already have feedback', { variant: 'warning' });
+            return;
+        }
+        setSelectedRequestForFeedback(request);
+        setIsReportModalVisible(true);
+    }, []);
+
+    const handleCloseFeedbackModal = useCallback(() => {
+        setIsFeedbackModalVisible(false);
+        setSelectedRequestForFeedback(null);
+    }, []);
+
+    const handleCloseReportModal = useCallback(() => {
+        setIsReportModalVisible(false);
+        setSelectedRequestForFeedback(null);
+    }, []);
+
+    const handleFeedbackSuccess = useCallback(() => {
+        FetchSchoolDesign(); // Refresh data after successful feedback
+    }, [FetchSchoolDesign]);
 
     // Memoized table columns
     const columns = useMemo(() => [
@@ -262,7 +308,7 @@ export default function SchoolDesign() {
             title: 'Actions',
             key: 'actions',
             align: 'center',
-            width: 150,
+            width: 200,
             fixed: 'right',
             render: (_, record) => (
                 <Space size="middle">
@@ -280,6 +326,52 @@ export default function SchoolDesign() {
                             size="small"
                         >
                             <InfoIcon />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title={
+                        record.status !== 'completed' ? "Feedback only available for completed requests" :
+                        record.feedback ? "Feedback already submitted" :
+                        "Give Feedback"
+                    }>
+                        <IconButton 
+                            onClick={() => handleOpenFeedback(record)}
+                            disabled={record.status !== 'completed' || !!record.feedback}
+                            sx={{
+                                color: (record.status === 'completed' && !record.feedback) ? '#10b981' : '#9ca3af',
+                                '&:hover': {
+                                    backgroundColor: (record.status === 'completed' && !record.feedback) ? '#d1fae5' : 'transparent',
+                                    transform: (record.status === 'completed' && !record.feedback) ? 'scale(1.1)' : 'none'
+                                },
+                                transition: 'all 0.2s ease',
+                                '&:disabled': {
+                                    color: '#9ca3af',
+                                    cursor: 'not-allowed'
+                                }
+                            }}
+                            size="small"
+                        >
+                            <FeedbackIcon />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title={record.feedback ? "Report not available for feedbacked requests" : "Report Issue"}>
+                        <IconButton 
+                            onClick={() => handleOpenReport(record)}
+                            disabled={!!record.feedback}
+                            sx={{
+                                color: record.feedback ? '#9ca3af' : '#ef4444',
+                                '&:hover': {
+                                    backgroundColor: record.feedback ? 'transparent' : '#fee2e2',
+                                    transform: record.feedback ? 'none' : 'scale(1.1)'
+                                },
+                                transition: 'all 0.2s ease',
+                                '&:disabled': {
+                                    color: '#9ca3af',
+                                    cursor: 'not-allowed'
+                                }
+                            }}
+                            size="small"
+                        >
+                            <ReportIcon />
                         </IconButton>
                     </Tooltip>
                 </Space>
@@ -479,6 +571,28 @@ export default function SchoolDesign() {
                     visible={isPaymentModalVisible}
                     onCancel={handleClosePaymentModal}
                     selectedQuotationDetails={paymentRequestDetails}
+                />
+            )}
+
+            {/* FeedbackReportPopup for Feedback */}
+            {isFeedbackModalVisible && selectedRequestForFeedback && (
+                <FeedbackReportPopup
+                    visible={isFeedbackModalVisible}
+                    onCancel={handleCloseFeedbackModal}
+                    type="feedback"
+                    requestData={selectedRequestForFeedback}
+                    onSuccess={handleFeedbackSuccess}
+                />
+            )}
+
+            {/* FeedbackReportPopup for Report */}
+            {isReportModalVisible && selectedRequestForFeedback && (
+                <FeedbackReportPopup
+                    visible={isReportModalVisible}
+                    onCancel={handleCloseReportModal}
+                    type="report"
+                    requestData={selectedRequestForFeedback}
+                    onSuccess={handleFeedbackSuccess}
                 />
             )}
         </Box>

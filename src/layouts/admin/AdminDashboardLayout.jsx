@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import React, {useEffect, useMemo, useState} from "react";
+import {Outlet, useLocation, useNavigate} from "react-router-dom";
 import {
     AppBar, Avatar, Box, CssBaseline, Divider, Drawer, List, ListItem, ListItemButton,
     ListItemIcon, ListItemText, Toolbar, Typography, Badge, Chip, Popover
@@ -17,9 +17,9 @@ import {
     School,
     DesignServices
 } from "@mui/icons-material";
-import { Tag } from "antd";
-import { signout } from "../../services/AccountService.jsx";
-import { enqueueSnackbar } from "notistack";
+import {Tag} from "antd";
+import {signout} from "../../services/AccountService.jsx";
+import {enqueueSnackbar} from "notistack";
 
 const drawerWidth = 280;
 
@@ -44,7 +44,7 @@ export default function AdminDashboardLayout() {
         const response = await signout();
         if (response && response.status === 200) {
             localStorage.clear();
-            enqueueSnackbar(response.data.message, { variant: "success", autoHideDuration: 1000 });
+            enqueueSnackbar(response.data.message, {variant: "success", autoHideDuration: 1000});
             setTimeout(() => (window.location.href = "/home"), 1000);
         }
     };
@@ -65,18 +65,18 @@ export default function AdminDashboardLayout() {
 
     // Render Header Function
     const renderHeader = () => (
-                    <AppBar
-                position="fixed"
-                sx={{
-                    width: "100%",
-                    background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
-                    color: "#FFFFFF",
-                    boxShadow: "0 4px 20px rgba(25, 118, 210, 0.3)",
-                    zIndex: 1200,
-                }}
-            >
-            <Toolbar sx={{ justifyContent: "space-between", py: 1 }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        <AppBar
+            position="fixed"
+            sx={{
+                width: "100%",
+                background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
+                color: "#FFFFFF",
+                boxShadow: "0 4px 20px rgba(25, 118, 210, 0.3)",
+                zIndex: 1200,
+            }}
+        >
+            <Toolbar sx={{justifyContent: "space-between", py: 1}}>
+                <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
                     <Box
                         sx={{
                             display: "flex",
@@ -88,28 +88,28 @@ export default function AdminDashboardLayout() {
                             py: 1,
                         }}
                     >
-                        <Typography variant="h5" fontWeight="800" sx={{ color: "#FFFFFF" }}>
+                        <Typography variant="h5" fontWeight="800" sx={{color: "#FFFFFF"}}>
                             UNISEW
                         </Typography>
                     </Box>
 
-                                            <Tag
-                            color="processing"
-                            style={{
-                                fontSize: "0.9rem",
-                                fontWeight: "600",
-                                padding: "4px 12px",
-                                borderRadius: "20px",
-                                background: "rgba(255, 255, 255, 0.2)",
-                                border: "1px solid rgba(255, 255, 255, 0.3)",
-                                color: "#FFFFFF",
-                            }}
-                        >
-                            ADMIN PANEL
-                        </Tag>
+                    <Tag
+                        color="processing"
+                        style={{
+                            fontSize: "0.9rem",
+                            fontWeight: "600",
+                            padding: "4px 12px",
+                            borderRadius: "20px",
+                            background: "rgba(255, 255, 255, 0.2)",
+                            border: "1px solid rgba(255, 255, 255, 0.3)",
+                            color: "#FFFFFF",
+                        }}
+                    >
+                        ADMIN PANEL
+                    </Tag>
                 </Box>
 
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
                     <Box
                         sx={{
                             display: "flex",
@@ -130,13 +130,13 @@ export default function AdminDashboardLayout() {
                     >
                         <Badge
                             overlap="circular"
-                            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                            anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
                             badgeContent={
-                                <AdminPanelSettings sx={{ fontSize: 16, color: '#1976d2' }} />
+                                <AdminPanelSettings sx={{fontSize: 16, color: '#1976d2'}}/>
                             }
                         >
-                            <Avatar sx={{ width: 32, height: 32, bgcolor: "rgba(255, 255, 255, 0.2)" }}>
-                                <AccountCircle />
+                            <Avatar sx={{width: 32, height: 32, bgcolor: "rgba(255, 255, 255, 0.2)"}}>
+                                <AccountCircle/>
                             </Avatar>
                         </Badge>
                     </Box>
@@ -163,31 +163,31 @@ export default function AdminDashboardLayout() {
                             }
                         }}
                     >
-                        <Box sx={{ p: 2 }}>
-                            <Box sx={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                gap: 2, 
-                                p: 1.5, 
+                        <Box sx={{p: 2}}>
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 2,
+                                p: 1.5,
                                 borderRadius: 1,
                                 mb: 1,
                                 background: 'rgba(102, 126, 234, 0.05)'
                             }}>
-                                <Avatar sx={{ width: 40, height: 40, bgcolor: "rgba(102, 126, 234, 0.2)" }}>
-                                    <AccountCircle />
+                                <Avatar sx={{width: 40, height: 40, bgcolor: "rgba(102, 126, 234, 0.2)"}}>
+                                    <AccountCircle/>
                                 </Avatar>
                                 <Box>
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                                    <Typography variant="subtitle2" sx={{fontWeight: 600, color: 'text.primary'}}>
                                         {userObj?.customer?.name || userObj?.email || "Admin"}
                                     </Typography>
-                                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                    <Typography variant="caption" sx={{color: 'text.secondary'}}>
                                         Administrator
                                     </Typography>
                                 </Box>
                             </Box>
-                            
-                            <Divider sx={{ my: 1 }} />
-                            
+
+                            <Divider sx={{my: 1}}/>
+
                             <Box
                                 sx={{
                                     display: 'flex',
@@ -207,8 +207,8 @@ export default function AdminDashboardLayout() {
                                     handlePopoverClose();
                                 }}
                             >
-                                <Logout sx={{ fontSize: 20, color: '#dc3545' }} />
-                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                <Logout sx={{fontSize: 20, color: '#dc3545'}}/>
+                                <Typography variant="body2" sx={{fontWeight: 500}}>
                                     Logout
                                 </Typography>
                             </Box>
@@ -221,7 +221,7 @@ export default function AdminDashboardLayout() {
 
     // Render Content Function
     const renderContent = () => (
-        <Box sx={{ display: "flex", flexDirection: "row", flexGrow: 1, mt: "8vh", overflowY: "hidden" }}>
+        <Box sx={{display: "flex", flexDirection: "row", flexGrow: 1, mt: "8vh", overflowY: "hidden"}}>
             {/* Sidebar */}
             <Drawer
                 sx={{
@@ -237,126 +237,168 @@ export default function AdminDashboardLayout() {
                         overflowY: "auto",
                         msOverflowStyle: "none",
                         scrollbarWidth: "none",
-                        "&::-webkit-scrollbar": { display: "none" },
+                        "&::-webkit-scrollbar": {display: "none"},
                     },
                 }}
                 variant="permanent"
                 anchor="left"
             >
                 {/* Sidebar Header */}
-                <Box sx={{ p: 3, background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)", color: "white", textAlign: "center" }}>
-                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                <Box sx={{
+                    p: 3,
+                    background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
+                    color: "white",
+                    textAlign: "center"
+                }}>
+                    <Typography variant="h6" sx={{fontWeight: 700, mb: 1}}>
                         Admin Dashboard
                     </Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                    <Typography variant="body2" sx={{opacity: 0.9}}>
                         Manage UniSew System
                     </Typography>
                 </Box>
 
                 {/* Navigation */}
-                <Box sx={{ p: 2 }}>
+                <Box sx={{p: 2}}>
                     {/* System Overview */}
-                    <Typography variant="overline" sx={{ px: 2, pb: 1, color: "#6c757d", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "1px" }}>
+                    <Typography variant="overline" sx={{
+                        px: 2,
+                        pb: 1,
+                        color: "#6c757d",
+                        fontWeight: 700,
+                        fontSize: "0.75rem",
+                        letterSpacing: "1px"
+                    }}>
                         DASHBOARD FEATURES
                     </Typography>
-                    <List sx={{ mb: 3 }}>
+                    <List sx={{mb: 3}}>
                         <ListItem disablePadding>
-                                                            <ListItemButton
-                                    sx={{
-                                        borderRadius: 2,
-                                        mx: 1,
-                                        my: 0.5,
-                                        color: "#495057",
-                                        "&:hover": {
-                                            background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
-                                            color: "#FFFFFF",
-                                            transform: "translateY(-1px)",
-                                        },
-                                        transition: "all 0.3s ease",
-                                    }}
-                                    onClick={() => navigate("/admin/dashboard")}
-                                >
-                                <ListItemIcon sx={{ color: "inherit" }}>
-                                    <Assessment />
+                            <ListItemButton
+                                sx={{
+                                    borderRadius: 2,
+                                    mx: 1,
+                                    my: 0.5,
+                                    color: "#495057",
+                                    "&:hover": {
+                                        background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
+                                        color: "#FFFFFF",
+                                        transform: "translateY(-1px)",
+                                    },
+                                    transition: "all 0.3s ease",
+                                }}
+                                onClick={() => navigate("/admin/dashboard")}
+                            >
+                                <ListItemIcon sx={{color: "inherit"}}>
+                                    <Assessment/>
                                 </ListItemIcon>
-                                <ListItemText primary="Statistics Report" />
+                                <ListItemText primary="Statistics Report"/>
                             </ListItemButton>
                         </ListItem>
 
                         <ListItem disablePadding>
-                                                            <ListItemButton
-                                    sx={{
-                                        borderRadius: 2,
-                                        mx: 1,
-                                        my: 0.5,
-                                        color: "#495057",
-                                        "&:hover": {
-                                            background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
-                                            color: "#FFFFFF",
-                                            transform: "translateY(-1px)",
-                                        },
-                                        transition: "all 0.3s ease",
-                                    }}
-                                    onClick={() => navigate("/admin/transactions")}
-                                >
-                                <ListItemIcon sx={{ color: "inherit" }}>
-                                    <Receipt />
+                            <ListItemButton
+                                sx={{
+                                    borderRadius: 2,
+                                    mx: 1,
+                                    my: 0.5,
+                                    color: "#495057",
+                                    "&:hover": {
+                                        background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
+                                        color: "#FFFFFF",
+                                        transform: "translateY(-1px)",
+                                    },
+                                    transition: "all 0.3s ease",
+                                }}
+                                onClick={() => navigate("/admin/transactions")}
+                            >
+                                <ListItemIcon sx={{color: "inherit"}}>
+                                    <Receipt/>
                                 </ListItemIcon>
-                                <ListItemText primary="Transactions" />
+                                <ListItemText primary="Transactions"/>
+                            </ListItemButton>
+                        </ListItem>
+
+                        <ListItem disablePadding>
+                            <ListItemButton
+                                sx={{
+                                    borderRadius: 2,
+                                    mx: 1,
+                                    my: 0.5,
+                                    color: "#495057",
+                                    "&:hover": {
+                                        background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
+                                        color: "#FFFFFF",
+                                        transform: "translateY(-1px)",
+                                    },
+                                    transition: "all 0.3s ease",
+                                }}
+                                onClick={() => navigate("/admin/reports")}
+                            >
+                                <ListItemIcon sx={{color: "inherit"}}>
+                                    <Assessment/>
+                                </ListItemIcon>
+                                <ListItemText primary="Reports & Feedback"/>
                             </ListItemButton>
                         </ListItem>
                     </List>
 
-                    <Divider sx={{ my: 3, borderColor: "#e9ecef" }} />
+                    <Divider sx={{my: 3, borderColor: "#e9ecef"}}/>
 
                     {/* Account Management */}
-                    <Typography variant="overline" sx={{ px: 2, pb: 1, color: "#6c757d", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "1px" }}>
+                    <Typography variant="overline" sx={{
+                        px: 2,
+                        pb: 1,
+                        color: "#6c757d",
+                        fontWeight: 700,
+                        fontSize: "0.75rem",
+                        letterSpacing: "1px"
+                    }}>
                         ACCOUNT MANAGEMENT
                     </Typography>
-                    <List sx={{ mb: 3 }}>
+                    <List sx={{mb: 3}}>
                         <ListItem disablePadding>
-                                                            <ListItemButton
-                                    sx={{
-                                        borderRadius: 2,
-                                        mx: 1,
-                                        my: 0.5,
-                                        color: "#495057",
-                                        "&:hover": {
-                                            background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
-                                            color: "#FFFFFF",
-                                            transform: "translateY(-1px)",
-                                        },
-                                        transition: "all 0.3s ease",
-                                    }}
-                                    onClick={() => navigate("/admin/accounts")}
-                                >
-                                <ListItemIcon sx={{ color: "inherit" }}>
-                                    <People />
+                            <ListItemButton
+                                sx={{
+                                    borderRadius: 2,
+                                    mx: 1,
+                                    my: 0.5,
+                                    color: "#495057",
+                                    "&:hover": {
+                                        background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
+                                        color: "#FFFFFF",
+                                        transform: "translateY(-1px)",
+                                    },
+                                    transition: "all 0.3s ease",
+                                }}
+                                onClick={() => navigate("/admin/accounts")}
+                            >
+                                <ListItemIcon sx={{color: "inherit"}}>
+                                    <People/>
                                 </ListItemIcon>
-                                <ListItemText primary="System Accounts" />
+                                <ListItemText primary="System Accounts"/>
                             </ListItemButton>
                         </ListItem>
 
                         <ListItem disablePadding>
-                                                            <ListItemButton
-                                    sx={{
-                                        borderRadius: 2,
-                                        mx: 1,
-                                        my: 0.5,
-                                        color: "#495057",
-                                        "&:hover": {
-                                            background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
-                                            color: "#FFFFFF",
-                                            transform: "translateY(-1px)",
-                                        },
-                                        transition: "all 0.3s ease",
-                                    }}
-                                    onClick={() => navigate("/admin/requests")}
-                                >
-                                <ListItemIcon sx={{ color: "inherit" }}>
-                                    <AccountCircle />
+                            <ListItemButton
+                                sx={{
+                                    borderRadius: 2,
+                                    mx: 1,
+                                    my: 0.5,
+                                    color: "#495057",
+                                    "&:hover": {
+                                        background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
+                                        color: "#FFFFFF",
+                                        transform: "translateY(-1px)",
+                                    },
+                                    transition: "all 0.3s ease",
+                                }}
+                                onClick={() => navigate("/admin/requests")}
+                            >
+                                <ListItemIcon sx={{color: "inherit"}}>
+                                    <AccountCircle/>
                                 </ListItemIcon>
-                                <ListItemText primary="Account Requests" />
+                                <ListItemText primary="Account Requests"/>
                             </ListItemButton>
                         </ListItem>
                     </List>
@@ -375,14 +417,14 @@ export default function AdminDashboardLayout() {
                     minHeight: "calc(100vh - 8vh)",
                 }}
             >
-                <Outlet />
+                <Outlet/>
             </Box>
         </Box>
     );
 
     return (
-        <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
-            <CssBaseline />
+        <Box sx={{display: "flex", flexDirection: "column", height: "100vh"}}>
+            <CssBaseline/>
             {renderHeader()}
             {renderContent()}
         </Box>
