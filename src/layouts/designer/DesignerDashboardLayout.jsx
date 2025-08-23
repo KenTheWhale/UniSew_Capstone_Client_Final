@@ -54,7 +54,12 @@ export default function DesignerDashboardLayout() {
     const handleLogout = async () => {
         const response = await signout();
         if (response && response.status === 200) {
-            localStorage.clear();
+            if (localStorage.length > 0){
+                localStorage.clear();
+            }
+            if(sessionStorage.length > 0){
+                sessionStorage.clear()
+            }
             enqueueSnackbar(response.data.message, {variant: "success", autoHideDuration: 1000});
             setTimeout(() => (window.location.href = "/home"), 1000);
         }
@@ -167,6 +172,9 @@ export default function DesignerDashboardLayout() {
                                 <AccountCircle/>
                             </Avatar>
                         </Badge>
+                        <Typography variant="subtitle1" sx={{fontWeight: 600, color: '#FFFFFF'}}>
+                            {userObj?.customer?.name || "Designer"}
+                        </Typography>
                     </Box>
 
                     <Popover

@@ -27,7 +27,7 @@ export const getOrdersByGarment = async () => {
 }
 
 export const getGarmentOrders = async () => {
-    const response = await axiosClient.get("/order/garment")
+    const response = await axiosClient.post("/order/garment")
     return response || null
 }
 
