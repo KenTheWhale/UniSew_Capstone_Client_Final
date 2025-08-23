@@ -258,19 +258,21 @@ export default function GarmentPendingOrders() {
             render: (status) => {
                 const { color, bgColor } = getStatusColor(status);
                 return (
-                    <Chip
-                        icon={getStatusIcon(status)}
-                        label={status.charAt(0).toUpperCase() + status.slice(1)}
+                    <Typography
+                        variant="body2"
                         sx={{
                             backgroundColor: bgColor,
                             color: color,
                             fontWeight: 600,
-                            '& .MuiChip-icon': {
-                                color: color
-                            }
+                            padding: '4px 12px',
+                            borderRadius: '16px',
+                            display: 'inline-block',
+                            fontSize: '0.8rem',
+                            textTransform: 'capitalize'
                         }}
-                        size="small"
-                    />
+                    >
+                        {status}
+                    </Typography>
                 );
             },
         },

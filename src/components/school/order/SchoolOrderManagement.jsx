@@ -24,14 +24,52 @@ import {
     Info as InfoIcon,
     Refresh as RefreshIcon
 } from '@mui/icons-material';
-import { Table, Space, Empty } from 'antd';
+import { Table, Space, Empty, Tag } from 'antd';
 import 'antd/dist/reset.css';
 import { useNavigate } from 'react-router-dom';
+import {
+    CheckCircleOutlined,
+    ClockCircleOutlined,
+    CloseCircleOutlined,
+    SyncOutlined
+} from '@ant-design/icons';
 import { getOrdersBySchool, cancelOrder } from '../../../services/OrderService';
 import { parseID } from '../../../utils/ParseIDUtil';
 import OrderDetailDialog from './dialog/OrderDetailDialog.jsx';
 import QuotationViewer from './dialog/QuotationViewer.jsx';
 import { useSnackbar } from 'notistack';
+
+// Status Tag Component
+const statusTag = (status) => {
+    let color;
+    let icon = null;
+    switch (status) {
+        case 'pending':
+            color = 'processing';
+            icon = <ClockCircleOutlined/>;
+            break;
+        case 'processing':
+            color = 'purple';
+            icon = <SyncOutlined/>;
+            break;
+        case 'delivering':
+            color = 'blue';
+            icon = <SyncOutlined/>;
+            break;
+        case 'completed':
+            color = 'success';
+            icon = <CheckCircleOutlined/>;
+            break;
+        case 'cancelled':
+            color = 'red';
+            icon = <CloseCircleOutlined/>;
+            break;
+        default:
+            color = 'default';
+            break;
+    }
+    return <Tag style={{margin: 0}} color={color}>{icon} {status}</Tag>;
+};
 
 // Loading State Component
 const LoadingState = React.memo(() => (
@@ -288,6 +326,8 @@ export default function SchoolOrderList() {
             dataIndex: 'id',
             key: 'id',
             align: 'center',
+            sorter: (a, b) => a.id - b.id,
+            defaultSortOrder: 'descend',
             width: 120,
             fixed: 'left',
             render: (text) => (
@@ -302,24 +342,9 @@ export default function SchoolOrderList() {
             key: 'status',
             align: 'center',
             width: 140,
-            render: (status) => {
-                const { color, bgColor } = getStatusColor(status);
-                return (
-                    <Chip
-                        icon={getStatusIcon(status)}
-                        label={status.charAt(0).toUpperCase() + status.slice(1)}
-                        sx={{
-                            backgroundColor: bgColor,
-                            color: color,
-                            fontWeight: 600,
-                            '& .MuiChip-icon': {
-                                color: color
-                            }
-                        }}
-                        size="small"
-                    />
-                );
-            },
+            filters: [...new Set(orders.map(order => order.status))].map(status => ({ text: status, value: status })),
+            onFilter: (value, record) => record.status.indexOf(value) === 0,
+            render: (status) => statusTag(status),
         },
 
         {
@@ -328,6 +353,7 @@ export default function SchoolOrderList() {
             key: 'orderDate',
             align: 'center',
             width: 120,
+            sorter: (a, b) => new Date(a.orderDate) - new Date(b.orderDate),
             render: (text) => (
                 <Typography variant="body2" sx={{ color: '#64748b' }}>
                     {formatDate(text)}
@@ -340,6 +366,7 @@ export default function SchoolOrderList() {
             key: 'deadline',
             align: 'center',
             width: 120,
+            sorter: (a, b) => new Date(a.deadline) - new Date(b.deadline),
             render: (text) => (
                 <Typography variant="body2" sx={{ color: '#64748b' }}>
                     {formatDate(text)}
@@ -351,6 +378,13 @@ export default function SchoolOrderList() {
             key: 'totalUniforms',
             align: 'center',
             width: 120,
+            sorter: (a, b) => {
+                const totalItemsA = a.orderDetails?.reduce((sum, uniform) => sum + uniform.quantity, 0) || 0;
+                const totalUniformsA = Math.ceil(totalItemsA / 2);
+                const totalItemsB = b.orderDetails?.reduce((sum, uniform) => sum + uniform.quantity, 0) || 0;
+                const totalUniformsB = Math.ceil(totalItemsB / 2);
+                return totalUniformsA - totalUniformsB;
+            },
             render: (_, record) => {
                 const totalItems = record.orderDetails?.reduce((sum, uniform) => sum + uniform.quantity, 0) || 0;
                 const totalUniforms = Math.ceil(totalItems / 2);
