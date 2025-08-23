@@ -26,7 +26,7 @@ import RequestDetailPopup, { statusTag } from './dialog/RequestDetailPopup.jsx';
 import FindingDesignerPopup from './dialog/FindingDesignerPopup.jsx';
 import DesignPaymentPopup from './dialog/DesignPaymentPopup.jsx';
 import { enqueueSnackbar } from 'notistack';
-import FeedbackReportPopup from '../popup/FeedbackReportPopup.jsx';
+import FeedbackReportPopup from './dialog/FeedbackReportPopup.jsx';
 import { useNavigate } from 'react-router-dom';
 import {getSchoolDesignRequests} from "../../../services/DesignService.jsx";
 import { parseID } from "../../../utils/ParseIDUtil.jsx";
