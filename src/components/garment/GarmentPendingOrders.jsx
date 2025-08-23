@@ -226,7 +226,9 @@ export default function GarmentPendingOrders() {
 
     const getDaysUntilDeadline = (deadline) => {
         const deadlineDate = new Date(deadline);
+        deadlineDate.setHours(0, 0, 0, 0); // Set to midnight
         const today = new Date();
+        today.setHours(0, 0, 0, 0); // Set to midnight
         const daysUntilDeadline = Math.ceil((deadlineDate - today) / (1000 * 60 * 60 * 24));
         return daysUntilDeadline;
     };
@@ -282,11 +284,30 @@ export default function GarmentPendingOrders() {
             key: 'orderDate',
             align: 'center',
             width: 120,
-            render: (text) => (
-                <Typography variant="body2" sx={{ color: '#64748b' }}>
-                    {formatDate(text)}
-                </Typography>
-            ),
+            render: (text) => {
+                const orderDate = new Date(text);
+                orderDate.setHours(0, 0, 0, 0); // Set to midnight
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // Set to midnight
+                const daysSinceOrder = Math.ceil((today - orderDate) / (1000 * 60 * 60 * 24));
+                
+                return (
+                    <Box sx={{ textAlign: 'center' }}>
+                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                            {formatDate(text)}
+                        </Typography>
+                        <Typography 
+                            variant="caption" 
+                            sx={{ 
+                                color: '#3f51b5',
+                                fontWeight: 500
+                            }}
+                        >
+                            {daysSinceOrder === 0 ? 'Today' : daysSinceOrder === 1 ? '1 day ago' : `${daysSinceOrder} days ago`}
+                        </Typography>
+                    </Box>
+                );
+            },
         },
         {
             title: 'Deadline',
@@ -470,7 +491,7 @@ export default function GarmentPendingOrders() {
                             Pending Orders
                         </Typography>
                         <Chip
-                            label={`${pendingOrders.length} Pending Orders`}
+                            label={`${pendingOrders.length} Total`}
                             sx={{
                                 backgroundColor: "rgba(255, 152, 0, 0.1)",
                                 color: "#ff9800",
