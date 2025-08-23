@@ -1,34 +1,30 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Button,
-    TextField,
-    Rating,
     Box,
-    Typography,
+    Button,
+    Chip,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    FormHelperText,
+    Grid,
     IconButton,
     Paper,
-    Chip,
-    Grid,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    FormHelperText
+    Rating,
+    TextField,
+    Typography
 } from '@mui/material';
 import {
     Close as CloseIcon,
-    Upload as UploadIcon,
     Feedback as FeedbackIcon,
-    Report as ReportIcon
+    Report as ReportIcon,
+    Upload as UploadIcon
 } from '@mui/icons-material';
-import { enqueueSnackbar } from 'notistack';
-import { giveFeedback } from '../../../services/FeedbackService';
-import { uploadCloudinary } from '../../../services/UploadImageService';
-import DisplayImage from '../../ui/DisplayImage';
+import {enqueueSnackbar} from 'notistack';
+import {giveFeedback} from '../../../../services/FeedbackService.jsx';
+import {uploadCloudinary} from '../../../../services/UploadImageService';
+import DisplayImage from '../../../ui/DisplayImage';
 
 export default function FeedbackReportPopup({ 
     visible, 
@@ -119,7 +115,7 @@ export default function FeedbackReportPopup({
                 orderId: orderData?.id || null,
                 rating: rating,
                 content: content.trim(),
-                isReport: isReport,
+                report: isReport,
                 imageUrl: imageUrl
             };
 

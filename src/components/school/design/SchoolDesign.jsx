@@ -26,7 +26,7 @@ import RequestDetailPopup, { statusTag } from './dialog/RequestDetailPopup.jsx';
 import FindingDesignerPopup from './dialog/FindingDesignerPopup.jsx';
 import DesignPaymentPopup from './dialog/DesignPaymentPopup.jsx';
 import { enqueueSnackbar } from 'notistack';
-import FeedbackReportPopup from '../popup/FeedbackReportPopup';
+import FeedbackReportPopup from '../popup/FeedbackReportPopup.jsx';
 import { useNavigate } from 'react-router-dom';
 import {getSchoolDesignRequests} from "../../../services/DesignService.jsx";
 import { parseID } from "../../../utils/ParseIDUtil.jsx";
@@ -300,6 +300,11 @@ export default function SchoolDesign() {
     }, []);
 
     const handleOpenReport = useCallback((request) => {
+        // Don't allow report for pending requests
+        if (request.status === 'pending') {
+            enqueueSnackbar('Report is not available for pending requests', { variant: 'warning' });
+            return;
+        }
         // Don't allow report for requests that already have feedback
         if (request.feedback) {
             enqueueSnackbar('Report is not available for requests that already have feedback', { variant: 'warning' });
@@ -445,15 +450,19 @@ export default function SchoolDesign() {
                             <FeedbackIcon />
                         </IconButton>
                     </Tooltip>
-                    <Tooltip title={record.feedback ? "Report not available for feedbacked requests" : "Report Issue"}>
+                    <Tooltip title={
+                        record.status === 'pending' ? "Report not available for pending requests" :
+                        record.feedback ? "Report not available for feedbacked requests" :
+                        "Report Issue"
+                    }>
                         <IconButton
                             onClick={() => handleOpenReport(record)}
-                            disabled={!!record.feedback}
+                            disabled={record.status === 'pending' || !!record.feedback}
                             sx={{
-                                color: record.feedback ? '#9ca3af' : '#ef4444',
+                                color: (record.status !== 'pending' && !record.feedback) ? '#ef4444' : '#9ca3af',
                                 '&:hover': {
-                                    backgroundColor: record.feedback ? 'transparent' : '#fee2e2',
-                                    transform: record.feedback ? 'none' : 'scale(1.1)'
+                                    backgroundColor: (record.status !== 'pending' && !record.feedback) ? '#fee2e2' : 'transparent',
+                                    transform: (record.status !== 'pending' && !record.feedback) ? 'scale(1.1)' : 'none'
                                 },
                                 transition: 'all 0.2s ease',
                                 '&:disabled': {

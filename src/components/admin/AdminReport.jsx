@@ -15,7 +15,8 @@ import {
     IconButton,
     Avatar,
     Rating,
-    Divider
+    Divider,
+    TextField
 } from '@mui/material';
 import {
     Assessment as AssessmentIcon,
@@ -39,6 +40,10 @@ export default function AdminReport() {
     const [selectedReport, setSelectedReport] = useState(null);
     const [detailDialogOpen, setDetailDialogOpen] = useState(false);
     const [approving, setApproving] = useState(false);
+    const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
+    const [approvalAction, setApprovalAction] = useState(null); // 'approve' or 'reject'
+    const [messageForSchool, setMessageForSchool] = useState('');
+    const [messageForPartner, setMessageForPartner] = useState('');
 
     useEffect(() => {
         fetchReports();
@@ -60,6 +65,9 @@ export default function AdminReport() {
     };
 
     const handleViewDetail = (report) => {
+        console.log('Selected report:', report);
+        console.log('isReport value:', report.isReport);
+        console.log('images:', report.images);
         setSelectedReport(report);
         setDetailDialogOpen(true);
     };
@@ -69,53 +77,47 @@ export default function AdminReport() {
         setSelectedReport(null);
     };
 
-    const handleApproveReport = async () => {
-        if (!selectedReport) return;
-
-        try {
-            setApproving(true);
-            const payload = {
-                reportId: selectedReport.id,
-                approved: true
-            };
-
-            const response = await approveReport(payload);
-            if (response && response.status === 200) {
-                enqueueSnackbar('Report approved successfully', { variant: 'success' });
-                handleCloseDetail();
-                fetchReports(); // Refresh data
-            } else {
-                enqueueSnackbar('Failed to approve report', { variant: 'error' });
-            }
-        } catch (error) {
-            console.error('Error approving report:', error);
-            enqueueSnackbar('Failed to approve report', { variant: 'error' });
-        } finally {
-            setApproving(false);
-        }
+    const handleOpenApprovalDialog = (action) => {
+        setApprovalAction(action);
+        setMessageForSchool('');
+        setMessageForPartner('');
+        setApprovalDialogOpen(true);
     };
 
-    const handleRejectReport = async () => {
+    const handleCloseApprovalDialog = () => {
+        setApprovalDialogOpen(false);
+        setApprovalAction(null);
+        setMessageForSchool('');
+        setMessageForPartner('');
+    };
+
+    const handleSubmitApproval = async () => {
         if (!selectedReport) return;
 
         try {
             setApproving(true);
             const payload = {
-                reportId: selectedReport.id,
-                approved: false
+                feedbackId: selectedReport.id,
+                messageForSchool: messageForSchool,
+                messageForPartner: messageForPartner,
+                isApproved: approvalAction === 'approve'
             };
+
+            console.log('Approval payload:', payload);
 
             const response = await approveReport(payload);
             if (response && response.status === 200) {
-                enqueueSnackbar('Report rejected successfully', { variant: 'success' });
+                const actionText = approvalAction === 'approve' ? 'approved' : 'rejected';
+                enqueueSnackbar(`Report ${actionText} successfully`, { variant: 'success' });
+                handleCloseApprovalDialog();
                 handleCloseDetail();
                 fetchReports(); // Refresh data
             } else {
-                enqueueSnackbar('Failed to reject report', { variant: 'error' });
+                enqueueSnackbar(`Failed to ${approvalAction} report`, { variant: 'error' });
             }
         } catch (error) {
-            console.error('Error rejecting report:', error);
-            enqueueSnackbar('Failed to reject report', { variant: 'error' });
+            console.error(`Error ${approvalAction}ing report:`, error);
+            enqueueSnackbar(`Failed to ${approvalAction} report`, { variant: 'error' });
         } finally {
             setApproving(false);
         }
@@ -124,10 +126,13 @@ export default function AdminReport() {
     const getStatusColor = (status) => {
         switch (status) {
             case 'pending':
+            case 'FEEDBACK_REPORT_UNDER_REVIEW':
                 return '#f59e0b';
             case 'approved':
+            case 'FEEDBACK_REPORT_APPROVED':
                 return '#10b981';
             case 'rejected':
+            case 'FEEDBACK_REPORT_REJECTED':
                 return '#ef4444';
             default:
                 return '#6b7280';
@@ -137,10 +142,13 @@ export default function AdminReport() {
     const getStatusBgColor = (status) => {
         switch (status) {
             case 'pending':
+            case 'FEEDBACK_REPORT_UNDER_REVIEW':
                 return '#fef3c7';
             case 'approved':
+            case 'FEEDBACK_REPORT_APPROVED':
                 return '#d1fae5';
             case 'rejected':
+            case 'FEEDBACK_REPORT_REJECTED':
                 return '#fee2e2';
             default:
                 return '#f3f4f6';
@@ -153,9 +161,9 @@ export default function AdminReport() {
 
     const stats = {
         total: reports.length,
-        pending: reports.filter(r => r.status === 'pending').length,
-        approved: reports.filter(r => r.status === 'approved').length,
-        rejected: reports.filter(r => r.status === 'rejected').length
+        pending: reports.filter(r => r.status === 'pending' || r.status === 'FEEDBACK_REPORT_UNDER_REVIEW').length,
+        approved: reports.filter(r => r.status === 'approved' || r.status === 'FEEDBACK_REPORT_APPROVED').length,
+        rejected: reports.filter(r => r.status === 'rejected' || r.status === 'FEEDBACK_REPORT_REJECTED').length
     };
 
     if (loading) {
@@ -419,6 +427,11 @@ export default function AdminReport() {
                                                             {report.requestId ? `Design Request #${report.requestId}` : 
                                                              report.orderId ? `Order #${report.orderId}` : 'Unknown Item'}
                                                         </Typography>
+                                                        {report.sender && (
+                                                            <Typography variant="body2" sx={{ color: '#64748b', fontSize: '0.8rem' }}>
+                                                                From: {report.sender.name} ({report.sender.type})
+                                                            </Typography>
+                                                        )}
                                                     </Box>
                                                 </Box>
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -466,6 +479,23 @@ export default function AdminReport() {
                                                                 Rating:
                                                             </Typography>
                                                             <Rating value={report.rating} readOnly size="small" />
+                                                        </Box>
+                                                    )}
+                                                    {report.images && report.images.length > 0 && (
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                            <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                                                Images:
+                                                            </Typography>
+                                                            <Chip 
+                                                                label={`${report.images.length} image${report.images.length > 1 ? 's' : ''}`}
+                                                                size="small"
+                                                                sx={{
+                                                                    backgroundColor: '#e0e7ff',
+                                                                    color: '#3730a3',
+                                                                    fontWeight: 'bold',
+                                                                    fontSize: '0.7rem'
+                                                                }}
+                                                            />
                                                         </Box>
                                                     )}
                                                     <Typography variant="body2" sx={{ color: '#64748b' }}>
@@ -519,7 +549,7 @@ export default function AdminReport() {
                 <DialogContent sx={{ p: 4, pb: 2 }}>
                     {selectedReport && (
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                            {/* Report Info */}
+                                                        {/* Report Info */}
                             <Paper elevation={0} sx={{ 
                                 p: 3, 
                                 backgroundColor: '#f8fafc',
@@ -576,8 +606,108 @@ export default function AdminReport() {
                                             </Typography>
                                         </Box>
                                     </Grid>
+                                    {selectedReport.images && selectedReport.images.length > 0 && (
+                                        <Grid item xs={12} sm={6}>
+                                            <Box>
+                                                <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                                    {selectedReport.isReport ? 'Evidence Images' : 'Attached Images'}
+                                                </Typography>
+                                                <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                                    {selectedReport.images.length} image{selectedReport.images.length > 1 ? 's' : ''}
+                                                </Typography>
+                                            </Box>
+                                        </Grid>
+                                    )}
                                 </Grid>
                             </Paper>
+
+                            {/* User Information */}
+                            {(selectedReport.sender || selectedReport.receiver) && (
+                                <Paper elevation={0} sx={{ 
+                                    p: 3, 
+                                    backgroundColor: '#f8fafc',
+                                    borderRadius: 2,
+                                    border: '1px solid #e2e8f0'
+                                }}>
+                                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1e293b' }}>
+                                        User Information
+                                    </Typography>
+                                    <Grid container spacing={3}>
+                                        {selectedReport.sender && (
+                                            <Grid item xs={12} sm={6}>
+                                                <Box>
+                                                    <Typography variant="body2" sx={{ color: '#64748b', mb: 1 }}>
+                                                        Sender
+                                                    </Typography>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                        <Avatar 
+                                                            src={selectedReport.sender.avatar} 
+                                                            sx={{ width: 40, height: 40 }}
+                                                        >
+                                                            {selectedReport.sender.name.charAt(0)}
+                                                        </Avatar>
+                                                        <Box>
+                                                            <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                                                {selectedReport.sender.name}
+                                                            </Typography>
+                                                            <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                                                {selectedReport.sender.email}
+                                                            </Typography>
+                                                            <Chip 
+                                                                label={selectedReport.sender.type}
+                                                                size="small"
+                                                                sx={{
+                                                                    backgroundColor: '#e0e7ff',
+                                                                    color: '#3730a3',
+                                                                    fontWeight: 'bold',
+                                                                    fontSize: '0.7rem',
+                                                                    mt: 0.5
+                                                                }}
+                                                            />
+                                                        </Box>
+                                                    </Box>
+                                                </Box>
+                                            </Grid>
+                                        )}
+                                        {selectedReport.receiver && (
+                                            <Grid item xs={12} sm={6}>
+                                                <Box>
+                                                    <Typography variant="body2" sx={{ color: '#64748b', mb: 1 }}>
+                                                        Receiver
+                                                    </Typography>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                        <Avatar 
+                                                            src={selectedReport.receiver.avatar} 
+                                                            sx={{ width: 40, height: 40 }}
+                                                        >
+                                                            {selectedReport.receiver.name.charAt(0)}
+                                                        </Avatar>
+                                                        <Box>
+                                                            <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                                                {selectedReport.receiver.name}
+                                                            </Typography>
+                                                            <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                                                {selectedReport.receiver.email}
+                                                            </Typography>
+                                                            <Chip 
+                                                                label={selectedReport.receiver.type}
+                                                                size="small"
+                                                                sx={{
+                                                                    backgroundColor: '#e0e7ff',
+                                                                    color: '#3730a3',
+                                                                    fontWeight: 'bold',
+                                                                    fontSize: '0.7rem',
+                                                                    mt: 0.5
+                                                                }}
+                                                            />
+                                                        </Box>
+                                                    </Box>
+                                                </Box>
+                                            </Grid>
+                                        )}
+                                    </Grid>
+                                </Paper>
+                            )}
 
                             {/* Content */}
                             <Paper elevation={0} sx={{ 
@@ -615,8 +745,60 @@ export default function AdminReport() {
                                 </Paper>
                             )}
 
-                            {/* Image (for reports) */}
-                            {selectedReport.isReport && selectedReport.imageUrl && (
+                            {/* Images (for both reports and feedback) */}
+                            {selectedReport.images && selectedReport.images.length > 0 && (
+                                <Paper elevation={0} sx={{ 
+                                    p: 3, 
+                                    backgroundColor: '#f8fafc',
+                                    borderRadius: 2,
+                                    border: '1px solid #e2e8f0'
+                                }}>
+                                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1e293b' }}>
+                                        {selectedReport.isReport ? 'Evidence Images' : 'Attached Images'} ({selectedReport.images.length})
+                                    </Typography>
+                                    <Grid container spacing={2}>
+                                        {selectedReport.images.map((image, index) => (
+                                            <Grid item xs={12} sm={6} md={4} key={image.id}>
+                                                <Box sx={{
+                                                    width: '100%',
+                                                    height: 200,
+                                                    borderRadius: 2,
+                                                    overflow: 'hidden',
+                                                    border: '2px solid #e2e8f0',
+                                                    position: 'relative'
+                                                }}>
+                                                    <DisplayImage
+                                                        imageUrl={image.url}
+                                                        alt={`Evidence ${index + 1}`}
+                                                        width="100%"
+                                                        height="200px"
+                                                    />
+                                                    <Box sx={{
+                                                        position: 'absolute',
+                                                        top: 8,
+                                                        right: 8,
+                                                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                                                        color: 'white',
+                                                        borderRadius: '50%',
+                                                        width: 24,
+                                                        height: 24,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        fontSize: '12px',
+                                                        fontWeight: 'bold'
+                                                    }}>
+                                                        {index + 1}
+                                                    </Box>
+                                                </Box>
+                                            </Grid>
+                                        ))}
+                                    </Grid>
+                                </Paper>
+                            )}
+
+                            {/* Legacy imageUrl support (for backward compatibility) */}
+                            {selectedReport.isReport && !selectedReport.images && selectedReport.imageUrl && (
                                 <Paper elevation={0} sx={{ 
                                     p: 3, 
                                     backgroundColor: '#f8fafc',
@@ -660,10 +842,10 @@ export default function AdminReport() {
                     >
                         Close
                     </Button>
-                    {selectedReport?.status === 'pending' && (
+                    {(selectedReport?.status === 'pending' || selectedReport?.status === 'FEEDBACK_REPORT_UNDER_REVIEW') && (
                         <>
                             <Button
-                                onClick={handleRejectReport}
+                                onClick={() => handleOpenApprovalDialog('reject')}
                                 disabled={approving}
                                 variant="outlined"
                                 sx={{
@@ -678,7 +860,7 @@ export default function AdminReport() {
                                 Reject
                             </Button>
                             <Button
-                                onClick={handleApproveReport}
+                                onClick={() => handleOpenApprovalDialog('approve')}
                                 disabled={approving}
                                 variant="contained"
                                 sx={{
@@ -693,10 +875,192 @@ export default function AdminReport() {
                                     }
                                 }}
                             >
-                                {approving ? 'Processing...' : 'Approve'}
+                                Approve
                             </Button>
                         </>
                     )}
+                </DialogActions>
+            </Dialog>
+
+            {/* Approval Dialog */}
+            <Dialog
+                open={approvalDialogOpen}
+                onClose={handleCloseApprovalDialog}
+                maxWidth="md"
+                fullWidth
+                PaperProps={{
+                    sx: { borderRadius: 3 }
+                }}
+            >
+                <DialogTitle sx={{ 
+                    background: approvalAction === 'approve' 
+                        ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                        : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                    color: 'white',
+                    position: 'relative'
+                }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        {approvalAction === 'approve' ? <CheckCircleIcon /> : <WarningIcon />}
+                        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                            {approvalAction === 'approve' ? 'Approve' : 'Reject'} Report
+                        </Typography>
+                    </Box>
+                    <IconButton
+                        onClick={handleCloseApprovalDialog}
+                        sx={{
+                            position: 'absolute',
+                            right: 8,
+                            top: 8,
+                            color: 'white'
+                        }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+                </DialogTitle>
+
+                <DialogContent sx={{ p: 4, pb: 2 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        {/* Report Summary */}
+                        <Paper elevation={0} sx={{ 
+                            p: 3, 
+                            backgroundColor: '#f8fafc',
+                            borderRadius: 2,
+                            border: '1px solid #e2e8f0'
+                        }}>
+                            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1e293b' }}>
+                                Report Summary
+                            </Typography>
+                            <Grid container spacing={2}>
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                        Report ID
+                                    </Typography>
+                                    <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                        #{selectedReport?.id}
+                                    </Typography>
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                        Type
+                                    </Typography>
+                                    <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                        {selectedReport?.isReport ? 'Report' : 'Feedback'}
+                                    </Typography>
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                        Content
+                                    </Typography>
+                                    <Typography variant="body1" sx={{ color: '#1e293b', fontStyle: 'italic' }}>
+                                        "{selectedReport?.content}"
+                                    </Typography>
+                                </Grid>
+                            </Grid>
+                        </Paper>
+
+                        {/* Messages */}
+                        <Paper elevation={0} sx={{ 
+                            p: 3, 
+                            backgroundColor: '#f8fafc',
+                            borderRadius: 2,
+                            border: '1px solid #e2e8f0'
+                        }}>
+                            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: '#1e293b' }}>
+                                Response Messages
+                            </Typography>
+                            <Grid container spacing={3}>
+                                <Grid item xs={12} md={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Message for School"
+                                        multiline
+                                        rows={4}
+                                        value={messageForSchool}
+                                        onChange={(e) => setMessageForSchool(e.target.value)}
+                                        placeholder="Enter your message for the school..."
+                                        sx={{
+                                            '& .MuiOutlinedInput-root': {
+                                                '& fieldset': {
+                                                    borderColor: '#d1d5db',
+                                                },
+                                                '&:hover fieldset': {
+                                                    borderColor: '#9ca3af',
+                                                },
+                                                '&.Mui-focused fieldset': {
+                                                    borderColor: '#3b82f6',
+                                                },
+                                            },
+                                        }}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} md={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Message for Partner"
+                                        multiline
+                                        rows={4}
+                                        value={messageForPartner}
+                                        onChange={(e) => setMessageForPartner(e.target.value)}
+                                        placeholder="Enter your message for the partner..."
+                                        sx={{
+                                            '& .MuiOutlinedInput-root': {
+                                                '& fieldset': {
+                                                    borderColor: '#d1d5db',
+                                                },
+                                                '&:hover fieldset': {
+                                                    borderColor: '#9ca3af',
+                                                },
+                                                '&.Mui-focused fieldset': {
+                                                    borderColor: '#3b82f6',
+                                                },
+                                            },
+                                        }}
+                                    />
+                                </Grid>
+                            </Grid>
+                            <Typography variant="body2" sx={{ color: '#64748b', mt: 2, fontStyle: 'italic' }}>
+                                These messages will be sent to the respective parties when you {approvalAction} this report.
+                            </Typography>
+                        </Paper>
+                    </Box>
+                </DialogContent>
+
+                <DialogActions sx={{ p: 3, pt: 0 }}>
+                    <Button
+                        onClick={handleCloseApprovalDialog}
+                        sx={{
+                            color: '#64748b',
+                            borderColor: '#d1d5db',
+                            '&:hover': {
+                                borderColor: '#9ca3af',
+                                backgroundColor: '#f9fafb'
+                            }
+                        }}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={handleSubmitApproval}
+                        disabled={approving}
+                        variant="contained"
+                        sx={{
+                            background: approvalAction === 'approve' 
+                                ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                                : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                            color: 'white',
+                            fontWeight: 'bold',
+                            '&:hover': {
+                                background: approvalAction === 'approve'
+                                    ? 'linear-gradient(135deg, #059669 0%, #047857 100%)'
+                                    : 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)'
+                            },
+                            '&:disabled': {
+                                background: '#9ca3af'
+                            }
+                        }}
+                    >
+                        {approving ? 'Processing...' : `${approvalAction === 'approve' ? 'Approve' : 'Reject'} Report`}
+                    </Button>
                 </DialogActions>
             </Dialog>
         </Box>
