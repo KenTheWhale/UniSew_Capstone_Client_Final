@@ -1,8 +1,6 @@
 import axiosClient from "../configs/APIConfig.jsx";
 
 export const signout = async () => {
-    localStorage.clear();
-    sessionStorage.clear();
     const response = await axiosClient.post("/account/logout");
     return response || null
 }

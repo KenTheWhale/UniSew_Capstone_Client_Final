@@ -23,8 +23,8 @@ import {
     Cancel as CancelIcon,
     DesignServices as DesignServicesIcon
 } from '@mui/icons-material';
-import { parseID } from '../../../utils/ParseIDUtil';
-import DisplayImage from '../../ui/DisplayImage';
+import { parseID } from '../../../../utils/ParseIDUtil.jsx';
+import DisplayImage from '../../../ui/DisplayImage.jsx';
 
 export default function OrderDetailDialog({ open, onClose, order }) {
     if (!order) return null;

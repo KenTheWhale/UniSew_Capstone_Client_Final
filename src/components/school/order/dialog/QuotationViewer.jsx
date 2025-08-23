@@ -36,10 +36,10 @@ import {
     Visibility as ViewIcon
 } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
-import { viewQuotation, approveQuotation } from '../../../services/OrderService.jsx';
-import { getPaymentUrl } from '../../../services/PaymentService.jsx';
-import { serviceFee } from '../../../configs/FixedVariables.jsx';
-import QuotationSummaryPopup from '../popup/QuotationSummaryPopup.jsx';
+import { viewQuotation, approveQuotation } from '../../../../services/OrderService.jsx';
+import { getPaymentUrl } from '../../../../services/PaymentService.jsx';
+import { serviceFee } from '../../../../configs/FixedVariables.jsx';
+import QuotationSummaryPopup from '../../design/dialog/QuotationSummaryPopup.jsx';
 
 // Status chip component for quotations
 const QuotationStatusChip = ({ status }) => {

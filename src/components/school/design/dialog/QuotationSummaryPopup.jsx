@@ -22,7 +22,7 @@ import {
 } from '@mui/icons-material';
 import { CircularProgress } from '@mui/material';
 import dayjs from 'dayjs';
-import { serviceFee } from '../../../configs/FixedVariables';
+import { serviceFee } from '../../../../configs/FixedVariables.jsx';
 
 export default function QuotationSummaryPopup({ 
     visible, 

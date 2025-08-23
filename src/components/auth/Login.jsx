@@ -6,55 +6,73 @@ import {enqueueSnackbar} from "notistack";
 import axios from "axios";
 import {getCookie} from "../../utils/CookieUtil.jsx";
 import {jwtDecode} from "jwt-decode";
+import {useState} from "react";
 
 export default function Login() {
-    async function HandleLogin(userInfo) {
-        const loginResponse = await signin(userInfo.data.email, userInfo.data.name, userInfo.data.picture);
-        if (loginResponse && loginResponse.status === 200) {
-            localStorage.setItem('user', JSON.stringify(loginResponse.data.body));
-            const access = getCookie('access');
-            const role = jwtDecode(access)?.role
-            enqueueSnackbar(loginResponse.data.message, {variant: 'success', autoHideDuration: 1000});
-            setTimeout(() => {
-                switch (role) {
-                    case 'admin':
-                        window.location.href = '/admin/dashboard';
-                        break;
-                    case 'school':
-                        window.location.href = '/home';
-                        break;
-                    case 'designer':
-                        window.location.href = '/designer/requests';
-                        break;
-                    case 'garment':
-                        window.location.href = '/garment/orders';
-                        break;
-                    default:
-                        window.location.href = '/home';
-                        break;
-                }
-            }, 1000)
+    const [isLoading, setIsLoading] = useState(false);
 
+    async function HandleLogin(userInfo) {
+        setIsLoading(true);
+        try {
+            const loginResponse = await signin(userInfo.data.email, userInfo.data.name, userInfo.data.picture);
+            if (loginResponse && loginResponse.status === 200) {
+                localStorage.setItem('user', JSON.stringify(loginResponse.data.body));
+                const access = getCookie('access');
+                const role = jwtDecode(access)?.role
+                enqueueSnackbar(loginResponse.data.message, {variant: 'success', autoHideDuration: 1000});
+                setTimeout(() => {
+                    switch (role) {
+                        case 'admin':
+                            window.location.href = '/admin/dashboard';
+                            break;
+                        case 'school':
+                            window.location.href = '/home';
+                            break;
+                        case 'designer':
+                            window.location.href = '/designer/requests';
+                            break;
+                        case 'garment':
+                            window.location.href = '/garment/orders';
+                            break;
+                        default:
+                            window.location.href = '/home';
+                            break;
+                    }
+                }, 1000)
+            }
+        } catch (error) {
+            console.error("Login error:", error);
+            enqueueSnackbar("Login failed", {variant: "error"});
+        } finally {
+            setIsLoading(false);
         }
     }
 
     async function HandleSuccess(token) {
-        const userInfo = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo',
-            {
-                headers: {
-                    Authorization: `Bearer ${token.access_token}`,
+        setIsLoading(true);
+        try {
+            const userInfo = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo',
+                {
+                    headers: {
+                        Authorization: `Bearer ${token.access_token}`,
+                    }
                 }
-            }
-        );
+            );
 
-        if (userInfo) {
-            HandleLogin(userInfo)
+            if (userInfo) {
+                await HandleLogin(userInfo);
+            }
+        } catch (error) {
+            console.error("Google API error:", error);
+            enqueueSnackbar("Failed to get user info from Google", {variant: "error"});
+            setIsLoading(false);
         }
     }
 
     function HandleError(error) {
         console.log("Login Error:", error);
         enqueueSnackbar("Login failed", {variant: "error"});
+        setIsLoading(false);
     }
 
     const login = useGoogleLogin({
@@ -237,17 +255,22 @@ export default function Login() {
                     <Button
                         variant="contained"
                         size="large"
-                        startIcon={<GoogleIcon sx={{ fontSize: 20 }} />}
-                        onClick={() => login()}
+                        startIcon={isLoading ? null : <GoogleIcon sx={{ fontSize: 20 }} />}
+                        onClick={() => !isLoading && login()}
+                        disabled={isLoading}
                         sx={{
-                            background: "linear-gradient(135deg, #d32f2f 0%, #f44336 100%)",
+                            background: isLoading 
+                                ? "linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%)"
+                                : "linear-gradient(135deg, #d32f2f 0%, #f44336 100%)",
                             color: 'white',
                             fontWeight: 600,
                             px: 5,
                             py: 1.5,
                             fontSize: "1rem",
                             borderRadius: 3,
-                            boxShadow: "0 8px 25px rgba(211, 47, 47, 0.4)",
+                            boxShadow: isLoading 
+                                ? "0 4px 15px rgba(149, 165, 166, 0.4)"
+                                : "0 8px 25px rgba(211, 47, 47, 0.4)",
                             textTransform: "none",
                             width: "100%",
                             maxWidth: 300,
@@ -264,11 +287,15 @@ export default function Login() {
                                 transition: "left 0.5s"
                             },
                             "&:hover": {
-                                background: "linear-gradient(135deg, #c62828 0%, #d32f2f 100%)",
-                                boxShadow: "0 12px 35px rgba(211, 47, 47, 0.6)",
-                                transform: "translateY(-2px)",
+                                background: isLoading 
+                                    ? "linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%)"
+                                    : "linear-gradient(135deg, #c62828 0%, #d32f2f 100%)",
+                                boxShadow: isLoading 
+                                    ? "0 4px 15px rgba(149, 165, 166, 0.4)"
+                                    : "0 12px 35px rgba(211, 47, 47, 0.6)",
+                                transform: isLoading ? "none" : "translateY(-2px)",
                                 "&::before": {
-                                    left: "100%"
+                                    left: isLoading ? "-100%" : "100%"
                                 }
                             },
                             "&:active": {
@@ -277,7 +304,7 @@ export default function Login() {
                             transition: "all 0.3s ease"
                         }}
                     >
-                        Continue with Google
+                        {isLoading ? "Signing in..." : "Continue with Google"}
                     </Button>
                 </Box>
 

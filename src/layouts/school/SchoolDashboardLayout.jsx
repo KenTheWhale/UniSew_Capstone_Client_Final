@@ -14,7 +14,7 @@ import {
 } from '@mui/icons-material';
 import {useSnackbar} from "notistack";
 import {signout, updateSchoolInfo} from "../../services/AccountService.jsx";
-import UpdateSchoolInfoDialog from "../../components/school/popup/UpdateSchoolInfoDialog.jsx";
+import UpdateSchoolInfoDialog from "../../components/school/design/dialog/UpdateSchoolInfoDialog.jsx";
 import { Tag } from "antd";
 
 function Navbar({school, enqueueSnackbar}) {
@@ -213,7 +213,12 @@ export default function SchoolDashboardLayout() {
     const handleSignOut = async () => {
         const response = await signout()
         if(response){
-            localStorage.clear();
+            if (localStorage.length > 0){
+                localStorage.clear();
+            }
+            if(sessionStorage.length > 0){
+                sessionStorage.clear()
+            }
             enqueueSnackbar("Sign out successful!", {variant: "success"});
             setTimeout(() => {
                 window.location.href = "/home";
@@ -376,6 +381,9 @@ export default function SchoolDashboardLayout() {
                                     <AccountCircle />
                                 </Avatar>
                             </Badge>
+                            <Typography variant="subtitle1" sx={{fontWeight: 600, color: '#FFFFFF'}}>
+                                {user.customer.name}
+                            </Typography>
                         </Box>
 
                         <Popover

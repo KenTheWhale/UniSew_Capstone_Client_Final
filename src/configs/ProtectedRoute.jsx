@@ -15,7 +15,12 @@ function CheckRole(cookie, allowRoles){
     }else {
         signout().then(res => {
             if(res && res.status === 200){
-                localStorage.clear()
+                if (localStorage.length > 0){
+                    localStorage.clear();
+                }
+                if(sessionStorage.length > 0){
+                    sessionStorage.clear()
+                }
                 setTimeout(() => {
                     return false
                 }, 1000)

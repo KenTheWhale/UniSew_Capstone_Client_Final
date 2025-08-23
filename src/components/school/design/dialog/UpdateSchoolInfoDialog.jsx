@@ -17,7 +17,7 @@ import {
     Typography
 } from '@mui/material';
 import {Business, LocationOn, Phone, Receipt} from '@mui/icons-material';
-import {vietnamProvinces} from '../../../configs/FixedVariables.jsx';
+import {vietnamProvinces} from '../../../../configs/FixedVariables.jsx';
 
 export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initialData}) {
     // Parse address from initialData if available

@@ -76,9 +76,11 @@ import {getPaymentUrl} from "../../../services/PaymentService.jsx";
 import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
 import {GiSkirt} from "react-icons/gi";
 import DisplayImage from '../../ui/DisplayImage.jsx';
-import RequestDetailPopup from '../popup/RequestDetailPopup.jsx';
+
+import RequestDetailPopup from './dialog/RequestDetailPopup.jsx';
 import {getCookie} from "../../../utils/CookieUtil.jsx";
 import {jwtDecode} from "jwt-decode";
+
 
 const {TextArea} = Input;
 
@@ -1933,22 +1935,22 @@ export default function SchoolChat() {
                                                 alignItems: 'center',
                                                 gap: 2
                                             }}>
-                                                <Box sx={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    minWidth: 32,
-                                                    height: 32,
-                                                    px: 2,
-                                                    borderRadius: '16px',
-                                                    background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
-                                                    color: 'white',
-                                                    fontSize: '14px',
-                                                    fontWeight: 600,
-                                                    boxShadow: '0 2px 8px rgba(46, 125, 50, 0.3)',
-                                                    border: '2px solid rgba(255, 255, 255, 0.2)'
-                                                }}>
-                                                    Amount: {designDeliveries.length}
+                                            <Box sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                minWidth: 32,
+                                                height: 32,
+                                                px: 2,
+                                                borderRadius: '16px',
+                                                background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
+                                                color: 'white',
+                                                fontSize: '14px',
+                                                fontWeight: 600,
+                                                boxShadow: '0 2px 8px rgba(46, 125, 50, 0.3)',
+                                                border: '2px solid rgba(255, 255, 255, 0.2)'
+                                            }}>
+                                                Amount: {designDeliveries.length}
                                                 </Box>
                                                 {requestData?.revisionTime === 0 && requestData?.status !== 'completed' && (
                                                     <Button
@@ -2002,21 +2004,21 @@ export default function SchoolChat() {
                                                 </Typography.Text>
                                             </Box>
                                         ) : designDeliveries.length === 0 ? (
-                                            <Box sx={{
-                                                display: 'flex',
-                                                justifyContent: 'center',
-                                                alignItems: 'center',
-                                                height: '100%',
-                                                flexDirection: 'column',
-                                                gap: 2,
-                                                color: '#64748b'
-                                            }}>
-                                                <FileTextOutlined style={{fontSize: '48px', opacity: 0.5}}/>
-                                                <Typography.Text type="secondary" style={{fontSize: '14px'}}>
-                                                    No deliveries yet. Designer will add deliveries here.
-                                                </Typography.Text>
-                                            </Box>
-                                        ) : (
+                                                    <Box sx={{
+                                                        display: 'flex',
+                                                        justifyContent: 'center',
+                                                        alignItems: 'center',
+                                                        height: '100%',
+                                                        flexDirection: 'column',
+                                                        gap: 2,
+                                                        color: '#64748b'
+                                                    }}>
+                                                        <FileTextOutlined style={{fontSize: '48px', opacity: 0.5}}/>
+                                                        <Typography.Text type="secondary" style={{fontSize: '14px'}}>
+                                                            No deliveries yet. Designer will add deliveries here.
+                                                        </Typography.Text>
+                                                    </Box>
+                                                ) : (
                                             <Box sx={{
                                                 display: 'grid',
                                                 gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
@@ -2171,7 +2173,7 @@ export default function SchoolChat() {
                                         backgroundColor: 'linear-gradient(135deg, #fff5f0 0%, #ffe4d6 100%)',
                                         position: 'relative'
                                     }}>
-                                        <Box sx={{
+                                            <Box sx={{
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'space-between'
@@ -2180,17 +2182,17 @@ export default function SchoolChat() {
                                                 <Box sx={{
                                                     width: 40,
                                                     height: 40,
-                                                    borderRadius: '50%',
-                                                    background: 'linear-gradient(135deg, #ff6b35, #ff8c42)',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    color: 'white',
+                                                borderRadius: '50%',
+                                                background: 'linear-gradient(135deg, #ff6b35, #ff8c42)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                color: 'white',
                                                     fontSize: '16px',
-                                                    boxShadow: '0 4px 12px rgba(255, 107, 53, 0.3)'
-                                                }}>
-                                                    <EditOutlined/>
-                                                </Box>
+                                                boxShadow: '0 4px 12px rgba(255, 107, 53, 0.3)'
+                                            }}>
+                                                <EditOutlined/>
+                                            </Box>
                                                 <Box>
                                                     <Typography.Title level={4}
                                                                       style={{
@@ -2198,17 +2200,17 @@ export default function SchoolChat() {
                                                                           color: '#ff6b35',
                                                                           fontWeight: 600
                                                                       }}>
-                                                        Revision Requests
-                                                    </Typography.Title>
+                                                Revision Requests
+                                            </Typography.Title>
                                                     <Typography.Text type="secondary"
                                                                      style={{fontSize: '12px', color: '#ff6b35'}}>
                                                         Track your revision requests
                                                     </Typography.Text>
-                                                </Box>
-                                            </Box>
-                                            <Box sx={{
-                                                display: 'flex',
-                                                alignItems: 'center',
+                                        </Box>
+                                    </Box>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
                                                 justifyContent: 'center',
                                                 minWidth: 32,
                                                 height: 32,
@@ -2278,54 +2280,54 @@ export default function SchoolChat() {
                                             }}>
                                                 {
                                                     revisionRequests.map((revision, index) => (
-                                                        <Paper
-                                                            key={revision.id}
-                                                            elevation={0}
-                                                            sx={{
+                                                    <Paper
+                                                        key={revision.id}
+                                                        elevation={0}
+                                                        sx={{
                                                                 p: 2.5,
-                                                                border: '1px solid #e2e8f0',
+                                                            border: '1px solid #e2e8f0',
                                                                 borderRadius: 3,
-                                                                backgroundColor: 'white',
-                                                                transition: 'all 0.3s ease',
+                                                            backgroundColor: 'white',
+                                                            transition: 'all 0.3s ease',
                                                                 height: 'fit-content',
                                                                 minHeight: '120px',
                                                                 display: 'flex',
                                                                 flexDirection: 'column',
-                                                                '&:hover': {
-                                                                    borderColor: '#ff6b35',
+                                                            '&:hover': {
+                                                                borderColor: '#ff6b35',
                                                                     boxShadow: '0 4px 12px rgba(255, 107, 53, 0.15)',
                                                                     transform: 'translateY(-2px)'
-                                                                }
-                                                            }}
-                                                        >
-                                                            <Box sx={{
-                                                                display: 'flex',
-                                                                justifyContent: 'space-between',
-                                                                alignItems: 'flex-start',
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Box sx={{
+                                                            display: 'flex',
+                                                            justifyContent: 'space-between',
+                                                            alignItems: 'flex-start',
                                                                 mb: 2,
                                                                 flex: 1
-                                                            }}>
-                                                                <Box sx={{flex: 1}}>
-                                                                    <Typography.Title level={5}
+                                                        }}>
+                                                            <Box sx={{flex: 1}}>
+                                                                <Typography.Title level={5}
                                                                                       style={{
                                                                                           margin: 0,
                                                                                           color: '#1e293b'
                                                                                       }}>
-                                                                        Revision #{index + 1}
-                                                                    </Typography.Title>
-                                                                    <Typography.Text type="secondary"
-                                                                                     style={{fontSize: '12px'}}>
-                                                                        {new Date(revision.requestDate).toLocaleDateString('vi-VN', {
-                                                                            day: '2-digit',
-                                                                            month: '2-digit',
-                                                                            year: 'numeric'
-                                                                        })}
-                                                                    </Typography.Text>
-                                                                </Box>
-                                                                <Tag color="orange" style={{margin: 0}}>
-                                                                    {parseID(revision.deliveryId, 'rr')}
-                                                                </Tag>
+                                                                    Revision #{index + 1}
+                                                                </Typography.Title>
+                                                                <Typography.Text type="secondary"
+                                                                                 style={{fontSize: '12px'}}>
+                                                                    {new Date(revision.requestDate).toLocaleDateString('vi-VN', {
+                                                                        day: '2-digit',
+                                                                        month: '2-digit',
+                                                                        year: 'numeric'
+                                                                    })}
+                                                                </Typography.Text>
                                                             </Box>
+                                                            <Tag color="orange" style={{margin: 0}}>
+                                                                {parseID(revision.deliveryId, 'rr')}
+                                                            </Tag>
+                                                        </Box>
 
                                                             <Box sx={{
                                                                 display: 'flex',
@@ -2334,9 +2336,9 @@ export default function SchoolChat() {
                                                                 justifyContent: 'center',
                                                                 mt: 'auto'
                                                             }}>
-                                                                <Typography.Text style={{
-                                                                    fontSize: '13px',
-                                                                    color: '#475569',
+                                                        <Typography.Text style={{
+                                                            fontSize: '13px',
+                                                            color: '#475569',
                                                                     lineHeight: 1.5,
                                                                     display: '-webkit-box',
                                                                     WebkitLineClamp: 2,
@@ -2344,18 +2346,18 @@ export default function SchoolChat() {
                                                                     overflow: 'hidden',
                                                                     textOverflow: 'ellipsis',
                                                                     mb: 1
-                                                                }}>
-                                                                    {revision.note}
-                                                                </Typography.Text>
-                                                                <Button
-                                                                    size="small"
-                                                                    icon={<EyeOutlined/>}
-                                                                    onClick={() => {
-                                                                        const delivery = designDeliveries.find(d => d.id === revision.deliveryId);
-                                                                        if (delivery) {
-                                                                            handleOpenDeliveryDetailModal(delivery);
-                                                                        }
-                                                                    }}
+                                                        }}>
+                                                            {revision.note}
+                                                        </Typography.Text>
+                                                            <Button
+                                                                size="small"
+                                                                icon={<EyeOutlined/>}
+                                                                onClick={() => {
+                                                                    const delivery = designDeliveries.find(d => d.id === revision.deliveryId);
+                                                                    if (delivery) {
+                                                                        handleOpenDeliveryDetailModal(delivery);
+                                                                    }
+                                                                }}
                                                                     style={{
                                                                         borderRadius: '8px',
                                                                         width: '100%',
@@ -2366,11 +2368,11 @@ export default function SchoolChat() {
                                                                         fontWeight: 600,
                                                                         boxShadow: '0 2px 8px rgba(255, 107, 53, 0.2)'
                                                                     }}
-                                                                >
-                                                                    View Delivery
-                                                                </Button>
-                                                            </Box>
-                                                        </Paper>
+                                                            >
+                                                                View Delivery
+                                                            </Button>
+                                                        </Box>
+                                                    </Paper>
                                                     ))
                                                 }
                                             </Box>
@@ -2703,13 +2705,13 @@ export default function SchoolChat() {
                                         <Box
                                             ref={emojiPickerRef}
                                             sx={{
-                                                position: 'absolute',
-                                                bottom: '46px',
+                                            position: 'absolute',
+                                            bottom: '46px',
                                                 left: 0,
-                                                zIndex: 10,
-                                                borderRadius: '8px',
-                                                overflow: 'hidden',
-                                                boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+                                            zIndex: 10,
+                                            borderRadius: '8px',
+                                            overflow: 'hidden',
+                                            boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
                                             }}
                                         >
                                             <EmojiPicker onEmojiClick={onEmojiClick} height={300} width={280}/>
