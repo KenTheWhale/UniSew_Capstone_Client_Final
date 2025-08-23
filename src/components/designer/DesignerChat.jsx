@@ -66,6 +66,8 @@ import {
 import {uploadCloudinary} from "../../services/UploadImageService.jsx";
 import AppliedRequestDetail from './AppliedRequestDetail.jsx';
 import { Badge } from "antd";
+import {getCookie} from "../../utils/CookieUtil.jsx";
+import {jwtDecode} from "jwt-decode";
 
 const {TextArea} = Input;
 
@@ -183,18 +185,27 @@ export function UseDesignerChatMessages(roomId) {
         const email = auth.currentUser?.email || "designer@unknown";
         const displayName = auth.currentUser?.displayName || "Designer";
 
+        let cookie = getCookie("access")
+        if (!cookie) {
+            return false;
+        }
+        const decode = jwtDecode(cookie)
+        console.log("decode", decode)
+        const accountId = decode.id;
+
         const payload =
             typeof textOrPayload === "string"
                 ? { text: textOrPayload }
                 : { ...textOrPayload };
 
         await addDoc(collection(db, "messages"), {
-            ...payload,                // {text?, imageUrl? ...}
+            ...payload,
             createdAt: serverTimestamp(),
             user: displayName,
             senderEmail: email,
+            accountId: accountId,
             room: roomId,
-            read: false,               // 👈 mặc định chưa đọc
+            read: false,
         });
 
         await setDoc(
