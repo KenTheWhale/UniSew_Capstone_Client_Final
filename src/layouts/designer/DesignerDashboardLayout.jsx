@@ -19,6 +19,8 @@ import {Button, Tag} from "antd";
 import {signout} from "../../services/AccountService.jsx";
 import {enqueueSnackbar} from "notistack";
 import {useChatRoomsByEmail} from "../../components/designer/useChatRoomsByEmail";
+import {getCookie} from "../../utils/CookieUtil.jsx";
+import {jwtDecode} from "jwt-decode";
 
 const drawerWidth = 280;
 
@@ -36,9 +38,14 @@ export default function DesignerDashboardLayout() {
             return null;
         }
     }, []);
-    const designerEmail = userObj?.customer?.email || userObj?.email || "";
 
-    const rooms = useChatRoomsByEmail(designerEmail);
+    const cookie = getCookie("access")
+
+    const decode = jwtDecode(cookie)
+    console.log("decode", decode)
+    const accountId = decode.id;
+
+    const rooms = useChatRoomsByEmail(accountId);
 
     useEffect(() => {
         const pathname = location.pathname;
@@ -77,6 +84,7 @@ export default function DesignerDashboardLayout() {
 
     const filteredRooms = rooms.filter((r) => {
         const key = (r.lastMessage || "") + (r.requestId || "") + (r.id || "");
+        console.log("r", r)
         return key.toLowerCase().includes(search.toLowerCase());
     });
 

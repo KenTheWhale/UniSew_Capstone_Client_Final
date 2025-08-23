@@ -13,7 +13,8 @@ import {
     Row,
     Space,
     Tag,
-    Typography
+    Typography,
+    Badge
 } from 'antd';
 import {
     CheckCircleOutlined,
@@ -51,7 +52,18 @@ import {
 import EmojiPicker from 'emoji-picker-react';
 import {useSnackbar} from 'notistack';
 import {parseID} from '../../../utils/ParseIDUtil.jsx';
-import {addDoc, collection, onSnapshot, query, serverTimestamp, where} from 'firebase/firestore';
+import {
+    addDoc,
+    collection,
+    doc,
+    onSnapshot,
+    query,
+    serverTimestamp,
+    setDoc,
+    where,
+    writeBatch,
+    getDocs
+} from 'firebase/firestore';
 import {auth, db} from "../../../configs/FirebaseConfig.jsx";
 import {
     createRevisionRequest,
@@ -64,7 +76,11 @@ import {getPaymentUrl} from "../../../services/PaymentService.jsx";
 import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
 import {GiSkirt} from "react-icons/gi";
 import DisplayImage from '../../ui/DisplayImage.jsx';
+
 import RequestDetailPopup from './dialog/RequestDetailPopup.jsx';
+import {getCookie} from "../../../utils/CookieUtil.jsx";
+import {jwtDecode} from "jwt-decode";
+
 
 const {TextArea} = Input;
 
@@ -120,36 +136,103 @@ const getItemIcon = (itemType) => {
 
 export function UseDesignChatMessages(roomId) {
     const [chatMessages, setChatMessages] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    const me = auth.currentUser?.email || "";
 
     useEffect(() => {
         if (!roomId) return;
-        const messageRef = collection(db, "messages");
-        const queryMessages = query(messageRef, where("room", "==", roomId));
+        const qAll = query(collection(db, "messages"), where("room", "==", roomId));
 
-        const unsubscribe = onSnapshot(queryMessages, (snapshot) => {
-            let messages = [];
-            snapshot.forEach(doc => {
-                messages.push({...doc.data(), id: doc.id});
+        const unsubAll = onSnapshot(qAll, (snap) => {
+            const msgs = [];
+            snap.forEach((d) => msgs.push({...d.data(), id: d.id}));
+            msgs.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+            setChatMessages(msgs);
+        });
+
+        const qUnread = query(
+            collection(db, "messages"),
+            where("room", "==", roomId),
+            where("read", "==", false)
+        );
+        const unsubUnread = onSnapshot(qUnread, (snap) => {
+            let count = 0;
+            snap.forEach((d) => {
+                const data = d.data();
+                if (data.senderEmail !== me) count++;
             });
-            messages.sort((a, b) => a.createdAt?.seconds - b.createdAt?.seconds);
-            setChatMessages(messages);
+            setUnreadCount(count);
         });
-        return () => unsubscribe();
-    }, [roomId]);
 
-    const sendMessage = async (text) => {
-        if (!text) return;
-        const messageRef = collection(db, "messages");
-        await addDoc(messageRef, {
-            text,
+        return () => {
+            unsubAll();
+            unsubUnread();
+        };
+    }, [roomId, me]);
+
+    const sendMessage = async (textOrPayload) => {
+        if (!roomId) return;
+        const email = auth.currentUser?.email || "designer@unknown";
+        const displayName = auth.currentUser?.displayName || "Designer";
+        let cookie = getCookie("access")
+        if (!cookie) {
+            return false;
+        }
+        const decode = jwtDecode(cookie)
+        console.log("decode", decode)
+        const accountId = decode.id;
+
+        const payload =
+            typeof textOrPayload === "string"
+                ? {text: textOrPayload}
+                : {...textOrPayload};
+
+        await addDoc(collection(db, "messages"), {
+            ...payload,
             createdAt: serverTimestamp(),
-            user: auth.currentUser?.displayName || "User",
+            user: displayName,
+            senderEmail: email,
+            accountId: accountId,
             room: roomId,
+            read: false,
         });
+
+        await setDoc(
+            doc(db, "chatRooms", roomId),
+            {lastMessage: payload.text || "[image]", updatedAt: serverTimestamp()},
+            {merge: true}
+        );
     };
 
-    return {chatMessages, sendMessage, setChatMessages};
+    const markAsRead = async () => {
+        if (!roomId) return;
+        const q = query(
+            collection(db, "messages"),
+            where("room", "==", roomId),
+            where("read", "==", false)
+        );
+        const snap = await getDocs(q);
+        if (snap.empty) return;
+
+        const batch = writeBatch(db);
+        let count = 0;
+        snap.forEach((d) => {
+            const data = d.data();
+            if (data.senderEmail !== me) {
+                batch.update(doc(db, "messages", d.id), {
+                    read: true,
+                    readAt: serverTimestamp(),
+                });
+                count++;
+            }
+        });
+        if (count > 0) await batch.commit();
+    };
+
+    return {chatMessages, unreadCount, sendMessage, markAsRead};
 }
+
 
 // New RevisionRequestModal component
 function DeliveryDetailModal({visible, onCancel, delivery}) {
@@ -1276,7 +1359,12 @@ function BuyMoreRevisionsModal({visible, onCancel, onSubmit, extraRevisionPrice}
                     label="Number of Revisions:"
                     rules={[
                         {required: true, message: 'Please enter number of revisions!'},
-                        {type: 'number', min: 1, max: maxQuantityAllowed(), message: `Quantity must be between 1 and ${maxQuantityAllowed()} (max 200 million VND)!`}
+                        {
+                            type: 'number',
+                            min: 1,
+                            max: maxQuantityAllowed(),
+                            message: `Quantity must be between 1 and ${maxQuantityAllowed()} (max 200 million VND)!`
+                        }
                     ]}
                 >
                     <Input
@@ -1310,7 +1398,8 @@ function BuyMoreRevisionsModal({visible, onCancel, onSubmit, extraRevisionPrice}
                         {revisionQuantity === 9999 ? 'Unlimited revisions' : `${revisionQuantity} revision${revisionQuantity !== 1 ? 's' : ''} × ${extraRevisionPrice?.toLocaleString('vi-VN') || '0'} VND each`}
                     </Typography.Text>
                     {calculatePrice(revisionQuantity) > 200000000 && (
-                        <Typography.Text style={{fontSize: '12px', color: '#dc2626', display: 'block', mt: 0.5, fontWeight: 600}}>
+                        <Typography.Text
+                            style={{fontSize: '12px', color: '#dc2626', display: 'block', mt: 0.5, fontWeight: 600}}>
                             ⚠️ Total price exceeds 200 million VND limit!
                         </Typography.Text>
                     )}
@@ -1324,7 +1413,8 @@ function BuyMoreRevisionsModal({visible, onCancel, onSubmit, extraRevisionPrice}
                     mt: 2
                 }}>
                     <Typography.Text style={{fontSize: '12px', color: '#1890ff'}}>
-                        💡 Price: {extraRevisionPrice?.toLocaleString('vi-VN') || '0'} VND per revision. Maximum {maxQuantityAllowed()} revisions allowed (200 million VND limit).
+                        💡 Price: {extraRevisionPrice?.toLocaleString('vi-VN') || '0'} VND per revision.
+                        Maximum {maxQuantityAllowed()} revisions allowed (200 million VND limit).
                     </Typography.Text>
                 </Box>
             </Form>
@@ -1351,7 +1441,6 @@ export default function SchoolChat() {
     const [loadingRevisionRequests, setLoadingRevisionRequests] = useState(false);
     const [isBuyMoreRevisionsModalVisible, setIsBuyMoreRevisionsModalVisible] = useState(false);
     const roomId = requestData?.id;
-    const {chatMessages, sendMessage, setChatMessages} = UseDesignChatMessages(roomId);
     const [newMessage, setNewMessage] = useState('');
     const [isChatOpen, setIsChatOpen] = useState(false);
     const isViewOnly = (isFinalDesignSet || requestData?.status === 'completed');
@@ -1360,6 +1449,14 @@ export default function SchoolChat() {
         || 'Designer';
     const [isOpenButtonHover, setIsOpenButtonHover] = useState(false);
     const emojiPickerRef = useRef(null);
+
+    const {chatMessages, unreadCount, sendMessage, markAsRead} = UseDesignChatMessages(roomId);
+    useEffect(() => {
+        if (isChatOpen && chatMessages.length) {
+            markAsRead();
+        }
+    }, [chatMessages, isChatOpen]);
+
 
     // Fetch design deliveries from API
     const fetchDesignDeliveries = async (designRequestId) => {
@@ -1522,7 +1619,7 @@ export default function SchoolChat() {
             const quantity = values.revisionQuantity;
             const extraRevisionPrice = requestData?.finalDesignQuotation?.extraRevisionPrice || 0;
             const price = quantity * extraRevisionPrice;
-            
+
             // Store revision purchase details in sessionStorage for PaymentResult
             const revisionPurchaseDetails = {
                 requestId: requestData?.id,
@@ -1532,25 +1629,25 @@ export default function SchoolChat() {
                 designerId: requestData?.finalDesignQuotation?.designer?.customer?.id || requestData?.designer?.id
             };
             sessionStorage.setItem('revisionPurchaseDetails', JSON.stringify(revisionPurchaseDetails));
-            
+
             // Get payment URL using getPaymentUrl API
             const amount = price;
             const description = "buy extra revision";
             const orderType = "revision";
             const returnURL = "/school/payment/result";
-            
+
             // Store payment type in sessionStorage for PaymentResult component
             sessionStorage.setItem('currentPaymentType', orderType);
-            
+
             const paymentResponse = await getPaymentUrl(amount, description, orderType, returnURL);
-            
+
             if (paymentResponse && paymentResponse.status === 200 && paymentResponse.data.body) {
                 // Redirect to payment gateway
                 window.location.href = paymentResponse.data.body.url;
             } else {
                 enqueueSnackbar('Failed to get payment URL. Please try again.', {variant: 'error'});
             }
-            
+
             handleCloseBuyMoreRevisionsModal();
         } catch (error) {
             console.error('Error processing revision purchase:', error);
@@ -1761,7 +1858,7 @@ export default function SchoolChat() {
                         {/* Top Row - Chat and Deliveries */}
                         <Box sx={{display: 'flex', gap: 3, flex: 2}}>
 
-                        
+
                             <Box sx={{
                                 flex: 1,
                                 display: 'flex',
@@ -1888,8 +1985,8 @@ export default function SchoolChat() {
 
                                     {/* Deliveries List */}
                                     <Box sx={{
-                                        flex: 1, 
-                                        p: 2, 
+                                        flex: 1,
+                                        p: 2,
                                         overflowY: 'auto',
                                         maxHeight: 'calc(4 * 140px + 2 * 16px)',
                                     }}>
@@ -2605,7 +2702,7 @@ export default function SchoolChat() {
                                         }}
                                     />
                                     {showEmojiPicker && (
-                                        <Box 
+                                        <Box
                                             ref={emojiPickerRef}
                                             sx={{
                                             position: 'absolute',
@@ -2657,26 +2754,28 @@ export default function SchoolChat() {
                         </Box>
                     </Paper>
                 ) : (
-                    <Button
-                        type="primary"
-                        shape="circle"
-                        size="large"
-                        icon={<MessageOutlined/>}
-                        onClick={() => setIsChatOpen(true)}
-                        style={{
-                            width: isOpenButtonHover ? '60px' : '56px',
-                            height: isOpenButtonHover ? '60px' : '56px',
-                            transform: isOpenButtonHover ? 'translateY(-2px)' : 'none',
-                            transition: 'all 150ms ease',
-                            boxShadow: isOpenButtonHover ? '0 10px 28px rgba(46, 125, 50, 0.5)' : '0 8px 24px rgba(46, 125, 50, 0.4)',
-                            background: isOpenButtonHover ? 'linear-gradient(135deg, #2e7d32, #43a047)' : 'linear-gradient(135deg, #2e7d32, #4caf50)',
-                            animation: isOpenButtonHover ? 'unisew-chat-shake 220ms ease-in-out' : 'none',
-                            willChange: 'transform',
-                            border: 'none'
-                        }}
-                        onMouseEnter={() => setIsOpenButtonHover(true)}
-                        onMouseLeave={() => setIsOpenButtonHover(false)}
-                    />
+                    <Badge count={unreadCount} overflowCount={99} offset={[-6, 6]}>
+                        <Button
+                            type="primary"
+                            shape="circle"
+                            size="large"
+                            icon={<MessageOutlined/>}
+                            onClick={() => setIsChatOpen(true)}
+                            style={{
+                                width: isOpenButtonHover ? '60px' : '56px',
+                                height: isOpenButtonHover ? '60px' : '56px',
+                                transform: isOpenButtonHover ? 'translateY(-2px)' : 'none',
+                                transition: 'all 150ms ease',
+                                boxShadow: isOpenButtonHover ? '0 10px 28px rgba(46, 125, 50, 0.5)' : '0 8px 24px rgba(46, 125, 50, 0.4)',
+                                background: isOpenButtonHover ? 'linear-gradient(135deg, #2e7d32, #43a047)' : 'linear-gradient(135deg, #2e7d32, #4caf50)',
+                                animation: isOpenButtonHover ? 'unisew-chat-shake 220ms ease-in-out' : 'none',
+                                willChange: 'transform',
+                                border: 'none'
+                            }}
+                            onMouseEnter={() => setIsOpenButtonHover(true)}
+                            onMouseLeave={() => setIsOpenButtonHover(false)}
+                        />
+                    </Badge>
                 )}
             </Box>
         </Box>
