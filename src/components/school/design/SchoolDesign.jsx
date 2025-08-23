@@ -36,15 +36,6 @@ const STATUS_COLORS = {
 
 const TABLE_PAGE_SIZE_OPTIONS = ['5', '10'];
 
-// Utility function for date formatting
-const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-};
-
 // StatCard Component
 const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
     <Card
@@ -215,10 +206,6 @@ export default function SchoolDesign() {
     const handleRetry = useCallback(() => {
         setIsRetrying(true);
         FetchSchoolDesign();
-    }, [FetchSchoolDesign]);
-
-    const handleRefresh = useCallback(() => {
-        FetchSchoolDesign(false);
     }, [FetchSchoolDesign]);
 
     const [isModalVisible, setIsModalVisible] = useState(false);

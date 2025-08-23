@@ -48,9 +48,9 @@ import {
 } from '@mui/icons-material';
 import { PiPantsFill, PiShirtFoldedFill } from "react-icons/pi";
 import { GiSkirt } from "react-icons/gi";
-import { parseID } from "../../utils/ParseIDUtil.jsx";
-import DisplayImage from "../ui/DisplayImage.jsx";
-import { createQuotation } from "../../services/OrderService.jsx";
+import { parseID } from "../../../utils/ParseIDUtil.jsx";
+import DisplayImage from "../../ui/DisplayImage.jsx";
+import { createQuotation } from "../../../services/OrderService.jsx";
 import { enqueueSnackbar } from "notistack";
 
 // Status chip component
