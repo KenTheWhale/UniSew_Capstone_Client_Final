@@ -11,7 +11,6 @@ function CheckRole(cookie, allowRoles){
 
     if(allowRoles.includes(decode.role.toLocaleString())){
         return true
-
     }else {
         signout().then(res => {
             if(res && res.status === 200){

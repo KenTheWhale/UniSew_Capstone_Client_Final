@@ -318,6 +318,30 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                 return;
             }
             
+            // Calculate delivery date based on current option
+            let deliveryDate;
+            if (deliveryOption === 'date' && selectedDeliveryDate) {
+                deliveryDate = new Date(selectedDeliveryDate);
+            } else if (deliveryOption === 'days' && quotationData.deliveryTime) {
+                const orderDate = new Date(mergedOrderData.orderDate);
+                deliveryDate = new Date(orderDate);
+                deliveryDate.setDate(orderDate.getDate() + parseInt(quotationData.deliveryTime));
+            }
+
+            // Check if delivery date is set and Valid Until is after delivery date - 2 days
+            if (deliveryDate) {
+                const twoDaysBeforeDelivery = new Date(deliveryDate);
+                twoDaysBeforeDelivery.setDate(deliveryDate.getDate() - 2);
+                twoDaysBeforeDelivery.setHours(23, 59, 59, 999);
+
+                if (validUntilDate > twoDaysBeforeDelivery) {
+                    enqueueSnackbar(`Valid until date must be at least 2 days before delivery date (${formatDate(deliveryDate.toISOString().split('T')[0])})`, { variant: 'error' });
+                    setSubmittingQuotation(false);
+                    return;
+                }
+            }
+
+            // Also check order deadline constraint
             if (validUntilDate > dayBeforeDeadline) {
                 enqueueSnackbar(`Valid until date must be before order deadline (${formatDate(mergedOrderData.deadline)})`, { variant: 'error' });
                 setSubmittingQuotation(false);
@@ -336,13 +360,13 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
             
             // Check if delivery time exceeds the order deadline (only for days option)
             if (deliveryOption === 'days') {
-                const orderDeadline = new Date(mergedOrderData.deadline);
-                orderDeadline.setHours(23, 59, 59, 999); // Set to end of day
-                
-                if (earlyDeliveryDate > orderDeadline) {
-                    enqueueSnackbar(`Delivery time cannot exceed the order deadline (${formatDate(mergedOrderData.deadline)})`, { variant: 'error' });
-                    setSubmittingQuotation(false);
-                    return;
+            const orderDeadline = new Date(mergedOrderData.deadline);
+            orderDeadline.setHours(23, 59, 59, 999); // Set to end of day
+            
+            if (earlyDeliveryDate > orderDeadline) {
+                enqueueSnackbar(`Delivery time cannot exceed the order deadline (${formatDate(mergedOrderData.deadline)})`, { variant: 'error' });
+                setSubmittingQuotation(false);
+                return;
                 }
             }
             
@@ -357,24 +381,24 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
             
             console.log('Submitting quotation:', quotationPayload);
             
-            // const response = await createQuotation(quotationPayload);
-            //
-            // if (response && response.status === 200) {
-            //     enqueueSnackbar('Quotation sent successfully!', { variant: 'success' });
-            //     // Reset form and close
-            //     setShowQuotationForm(false);
-            //     setQuotationData({
-            //         totalPrice: '',
-            //         deliveryTime: '',
-            //         note: '',
-            //         validUntil: ''
-            //     });
-            // } else {
-            //     enqueueSnackbar('Failed to send quotation. Please try again.', { variant: 'error' });
-            // }
+            const response = await createQuotation(quotationPayload);
+            
+            if (response && response.status === 200) {
+                enqueueSnackbar('Quotation sent successfully!', { variant: 'success' });
+                // Reset form and close
+                setShowQuotationForm(false);
+                setQuotationData({
+                    totalPrice: '',
+                    deliveryTime: '',
+                    note: '',
+                    validUntil: ''
+                });
+                window.location.reload()
+            } else {
+                enqueueSnackbar('Failed to send quotation. Please try again.', { variant: 'error' });
+            }
         } catch (error) {
-            console.error('Error submitting quotation:', error);
-            enqueueSnackbar('An error occurred while sending the quotation.', { variant: 'error' });
+            enqueueSnackbar(error.response.data.message, { variant: 'error' });
         } finally {
             setSubmittingQuotation(false);
         }
@@ -443,6 +467,20 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
         }
 
         setDeliveryTimeError('');
+
+        // Re-validate Valid Until if it's already set
+        if (quotationData.validUntil) {
+            const validUntilDate = new Date(quotationData.validUntil);
+            const twoDaysBeforeDelivery = new Date(earlyDeliveryDate);
+            twoDaysBeforeDelivery.setDate(earlyDeliveryDate.getDate() - 2);
+            twoDaysBeforeDelivery.setHours(23, 59, 59, 999);
+
+            if (validUntilDate > twoDaysBeforeDelivery) {
+                setValidUntilError(`Valid until date must be at least 2 days before delivery date (${formatDate(earlyDeliveryDate.toISOString().split('T')[0])})`);
+            } else {
+                setValidUntilError('');
+            }
+        }
     };
 
     const handleDeliveryDateChange = (date) => {
@@ -476,6 +514,20 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
         }
 
         setDeliveryTimeError('');
+
+        // Re-validate Valid Until if it's already set
+        if (quotationData.validUntil) {
+            const validUntilDate = new Date(quotationData.validUntil);
+            const twoDaysBeforeDelivery = new Date(selectedDate);
+            twoDaysBeforeDelivery.setDate(selectedDate.getDate() - 2);
+            twoDaysBeforeDelivery.setHours(23, 59, 59, 999);
+
+            if (validUntilDate > twoDaysBeforeDelivery) {
+                setValidUntilError(`Valid until date must be at least 2 days before delivery date (${formatDate(selectedDate.toISOString().split('T')[0])})`);
+            } else {
+                setValidUntilError('');
+            }
+        }
     };
 
     const getCalculatedDeliveryDate = () => {
@@ -1123,37 +1175,37 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                         alignItems: 'center',
                                         justifyContent: 'space-between'
                                     }}>
-                                        <Typography variant="h6" sx={{
-                                            fontWeight: 700,
-                                            color: 'white',
+                                    <Typography variant="h6" sx={{
+                                        fontWeight: 700,
+                                        color: 'white',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1.5,
+                                        position: 'relative',
+                                        zIndex: 1
+                                    }}>
+                                        <Box sx={{
+                                            p: 1,
+                                            borderRadius: 2,
+                                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
                                             display: 'flex',
                                             alignItems: 'center',
-                                            gap: 1.5,
-                                            position: 'relative',
-                                            zIndex: 1
+                                            justifyContent: 'center'
                                         }}>
-                                            <Box sx={{
-                                                p: 1,
-                                                borderRadius: 2,
+                                            <CheckroomIcon sx={{ fontSize: 20 }} />
+                                        </Box>
+                                        Order Items
+                                        <Chip 
+                                            label={`${mergedOrderData.orderDetails?.length || 0} clothes`}
+                                            size="small"
+                                            sx={{
                                                 backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}>
-                                                <CheckroomIcon sx={{ fontSize: 20 }} />
-                                            </Box>
-                                            Order Items
-                                            <Chip 
-                                                label={`${mergedOrderData.orderDetails?.length || 0} clothes`}
-                                                size="small"
-                                                sx={{
-                                                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                                                    color: 'white',
-                                                    fontWeight: 600,
+                                                color: 'white',
+                                                fontWeight: 600,
                                                     ml: 2
-                                                }}
-                                            />
-                                        </Typography>
+                                            }}
+                                        />
+                                    </Typography>
                                         <Box sx={{ display: 'flex', gap: 2 }}>
                                             <Button
                                                 variant="outlined"
@@ -1606,13 +1658,13 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                             
                                                                             if (logoPosition && logoHeight > 0 && logoWidth > 0) {
                                                                                 return (
-                                                                                    <Typography variant="body2" sx={{
-                                                                                        fontWeight: 500,
-                                                                                        color: '#1e293b',
-                                                                                        fontSize: '12px'
-                                                                                    }}>
+                                                                        <Typography variant="body2" sx={{
+                                                                            fontWeight: 500,
+                                                                            color: '#1e293b',
+                                                                            fontSize: '12px'
+                                                                        }}>
                                                                                         {logoPosition}
-                                                                                    </Typography>
+                                                                        </Typography>
                                                                                 );
                                                                             } else {
                                                                                 return (
@@ -1668,10 +1720,10 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                                 );
                                                                             }
                                                                         })()}
-                                                                    </Box>
+                                                                                </Box>
                                                                     
                                                                     {/* Images */}
-                                                                    <Box sx={{
+                                                                                <Box sx={{
                                                                         p: 2,
                                                                         borderBottom: '1px solid #000000',
                                                                         backgroundColor: '#f8fafc',
@@ -1691,7 +1743,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                                 py: 0.5,
                                                                                 px: 1.5,
                                                                                 minWidth: 'auto',
-                                                                                '&:hover': {
+                                                                                    '&:hover': {
                                                                                     borderColor: '#303f9f',
                                                                                     backgroundColor: 'rgba(63, 81, 181, 0.1)'
                                                                                 }
@@ -1742,7 +1794,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                     }}>
                                         Wanna to get this order ?
                                     </Typography>
-                                    <Typography variant="body2" sx={{
+                                        <Typography variant="body2" sx={{
                                             opacity: 0.9,
                                             textAlign: 'center',
                                             mt: 0.5,
@@ -1918,36 +1970,36 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                 {/* Option 2: Enter Days */}
                                                 {deliveryOption === 'days' && (
                                                     <Box>
-                                                        <TextField
-                                                            type="number"
-                                                            value={quotationData.deliveryTime}
-                                                            onChange={(e) => handleDeliveryTimeChange(e.target.value)}
-                                                            size="small"
-                                                            fullWidth
+                                                <TextField
+                                                    type="number"
+                                                    value={quotationData.deliveryTime}
+                                                    onChange={(e) => handleDeliveryTimeChange(e.target.value)}
+                                                    size="small"
+                                                    fullWidth
                                                             placeholder="Enter number of days needed"
-                                                            inputProps={{ min: 1 }}
-                                                            error={!!deliveryTimeError}
+                                                    inputProps={{ min: 1 }}
+                                                    error={!!deliveryTimeError}
                                                             helperText={deliveryTimeError || `Order date: ${formatDate(mergedOrderData.orderDate)}`}
-                                                            sx={{
-                                                                '& .MuiOutlinedInput-root': {
-                                                                    background: 'rgba(255, 255, 255, 0.9)',
-                                                                    '& fieldset': {
-                                                                        borderColor: deliveryTimeError ? '#ef4444' : 'rgba(63, 81, 181, 0.3)'
-                                                                    },
-                                                                    '&:hover fieldset': {
-                                                                        borderColor: deliveryTimeError ? '#ef4444' : 'rgba(63, 81, 181, 0.5)'
-                                                                    },
-                                                                    '&.Mui-focused fieldset': {
-                                                                        borderColor: deliveryTimeError ? '#ef4444' : '#3f51b5'
-                                                                    }
-                                                                },
-                                                                '& .MuiFormHelperText-root': {
+                                                    sx={{
+                                                        '& .MuiOutlinedInput-root': {
+                                                            background: 'rgba(255, 255, 255, 0.9)',
+                                                            '& fieldset': {
+                                                                borderColor: deliveryTimeError ? '#ef4444' : 'rgba(63, 81, 181, 0.3)'
+                                                            },
+                                                            '&:hover fieldset': {
+                                                                borderColor: deliveryTimeError ? '#ef4444' : 'rgba(63, 81, 181, 0.5)'
+                                                            },
+                                                            '&.Mui-focused fieldset': {
+                                                                borderColor: deliveryTimeError ? '#ef4444' : '#3f51b5'
+                                                            }
+                                                        },
+                                                        '& .MuiFormHelperText-root': {
                                                                     color: deliveryTimeError ? '#ef4444' : '#64748b',
-                                                                    fontSize: '0.75rem',
-                                                                    marginTop: 0.5
-                                                                }
-                                                            }}
-                                                        />
+                                                            fontSize: '0.75rem',
+                                                            marginTop: 0.5
+                                                        }
+                                                    }}
+                                                />
                                                         {quotationData.deliveryTime && !deliveryTimeError && (
                                                             <Box sx={{
                                                                 mt: 1,
@@ -1984,7 +2036,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                     onChange={(e) => {
                                                         const selectedDate = e.target.value;
                                                         setQuotationData({
-                                                            ...quotationData,
+                                                        ...quotationData,
                                                             validUntil: selectedDate
                                                         });
 
@@ -1995,11 +2047,6 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                         }
 
                                                         const validUntilDate = new Date(selectedDate);
-                                                        const orderDeadline = new Date(mergedOrderData.deadline);
-                                                        const dayBeforeDeadline = new Date(orderDeadline);
-                                                        dayBeforeDeadline.setDate(orderDeadline.getDate() - 1);
-                                                        dayBeforeDeadline.setHours(23, 59, 59, 999);
-
                                                         const tomorrow = new Date();
                                                         tomorrow.setDate(tomorrow.getDate() + 1);
                                                         tomorrow.setHours(0, 0, 0, 0);
@@ -2008,6 +2055,34 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                             setValidUntilError('Valid until date must be from tomorrow onwards');
                                                             return;
                                                         }
+
+                                                        // Calculate delivery date based on current option
+                                                        let deliveryDate;
+                                                        if (deliveryOption === 'date' && selectedDeliveryDate) {
+                                                            deliveryDate = new Date(selectedDeliveryDate);
+                                                        } else if (deliveryOption === 'days' && quotationData.deliveryTime) {
+                                                            const orderDate = new Date(mergedOrderData.orderDate);
+                                                            deliveryDate = new Date(orderDate);
+                                                            deliveryDate.setDate(orderDate.getDate() + parseInt(quotationData.deliveryTime));
+                                                        }
+
+                                                        // Check if delivery date is set and Valid Until is after delivery date - 2 days
+                                                        if (deliveryDate) {
+                                                            const twoDaysBeforeDelivery = new Date(deliveryDate);
+                                                            twoDaysBeforeDelivery.setDate(deliveryDate.getDate() - 2);
+                                                            twoDaysBeforeDelivery.setHours(23, 59, 59, 999);
+
+                                                            if (validUntilDate > twoDaysBeforeDelivery) {
+                                                                setValidUntilError(`Valid until date must be at least 2 days before delivery date (${formatDate(deliveryDate.toISOString().split('T')[0])})`);
+                                                                return;
+                                                            }
+                                                        }
+
+                                                        // Also check order deadline constraint
+                                                        const orderDeadline = new Date(mergedOrderData.deadline);
+                                                        const dayBeforeDeadline = new Date(orderDeadline);
+                                                        dayBeforeDeadline.setDate(orderDeadline.getDate() - 1);
+                                                        dayBeforeDeadline.setHours(23, 59, 59, 999);
 
                                                         if (validUntilDate > dayBeforeDeadline) {
                                                             setValidUntilError(`Valid until date must be before order deadline (${formatDate(mergedOrderData.deadline)})`);
@@ -2020,7 +2095,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                     fullWidth
                                                     InputLabelProps={{ shrink: true }}
                                                     error={!!validUntilError}
-                                                    helperText={validUntilError || 'Select a date before the order deadline'}
+                                                    helperText={validUntilError || 'Select a date at least 2 days before delivery date and before order deadline'}
                                                     inputProps={{
                                                         min: (() => {
                                                             const tomorrow = new Date();
@@ -2028,9 +2103,31 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                             return tomorrow.toISOString().split('T')[0];
                                                         })(),
                                                         max: (() => {
+                                                            // Calculate the most restrictive max date
                                                             const orderDeadline = new Date(mergedOrderData.deadline);
-                                                            orderDeadline.setDate(orderDeadline.getDate() - 1);
-                                                            return orderDeadline.toISOString().split('T')[0];
+                                                            const dayBeforeDeadline = new Date(orderDeadline);
+                                                            dayBeforeDeadline.setDate(orderDeadline.getDate() - 1);
+                                                            
+                                                            // Calculate delivery date based on current option
+                                                            let twoDaysBeforeDelivery = null;
+                                                            if (deliveryOption === 'date' && selectedDeliveryDate) {
+                                                                const deliveryDate = new Date(selectedDeliveryDate);
+                                                                twoDaysBeforeDelivery = new Date(deliveryDate);
+                                                                twoDaysBeforeDelivery.setDate(deliveryDate.getDate() - 2);
+                                                            } else if (deliveryOption === 'days' && quotationData.deliveryTime) {
+                                                                const orderDate = new Date(mergedOrderData.orderDate);
+                                                                const deliveryDate = new Date(orderDate);
+                                                                deliveryDate.setDate(orderDate.getDate() + parseInt(quotationData.deliveryTime));
+                                                                twoDaysBeforeDelivery = new Date(deliveryDate);
+                                                                twoDaysBeforeDelivery.setDate(deliveryDate.getDate() - 2);
+                                                            }
+                                                            
+                                                            // Return the earlier of the two dates
+                                                            if (twoDaysBeforeDelivery && twoDaysBeforeDelivery < dayBeforeDeadline) {
+                                                                return twoDaysBeforeDelivery.toISOString().split('T')[0];
+                                                            } else {
+                                                                return dayBeforeDeadline.toISOString().split('T')[0];
+                                                            }
                                                         })()
                                                     }}
                                                     sx={{
@@ -2473,14 +2570,6 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                 </DialogTitle>
                 <DialogContent sx={{ p: 3 }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                        <Typography variant="body1" sx={{
-                            color: '#374151',
-                            fontWeight: 500,
-                            mb: 2
-                        }}>
-                            Reference guide for logo positioning on uniforms
-                        </Typography>
-                        
                         <Box sx={{
                             display: 'flex',
                             justifyContent: 'center',
