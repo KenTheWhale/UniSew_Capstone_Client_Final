@@ -77,6 +77,8 @@ import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
 import {GiSkirt} from "react-icons/gi";
 import DisplayImage from '../../ui/DisplayImage.jsx';
 import RequestDetailPopup from '../popup/RequestDetailPopup.jsx';
+import {getCookie} from "../../../utils/CookieUtil.jsx";
+import {jwtDecode} from "jwt-decode";
 
 const {TextArea} = Input;
 
@@ -147,7 +149,6 @@ export function UseDesignChatMessages(roomId) {
             setChatMessages(msgs);
         });
 
-        // stream đếm chưa đọc từ đối phương
         const qUnread = query(
             collection(db, "messages"),
             where("room", "==", roomId),
@@ -172,6 +173,13 @@ export function UseDesignChatMessages(roomId) {
         if (!roomId) return;
         const email = auth.currentUser?.email || "designer@unknown";
         const displayName = auth.currentUser?.displayName || "Designer";
+        let cookie = getCookie("access")
+        if (!cookie) {
+            return false;
+        }
+        const decode = jwtDecode(cookie)
+        console.log("decode", decode)
+        const accountId = decode.id;
 
         const payload =
             typeof textOrPayload === "string"
@@ -179,12 +187,13 @@ export function UseDesignChatMessages(roomId) {
                 : {...textOrPayload};
 
         await addDoc(collection(db, "messages"), {
-            ...payload,                // {text?, imageUrl? ...}
+            ...payload,
             createdAt: serverTimestamp(),
             user: displayName,
             senderEmail: email,
+            accountId: accountId,
             room: roomId,
-            read: false,               // 👈 mặc định chưa đọc
+            read: false,
         });
 
         await setDoc(
