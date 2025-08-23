@@ -3,13 +3,13 @@ import { useEffect, useState } from "react";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "../../configs/FirebaseConfig.jsx";
 
-export function useChatRoomsByEmail(email) {
+export function useChatRoomsByEmail(accountId) {
     const [rooms, setRooms] = useState([]);
 
     useEffect(() => {
-        if (!email) return;
+        if (!accountId) return;
         const msgsRef = collection(db, "messages");
-        const q = query(msgsRef, where("senderEmail", "==", email));
+        const q = query(msgsRef, where("accountId", "==", accountId));
 
         const unsub = onSnapshot(q, (snap) => {
             const byRoom = new Map();
@@ -36,7 +36,7 @@ export function useChatRoomsByEmail(email) {
         });
 
         return () => unsub();
-    }, [email]);
+    }, [accountId]);
 
     return rooms;
 }
