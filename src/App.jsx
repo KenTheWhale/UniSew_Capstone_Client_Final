@@ -28,8 +28,8 @@ import DesignerProfile from "./components/designer/profile/DesignerProfile.jsx";
 import SchoolOrderManagement from "./components/school/order/SchoolOrderManagement.jsx";
 import SchoolCreateOrder from "./components/school/order/SchoolCreateOrder.jsx";
 import GarmentDashboardLayout from "./layouts/garment/GarmentDashboardLayout.jsx";
-import GarmentOrderList from "./components/garment/GarmentOrderList.jsx";
-import GarmentOrderDetail from "./components/garment/GarmentOrderDetail.jsx";
+import GarmentOrders from "./components/garment/GarmentOrders.jsx";
+import GarmentOrderDetail from "./components/garment/dialog/GarmentOrderDetail.jsx";
 import UniSewFAQ from "./components/auth/UniSewFAQ.jsx";
 import TermOfServices from "./components/auth/TermOfServices.jsx";
 import GarmentOrderProduction from "./components/garment/GarmentOrderProduction.jsx";
@@ -38,6 +38,7 @@ import AdminAccount from "./components/admin/AdminAccount.jsx";
 import AdminTransaction from "./components/admin/AdminTransaction.jsx";
 import AdminDashboardLayout from "./layouts/admin/AdminDashboardLayout.jsx";
 import MilestoneManagement from "./components/garment/MilestoneManagement.jsx";
+import GarmentPendingOrders from "./components/garment/GarmentPendingOrders.jsx";
 import AdminReport from "./components/admin/AdminReport.jsx";
 
 const theme = createTheme({
@@ -254,8 +255,12 @@ const router = createBrowserRouter([
                 element: <GarmentOrderDetail />
             },
             {
+                path: 'pending/order',
+                element: <GarmentPendingOrders />
+            },
+            {
                 path: 'orders',
-                element: <GarmentOrderList />
+                element: <GarmentOrders />
             },
             {
                 path: 'production',

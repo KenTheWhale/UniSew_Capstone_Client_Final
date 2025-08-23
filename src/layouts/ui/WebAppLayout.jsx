@@ -176,7 +176,12 @@ function MainHeader() {
     const handleLogout = async () => {
         const response = await signout()
         if (response && response.status === 200) {
-            localStorage.clear();
+            if (localStorage.length > 0){
+                localStorage.clear();
+            }
+            if(sessionStorage.length > 0){
+                sessionStorage.clear()
+            }
             enqueueSnackbar(response.data.message, {variant: 'success', autoHideDuration: 1000})
             setTimeout(() => {
                 window.location.href = '/home';
