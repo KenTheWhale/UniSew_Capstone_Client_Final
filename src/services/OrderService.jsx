@@ -11,6 +11,11 @@ export const getOrdersBySchool = async () => {
     return response || null
 }
 
+export const getOrderDetailBySchool = async (orderId) => {
+    const response = await axiosClient.post(`/order/school/detail?orderId=${orderId}`)
+    return response || null
+}
+
 export const createOrder = async (orderData) => {
     const response = await axiosClient.post("/order", orderData)
     return response || null
@@ -47,12 +52,12 @@ export const approveQuotation = async (data) => {
 }
 
 export const createPhase = async (data) => {
-    const response = await axiosClient.post(`/order/phase`, data)
+    const response = await axiosClient.post(`/order/phase/create`, data)
     return response || null
 }
 
 export const viewPhase = async () => {
-    const response = await axiosClient.get(`/order/phase`)
+    const response = await axiosClient.post(`/order/phase`)
     return response || null
 }
 

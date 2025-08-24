@@ -1583,37 +1583,62 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                     const rows = [];
 
                                                     groupedItems.forEach((groupedItem, index) => {
-                                                        rows.push(
+                                                                rows.push(
                                                             <React.Fragment key={`${groupedItem.category}-${groupedItem.gender}-${groupedItem.type}-${index}`}>
                                                                 {/* Category - with rowspan */}
                                                                 {groupedItem.isFirstInCategory && (
-                                                                    <Box sx={{
-                                                                        p: 2,
-                                                                        borderRight: '1px solid #000000',
-                                                                        borderBottom: '1px solid #000000',
-                                                                        backgroundColor: '#f8fafc',
-                                                                        display: 'flex',
-                                                                        alignItems: 'center',
-                                                                        justifyContent: 'center',
+                                                                            <Box sx={{
+                                                                                p: 2,
+                                                                                borderRight: '1px solid #000000',
+                                                                                borderBottom: '1px solid #000000',
+                                                                                backgroundColor: '#f8fafc',
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
                                                                         gridRow: `span ${groupedItem.categoryRowSpan}`,
                                                                         minHeight: `${60 * groupedItem.categoryRowSpan}px`
-                                                                    }}>
-                                                                        <Chip
+                                                                            }}>
+                                                                                <Chip
                                                                             label={groupedItem.category === 'pe' ? 'PE' : 'Regular'}
-                                                                            size="small"
-                                                                            sx={{
+                                                                                    size="small"
+                                                                                    sx={{
                                                                                 backgroundColor: groupedItem.category === 'pe' ? '#dcfce7' : '#dbeafe',
                                                                                 color: groupedItem.category === 'pe' ? '#065f46' : '#1e40af',
-                                                                                fontWeight: 600,
-                                                                                fontSize: '11px',
-                                                                                height: 20
-                                                                            }}
-                                                                        />
-                                                                    </Box>
-                                                                )}
-                                                                
+                                                                                        fontWeight: 600,
+                                                                                        fontSize: '11px',
+                                                                                        height: 20
+                                                                                    }}
+                                                                                />
+                                                                            </Box>
+                                                                        )}
+                                                                        
                                                                 {/* Gender - with rowspan */}
                                                                 {groupedItem.isFirstInGender && (
+                                                                            <Box sx={{
+                                                                                p: 2,
+                                                                                borderRight: '1px solid #000000',
+                                                                                borderBottom: '1px solid #000000',
+                                                                                backgroundColor: '#f8fafc',
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                        gridRow: `span ${groupedItem.genderRowSpan}`,
+                                                                        minHeight: `${60 * groupedItem.genderRowSpan}px`
+                                                                            }}>
+                                                                                <Typography variant="body2" sx={{
+                                                                                    fontWeight: 600,
+                                                                                    color: '#374151',
+                                                                                    fontSize: '13px',
+                                                                                    textTransform: 'capitalize'
+                                                                                }}>
+                                                                            {groupedItem.gender === 'boy' ? 'Boy' : 
+                                                                             groupedItem.gender === 'girl' ? 'Girl' : 
+                                                                             groupedItem.gender || 'Unknown'}
+                                                                                </Typography>
+                                                                            </Box>
+                                                                        )}
+                                                        
+                                                                    {/* Type */}
                                                                     <Box sx={{
                                                                         p: 2,
                                                                         borderRight: '1px solid #000000',
@@ -1621,9 +1646,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                         backgroundColor: '#f8fafc',
                                                                         display: 'flex',
                                                                         alignItems: 'center',
-                                                                        justifyContent: 'center',
-                                                                        gridRow: `span ${groupedItem.genderRowSpan}`,
-                                                                        minHeight: `${60 * groupedItem.genderRowSpan}px`
+                                                                        justifyContent: 'center'
                                                                     }}>
                                                                         <Typography variant="body2" sx={{
                                                                             fontWeight: 600,
@@ -1631,62 +1654,39 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                             fontSize: '13px',
                                                                             textTransform: 'capitalize'
                                                                         }}>
-                                                                            {groupedItem.gender === 'boy' ? 'Boy' : 
-                                                                             groupedItem.gender === 'girl' ? 'Girl' : 
-                                                                             groupedItem.gender || 'Unknown'}
+                                                                        {groupedItem.type || 'Item'}
                                                                         </Typography>
                                                                     </Box>
-                                                                )}
-                                                                
-                                                                {/* Type */}
-                                                                <Box sx={{
-                                                                    p: 2,
-                                                                    borderRight: '1px solid #000000',
-                                                                    borderBottom: '1px solid #000000',
-                                                                    backgroundColor: '#f8fafc',
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'center'
-                                                                }}>
-                                                                    <Typography variant="body2" sx={{
-                                                                        fontWeight: 600,
-                                                                        color: '#374151',
-                                                                        fontSize: '13px',
-                                                                        textTransform: 'capitalize'
-                                                                    }}>
-                                                                        {groupedItem.type || 'Item'}
-                                                                    </Typography>
-                                                                </Box>
-                                                                
+                                                                    
                                                                 {/* Size - Show all sizes */}
-                                                                <Box sx={{
-                                                                    p: 2,
-                                                                    borderRight: '1px solid #000000',
-                                                                    borderBottom: '1px solid #000000',
-                                                                    backgroundColor: '#f8fafc',
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'center'
-                                                                }}>
-                                                                    <Typography variant="body2" sx={{
-                                                                        fontWeight: 600,
-                                                                        color: '#3f51b5',
-                                                                        fontSize: '13px'
+                                                                    <Box sx={{
+                                                                        p: 2,
+                                                                        borderRight: '1px solid #000000',
+                                                                        borderBottom: '1px solid #000000',
+                                                                        backgroundColor: '#f8fafc',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center'
                                                                     }}>
+                                                                        <Typography variant="body2" sx={{
+                                                                            fontWeight: 600,
+                                                                            color: '#3f51b5',
+                                                                            fontSize: '13px'
+                                                                        }}>
                                                                         {sortSizes([...groupedItem.sizes]).join(', ')}
-                                                                    </Typography>
-                                                                </Box>
-                                                                
+                                                                        </Typography>
+                                                                    </Box>
+                                                                    
                                                                 {/* Quantity - Show View button */}
-                                                                <Box sx={{
-                                                                    p: 2,
-                                                                    borderRight: '1px solid #000000',
-                                                                    borderBottom: '1px solid #000000',
-                                                                    backgroundColor: '#f8fafc',
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'center'
-                                                                }}>
+                                                                    <Box sx={{
+                                                                        p: 2,
+                                                                        borderRight: '1px solid #000000',
+                                                                        borderBottom: '1px solid #000000',
+                                                                        backgroundColor: '#f8fafc',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center'
+                                                                    }}>
                                                                     <Button
                                                                         variant="outlined"
                                                                         size="small"
@@ -1707,45 +1707,45 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                     >
                                                                         View
                                                                     </Button>
-                                                                </Box>
-                                                                
-                                                                {/* Color */}
-                                                                <Box sx={{
-                                                                    p: 2,
-                                                                    borderRight: '1px solid #000000',
-                                                                    borderBottom: '1px solid #000000',
-                                                                    backgroundColor: '#f8fafc',
-                                                                    display: 'flex',
-                                                                    flexDirection: 'column',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'center',
-                                                                    gap: 1
-                                                                }}>
+                                                                    </Box>
+                                                                    
+                                                                    {/* Color */}
                                                                     <Box sx={{
-                                                                        width: 26,
-                                                                        height: 16,
-                                                                        backgroundColor: groupedItem.color || '#000',
-                                                                        borderRadius: 0.5,
-                                                                        border: '1px solid #e5e7eb'
-                                                                    }} />
-                                                                    <Typography variant="caption" sx={{
-                                                                        color: '#64748b',
-                                                                        fontSize: '12px'
+                                                                        p: 2,
+                                                                        borderRight: '1px solid #000000',
+                                                                        borderBottom: '1px solid #000000',
+                                                                        backgroundColor: '#f8fafc',
+                                                                        display: 'flex',
+                                                                    flexDirection: 'column',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        gap: 1
                                                                     }}>
+                                                                        <Box sx={{
+                                                                        width: 26,
+                                                                            height: 16,
+                                                                        backgroundColor: groupedItem.color || '#000',
+                                                                            borderRadius: 0.5,
+                                                                            border: '1px solid #e5e7eb'
+                                                                        }} />
+                                                                        <Typography variant="caption" sx={{
+                                                                            color: '#64748b',
+                                                                            fontSize: '12px'
+                                                                        }}>
                                                                         {groupedItem.color || '#000'}
-                                                                    </Typography>
-                                                                </Box>
-                                                                
-                                                                {/* Logo Position */}
-                                                                <Box sx={{
-                                                                    p: 2,
-                                                                    borderRight: '1px solid #000000',
-                                                                    borderBottom: '1px solid #000000',
-                                                                    backgroundColor: '#f8fafc',
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'center'
-                                                                }}>
+                                                                        </Typography>
+                                                                    </Box>
+                                                                    
+                                                                    {/* Logo Position */}
+                                                                    <Box sx={{
+                                                                        p: 2,
+                                                                        borderRight: '1px solid #000000',
+                                                                        borderBottom: '1px solid #000000',
+                                                                        backgroundColor: '#f8fafc',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center'
+                                                                    }}>
                                                                     {(() => {
                                                                         const logoPosition = groupedItem.logoPosition;
                                                                         const logoHeight = groupedItem.baseLogoHeight || 0;
@@ -1753,13 +1753,13 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                         
                                                                         if (logoPosition && logoHeight > 0 && logoWidth > 0) {
                                                                             return (
-                                                                                <Typography variant="body2" sx={{
-                                                                                    fontWeight: 500,
-                                                                                    color: '#1e293b',
-                                                                                    fontSize: '12px'
-                                                                                }}>
+                                                                        <Typography variant="body2" sx={{
+                                                                            fontWeight: 500,
+                                                                            color: '#1e293b',
+                                                                            fontSize: '12px'
+                                                                        }}>
                                                                                     {logoPosition}
-                                                                                </Typography>
+                                                                        </Typography>
                                                                             );
                                                                         } else {
                                                                             return (
@@ -1773,16 +1773,16 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                             );
                                                                         }
                                                                     })()}
-                                                                </Box>
-                                                                
+                                                                    </Box>
+                                                                    
                                                                 {/* Logo Size */}
-                                                                <Box sx={{
-                                                                    p: 2,
+                                                                    <Box sx={{
+                                                                        p: 2,
                                                                     borderRight: '1px solid #000000',
-                                                                    borderBottom: '1px solid #000000',
-                                                                    backgroundColor: '#f8fafc',
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
+                                                                        borderBottom: '1px solid #000000',
+                                                                        backgroundColor: '#f8fafc',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
                                                                     justifyContent: 'center'
                                                                 }}>
                                                                     {(() => {
@@ -1815,10 +1815,10 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                             );
                                                                         }
                                                                     })()}
-                                                                </Box>
+                                                                                </Box>
                                                                 
                                                                 {/* Images */}
-                                                                <Box sx={{
+                                                                                <Box sx={{
                                                                     p: 2,
                                                                     borderBottom: '1px solid #000000',
                                                                     backgroundColor: '#f8fafc',
@@ -1838,7 +1838,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                             py: 0.5,
                                                                             px: 1.5,
                                                                             minWidth: 'auto',
-                                                                            '&:hover': {
+                                                                                    '&:hover': {
                                                                                 borderColor: '#303f9f',
                                                                                 backgroundColor: 'rgba(63, 81, 181, 0.1)'
                                                                             }
@@ -1846,13 +1846,13 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                     >
                                                                         View Images
                                                                     </Button>
-                                                                </Box>
-                                                            </React.Fragment>
-                                                        );
-                                                    });
-                                                    
-                                                    return rows;
-                                                })()}
+                                                                    </Box>
+                                                                </React.Fragment>
+                                                            );
+                                                });
+                                                
+                                                return rows;
+                                            })()}
                                             </Box>
                                         </Box>
                                     )}
