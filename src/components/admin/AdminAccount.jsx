@@ -11,13 +11,14 @@ import {
     Chip,
     CircularProgress
 } from "@mui/material";
-import { Table, Space, Empty, Input, Select, Modal, Descriptions, Badge, Tag } from 'antd';
-import { SearchOutlined, EyeOutlined, UserOutlined, BookOutlined, ToolOutlined, ShopOutlined, FilterOutlined, RefreshIcon } from '@ant-design/icons';
-import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
+import { Table, Space, Empty, Input, Select, Modal, Descriptions, Badge, Tag, DatePicker, Form } from 'antd';
+import { SearchOutlined, UserOutlined, BookOutlined, ToolOutlined, ShopOutlined, FilterOutlined, StopOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Visibility, PersonOff } from '@mui/icons-material';
 import { enqueueSnackbar } from 'notistack';
 import { getAccountList, changeAccountStatus } from '../../services/AccountService.jsx';
+import dayjs from 'dayjs';
 
-const { Search } = Input;
+const { Search, TextArea } = Input;
 const { Option } = Select;
 
 // Constants
@@ -30,8 +31,7 @@ const ROLE_COLORS = {
 
 const STATUS_COLORS = {
     ACCOUNT_ACTIVE: '#52c41a',
-    ACCOUNT_INACTIVE: '#ff4d4f',
-    ACCOUNT_BANNED: '#ff7875'
+    ACCOUNT_INACTIVE: '#ff4d4f'
 };
 
 // StatCard Component
@@ -115,21 +115,53 @@ export default function AdminAccount() {
     const [statusFilter, setStatusFilter] = useState('all');
     const [selectedAccount, setSelectedAccount] = useState(null);
     const [detailModalVisible, setDetailModalVisible] = useState(false);
+    const [restrictModalVisible, setRestrictModalVisible] = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
+    const [restrictForm] = Form.useForm();
 
     // Fetch accounts from API
     const fetchAccounts = useCallback(async () => {
         setLoading(true);
         try {
             const response = await getAccountList();
+            
             if (response && response.status === 200) {
-                setAccounts(response.data || []);
-                enqueueSnackbar('Accounts loaded successfully', { variant: 'success' });
+                let accountsData = response.data;
+                
+                // Handle different response structures
+                if (accountsData && typeof accountsData === 'object') {
+                    // If data is wrapped in a property like { accounts: [...] }
+                    if (accountsData.accounts && Array.isArray(accountsData.accounts)) {
+                        accountsData = accountsData.accounts;
+                    }
+                    // If data is directly an array
+                    else if (Array.isArray(accountsData)) {
+                        // Data is already an array, use it directly
+                    }
+                    // If data has other structure, try to find the array
+                    else {
+                        const keys = Object.keys(accountsData);
+                        const arrayKey = keys.find(key => Array.isArray(accountsData[key]));
+                        if (arrayKey) {
+                            accountsData = accountsData[arrayKey];
+                        } else {
+                            accountsData = [];
+                        }
+                    }
+                } else {
+                    accountsData = [];
+                }
+                
+                setAccounts(accountsData);
+                enqueueSnackbar(`Loaded ${accountsData.length} accounts successfully`, { variant: 'success' });
             } else {
                 enqueueSnackbar('Failed to load accounts', { variant: 'error' });
+                setAccounts([]);
             }
         } catch (error) {
             console.error('Error fetching accounts:', error);
             enqueueSnackbar('Error loading accounts', { variant: 'error' });
+            setAccounts([]);
         } finally {
             setLoading(false);
         }
@@ -191,8 +223,6 @@ export default function AdminAccount() {
                 return 'success';
             case 'ACCOUNT_INACTIVE':
                 return 'error';
-            case 'ACCOUNT_BANNED':
-                return 'error';
             default:
                 return 'default';
         }
@@ -204,8 +234,6 @@ export default function AdminAccount() {
                 return 'Active';
             case 'ACCOUNT_INACTIVE':
                 return 'Inactive';
-            case 'ACCOUNT_BANNED':
-                return 'Banned';
             default:
                 return status;
         }
@@ -233,8 +261,42 @@ export default function AdminAccount() {
         fetchAccounts();
     };
 
+    const handleRestrict = (account) => {
+        setSelectedAccount(account);
+        setRestrictModalVisible(true);
+        restrictForm.resetFields();
+    };
+
+    const handleRestrictAccount = async (values) => {
+        setActionLoading(true);
+        try {
+            const response = await changeAccountStatus({
+                accountId: selectedAccount.id,
+                status: 'ACCOUNT_INACTIVE',
+                reason: values.reason,
+                endDate: values.endDate.format('YYYY-MM-DD')
+            });
+
+            if (response && response.status === 200) {
+                enqueueSnackbar('Account restricted successfully', { variant: 'success' });
+                setRestrictModalVisible(false);
+                fetchAccounts(); // Refresh data
+            } else {
+                enqueueSnackbar('Failed to restrict account', { variant: 'error' });
+            }
+        } catch (error) {
+            console.error('Error restricting account:', error);
+            enqueueSnackbar('Error restricting account', { variant: 'error' });
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
     // Filtered accounts
     const filteredAccounts = useMemo(() => {
+        if (!Array.isArray(accounts)) {
+            return [];
+        }
         return accounts.filter(account => {
             const matchesSearch = account.email.toLowerCase().includes(searchText.toLowerCase()) ||
                                 account.id.toString().includes(searchText);
@@ -247,13 +309,17 @@ export default function AdminAccount() {
 
     // Statistics
     const stats = useMemo(() => {
+        if (!Array.isArray(accounts)) {
+            return { total: 0, active: 0, inactive: 0, schools: 0, designers: 0, garments: 0 };
+        }
         const total = accounts.length;
         const active = accounts.filter(a => a.status === 'ACCOUNT_ACTIVE').length;
+        const inactive = accounts.filter(a => a.status === 'ACCOUNT_INACTIVE').length;
         const schools = accounts.filter(a => a.role === 'SCHOOL').length;
         const designers = accounts.filter(a => a.role === 'DESIGNER').length;
         const garments = accounts.filter(a => a.role === 'GARMENT').length;
 
-        return { total, active, schools, designers, garments };
+        return { total, active, inactive, schools, designers, garments };
     }, [accounts]);
 
     // Table columns
@@ -287,9 +353,8 @@ export default function AdminAccount() {
             dataIndex: 'role',
             key: 'role',
             width: 140,
-            align: 'center',
+            align: 'left',
             filters: [
-                { text: 'Administrator', value: 'ADMIN' },
                 { text: 'School', value: 'SCHOOL' },
                 { text: 'Designer', value: 'DESIGNER' },
                 { text: 'Garment Factory', value: 'GARMENT' }
@@ -312,8 +377,7 @@ export default function AdminAccount() {
             align: 'center',
             filters: [
                 { text: 'Active', value: 'ACCOUNT_ACTIVE' },
-                { text: 'Inactive', value: 'ACCOUNT_INACTIVE' },
-                { text: 'Banned', value: 'ACCOUNT_BANNED' }
+                { text: 'Inactive', value: 'ACCOUNT_INACTIVE' }
             ],
             onFilter: (value, record) => record.status === value,
             render: (status) => (
@@ -342,23 +406,49 @@ export default function AdminAccount() {
         {
             title: 'Actions',
             key: 'actions',
-            width: 100,
+            width: 120,
             align: 'center',
+            fixed: 'right',
             render: (_, record) => (
-                <Tooltip title="View Details">
-                    <Button
-                        type="primary"
-                        icon={<EyeOutlined />}
-                        size="small"
-                        onClick={() => handleViewDetail(record)}
-                    />
-                </Tooltip>
+                <Space size="small">
+                    <Tooltip title="View Details">
+                        <Button
+                            type="primary"
+                            size="small"
+                            onClick={() => handleViewDetail(record)}
+                            style={{ display: 'flex', alignItems: 'center', padding: '4px 8px' }}
+                        >
+                            <Visibility style={{ fontSize: 16 }} />
+                        </Button>
+                    </Tooltip>
+                    {record.status === 'ACCOUNT_ACTIVE' && (
+                        <Tooltip title="Restrict Account">
+                            <Button
+                                danger
+                                size="small"
+                                loading={actionLoading && selectedAccount?.id === record.id}
+                                onClick={() => handleRestrict(record)}
+                                style={{ display: 'flex', alignItems: 'center', padding: '4px 8px' }}
+                            >
+                                <PersonOff style={{ fontSize: 16, color: '#ff4d4f' }} />
+                            </Button>
+                        </Tooltip>
+                    )}
+                </Space>
             )
         }
     ], []);
 
     return (
-        <Box sx={{ height: '100%', overflowY: 'auto' }}>
+        <Box sx={{ 
+            height: '100%', 
+            overflowY: 'auto',
+            '& @keyframes pulse': {
+                '0%': { opacity: 1 },
+                '50%': { opacity: 0.4 },
+                '100%': { opacity: 1 }
+            }
+        }}>
             {/* Header Section */}
             <Box 
                 sx={{ 
@@ -410,27 +500,24 @@ export default function AdminAccount() {
                             style={{ width: 150 }}
                             value={roleFilter}
                             onChange={handleRoleFilter}
+                            loading={loading}
                         >
-                            <Option value="all">All Roles ({accounts.length})</Option>
-                            <Option value="ADMIN">Admin ({accounts.filter(a => a.role === 'ADMIN').length})</Option>
-                            <Option value="SCHOOL">School ({accounts.filter(a => a.role === 'SCHOOL').length})</Option>
-                            <Option value="DESIGNER">Designer ({accounts.filter(a => a.role === 'DESIGNER').length})</Option>
-                            <Option value="GARMENT">Garment ({accounts.filter(a => a.role === 'GARMENT').length})</Option>
+                            <Option value="all">All Roles ({loading ? '...' : Array.isArray(accounts) ? accounts.length : 0})</Option>
+                            <Option value="SCHOOL">School ({loading ? '...' : Array.isArray(accounts) ? accounts.filter(a => a.role === 'SCHOOL').length : 0})</Option>
+                            <Option value="DESIGNER">Designer ({loading ? '...' : Array.isArray(accounts) ? accounts.filter(a => a.role === 'DESIGNER').length : 0})</Option>
+                            <Option value="GARMENT">Garment ({loading ? '...' : Array.isArray(accounts) ? accounts.filter(a => a.role === 'GARMENT').length : 0})</Option>
                         </Select>
                         <Select
                             placeholder="Filter by status"
                             style={{ width: 150 }}
                             value={statusFilter}
                             onChange={handleStatusFilter}
+                            loading={loading}
                         >
-                            <Option value="all">All Status ({accounts.length})</Option>
-                            <Option value="ACCOUNT_ACTIVE">Active ({accounts.filter(a => a.status === 'ACCOUNT_ACTIVE').length})</Option>
-                            <Option value="ACCOUNT_INACTIVE">Inactive ({accounts.filter(a => a.status === 'ACCOUNT_INACTIVE').length})</Option>
-                            <Option value="ACCOUNT_BANNED">Banned ({accounts.filter(a => a.status === 'ACCOUNT_BANNED').length})</Option>
+                            <Option value="all">All Status ({loading ? '...' : Array.isArray(accounts) ? accounts.length : 0})</Option>
+                            <Option value="ACCOUNT_ACTIVE">Active ({loading ? '...' : Array.isArray(accounts) ? accounts.filter(a => a.status === 'ACCOUNT_ACTIVE').length : 0})</Option>
+                            <Option value="ACCOUNT_INACTIVE">Inactive ({loading ? '...' : Array.isArray(accounts) ? accounts.filter(a => a.status === 'ACCOUNT_INACTIVE').length : 0})</Option>
                         </Select>
-                    </Box>
-
-                    <Box sx={{ display: "flex", gap: 1 }}>
                         <Button 
                             onClick={() => {
                                 setSearchText('');
@@ -440,6 +527,9 @@ export default function AdminAccount() {
                         >
                             Clear Filters
                         </Button>
+                    </Box>
+
+                    <Box sx={{ display: "flex", gap: 1 }}>
                         <Tooltip title="Refresh Data">
                             <IconButton
                                 onClick={handleRefresh}
@@ -453,7 +543,7 @@ export default function AdminAccount() {
                                     transition: 'all 0.2s ease'
                                 }}
                             >
-                                <RefreshOutlinedIcon />
+                                <ReloadOutlined />
                             </IconButton>
                         </Tooltip>
                     </Box>
@@ -462,36 +552,86 @@ export default function AdminAccount() {
 
             {/* Statistics Cards */}
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 3, mb: 4 }}>
-                <StatCard
-                    icon={<UserOutlined style={{ fontSize: 24 }} />}
-                    value={stats.total}
-                    label="Total Accounts"
-                    color="#dc3545"
-                />
-                <StatCard
-                    icon={<UserOutlined style={{ fontSize: 24 }} />}
-                    value={stats.active}
-                    label="Active Accounts"
-                    color="#52c41a"
-                />
-                <StatCard
-                    icon={<BookOutlined style={{ fontSize: 24 }} />}
-                    value={stats.schools}
-                    label="Schools"
-                    color="#52c41a"
-                />
-                <StatCard
-                    icon={<ToolOutlined style={{ fontSize: 24 }} />}
-                    value={stats.designers}
-                    label="Designers"
-                    color="#722ed1"
-                />
-                <StatCard
-                    icon={<ShopOutlined style={{ fontSize: 24 }} />}
-                    value={stats.garments}
-                    label="Garment Factories"
-                    color="#fa8c16"
-                />
+                {loading ? (
+                    // Skeleton loading for stats cards
+                    Array.from({ length: 6 }).map((_, index) => (
+                        <Card key={index} sx={{ height: '100%', borderRadius: 2 }}>
+                            <CardContent sx={{ p: 3 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <Box>
+                                        <Box 
+                                            sx={{ 
+                                                width: 60, 
+                                                height: 40, 
+                                                backgroundColor: '#f0f0f0', 
+                                                borderRadius: 1, 
+                                                mb: 1,
+                                                animation: 'pulse 1.5s ease-in-out infinite'
+                                            }} 
+                                        />
+                                        <Box 
+                                            sx={{ 
+                                                width: 100, 
+                                                height: 16, 
+                                                backgroundColor: '#f0f0f0', 
+                                                borderRadius: 1,
+                                                animation: 'pulse 1.5s ease-in-out infinite'
+                                            }} 
+                                        />
+                                    </Box>
+                                    <Box 
+                                        sx={{ 
+                                            width: 48, 
+                                            height: 48, 
+                                            backgroundColor: '#f0f0f0', 
+                                            borderRadius: 2,
+                                            animation: 'pulse 1.5s ease-in-out infinite'
+                                        }} 
+                                    />
+                                </Box>
+                            </CardContent>
+                        </Card>
+                    ))
+                ) : (
+                    <>
+                        <StatCard
+                            icon={<UserOutlined style={{ fontSize: 24 }} />}
+                            value={stats.total}
+                            label="Total Accounts"
+                            color="#dc3545"
+                        />
+                        <StatCard
+                            icon={<UserOutlined style={{ fontSize: 24 }} />}
+                            value={stats.active}
+                            label="Active Accounts"
+                            color="#52c41a"
+                        />
+                        <StatCard
+                            icon={<StopOutlined style={{ fontSize: 24 }} />}
+                            value={stats.inactive}
+                            label="Inactive Accounts"
+                            color="#ff4d4f"
+                        />
+                        <StatCard
+                            icon={<BookOutlined style={{ fontSize: 24 }} />}
+                            value={stats.schools}
+                            label="Schools"
+                            color="#52c41a"
+                        />
+                        <StatCard
+                            icon={<ToolOutlined style={{ fontSize: 24 }} />}
+                            value={stats.designers}
+                            label="Designers"
+                            color="#722ed1"
+                        />
+                        <StatCard
+                            icon={<ShopOutlined style={{ fontSize: 24 }} />}
+                            value={stats.garments}
+                            label="Garment Factories"
+                            color="#fa8c16"
+                        />
+                    </>
+                )}
             </Box>
 
             {/* Table Section */}
@@ -524,14 +664,27 @@ export default function AdminAccount() {
                         />
                     </Box>
 
-                    {filteredAccounts.length === 0 ? (
+                    {loading ? (
+                        <Box sx={{ 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            py: 8
+                        }}>
+                            <CircularProgress size={40} sx={{ color: '#dc3545', mb: 2 }} />
+                            <Typography variant="body1" sx={{ color: '#64748b' }}>
+                                Loading accounts...
+                            </Typography>
+                        </Box>
+                    ) : filteredAccounts.length === 0 ? (
                         <EmptyState />
                     ) : (
                         <Table
                             columns={columns}
                             dataSource={filteredAccounts}
                             rowKey="id"
-                            loading={loading}
+                            loading={false}
                             pagination={{
                                 defaultPageSize: 10,
                                 pageSizeOptions: ['5', '10', '20'],
@@ -591,6 +744,72 @@ export default function AdminAccount() {
                             {new Date(selectedAccount.registerDate).toLocaleDateString('vi-VN')}
                         </Descriptions.Item>
                     </Descriptions>
+                )}
+            </Modal>
+
+            {/* Restrict Account Modal */}
+            <Modal
+                title="Restrict Account"
+                open={restrictModalVisible}
+                onCancel={() => setRestrictModalVisible(false)}
+                footer={[
+                    <Button key="cancel" onClick={() => setRestrictModalVisible(false)}>
+                        Cancel
+                    </Button>,
+                    <Button 
+                        key="restrict" 
+                        danger 
+                        loading={actionLoading}
+                        onClick={() => restrictForm.submit()}
+                    >
+                        Restrict Account
+                    </Button>
+                ]}
+                width={500}
+            >
+                {selectedAccount && (
+                    <div>
+                        <Box sx={{ mb: 2, p: 2, backgroundColor: '#fff2f0', borderRadius: 1, border: '1px solid #ffccc7' }}>
+                            <Typography variant="body2" sx={{ color: '#cf1322', fontWeight: 500 }}>
+                                ⚠️ You are about to restrict account: <strong>{selectedAccount.email}</strong>
+                            </Typography>
+                        </Box>
+                        
+                        <Form
+                            form={restrictForm}
+                            layout="vertical"
+                            onFinish={handleRestrictAccount}
+                        >
+                            <Form.Item
+                                label="Reason for Restriction"
+                                name="reason"
+                                rules={[
+                                    { required: true, message: 'Please provide a reason for restricting this account' },
+                                    { min: 10, message: 'Reason must be at least 10 characters long' }
+                                ]}
+                            >
+                                <TextArea
+                                    rows={4}
+                                    placeholder="Enter the reason why this account should be restricted..."
+                                />
+                            </Form.Item>
+                            
+                            <Form.Item
+                                label="Restriction End Date"
+                                name="endDate"
+                                rules={[
+                                    { required: true, message: 'Please select an end date for the restriction' }
+                                ]}
+                                help="Select when the restriction should end"
+                            >
+                                <DatePicker
+                                    style={{ width: '100%' }}
+                                    placeholder="Select end date for restriction"
+                                    disabledDate={(current) => current && current.isBefore(dayjs(), 'day')}
+                                />
+                            </Form.Item>
+                        </Form>
+                    </div>
                 )}
             </Modal>
         </Box>
