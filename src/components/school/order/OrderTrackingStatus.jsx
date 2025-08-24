@@ -7,6 +7,10 @@ import {
     CardContent,
     Chip,
     CircularProgress,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
     Divider,
     Grid,
     IconButton,
@@ -24,13 +28,16 @@ import {
     CheckCircle as CheckCircleIcon,
     DesignServices as DesignServicesIcon,
     Email as EmailIcon,
+    Groups as GroupsIcon,
     Info as InfoIcon,
     LocalShipping as LocalShippingIcon,
     LocationOn as LocationIcon,
     Pending as PendingIcon,
     Phone as PhoneIcon,
     Refresh as RefreshIcon,
+    School as SchoolIcon,
     ShoppingCart as ShoppingCartIcon,
+    TableChart as TableChartIcon,
     TrendingUp as TrendingUpIcon,
     Inventory as InventoryIcon
 } from '@mui/icons-material';
@@ -137,6 +144,8 @@ export default function OrderTrackingStatus() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isRetrying, setIsRetrying] = useState(false);
+    const [showQuantityDetailsDialog, setShowQuantityDetailsDialog] = useState(false);
+    const [selectedQuantityDetails, setSelectedQuantityDetails] = useState(null);
 
     // Lấy orderId từ sessionStorage
     const orderId = sessionStorage.getItem('trackingOrderId');
@@ -180,6 +189,16 @@ export default function OrderTrackingStatus() {
 
     const handleGoBack = () => {
         navigate('/school/order');
+    };
+
+    const handleOpenQuantityDetails = (groupedItem) => {
+        setSelectedQuantityDetails(groupedItem);
+        setShowQuantityDetailsDialog(true);
+    };
+
+    const handleCloseQuantityDetails = () => {
+        setShowQuantityDetailsDialog(false);
+        setSelectedQuantityDetails(null);
     };
 
     const formatDate = (dateString) => {
@@ -532,7 +551,7 @@ export default function OrderTrackingStatus() {
                                             mr: 2,
                                             boxShadow: '0 2px 8px rgba(168, 85, 247, 0.2)'
                                         }}>
-                                            <InventoryIcon sx={{color: 'white', fontSize: 18}} />
+                                            <SchoolIcon sx={{color: 'white', fontSize: 18}} />
                                         </Box>
                                         <Box>
                                             <Typography variant="caption" sx={{
@@ -835,171 +854,286 @@ export default function OrderTrackingStatus() {
                                     </Box>
                                     
                                     {/* Data Rows */}
-                                    {orderDetail.orderDetails?.map((item, index) => (
-                                        <React.Fragment key={index}>
-                                            <Box sx={{
-                                                p: 2,
-                                                borderRight: '1px solid #000000',
-                                                borderBottom: '1px solid #000000',
-                                                backgroundColor: '#f8fafc',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}>
-                                                <Chip
-                                                    label={item.deliveryItem?.designItem?.category === 'pe' ? 'PE' : 'Regular'}
-                                                    size="small"
-                                                    sx={{
-                                                        backgroundColor: item.deliveryItem?.designItem?.category === 'pe' ? '#dcfce7' : '#dbeafe',
-                                                        color: item.deliveryItem?.designItem?.category === 'pe' ? '#065f46' : '#1e40af',
-                                                        fontWeight: 600,
-                                                        fontSize: '11px',
-                                                        height: 20,
-                                                        order: item.deliveryItem?.designItem?.category === 'pe' ? 2 : 1
-                                                    }}
-                                                />
-                                            </Box>
+                                    {(() => {
+                                        // Function to group items by category with rowspan support (similar to GarmentCreateQuotation)
+                                        const groupItemsByCategory = (orderDetails) => {
+                                            if (!orderDetails || orderDetails.length === 0) return [];
                                             
-                                            <Box sx={{
-                                                p: 2,
-                                                borderRight: '1px solid #000000',
-                                                borderBottom: '1px solid #000000',
-                                                backgroundColor: '#f8fafc',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}>
-                                                <Typography variant="body2" sx={{
-                                                    fontWeight: 600,
-                                                    color: '#374151',
-                                                    fontSize: '13px',
-                                                    textTransform: 'capitalize'
-                                                }}>
-                                                    {item.deliveryItem?.designItem?.gender === 'boy' ? 'Boy' : 
-                                                     item.deliveryItem?.designItem?.gender === 'girl' ? 'Girl' : 
-                                                     item.deliveryItem?.designItem?.gender || 'Unknown'}
-                                                </Typography>
-                                            </Box>
+                                            // First, group by category
+                                            const categoryGroups = {};
                                             
-                                            <Box sx={{
-                                                p: 2,
-                                                borderRight: '1px solid #000000',
-                                                borderBottom: '1px solid #000000',
-                                                backgroundColor: '#f8fafc',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}>
-                                                <Typography variant="body2" sx={{
-                                                    fontWeight: 600,
-                                                    color: '#374151',
-                                                    fontSize: '13px',
-                                                    textTransform: 'capitalize'
-                                                }}>
-                                                    {item.deliveryItem?.designItem?.type || 'Item'}
-                                                </Typography>
-                                            </Box>
+                                            orderDetails.forEach((item) => {
+                                                const category = item.deliveryItem?.designItem?.category || 'regular';
+                                                const gender = item.deliveryItem?.designItem?.gender || 'unknown';
+                                                const type = item.deliveryItem?.designItem?.type || 'item';
+                                                
+                                                if (!categoryGroups[category]) {
+                                                    categoryGroups[category] = {};
+                                                }
+                                                
+                                                if (!categoryGroups[category][gender]) {
+                                                    categoryGroups[category][gender] = [];
+                                                }
+                                                
+                                                // Find existing group for this type
+                                                let existingGroup = categoryGroups[category][gender].find(group => 
+                                                    group.type === type
+                                                );
+                                                
+                                                if (!existingGroup) {
+                                                    existingGroup = {
+                                                        category,
+                                                        gender,
+                                                        type,
+                                                        sizes: [],
+                                                        quantities: {},
+                                                        items: [],
+                                                        totalQuantity: 0,
+                                                        // Common properties from first item
+                                                        color: item.deliveryItem?.designItem?.color,
+                                                        logoPosition: item.deliveryItem?.designItem?.logoPosition,
+                                                        baseLogoHeight: item.deliveryItem?.baseLogoHeight,
+                                                        baseLogoWidth: item.deliveryItem?.baseLogoWidth
+                                                    };
+                                                    categoryGroups[category][gender].push(existingGroup);
+                                                }
+                                                
+                                                const size = item.size || 'M';
+                                                const quantity = item.quantity || 0;
+                                                
+                                                if (!existingGroup.sizes.includes(size)) {
+                                                    existingGroup.sizes.push(size);
+                                                }
+                                                
+                                                existingGroup.quantities[size] = quantity;
+                                                existingGroup.items.push(item);
+                                                existingGroup.totalQuantity += quantity;
+                                            });
                                             
-                                            <Box sx={{
-                                                p: 2,
-                                                borderRight: '1px solid #000000',
-                                                borderBottom: '1px solid #000000',
-                                                backgroundColor: '#f8fafc',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}>
-                                                <Typography variant="body2" sx={{
-                                                    fontWeight: 600,
-                                                    color: '#3f51b5',
-                                                    fontSize: '13px'
-                                                }}>
-                                                    {item.size || 'M'}
-                                                </Typography>
-                                            </Box>
+                                            // Convert to array with category and gender info for rowspan
+                                            const result = [];
+                                            Object.entries(categoryGroups).forEach(([category, genderGroups]) => {
+                                                const totalCategoryRows = Object.values(genderGroups).reduce((sum, groups) => 
+                                                    sum + groups.length, 0
+                                                );
+                                                
+                                                Object.entries(genderGroups).forEach(([gender, groups]) => {
+                                                    groups.forEach((group, index) => {
+                                                        const isFirstInCategory = Object.keys(genderGroups).indexOf(gender) === 0 && index === 0;
+                                                        const isFirstInGender = index === 0;
+                                                        
+                                                        result.push({
+                                                            ...group,
+                                                            isFirstInCategory,
+                                                            categoryRowSpan: totalCategoryRows,
+                                                            isFirstInGender,
+                                                            genderRowSpan: groups.length
+                                                        });
+                                                    });
+                                                });
+                                            });
                                             
-                                            <Box sx={{
-                                                p: 2,
-                                                borderRight: '1px solid #000000',
-                                                borderBottom: '1px solid #000000',
-                                                backgroundColor: '#f8fafc',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}>
-                                                <Typography variant="body2" sx={{
-                                                    fontWeight: 600,
-                                                    color: '#3f51b5',
-                                                    fontSize: '13px'
-                                                }}>
-                                                    {item.quantity || 0}
-                                                </Typography>
-                                            </Box>
-                                            
-                                            <Box sx={{
-                                                p: 2,
-                                                borderRight: '1px solid #000000',
-                                                borderBottom: '1px solid #000000',
-                                                backgroundColor: '#f8fafc',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                gap: 1
-                                            }}>
-                                                <Box sx={{
-                                                    width: 26,
-                                                    height: 16,
-                                                    backgroundColor: item.deliveryItem?.designItem?.color || '#000',
-                                                    borderRadius: 0.5,
-                                                    border: '1px solid #e5e7eb'
-                                                }} />
-                                                <Typography variant="caption" sx={{
-                                                    color: '#64748b',
-                                                    fontSize: '12px'
-                                                }}>
-                                                    {item.deliveryItem?.designItem?.color || '#000'}
-                                                </Typography>
-                                            </Box>
-                                            
-                                            <Box sx={{
-                                                p: 2,
-                                                borderBottom: '1px solid #000000',
-                                                backgroundColor: '#f8fafc',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}>
-                                                {(() => {
-                                                    const logoPosition = item.deliveryItem?.designItem?.logoPosition;
-                                                    const logoHeight = item.deliveryItem?.baseLogoHeight || 0;
-                                                    const logoWidth = item.deliveryItem?.baseLogoWidth || 0;
-                                                    
-                                                    if (logoPosition && logoHeight > 0 && logoWidth > 0) {
-                                                        return (
-                                                            <Typography variant="body2" sx={{
-                                                                fontWeight: 500,
-                                                                color: '#1e293b',
-                                                                fontSize: '12px'
-                                                            }}>
-                                                                {logoPosition}
-                                                            </Typography>
-                                                        );
-                                                    } else {
-                                                        return (
-                                                            <Typography variant="caption" sx={{
-                                                                color: '#9ca3af',
+                                            return result;
+                                        };
+
+                                        const groupedItems = groupItemsByCategory(orderDetail.orderDetails || []);
+                                        
+                                        return groupedItems.map((groupedItem, index) => (
+                                            <React.Fragment key={`${groupedItem.category}-${groupedItem.gender}-${groupedItem.type}-${index}`}>
+                                                {/* Category - with rowspan */}
+                                                {groupedItem.isFirstInCategory && (
+                                                    <Box sx={{
+                                                        p: 2,
+                                                        borderRight: '1px solid #000000',
+                                                        borderBottom: '1px solid #000000',
+                                                        backgroundColor: '#f8fafc',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        gridRow: `span ${groupedItem.categoryRowSpan}`,
+                                                        minHeight: `${60 * groupedItem.categoryRowSpan}px`
+                                                    }}>
+                                                        <Chip
+                                                            label={groupedItem.category === 'pe' ? 'PE' : 'Regular'}
+                                                            size="small"
+                                                            sx={{
+                                                                backgroundColor: groupedItem.category === 'pe' ? '#dcfce7' : '#dbeafe',
+                                                                color: groupedItem.category === 'pe' ? '#065f46' : '#1e40af',
+                                                                fontWeight: 600,
                                                                 fontSize: '11px',
-                                                                fontStyle: 'italic'
-                                                            }}>
-                                                                No Logo
-                                                            </Typography>
-                                                        );
-                                                    }
-                                                })()}
-                                            </Box>
-                                        </React.Fragment>
-                                    ))}
+                                                                height: 20
+                                                            }}
+                                                        />
+                                                    </Box>
+                                                )}
+                                                
+                                                {/* Gender - with rowspan */}
+                                                {groupedItem.isFirstInGender && (
+                                                    <Box sx={{
+                                                        p: 2,
+                                                        borderRight: '1px solid #000000',
+                                                        borderBottom: '1px solid #000000',
+                                                        backgroundColor: '#f8fafc',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        gridRow: `span ${groupedItem.genderRowSpan}`,
+                                                        minHeight: `${60 * groupedItem.genderRowSpan}px`
+                                                    }}>
+                                                        <Typography variant="body2" sx={{
+                                                            fontWeight: 600,
+                                                            color: '#374151',
+                                                            fontSize: '13px',
+                                                            textTransform: 'capitalize'
+                                                        }}>
+                                                            {groupedItem.gender === 'boy' ? 'Boy' : 
+                                                             groupedItem.gender === 'girl' ? 'Girl' : 
+                                                             groupedItem.gender || 'Unknown'}
+                                                        </Typography>
+                                                    </Box>
+                                                )}
+                                                
+                                                {/* Type */}
+                                                <Box sx={{
+                                                    p: 2,
+                                                    borderRight: '1px solid #000000',
+                                                    borderBottom: '1px solid #000000',
+                                                    backgroundColor: '#f8fafc',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                }}>
+                                                    <Typography variant="body2" sx={{
+                                                        fontWeight: 600,
+                                                        color: '#374151',
+                                                        fontSize: '13px',
+                                                        textTransform: 'capitalize'
+                                                    }}>
+                                                        {groupedItem.type || 'Item'}
+                                                    </Typography>
+                                                </Box>
+                                                
+                                                {/* Size - Show all sizes */}
+                                                <Box sx={{
+                                                    p: 2,
+                                                    borderRight: '1px solid #000000',
+                                                    borderBottom: '1px solid #000000',
+                                                    backgroundColor: '#f8fafc',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                }}>
+                                                    <Typography variant="body2" sx={{
+                                                        fontWeight: 600,
+                                                        color: '#3f51b5',
+                                                        fontSize: '13px'
+                                                    }}>
+                                                        {groupedItem.sizes.sort((a, b) => {
+                                                            const sizeOrder = ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
+                                                            return sizeOrder.indexOf(a) - sizeOrder.indexOf(b);
+                                                        }).join(', ')}
+                                                    </Typography>
+                                                </Box>
+                                                
+                                                {/* Quantity - Show View button */}
+                                                <Box sx={{
+                                                    p: 2,
+                                                    borderRight: '1px solid #000000',
+                                                    borderBottom: '1px solid #000000',
+                                                    backgroundColor: '#f8fafc',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                }}>
+                                                    <Button
+                                                        variant="outlined"
+                                                        size="small"
+                                                        onClick={() => handleOpenQuantityDetails(groupedItem)}
+                                                        startIcon={<InfoIcon />}
+                                                        sx={{
+                                                            borderColor: '#3f51b5',
+                                                            color: '#3f51b5',
+                                                            fontSize: '11px',
+                                                            py: 0.5,
+                                                            px: 1.5,
+                                                            minWidth: 'auto',
+                                                            '&:hover': {
+                                                                borderColor: '#303f9f',
+                                                                backgroundColor: 'rgba(63, 81, 181, 0.1)'
+                                                            }
+                                                        }}
+                                                    >
+                                                        View
+                                                    </Button>
+                                                </Box>
+                                                
+                                                {/* Color */}
+                                                <Box sx={{
+                                                    p: 2,
+                                                    borderRight: '1px solid #000000',
+                                                    borderBottom: '1px solid #000000',
+                                                    backgroundColor: '#f8fafc',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: 1
+                                                }}>
+                                                    <Box sx={{
+                                                        width: 26,
+                                                        height: 16,
+                                                        backgroundColor: groupedItem.color || '#000',
+                                                        borderRadius: 0.5,
+                                                        border: '1px solid #e5e7eb'
+                                                    }} />
+                                                    <Typography variant="caption" sx={{
+                                                        color: '#64748b',
+                                                        fontSize: '12px'
+                                                    }}>
+                                                        {groupedItem.color || '#000'}
+                                                    </Typography>
+                                                </Box>
+                                                
+                                                {/* Logo Position */}
+                                                <Box sx={{
+                                                    p: 2,
+                                                    borderBottom: '1px solid #000000',
+                                                    backgroundColor: '#f8fafc',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                }}>
+                                                    {(() => {
+                                                        const logoPosition = groupedItem.logoPosition;
+                                                        const logoHeight = groupedItem.baseLogoHeight || 0;
+                                                        const logoWidth = groupedItem.baseLogoWidth || 0;
+                                                        
+                                                        if (logoPosition && logoHeight > 0 && logoWidth > 0) {
+                                                            return (
+                                                                <Typography variant="body2" sx={{
+                                                                    fontWeight: 500,
+                                                                    color: '#1e293b',
+                                                                    fontSize: '12px'
+                                                                }}>
+                                                                    {logoPosition}
+                                                                </Typography>
+                                                            );
+                                                        } else {
+                                                            return (
+                                                                <Typography variant="caption" sx={{
+                                                                    color: '#9ca3af',
+                                                                    fontSize: '11px',
+                                                                    fontStyle: 'italic'
+                                                                }}>
+                                                                    No Logo
+                                                                </Typography>
+                                                            );
+                                                        }
+                                                    })()}
+                                                </Box>
+                                            </React.Fragment>
+                                        ));
+                                    })()}
                                 </Box>
                             </Box>
                         </Box>
@@ -1216,6 +1350,197 @@ export default function OrderTrackingStatus() {
                     </CardContent>
                 </Card>
             )}
+
+            {/* Quantity Details Dialog */}
+            <Dialog
+                open={showQuantityDetailsDialog}
+                onClose={handleCloseQuantityDetails}
+                maxWidth="sm"
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        borderRadius: 3,
+                        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
+                        overflow: 'hidden'
+                    }
+                }}
+            >
+                <DialogTitle sx={{
+                    background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    p: 3
+                }}>
+                    <Box sx={{
+                        p: 1,
+                        borderRadius: 2,
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <InfoIcon sx={{ fontSize: 20 }} />
+                    </Box>
+                    Quantity Details
+                </DialogTitle>
+                
+                <DialogContent sx={{ p: 3 }}>
+                    {selectedQuantityDetails && (
+                        <Box>
+                            {/* Item Info Header */}
+                            <Card sx={{
+                                background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+                                border: '1px solid #cbd5e1',
+                                borderRadius: 2,
+                                mb: 3
+                            }}>
+                                <CardContent sx={{ p: 2.5 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                                        <Chip
+                                            label={selectedQuantityDetails.category === 'pe' ? 'PE' : 'Regular'}
+                                            size="small"
+                                            sx={{
+                                                backgroundColor: selectedQuantityDetails.category === 'pe' ? '#dcfce7' : '#dbeafe',
+                                                color: selectedQuantityDetails.category === 'pe' ? '#065f46' : '#1e40af',
+                                                fontWeight: 600
+                                            }}
+                                        />
+                                        <Chip
+                                            label={selectedQuantityDetails.type}
+                                            size="small"
+                                            sx={{
+                                                backgroundColor: '#e0e7ff',
+                                                color: '#3730a3',
+                                                fontWeight: 600,
+                                                textTransform: 'capitalize'
+                                            }}
+                                        />
+                                    </Box>
+                                    
+                                    <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b' }}>
+                                        Total Quantity: {selectedQuantityDetails.totalQuantity}
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+
+                            {/* Size Breakdown Table */}
+                            <Card sx={{
+                                border: '1px solid #e2e8f0',
+                                borderRadius: 2,
+                                overflow: 'hidden'
+                            }}>
+                                <Box sx={{
+                                    background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
+                                    p: 2,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1.5
+                                }}>
+                                    <TableChartIcon sx={{ color: 'white', fontSize: 20 }} />
+                                    <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
+                                        Size Breakdown
+                                    </Typography>
+                                </Box>
+                                
+                                <Box sx={{ p: 0 }}>
+                                    <Box sx={{
+                                        display: 'grid',
+                                        gridTemplateColumns: '1fr 1fr',
+                                        borderBottom: '2px solid #e2e8f0'
+                                    }}>
+                                        <Box sx={{
+                                            p: 2,
+                                            backgroundColor: '#f8fafc',
+                                            borderRight: '1px solid #e2e8f0',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}>
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1e293b' }}>
+                                                Size
+                                            </Typography>
+                                        </Box>
+                                        <Box sx={{
+                                            p: 2,
+                                            backgroundColor: '#f8fafc',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}>
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1e293b' }}>
+                                                Quantity
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                    
+                                    {selectedQuantityDetails.sizes.sort((a, b) => {
+                                        const sizeOrder = ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
+                                        return sizeOrder.indexOf(a) - sizeOrder.indexOf(b);
+                                    }).map((size) => (
+                                        <Box key={size} sx={{
+                                            display: 'grid',
+                                            gridTemplateColumns: '1fr 1fr',
+                                            borderBottom: '1px solid #e2e8f0',
+                                            '&:last-child': {
+                                                borderBottom: 'none'
+                                            }
+                                        }}>
+                                            <Box sx={{
+                                                p: 2,
+                                                borderRight: '1px solid #e2e8f0',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                backgroundColor: '#ffffff'
+                                            }}>
+                                                                                            <Typography variant="body1" sx={{ 
+                                                fontWeight: 600, 
+                                                color: '#2e7d32',
+                                                fontSize: '16px'
+                                            }}>
+                                                {size}
+                                            </Typography>
+                                            </Box>
+                                            <Box sx={{
+                                                p: 2,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                backgroundColor: '#ffffff'
+                                            }}>
+                                                <Typography variant="h6" sx={{ 
+                                                    fontWeight: 700, 
+                                                    color: '#2e7d32',
+                                                    fontSize: '18px'
+                                                }}>
+                                                    {selectedQuantityDetails.quantities[size]}
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+                                    ))}
+                                </Box>
+                            </Card>
+                        </Box>
+                    )}
+                </DialogContent>
+                
+                <DialogActions sx={{ p: 3 }}>
+                    <Button
+                        onClick={handleCloseQuantityDetails}
+                        variant="contained"
+                        sx={{
+                            background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
+                            '&:hover': {
+                                background: 'linear-gradient(135deg, #1b5e20 0%, #0d4a14 100%)'
+                            }
+                        }}
+                    >
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 }
