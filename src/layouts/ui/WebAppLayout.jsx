@@ -215,7 +215,9 @@ function MainHeader() {
                         <Box component="img"
                              src="/logo.png"
                              alt="UniSew"
+                             onClick={() => window.location.href = "/home"}
                              sx={{
+                                 cursor:"pointer",
                                  height: 50,
                                  width: 50,
                                  borderRadius: '50%',
@@ -223,7 +225,7 @@ function MainHeader() {
                                  boxShadow: '0 4px 12px rgba(25,118,210,0.3)'
                              }}
                         />
-                        <Typography variant="h5" sx={{fontWeight: 800, color: '#1976d2', letterSpacing: 1}}>
+                        <Typography onClick={() => window.location.href = "/home"} variant="h5" sx={{cursor:"pointer", fontWeight: 800, color: '#1976d2', letterSpacing: 1}}>
                             UniSew
                         </Typography>
                     </Box>
