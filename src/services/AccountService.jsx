@@ -19,3 +19,13 @@ export const getPartnerProfile = async () => {
     const response = await axiosClient.post("/account/profile/partner")
     return response || null;
 }
+
+export const getAccountList = async () => {
+    const response = await axiosClient.get("/account/list")
+    return response || null;
+}
+
+export const changeAccountStatus = async (data) => {
+    const response = await axiosClient.put("/account/status", data)
+    return response || null;
+}
