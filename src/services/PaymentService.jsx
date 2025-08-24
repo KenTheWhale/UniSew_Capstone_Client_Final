@@ -52,3 +52,8 @@ export const createDepositWalletTransaction = async (receiverId, totalPrice, gat
 
     return response || null
 }
+
+export const getTransactions = async () => {
+    const response = await axiosClient.get("/payment/transactions")
+    return response || null;
+}
