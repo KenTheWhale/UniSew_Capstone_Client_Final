@@ -57,7 +57,7 @@ export const viewPhase = async () => {
 }
 
 export const assignMilestone = async (data) => {
-    const response = await axiosClient.post(`/order/milestone`, data)
+    const response = await axiosClient.post(`/order/milestone/assignment`, data)
     return response || null
 }
 
