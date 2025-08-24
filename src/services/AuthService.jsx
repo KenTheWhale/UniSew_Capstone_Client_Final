@@ -24,3 +24,8 @@ export const createPartnerRequest = async (data) => {
     const response = await axiosClient.post("/auth/partner/register", data)
     return response || null
 }
+
+export const getNumberAccount = async () => {
+    const response = await axiosClient.get("/auth/number")
+    return response || null;
+}
