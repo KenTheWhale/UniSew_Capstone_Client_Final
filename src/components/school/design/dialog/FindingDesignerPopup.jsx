@@ -853,21 +853,41 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
 
                     {/* Designers List */}
                     {showDesigners && (
-                        <Box sx={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-                            gap: 3
-                        }}>
-                            {sortedDesigners.map((designer, index) => (
-                                <Box key={index} sx={{ minWidth: 0 }}>
-                                    <DesignerCard
-                                        designer={designer}
-                                        isSelected={selectedQuotation && selectedQuotation.designerId === designer.id}
-                                        onSelect={handleQuotationSelect}
-                                    />
+                        <>
+                            {sortedDesigners.length > 0 ? (
+                                <Box sx={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                                    gap: 3
+                                }}>
+                                    {sortedDesigners.map((designer, index) => (
+                                        <Box key={index} sx={{ minWidth: 0 }}>
+                                            <DesignerCard
+                                                designer={designer}
+                                                isSelected={selectedQuotation && selectedQuotation.designerId === designer.id}
+                                                onSelect={handleQuotationSelect}
+                                            />
+                                        </Box>
+                                    ))}
                                 </Box>
-                            ))}
-                        </Box>
+                            ) : (
+                                <Box sx={{
+                                    p: 6,
+                                    backgroundColor: '#f8fafc',
+                                    borderRadius: 2,
+                                    border: '2px dashed #cbd5e1',
+                                    textAlign: 'center'
+                                }}>
+                                    <UserOutlined style={{fontSize: 64, marginBottom: 24, opacity: 0.5, color: '#64748b'}}/>
+                                    <Typography.Title level={4} style={{margin: '0 0 16px 0', color: '#475569', fontWeight: 600}}>
+                                        No Applied Designers
+                                    </Typography.Title>
+                                    <Typography.Text style={{color: '#64748b', maxWidth: '400px', margin: '0 auto', display: 'block'}}>
+                                        No designers have applied to this request yet. Check back later for updates or consider adjusting your request requirements.
+                                    </Typography.Text>
+                                </Box>
+                            )}
+                        </>
                     )}
 
                     {/* Selection Summary */}

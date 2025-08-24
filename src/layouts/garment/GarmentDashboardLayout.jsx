@@ -127,32 +127,6 @@ function Navbar({userObj, activeMenu, navigate}) {
                             borderRadius: 2,
                             mx: 1,
                             my: 0.5,
-                            color: activeMenu === 'production' ? "#FFFFFF" : "#495057",
-                            p: 2,
-                            cursor: "pointer",
-                            transition: "all 0.3s ease",
-                            background: activeMenu === 'production' ? "linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)" : "transparent",
-                            "&:hover": {
-                                background: "linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)",
-                                color: "#FFFFFF",
-                                transform: "translateY(-1px)",
-                            },
-                        }}
-                        onClick={() => navigate('/garment/production')}
-                    >
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                            <LocalShipping sx={{ color: "inherit", fontSize: 20 }} />
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                Production Line
-                            </Typography>
-                        </Box>
-                    </Box>
-
-                    <Box
-                        sx={{
-                            borderRadius: 2,
-                            mx: 1,
-                            my: 0.5,
                             color: activeMenu === 'milestone' ? "#FFFFFF" : "#495057",
                             p: 2,
                             cursor: "pointer",
