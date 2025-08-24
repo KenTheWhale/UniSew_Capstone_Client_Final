@@ -1,43 +1,35 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
     Box,
-    Container,
-    Typography,
-    Paper,
-    Grid,
+    Button,
     Card,
     CardContent,
     Chip,
+    CircularProgress,
     IconButton,
+    Paper,
     Tooltip,
-    Button,
-    CircularProgress
+    Typography
 } from '@mui/material';
 import {
-    ShoppingCart as ShoppingCartIcon,
     Add as AddIcon,
-    TrendingUp as TrendingUpIcon,
-    CheckCircle as CheckCircleIcon,
-    Pending as PendingIcon,
-    LocalShipping as LocalShippingIcon,
     Cancel as CancelIcon,
+    CheckCircle as CheckCircleIcon,
     Info as InfoIcon,
-    Refresh as RefreshIcon
+    LocalShipping as LocalShippingIcon,
+    Pending as PendingIcon,
+    Refresh as RefreshIcon,
+    ShoppingCart as ShoppingCartIcon,
+    TrendingUp as TrendingUpIcon
 } from '@mui/icons-material';
-import { Table, Space, Empty, Tag } from 'antd';
+import {Empty, Space, Table, Tag} from 'antd';
 import 'antd/dist/reset.css';
-import { useNavigate } from 'react-router-dom';
-import {
-    CheckCircleOutlined,
-    ClockCircleOutlined,
-    CloseCircleOutlined,
-    SyncOutlined
-} from '@ant-design/icons';
-import { getOrdersBySchool, cancelOrder } from '../../../services/OrderService';
-import { parseID } from '../../../utils/ParseIDUtil';
-import OrderDetailDialog from './dialog/OrderDetailDialog.jsx';
-import QuotationViewer from './dialog/QuotationViewer.jsx';
-import { useSnackbar } from 'notistack';
+import {useNavigate} from 'react-router-dom';
+import {CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, SyncOutlined} from '@ant-design/icons';
+import {cancelOrder, getOrdersBySchool} from '../../../services/OrderService';
+import {parseID} from '../../../utils/ParseIDUtil';
+import OrderDetailPopup from './dialog/OrderDetailPopup.jsx';
+import {useSnackbar} from 'notistack';
 
 // Status Tag Component
 const statusTag = (status) => {
@@ -150,14 +142,13 @@ const EmptyState = React.memo(() => (
 
 export default function SchoolOrderList() {
     const navigate = useNavigate();
-    const { enqueueSnackbar } = useSnackbar();
+    const {enqueueSnackbar} = useSnackbar();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isRetrying, setIsRetrying] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
-    const [isQuotationViewerOpen, setIsQuotationViewerOpen] = useState(false);
     const [cancellingOrderId, setCancellingOrderId] = useState(null);
 
     // Fetch orders on component mount
@@ -207,38 +198,41 @@ export default function SchoolOrderList() {
     }, [fetchOrders]);
 
     const handleViewDetail = (order) => {
-        setSelectedOrder(order);
-        setIsDetailDialogOpen(true);
+        if (order.status === 'processing') {
+            // Lưu orderId vào sessionStorage và điều hướng đến OrderTrackingStatus
+            sessionStorage.setItem('trackingOrderId', order.id);
+            navigate('/school/order/status');
+        } else {
+            // Hiển thị popup detail cho các status khác
+            setSelectedOrder(order);
+            setIsDetailDialogOpen(true);
+        }
     };
 
-    const handleViewQuotations = (order) => {
-        setSelectedOrder(order);
-        setIsQuotationViewerOpen(true);
-    };
 
     const handleCancelOrder = async (orderId) => {
         try {
             setCancellingOrderId(orderId);
-            
+
             const response = await cancelOrder(orderId);
-            
+
             if (response && response.status === 200) {
-                enqueueSnackbar('Order cancelled successfully!', { 
+                enqueueSnackbar('Order cancelled successfully!', {
                     variant: 'success',
                     autoHideDuration: 3000
                 });
-                
+
                 // Refresh the orders list
                 await fetchOrders(false);
             } else {
-                enqueueSnackbar('Failed to cancel order. Please try again.', { 
+                enqueueSnackbar('Failed to cancel order. Please try again.', {
                     variant: 'error',
                     autoHideDuration: 4000
                 });
             }
         } catch (error) {
             console.error('Error cancelling order:', error);
-            enqueueSnackbar('An error occurred while cancelling the order. Please try again.', { 
+            enqueueSnackbar('An error occurred while cancelling the order. Please try again.', {
                 variant: 'error',
                 autoHideDuration: 4000
             });
@@ -256,10 +250,6 @@ export default function SchoolOrderList() {
         setSelectedOrder(null);
     };
 
-    const handleCloseQuotationViewer = () => {
-        setIsQuotationViewerOpen(false);
-        setSelectedOrder(null);
-    };
 
     // Calculate statistics
     const stats = {
@@ -289,34 +279,34 @@ export default function SchoolOrderList() {
     const getStatusColor = (status) => {
         switch (status) {
             case 'pending':
-                return { color: '#ff9800', bgColor: 'rgba(255, 152, 0, 0.1)' };
+                return {color: '#ff9800', bgColor: 'rgba(255, 152, 0, 0.1)'};
             case 'processing':
-                return { color: '#1976d2', bgColor: '#e3f2fd' };
+                return {color: '#1976d2', bgColor: '#e3f2fd'};
             case 'delivering':
-                return { color: '#9c27b0', bgColor: 'rgba(156, 39, 176, 0.1)' };
+                return {color: '#9c27b0', bgColor: 'rgba(156, 39, 176, 0.1)'};
             case 'completed':
-                return { color: '#2e7d32', bgColor: 'rgba(46, 125, 50, 0.1)' };
+                return {color: '#2e7d32', bgColor: 'rgba(46, 125, 50, 0.1)'};
             case 'cancelled':
-                return { color: '#d32f2f', bgColor: '#ffebee' };
+                return {color: '#d32f2f', bgColor: '#ffebee'};
             default:
-                return { color: '#64748b', bgColor: '#f1f5f9' };
+                return {color: '#64748b', bgColor: '#f1f5f9'};
         }
     };
 
     const getStatusIcon = (status) => {
         switch (status) {
             case 'pending':
-                return <PendingIcon />;
+                return <PendingIcon/>;
             case 'processing':
-                return <TrendingUpIcon />;
+                return <TrendingUpIcon/>;
             case 'delivering':
-                return <LocalShippingIcon />;
+                return <LocalShippingIcon/>;
             case 'completed':
-                return <CheckCircleIcon />;
+                return <CheckCircleIcon/>;
             case 'cancelled':
-                return <CancelIcon />;
+                return <CancelIcon/>;
             default:
-                return <PendingIcon />;
+                return <PendingIcon/>;
         }
     };
 
@@ -331,7 +321,7 @@ export default function SchoolOrderList() {
             width: 120,
             fixed: 'left',
             render: (text) => (
-                <Typography variant="body2" sx={{ fontWeight: 600, color: '#2e7d32' }}>
+                <Typography variant="body2" sx={{fontWeight: 600, color: '#2e7d32'}}>
                     {parseID(text, 'ord')}
                 </Typography>
             ),
@@ -342,7 +332,7 @@ export default function SchoolOrderList() {
             key: 'status',
             align: 'center',
             width: 140,
-            filters: [...new Set(orders.map(order => order.status))].map(status => ({ text: status, value: status })),
+            filters: [...new Set(orders.map(order => order.status))].map(status => ({text: status, value: status})),
             onFilter: (value, record) => record.status.indexOf(value) === 0,
             render: (status) => statusTag(status),
         },
@@ -355,7 +345,7 @@ export default function SchoolOrderList() {
             width: 120,
             sorter: (a, b) => new Date(a.orderDate) - new Date(b.orderDate),
             render: (text) => (
-                <Typography variant="body2" sx={{ color: '#64748b' }}>
+                <Typography variant="body2" sx={{color: '#64748b'}}>
                     {formatDate(text)}
                 </Typography>
             ),
@@ -368,7 +358,7 @@ export default function SchoolOrderList() {
             width: 120,
             sorter: (a, b) => new Date(a.deadline) - new Date(b.deadline),
             render: (text) => (
-                <Typography variant="body2" sx={{ color: '#64748b' }}>
+                <Typography variant="body2" sx={{color: '#64748b'}}>
                     {formatDate(text)}
                 </Typography>
             ),
@@ -389,7 +379,7 @@ export default function SchoolOrderList() {
                 const totalItems = record.orderDetails?.reduce((sum, uniform) => sum + uniform.quantity, 0) || 0;
                 const totalUniforms = Math.ceil(totalItems / 2);
                 return (
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>
+                    <Typography variant="body2" sx={{fontWeight: 600, color: '#1e293b'}}>
                         {totalUniforms}
                     </Typography>
                 );
@@ -416,66 +406,48 @@ export default function SchoolOrderList() {
                             }}
                             size="small"
                         >
-                            <InfoIcon />
+                            <InfoIcon/>
                         </IconButton>
                     </Tooltip>
                     {record.status === 'pending' && (
-                        <>
-                            <Tooltip title="View Quotations">
-                                                        <IconButton
-                            onClick={() => handleViewQuotations(record)}
-                            sx={{
-                                color: '#ff9800',
-                                '&:hover': {
-                                    backgroundColor: 'rgba(255, 152, 0, 0.1)',
-                                    transform: 'scale(1.1)'
-                                },
-                                transition: 'all 0.2s ease'
-                            }}
-                            size="small"
-                        >
-                            <TrendingUpIcon />
-                        </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Cancel Order">
-                                <IconButton
-                                    onClick={() => handleCancelOrder(record.id)}
-                                    disabled={cancellingOrderId === record.id}
-                                    sx={{
-                                        color: cancellingOrderId === record.id ? '#bdbdbd' : '#d32f2f',
-                                        '&:hover': {
-                                            backgroundColor: cancellingOrderId === record.id ? 'transparent' : '#ffebee',
-                                            transform: cancellingOrderId === record.id ? 'none' : 'scale(1.1)'
-                                        },
-                                        transition: 'all 0.2s ease',
-                                        '&:disabled': {
-                                            cursor: 'not-allowed'
-                                        }
-                                    }}
-                                    size="small"
-                                >
-                                    {cancellingOrderId === record.id ? (
-                                        <Box
-                                            component="span"
-                                            sx={{
-                                                width: 16,
-                                                height: 16,
-                                                border: '2px solid #bdbdbd',
-                                                borderTop: '2px solid transparent',
-                                                borderRadius: '50%',
-                                                animation: 'spin 1s linear infinite',
-                                                '@keyframes spin': {
-                                                    '0%': { transform: 'rotate(0deg)' },
-                                                    '100%': { transform: 'rotate(360deg)' }
-                                                }
-                                            }}
-                                        />
-                                    ) : (
-                                        <CancelIcon />
-                                    )}
-                                </IconButton>
-                            </Tooltip>
-                        </>
+                        <Tooltip title="Cancel Order">
+                            <IconButton
+                                onClick={() => handleCancelOrder(record.id)}
+                                disabled={cancellingOrderId === record.id}
+                                sx={{
+                                    color: cancellingOrderId === record.id ? '#bdbdbd' : '#d32f2f',
+                                    '&:hover': {
+                                        backgroundColor: cancellingOrderId === record.id ? 'transparent' : '#ffebee',
+                                        transform: cancellingOrderId === record.id ? 'none' : 'scale(1.1)'
+                                    },
+                                    transition: 'all 0.2s ease',
+                                    '&:disabled': {
+                                        cursor: 'not-allowed'
+                                    }
+                                }}
+                                size="small"
+                            >
+                                {cancellingOrderId === record.id ? (
+                                    <Box
+                                        component="span"
+                                        sx={{
+                                            width: 16,
+                                            height: 16,
+                                            border: '2px solid #bdbdbd',
+                                            borderTop: '2px solid transparent',
+                                            borderRadius: '50%',
+                                            animation: 'spin 1s linear infinite',
+                                            '@keyframes spin': {
+                                                '0%': {transform: 'rotate(0deg)'},
+                                                '100%': {transform: 'rotate(360deg)'}
+                                            }
+                                        }}
+                                    />
+                                ) : (
+                                    <CancelIcon/>
+                                )}
+                            </IconButton>
+                        </Tooltip>
                     )}
                 </Space>
             ),
@@ -491,10 +463,10 @@ export default function SchoolOrderList() {
     }
 
     return (
-        <Box sx={{ height: '100%', overflowY: 'auto' }}>
+        <Box sx={{height: '100%', overflowY: 'auto'}}>
             {/* Header Section */}
-            <Box 
-                sx={{ 
+            <Box
+                sx={{
                     mb: 4,
                     position: "relative",
                     p: 4,
@@ -515,14 +487,14 @@ export default function SchoolOrderList() {
                     }
                 }}
             >
-                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                    <ShoppingCartIcon sx={{ fontSize: 32, mr: 2, color: "#2e7d32" }} />
+                <Box sx={{display: "flex", alignItems: "center", mb: 2}}>
+                    <ShoppingCartIcon sx={{fontSize: 32, mr: 2, color: "#2e7d32"}}/>
                     <Typography
                         variant="h4"
                         sx={{
                             fontWeight: 700,
                             color: "#1e293b",
-                            fontSize: { xs: "1.5rem", md: "2rem" }
+                            fontSize: {xs: "1.5rem", md: "2rem"}
                         }}
                     >
                         Order Management
@@ -542,7 +514,7 @@ export default function SchoolOrderList() {
                 <Button
                     variant="contained"
                     size="large"
-                    startIcon={<AddIcon />}
+                    startIcon={<AddIcon/>}
                     onClick={handleCreateOrder}
                     sx={{
                         background: "linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)",
@@ -566,8 +538,8 @@ export default function SchoolOrderList() {
             </Box>
 
             {/* Statistics Section */}
-            <Box sx={{ mb: 4 }}>
-                <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+            <Box sx={{mb: 4}}>
+                <Box sx={{display: 'flex', gap: 3, flexWrap: 'wrap'}}>
                     <Card
                         elevation={0}
                         sx={{
@@ -582,7 +554,7 @@ export default function SchoolOrderList() {
                             }
                         }}
                     >
-                        <CardContent sx={{ textAlign: "center", p: 2 }}>
+                        <CardContent sx={{textAlign: "center", p: 2}}>
                             <Box
                                 sx={{
                                     width: 50,
@@ -596,12 +568,12 @@ export default function SchoolOrderList() {
                                     mb: 1.5
                                 }}
                             >
-                                <ShoppingCartIcon sx={{ color: "#2e7d32", fontSize: 24 }} />
+                                <ShoppingCartIcon sx={{color: "#2e7d32", fontSize: 24}}/>
                             </Box>
-                            <Typography variant="h5" sx={{ fontWeight: 700, color: "#2e7d32", mb: 0.5 }}>
+                            <Typography variant="h5" sx={{fontWeight: 700, color: "#2e7d32", mb: 0.5}}>
                                 {stats.total}
                             </Typography>
-                            <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
+                            <Typography variant="body2" sx={{color: "#64748b", fontWeight: 500}}>
                                 Total Orders
                             </Typography>
                         </CardContent>
@@ -621,7 +593,7 @@ export default function SchoolOrderList() {
                             }
                         }}
                     >
-                        <CardContent sx={{ textAlign: "center", p: 2 }}>
+                        <CardContent sx={{textAlign: "center", p: 2}}>
                             <Box
                                 sx={{
                                     width: 50,
@@ -635,12 +607,12 @@ export default function SchoolOrderList() {
                                     mb: 1.5
                                 }}
                             >
-                                <PendingIcon sx={{ color: "#ff9800", fontSize: 24 }} />
+                                <PendingIcon sx={{color: "#ff9800", fontSize: 24}}/>
                             </Box>
-                            <Typography variant="h5" sx={{ fontWeight: 700, color: "#ff9800", mb: 0.5 }}>
+                            <Typography variant="h5" sx={{fontWeight: 700, color: "#ff9800", mb: 0.5}}>
                                 {stats.pending}
                             </Typography>
-                            <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
+                            <Typography variant="body2" sx={{color: "#64748b", fontWeight: 500}}>
                                 Pending
                             </Typography>
                         </CardContent>
@@ -660,7 +632,7 @@ export default function SchoolOrderList() {
                             }
                         }}
                     >
-                        <CardContent sx={{ textAlign: "center", p: 2 }}>
+                        <CardContent sx={{textAlign: "center", p: 2}}>
                             <Box
                                 sx={{
                                     width: 50,
@@ -674,12 +646,12 @@ export default function SchoolOrderList() {
                                     mb: 1.5
                                 }}
                             >
-                                <TrendingUpIcon sx={{ color: "#1976d2", fontSize: 24 }} />
+                                <TrendingUpIcon sx={{color: "#1976d2", fontSize: 24}}/>
                             </Box>
-                            <Typography variant="h5" sx={{ fontWeight: 700, color: "#1976d2", mb: 0.5 }}>
+                            <Typography variant="h5" sx={{fontWeight: 700, color: "#1976d2", mb: 0.5}}>
                                 {stats.processing}
                             </Typography>
-                            <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
+                            <Typography variant="body2" sx={{color: "#64748b", fontWeight: 500}}>
                                 Processing
                             </Typography>
                         </CardContent>
@@ -699,7 +671,7 @@ export default function SchoolOrderList() {
                             }
                         }}
                     >
-                        <CardContent sx={{ textAlign: "center", p: 2 }}>
+                        <CardContent sx={{textAlign: "center", p: 2}}>
                             <Box
                                 sx={{
                                     width: 50,
@@ -713,12 +685,12 @@ export default function SchoolOrderList() {
                                     mb: 1.5
                                 }}
                             >
-                                <LocalShippingIcon sx={{ color: "#9c27b0", fontSize: 24 }} />
+                                <LocalShippingIcon sx={{color: "#9c27b0", fontSize: 24}}/>
                             </Box>
-                            <Typography variant="h5" sx={{ fontWeight: 700, color: "#9c27b0", mb: 0.5 }}>
+                            <Typography variant="h5" sx={{fontWeight: 700, color: "#9c27b0", mb: 0.5}}>
                                 {stats.delivering}
                             </Typography>
-                            <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
+                            <Typography variant="body2" sx={{color: "#64748b", fontWeight: 500}}>
                                 Delivering
                             </Typography>
                         </CardContent>
@@ -738,7 +710,7 @@ export default function SchoolOrderList() {
                             }
                         }}
                     >
-                        <CardContent sx={{ textAlign: "center", p: 2 }}>
+                        <CardContent sx={{textAlign: "center", p: 2}}>
                             <Box
                                 sx={{
                                     width: 50,
@@ -752,12 +724,12 @@ export default function SchoolOrderList() {
                                     mb: 1.5
                                 }}
                             >
-                                <CheckCircleIcon sx={{ color: "#2e7d32", fontSize: 24 }} />
+                                <CheckCircleIcon sx={{color: "#2e7d32", fontSize: 24}}/>
                             </Box>
-                            <Typography variant="h5" sx={{ fontWeight: 700, color: "#2e7d32", mb: 0.5 }}>
+                            <Typography variant="h5" sx={{fontWeight: 700, color: "#2e7d32", mb: 0.5}}>
                                 {stats.completed}
                             </Typography>
-                            <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
+                            <Typography variant="body2" sx={{color: "#64748b", fontWeight: 500}}>
                                 Completed
                             </Typography>
                         </CardContent>
@@ -774,8 +746,8 @@ export default function SchoolOrderList() {
                     overflow: "hidden"
                 }}
             >
-                <Box sx={{ p: 3, backgroundColor: "white" }}>
-                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                <Box sx={{p: 3, backgroundColor: "white"}}>
+                    <Box sx={{display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3}}>
                         <Typography
                             variant="h6"
                             sx={{
@@ -808,9 +780,9 @@ export default function SchoolOrderList() {
                                 pageSizeOptions: ['5', '10'],
                                 showSizeChanger: true,
                                 showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total} orders`,
-                                style: { marginTop: 16 }
+                                style: {marginTop: 16}
                             }}
-                            scroll={{ x: 'max-content' }}
+                            scroll={{x: 'max-content'}}
                             style={{
                                 backgroundColor: 'white',
                                 borderRadius: '8px'
@@ -823,20 +795,14 @@ export default function SchoolOrderList() {
 
             {/* Modals */}
             {isDetailDialogOpen && (
-                <OrderDetailDialog
+                <OrderDetailPopup
                     open={isDetailDialogOpen}
                     onClose={handleCloseDetailDialog}
                     order={selectedOrder}
                 />
             )}
 
-            {isQuotationViewerOpen && (
-                <QuotationViewer
-                    visible={isQuotationViewerOpen}
-                    onCancel={handleCloseQuotationViewer}
-                    orderId={selectedOrder?.id}
-                />
-            )}
+
         </Box>
     );
 }

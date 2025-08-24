@@ -27,12 +27,12 @@ import SchoolProfile from "./components/school/profile/SchoolProfile.jsx";
 import DesignerProfile from "./components/designer/profile/DesignerProfile.jsx";
 import SchoolOrderManagement from "./components/school/order/SchoolOrderManagement.jsx";
 import SchoolCreateOrder from "./components/school/order/SchoolCreateOrder.jsx";
+import OrderTrackingStatus from "./components/school/order/OrderTrackingStatus.jsx";
 import GarmentDashboardLayout from "./layouts/garment/GarmentDashboardLayout.jsx";
 import GarmentOrders from "./components/garment/GarmentOrders.jsx";
 import GarmentOrderDetail from "./components/garment/dialog/GarmentOrderDetail.jsx";
 import UniSewFAQ from "./components/auth/UniSewFAQ.jsx";
 import TermOfServices from "./components/auth/TermOfServices.jsx";
-import GarmentOrderProduction from "./components/garment/GarmentOrderProduction.jsx";
 import AdminDashboard from "./components/admin/AdminDashboard.jsx";
 import AdminAccount from "./components/admin/AdminAccount.jsx";
 import AdminTransaction from "./components/admin/AdminTransaction.jsx";
@@ -179,6 +179,10 @@ const router = createBrowserRouter([
             {
                 path: 'order/create',
                 element: <SchoolCreateOrder/>
+            },
+            {
+                path: 'order/status',
+                element: <OrderTrackingStatus/>
             }
         ]
     },
@@ -261,10 +265,6 @@ const router = createBrowserRouter([
             {
                 path: 'orders',
                 element: <GarmentOrders />
-            },
-            {
-                path: 'production',
-                element: <GarmentOrderProduction />
             },
             {
                 path: 'milestone',

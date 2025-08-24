@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
     Avatar,
     Box,
@@ -12,10 +12,8 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
-    Divider,
     Grid,
     IconButton,
-    Paper,
     Table,
     TableBody,
     TableCell,
@@ -23,11 +21,11 @@ import {
     TableHead,
     TableRow,
     TextField,
-    Tooltip,
     Typography
 } from '@mui/material';
 import {
     Assignment as AssignmentIcon,
+    AttachMoney as MoneyIcon,
     Business as BusinessIcon,
     CalendarToday as CalendarIcon,
     Cancel as CancelIcon,
@@ -40,21 +38,20 @@ import {
     Person as PersonIcon,
     Phone as PhoneIcon,
     Place as PlaceIcon,
-    Schedule as ScheduleIcon,
-    StickyNote2 as NoteIcon,
-    AttachMoney as MoneyIcon,
     RequestQuote as QuoteIcon,
-    Send as SendIcon
+    Schedule as ScheduleIcon,
+    Send as SendIcon,
+    StickyNote2 as NoteIcon
 } from '@mui/icons-material';
-import { PiPantsFill, PiShirtFoldedFill } from "react-icons/pi";
-import { GiSkirt } from "react-icons/gi";
-import { parseID } from "../../../utils/ParseIDUtil.jsx";
+import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
+import {GiSkirt} from "react-icons/gi";
+import {parseID} from "../../../utils/ParseIDUtil.jsx";
 import DisplayImage from "../../ui/DisplayImage.jsx";
-import { createQuotation } from "../../../services/OrderService.jsx";
-import { enqueueSnackbar } from "notistack";
+import {createQuotation} from "../../../services/OrderService.jsx";
+import {enqueueSnackbar} from "notistack";
 
 // Status chip component
-const StatusChip = ({ status }) => {
+const StatusChip = ({status}) => {
     const getStatusConfig = (status) => {
         switch (status?.toLowerCase()) {
             case 'pending':
@@ -62,21 +59,21 @@ const StatusChip = ({ status }) => {
                     label: 'Pending',
                     color: '#fff',
                     bgColor: '#f59e0b',
-                    icon: <ScheduleIcon sx={{ fontSize: 16 }} />
+                    icon: <ScheduleIcon sx={{fontSize: 16}}/>
                 };
             case 'processing':
                 return {
                     label: 'Processing',
                     color: '#fff',
                     bgColor: '#3b82f6',
-                    icon: <ShippingIcon sx={{ fontSize: 16 }} />
+                    icon: <ShippingIcon sx={{fontSize: 16}}/>
                 };
             case 'completed':
                 return {
                     label: 'Completed',
                     color: '#fff',
                     bgColor: '#10b981',
-                    icon: <CheckCircleIcon sx={{ fontSize: 16 }} />
+                    icon: <CheckCircleIcon sx={{fontSize: 16}}/>
                 };
             case 'cancelled':
             case 'canceled':
@@ -84,14 +81,14 @@ const StatusChip = ({ status }) => {
                     label: 'Cancelled',
                     color: '#fff',
                     bgColor: '#ef4444',
-                    icon: <CancelIcon sx={{ fontSize: 16 }} />
+                    icon: <CancelIcon sx={{fontSize: 16}}/>
                 };
             default:
                 return {
                     label: 'Unknown',
                     color: '#374151',
                     bgColor: '#f3f4f6',
-                    icon: <InfoIcon sx={{ fontSize: 16 }} />
+                    icon: <InfoIcon sx={{fontSize: 16}}/>
                 };
         }
     };
@@ -127,17 +124,17 @@ const getItemIcon = (itemType) => {
     const type = itemType?.toLowerCase() || '';
 
     if (type.includes('shirt') || type.includes('áo')) {
-        return <PiShirtFoldedFill size={24} color="#3b82f6" />;
+        return <PiShirtFoldedFill size={24} color="#3b82f6"/>;
     } else if (type.includes('pants') || type.includes('quần')) {
-        return <PiPantsFill size={24} color="#059669" />;
+        return <PiPantsFill size={24} color="#059669"/>;
     } else if (type.includes('skirt') || type.includes('váy')) {
-        return <GiSkirt size={24} color="#ec4899" />;
+        return <GiSkirt size={24} color="#ec4899"/>;
     } else {
-        return <CheckroomIcon sx={{ fontSize: 24, color: '#6b7280' }} />;
+        return <CheckroomIcon sx={{fontSize: 24, color: '#6b7280'}}/>;
     }
 };
 
-export default function GarmentOrderDetail({ visible, onCancel, order }) {
+export default function GarmentOrderDetail({visible, onCancel, order}) {
     const [updateStatusDialogOpen, setUpdateStatusDialogOpen] = useState(false);
     const [newStatus, setNewStatus] = useState('');
     const [statusNote, setStatusNote] = useState('');
@@ -169,7 +166,7 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
         serviceFee: 0
     };
 
-    const mergedOrderData = order ? { ...defaultOrder, ...order } : defaultOrder;
+    const mergedOrderData = order ? {...defaultOrder, ...order} : defaultOrder;
 
     const formatDate = (dateString) => {
         return new Date(dateString).toLocaleDateString('en-US', {
@@ -213,40 +210,40 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
     const handleSubmitQuotation = async () => {
         try {
             setSubmittingQuotation(true);
-            
+
             // Validation
             const deliveryDays = parseInt(quotationData.deliveryTime);
             if (deliveryDays < 1) {
-                enqueueSnackbar('Delivery time must be at least 1 day', { variant: 'error' });
+                enqueueSnackbar('Delivery time must be at least 1 day', {variant: 'error'});
                 setSubmittingQuotation(false);
                 return;
             }
-            
+
             const validUntilDate = new Date(quotationData.validUntil);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            
+
             if (validUntilDate <= today) {
-                enqueueSnackbar('Valid until date must be in the future', { variant: 'error' });
+                enqueueSnackbar('Valid until date must be in the future', {variant: 'error'});
                 setSubmittingQuotation(false);
                 return;
             }
-            
+
             // Calculate early delivery date (current date + delivery time)
             const currentDate = new Date();
             const earlyDeliveryDate = new Date(currentDate);
             earlyDeliveryDate.setDate(currentDate.getDate() + deliveryDays);
-            
+
             // Check if delivery time exceeds the order deadline
             const orderDeadline = new Date(mergedOrderData.deadline);
             orderDeadline.setHours(23, 59, 59, 999); // Set to end of day
-            
+
             if (earlyDeliveryDate > orderDeadline) {
-                enqueueSnackbar(`Delivery time cannot exceed the order deadline (${formatDate(mergedOrderData.deadline)})`, { variant: 'error' });
+                enqueueSnackbar(`Delivery time cannot exceed the order deadline (${formatDate(mergedOrderData.deadline)})`, {variant: 'error'});
                 setSubmittingQuotation(false);
                 return;
             }
-            
+
             // Prepare data according to API structure
             const quotationPayload = {
                 orderId: parseInt(mergedOrderData.id),
@@ -256,13 +253,13 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
                 price: parseInt(quotationData.totalPrice) || 0,
                 note: quotationData.note || ''
             };
-            
+
             console.log('Submitting quotation:', quotationPayload);
-            
+
             const response = await createQuotation(quotationPayload);
-            
+
             if (response && response.status === 200) {
-                enqueueSnackbar('Quotation sent successfully!', { variant: 'success' });
+                enqueueSnackbar('Quotation sent successfully!', {variant: 'success'});
                 // Reset form and close
                 setShowQuotationForm(false);
                 setQuotationData({
@@ -272,11 +269,11 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
                     validUntil: ''
                 });
             } else {
-                enqueueSnackbar('Failed to send quotation. Please try again.', { variant: 'error' });
+                enqueueSnackbar('Failed to send quotation. Please try again.', {variant: 'error'});
             }
         } catch (error) {
             console.error('Error submitting quotation:', error);
-            enqueueSnackbar('An error occurred while sending the quotation.', { variant: 'error' });
+            enqueueSnackbar('An error occurred while sending the quotation.', {variant: 'error'});
         } finally {
             setSubmittingQuotation(false);
         }
@@ -313,10 +310,10 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
         const currentDate = new Date();
         const earlyDeliveryDate = new Date(currentDate);
         earlyDeliveryDate.setDate(currentDate.getDate() + deliveryDays);
-        
+
         const orderDeadline = new Date(mergedOrderData.deadline);
         orderDeadline.setHours(23, 59, 59, 999); // Set to end of day
-        
+
         if (earlyDeliveryDate > orderDeadline) {
             setDeliveryTimeError(`Cannot exceed order deadline (${formatDate(mergedOrderData.deadline)})`);
             return;
@@ -352,34 +349,34 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
                 alignItems: 'center',
                 justifyContent: 'space-between'
             }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                     <Avatar sx={{
                         backgroundColor: 'rgba(255, 255, 255, 0.2)',
                         width: 48,
                         height: 48
                     }}>
-                        <AssignmentIcon sx={{ fontSize: 24 }} />
+                        <AssignmentIcon sx={{fontSize: 24}}/>
                     </Avatar>
                     <Box>
-                        <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
+                        <Typography variant="h5" sx={{fontWeight: 700, mb: 0.5}}>
                             Production Order Details
                         </Typography>
-                        <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
+                        <Typography variant="body2" sx={{opacity: 0.9, fontWeight: 500}}>
                             {parseID(mergedOrderData.id, 'ord')}
                         </Typography>
                     </Box>
                 </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <StatusChip status={mergedOrderData.status} />
-                    <IconButton onClick={onCancel} sx={{ color: 'white' }}>
-                        <CloseIcon />
+                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                    <StatusChip status={mergedOrderData.status}/>
+                    <IconButton onClick={onCancel} sx={{color: 'white'}}>
+                        <CloseIcon/>
                     </IconButton>
                 </Box>
             </Box>
 
             {/* Content */}
-            <DialogContent sx={{ p: 0, overflow: 'auto' }}>
-                <Container maxWidth={false} sx={{ p: 3 }}>
+            <DialogContent sx={{p: 0, overflow: 'auto'}}>
+                <Container maxWidth={false} sx={{p: 3}}>
                     <Grid container spacing={3}>
                         {/* Main Information */}
                         <Grid item xs={12} lg={8}>
@@ -410,46 +407,46 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
                                         alignItems: 'center',
                                         gap: 1
                                     }}>
-                                        <InfoIcon sx={{ fontSize: 20 }} />
+                                        <InfoIcon sx={{fontSize: 20}}/>
                                         Order Information
                                     </Typography>
                                 </Box>
-                                <CardContent sx={{ p: 3 }}>
+                                <CardContent sx={{p: 3}}>
                                     <Grid container spacing={3}>
                                         <Grid item xs={12} md={6}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                                                <CalendarIcon sx={{ color: '#059669', fontSize: 20 }} />
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                                <CalendarIcon sx={{color: '#059669', fontSize: 20}}/>
                                                 <Box>
                                                     <Typography variant="body2" color="text.secondary">
                                                         Order Date
                                                     </Typography>
-                                                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                    <Typography variant="body1" sx={{fontWeight: 600}}>
                                                         {formatDate(mergedOrderData.orderDate)}
                                                     </Typography>
                                                 </Box>
                                             </Box>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                                                <ScheduleIcon sx={{ color: '#f59e0b', fontSize: 20 }} />
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                                <ScheduleIcon sx={{color: '#f59e0b', fontSize: 20}}/>
                                                 <Box>
                                                     <Typography variant="body2" color="text.secondary">
                                                         Delivery Deadline
                                                     </Typography>
-                                                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                    <Typography variant="body1" sx={{fontWeight: 600}}>
                                                         {formatDate(mergedOrderData.deadline)}
                                                     </Typography>
                                                 </Box>
                                             </Box>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                                                <CheckroomIcon sx={{ color: '#3b82f6', fontSize: 20 }} />
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                                <CheckroomIcon sx={{color: '#3b82f6', fontSize: 20}}/>
                                                 <Box>
                                                     <Typography variant="body2" color="text.secondary">
                                                         Total Items
                                                     </Typography>
-                                                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                    <Typography variant="body1" sx={{fontWeight: 600}}>
                                                         {getTotalItems()} items ({getUniqueTypes()} types)
                                                     </Typography>
                                                 </Box>
@@ -457,13 +454,13 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
                                         </Grid>
                                         {mergedOrderData.serviceFee > 0 && (
                                             <Grid item xs={12} md={6}>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                                                    <MoneyIcon sx={{ color: '#10b981', fontSize: 20 }} />
+                                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                                    <MoneyIcon sx={{color: '#10b981', fontSize: 20}}/>
                                                     <Box>
                                                         <Typography variant="body2" color="text.secondary">
                                                             Service Fee
                                                         </Typography>
-                                                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                        <Typography variant="body1" sx={{fontWeight: 600}}>
                                                             {formatCurrency(mergedOrderData.serviceFee)}
                                                         </Typography>
                                                     </Box>
@@ -471,7 +468,7 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
                                             </Grid>
                                         )}
                                     </Grid>
-                                    
+
                                     {mergedOrderData.note && (
                                         <Box sx={{
                                             mt: 3,
@@ -480,13 +477,14 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
                                             borderRadius: 2,
                                             border: '1px solid #fed7aa'
                                         }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                                <NoteIcon sx={{ color: '#d97706', fontSize: 18 }} />
-                                                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#92400e' }}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mb: 1}}>
+                                                <NoteIcon sx={{color: '#d97706', fontSize: 18}}/>
+                                                <Typography variant="subtitle2"
+                                                            sx={{fontWeight: 600, color: '#92400e'}}>
                                                     Order Notes
                                                 </Typography>
                                             </Box>
-                                            <Typography variant="body2" sx={{ color: '#451a03' }}>
+                                            <Typography variant="body2" sx={{color: '#451a03'}}>
                                                 {mergedOrderData.note}
                                             </Typography>
                                         </Box>
@@ -514,32 +512,32 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
                                         alignItems: 'center',
                                         gap: 1
                                     }}>
-                                        <CheckroomIcon sx={{ fontSize: 20 }} />
+                                        <CheckroomIcon sx={{fontSize: 20}}/>
                                         Order Items
                                     </Typography>
                                 </Box>
                                 <TableContainer>
                                     <Table>
                                         <TableHead>
-                                            <TableRow sx={{ backgroundColor: '#f8fafc' }}>
-                                                <TableCell sx={{ fontWeight: 600 }}>Item</TableCell>
-                                                <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
-                                                <TableCell sx={{ fontWeight: 600 }}>Gender</TableCell>
-                                                <TableCell sx={{ fontWeight: 600 }}>Size</TableCell>
-                                                <TableCell sx={{ fontWeight: 600 }}>Color</TableCell>
-                                                <TableCell sx={{ fontWeight: 600 }}>Quantity</TableCell>
-                                                <TableCell sx={{ fontWeight: 600 }}>Logo</TableCell>
+                                            <TableRow sx={{backgroundColor: '#f8fafc'}}>
+                                                <TableCell sx={{fontWeight: 600}}>Item</TableCell>
+                                                <TableCell sx={{fontWeight: 600}}>Type</TableCell>
+                                                <TableCell sx={{fontWeight: 600}}>Gender</TableCell>
+                                                <TableCell sx={{fontWeight: 600}}>Size</TableCell>
+                                                <TableCell sx={{fontWeight: 600}}>Color</TableCell>
+                                                <TableCell sx={{fontWeight: 600}}>Quantity</TableCell>
+                                                <TableCell sx={{fontWeight: 600}}>Logo</TableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
                                             {mergedOrderData.orderDetails?.map((item, index) => (
-                                                <TableRow key={index} sx={{ '&:hover': { backgroundColor: '#f9fafb' } }}>
+                                                <TableRow key={index} sx={{'&:hover': {backgroundColor: '#f9fafb'}}}>
                                                     <TableCell>
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
                                                             {getItemIcon(item.deliveryItem?.designItem?.type)}
-                                                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                                                {item.deliveryItem?.designItem?.type?.charAt(0).toUpperCase() + 
-                                                                 item.deliveryItem?.designItem?.type?.slice(1) || 'Item'}
+                                                            <Typography variant="body2" sx={{fontWeight: 500}}>
+                                                                {item.deliveryItem?.designItem?.type?.charAt(0).toUpperCase() +
+                                                                    item.deliveryItem?.designItem?.type?.slice(1) || 'Item'}
                                                             </Typography>
                                                         </Box>
                                                     </TableCell>
@@ -554,7 +552,7 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
                                                         />
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
+                                                        <Typography variant="body2" sx={{textTransform: 'capitalize'}}>
                                                             {item.deliveryItem?.designItem?.gender || 'Unisex'}
                                                         </Typography>
                                                     </TableCell>
@@ -563,18 +561,18 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
                                                             label={item.size || 'M'}
                                                             size="small"
                                                             variant="outlined"
-                                                            sx={{ fontWeight: 600 }}
+                                                            sx={{fontWeight: 600}}
                                                         />
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
                                                             <Box sx={{
                                                                 width: 20,
                                                                 height: 20,
                                                                 backgroundColor: item.deliveryItem?.designItem?.color || '#000',
                                                                 borderRadius: 1,
                                                                 border: '2px solid #e5e7eb'
-                                                            }} />
+                                                            }}/>
                                                             <Typography variant="body2">
                                                                 {item.deliveryItem?.designItem?.color || '#000'}
                                                             </Typography>
@@ -592,7 +590,7 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
                                                     </TableCell>
                                                     <TableCell>
                                                         {item.deliveryItem?.designItem?.logoImageUrl ? (
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
                                                                 <DisplayImage
                                                                     imageUrl={item.deliveryItem.designItem.logoImageUrl}
                                                                     alt="Logo"
@@ -640,68 +638,68 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
                                         alignItems: 'center',
                                         gap: 1
                                     }}>
-                                        <BusinessIcon sx={{ fontSize: 20 }} />
+                                        <BusinessIcon sx={{fontSize: 20}}/>
                                         School Information
                                     </Typography>
                                 </Box>
-                                <CardContent sx={{ p: 3 }}>
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                            <BusinessIcon sx={{ color: '#059669', fontSize: 20 }} />
+                                <CardContent sx={{p: 3}}>
+                                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                            <BusinessIcon sx={{color: '#059669', fontSize: 20}}/>
                                             <Box>
                                                 <Typography variant="body2" color="text.secondary">
                                                     School Name
                                                 </Typography>
-                                                <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                <Typography variant="body1" sx={{fontWeight: 600}}>
                                                     {mergedOrderData.school?.business || 'School Name'}
                                                 </Typography>
                                             </Box>
                                         </Box>
 
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                            <PersonIcon sx={{ color: '#3b82f6', fontSize: 20 }} />
+                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                            <PersonIcon sx={{color: '#3b82f6', fontSize: 20}}/>
                                             <Box>
                                                 <Typography variant="body2" color="text.secondary">
                                                     Contact Person
                                                 </Typography>
-                                                <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                <Typography variant="body1" sx={{fontWeight: 600}}>
                                                     {mergedOrderData.school?.name || 'Contact Person'}
                                                 </Typography>
                                             </Box>
                                         </Box>
 
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                            <EmailIcon sx={{ color: '#8b5cf6', fontSize: 20 }} />
+                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                            <EmailIcon sx={{color: '#8b5cf6', fontSize: 20}}/>
                                             <Box>
                                                 <Typography variant="body2" color="text.secondary">
                                                     Email
                                                 </Typography>
-                                                <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                <Typography variant="body1" sx={{fontWeight: 600}}>
                                                     {mergedOrderData.school?.account?.email || 'email@school.edu'}
                                                 </Typography>
                                             </Box>
                                         </Box>
 
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                            <PhoneIcon sx={{ color: '#f59e0b', fontSize: 20 }} />
+                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                            <PhoneIcon sx={{color: '#f59e0b', fontSize: 20}}/>
                                             <Box>
                                                 <Typography variant="body2" color="text.secondary">
                                                     Phone
                                                 </Typography>
-                                                <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                <Typography variant="body1" sx={{fontWeight: 600}}>
                                                     {mergedOrderData.school?.phone || 'Phone Number'}
                                                 </Typography>
                                             </Box>
                                         </Box>
 
                                         {mergedOrderData.school?.address && (
-                                            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-                                                <PlaceIcon sx={{ color: '#ef4444', fontSize: 20, mt: 0.2 }} />
+                                            <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 2}}>
+                                                <PlaceIcon sx={{color: '#ef4444', fontSize: 20, mt: 0.2}}/>
                                                 <Box>
                                                     <Typography variant="body2" color="text.secondary">
                                                         Address
                                                     </Typography>
-                                                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                    <Typography variant="body1" sx={{fontWeight: 600}}>
                                                         {mergedOrderData.school.address}
                                                     </Typography>
                                                 </Box>
@@ -742,13 +740,13 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
                                         </Typography>
                                     )}
                                 </Box>
-                                <CardContent sx={{ p: 3 }}>
+                                <CardContent sx={{p: 3}}>
                                     {!showQuotationForm ? (
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
                                             <Button
                                                 variant="contained"
                                                 fullWidth
-                                                startIcon={<QuoteIcon />}
+                                                startIcon={<QuoteIcon/>}
                                                 onClick={handleCreateQuotation}
                                                 sx={{
                                                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -769,7 +767,7 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
                                             </Button>
                                         </Box>
                                     ) : (
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
                                             {/* Total Price */}
                                             <Box>
                                                 <Typography variant="body2" sx={{
@@ -810,36 +808,41 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
                                                 borderRadius: 2,
                                                 border: '1px solid #bae6fd'
                                             }}>
-                                                <Typography variant="body2" sx={{ color: '#0369a1', fontWeight: 600, mb: 1 }}>
+                                                <Typography variant="body2"
+                                                            sx={{color: '#0369a1', fontWeight: 600, mb: 1}}>
                                                     Order Summary
                                                 </Typography>
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                                    <Typography variant="caption" sx={{ color: '#0c4a6e' }}>
+                                                <Box sx={{display: 'flex', justifyContent: 'space-between', mb: 1}}>
+                                                    <Typography variant="caption" sx={{color: '#0c4a6e'}}>
                                                         Total Items:
                                                     </Typography>
-                                                    <Typography variant="caption" sx={{ color: '#0c4a6e', fontWeight: 600 }}>
+                                                    <Typography variant="caption"
+                                                                sx={{color: '#0c4a6e', fontWeight: 600}}>
                                                         {getTotalItems()} items
                                                     </Typography>
                                                 </Box>
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                                    <Typography variant="caption" sx={{ color: '#0c4a6e' }}>
+                                                <Box sx={{display: 'flex', justifyContent: 'space-between', mb: 1}}>
+                                                    <Typography variant="caption" sx={{color: '#0c4a6e'}}>
                                                         Product Types:
                                                     </Typography>
-                                                    <Typography variant="caption" sx={{ color: '#0c4a6e', fontWeight: 600 }}>
+                                                    <Typography variant="caption"
+                                                                sx={{color: '#0c4a6e', fontWeight: 600}}>
                                                         {getUniqueTypes()} types
                                                     </Typography>
                                                 </Box>
                                                 {quotationData.totalPrice && (
-                                                    <Box sx={{ 
-                                                        display: 'flex', 
-                                                        justifyContent: 'space-between', 
-                                                        pt: 1, 
-                                                        borderTop: '1px solid #bae6fd' 
+                                                    <Box sx={{
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        pt: 1,
+                                                        borderTop: '1px solid #bae6fd'
                                                     }}>
-                                                        <Typography variant="body2" sx={{ color: '#0369a1', fontWeight: 600 }}>
+                                                        <Typography variant="body2"
+                                                                    sx={{color: '#0369a1', fontWeight: 600}}>
                                                             Estimated Price per Item:
                                                         </Typography>
-                                                        <Typography variant="body2" sx={{ color: '#0369a1', fontWeight: 600 }}>
+                                                        <Typography variant="body2"
+                                                                    sx={{color: '#0369a1', fontWeight: 600}}>
                                                             {formatCurrency(Math.round(parseInt(quotationData.totalPrice) / getTotalItems()))}
                                                         </Typography>
                                                     </Box>
@@ -862,7 +865,7 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
                                                     size="small"
                                                     fullWidth
                                                     placeholder="Enter delivery time in days"
-                                                    inputProps={{ min: 1 }}
+                                                    inputProps={{min: 1}}
                                                     error={!!deliveryTimeError}
                                                     helperText={deliveryTimeError}
                                                     sx={{
@@ -905,7 +908,7 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
                                                     })}
                                                     size="small"
                                                     fullWidth
-                                                    InputLabelProps={{ shrink: true }}
+                                                    InputLabelProps={{shrink: true}}
                                                     inputProps={{
                                                         min: (() => {
                                                             const tomorrow = new Date();
@@ -968,7 +971,7 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
                                             </Box>
 
                                             {/* Action Buttons */}
-                                            <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                                            <Box sx={{display: 'flex', gap: 2, mt: 2}}>
                                                 <Button
                                                     variant="outlined"
                                                     fullWidth
@@ -987,7 +990,9 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
                                                 <Button
                                                     variant="contained"
                                                     fullWidth
-                                                    startIcon={submittingQuotation ? <CircularProgress size={16} sx={{ color: 'white' }} /> : <SendIcon />}
+                                                    startIcon={submittingQuotation ?
+                                                        <CircularProgress size={16} sx={{color: 'white'}}/> :
+                                                        <SendIcon/>}
                                                     onClick={handleSubmitQuotation}
                                                     disabled={!quotationData.totalPrice || !quotationData.deliveryTime || !quotationData.validUntil || !!deliveryTimeError || submittingQuotation}
                                                     sx={{
@@ -1023,17 +1028,17 @@ export default function GarmentOrderDetail({ visible, onCancel, order }) {
                 fullWidth
             >
                 <DialogTitle>
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    <Typography variant="h6" sx={{fontWeight: 600}}>
                         Update Order Status
                     </Typography>
                 </DialogTitle>
                 <DialogContent>
-                    <Box sx={{ mt: 2 }}>
-                        <Typography variant="body2" sx={{ mb: 2 }}>
+                    <Box sx={{mt: 2}}>
+                        <Typography variant="body2" sx={{mb: 2}}>
                             Select new status for order {parseID(mergedOrderData.id, 'ord')}:
                         </Typography>
-                        
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 3 }}>
+
+                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 1, mb: 3}}>
                             {['pending', 'processing', 'completed'].map((status) => (
                                 <Button
                                     key={status}

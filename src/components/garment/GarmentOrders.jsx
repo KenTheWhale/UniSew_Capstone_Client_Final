@@ -18,7 +18,7 @@ import {
     Info as InfoIcon,
     LocalShipping as ShippingIcon,
     Assignment as OrderIcon,
-    TrendingUp as StatsIcon,
+    TrendingUp as TrendingUpIcon,
     Refresh as RefreshIcon,
     Factory as FactoryIcon
 } from '@mui/icons-material';
@@ -27,6 +27,49 @@ import 'antd/dist/reset.css';
 import { parseID } from "../../utils/ParseIDUtil.jsx";
 import { getGarmentOrders } from "../../services/OrderService.jsx";
 import GarmentOrderDetail from "./dialog/GarmentOrderDetail.jsx";
+
+// Status Tag Component
+const StatusTag = React.memo(({ status }) => {
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'pending':
+                return { color: '#ff9800', bgColor: 'rgba(255, 152, 0, 0.1)' };
+            case 'processing':
+                return { color: '#1976d2', bgColor: '#e3f2fd' };
+            case 'delivering':
+                return { color: '#9c27b0', bgColor: 'rgba(156, 39, 176, 0.1)' };
+            case 'completed':
+                return { color: '#2e7d32', bgColor: 'rgba(46, 125, 50, 0.1)' };
+            case 'cancelled':
+            case 'canceled':
+                return { color: '#d32f2f', bgColor: '#ffebee' };
+            default:
+                return { color: '#64748b', bgColor: '#f1f5f9' };
+        }
+    };
+    
+    const { color, bgColor } = getStatusColor(status);
+    const displayStatus = status === 'delivering' ? 'Delivered' : status.charAt(0).toUpperCase() + status.slice(1);
+    
+    return (
+        <Typography
+            variant="body2"
+            sx={{
+                color: color,
+                backgroundColor: bgColor,
+                padding: '4px 12px',
+                borderRadius: '12px',
+                fontWeight: 600,
+                fontSize: '0.75rem',
+                display: 'inline-block',
+                textAlign: 'center',
+                minWidth: '80px'
+            }}
+        >
+            {displayStatus}
+        </Typography>
+    );
+});
 
 
 
@@ -165,9 +208,9 @@ export default function GarmentOrders() {
         fetchOrders(false);
     }, [fetchOrders]);
 
-    // Filter orders for garment processing - only show pending orders
+    // Filter orders for garment processing - show orders with status other than pending
     const filteredOrders = orders.filter(order => 
-        order.status === 'pending'
+        order.status !== 'pending'
     );
 
     // Calculate statistics
@@ -176,6 +219,7 @@ export default function GarmentOrders() {
         pending: orders.filter(order => order.status === 'pending').length,
         processing: orders.filter(order => order.status === 'processing').length,
         completed: orders.filter(order => order.status === 'completed').length,
+        delivered: orders.filter(order => order.status === 'delivering').length,
         cancelled: orders.filter(order => order.status === 'cancelled' || order.status === 'canceled').length
     };
 
@@ -191,30 +235,16 @@ export default function GarmentOrders() {
         setSelectedOrder(null);
     };
 
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'pending':
-                return { color: '#ff9800', bgColor: 'rgba(255, 152, 0, 0.1)' };
-            case 'processing':
-                return { color: '#1976d2', bgColor: '#e3f2fd' };
-            case 'completed':
-                return { color: '#2e7d32', bgColor: 'rgba(46, 125, 50, 0.1)' };
-            case 'cancelled':
-            case 'canceled':
-                return { color: '#d32f2f', bgColor: '#ffebee' };
-            default:
-                return { color: '#64748b', bgColor: '#f1f5f9' };
-        }
-    };
-
     const getStatusIcon = (status) => {
         switch (status) {
             case 'pending':
                 return <OrderIcon />;
             case 'processing':
-                return <TrendingUp as StatsIcon />;
+                return <TrendingUpIcon />;
+            case 'delivering':
+                return <ShippingIcon />;
             case 'completed':
-                return <StatsIcon />;
+                return <TrendingUpIcon />;
             case 'cancelled':
             case 'canceled':
                 return <OrderIcon />;
@@ -225,10 +255,28 @@ export default function GarmentOrders() {
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
+        const today = new Date();
+        
+        // Check if it's today
+        if (date.toDateString() === today.toDateString()) {
+            return 'Today';
+        }
+        
+        // Calculate days difference
+        const timeDiff = date.getTime() - today.getTime();
+        const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+        
         const day = String(date.getDate()).padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
+        
+        if (daysDiff > 0) {
+            return `${day}/${month}/${year} (+${daysDiff}d)`;
+        } else if (daysDiff < 0) {
+            return `${day}/${month}/${year} (${daysDiff}d)`;
+        } else {
+            return `${day}/${month}/${year}`;
+        }
     };
 
     const columns = [
@@ -255,48 +303,133 @@ export default function GarmentOrders() {
             key: 'status',
             align: 'center',
             width: 140,
-            render: (status) => {
-                const { color, bgColor } = getStatusColor(status);
-                return (
-                    <Chip
-                        icon={getStatusIcon(status)}
-                        label={status.charAt(0).toUpperCase() + status.slice(1)}
-                        sx={{
-                            backgroundColor: bgColor,
-                            color: color,
-                            fontWeight: 600,
-                            '& .MuiChip-icon': {
-                                color: color
-                            }
-                        }}
-                        size="small"
-                    />
-                );
-            },
+            render: (status) => <StatusTag status={status} />,
         },
         {
             title: 'Order Date',
             dataIndex: 'orderDate',
             key: 'orderDate',
             align: 'center',
-            width: 120,
-            render: (text) => (
-                <Typography variant="body2" sx={{ color: '#64748b' }}>
-                    {formatDate(text)}
-                </Typography>
-            ),
+            width: 140,
+            render: (text) => {
+                const date = new Date(text);
+                const today = new Date();
+                const timeDiff = date.getTime() - today.getTime();
+                const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                const dateStr = date.toDateString() === today.toDateString() ? 'Today' : `${day}/${month}/${year}`;
+                
+                let dayCounter = '';
+                let dayCounterColor = '#1976d2'; // Blue color for day counter
+                
+                if (daysDiff > 0) {
+                    dayCounter = `${daysDiff} days left`;
+                } else if (daysDiff < 0) {
+                    dayCounter = `${Math.abs(daysDiff)} days ago`;
+                }
+                
+                const isToday = dateStr === 'Today';
+                
+                return (
+                    <Box sx={{ textAlign: 'center' }}>
+                        <Typography 
+                            variant="body2" 
+                            sx={{ 
+                                color: isToday ? '#3f51b5' : '#64748b',
+                                fontWeight: isToday ? 600 : 400,
+                                fontSize: isToday ? '0.875rem' : '0.75rem',
+                                mb: dayCounter ? 0.5 : 0
+                            }}
+                        >
+                            {dateStr}
+                        </Typography>
+                        {dayCounter && (
+                            <Typography 
+                                variant="caption" 
+                                sx={{ 
+                                    color: isToday ? '#3f51b5' : dayCounterColor,
+                                    fontSize: '0.7rem',
+                                    display: 'block',
+                                    fontWeight: 500
+                                }}
+                            >
+                                {dayCounter}
+                            </Typography>
+                        )}
+                    </Box>
+                );
+            },
         },
         {
             title: 'Deadline',
             dataIndex: 'deadline',
             key: 'deadline',
             align: 'center',
-            width: 120,
-            render: (text) => (
-                <Typography variant="body2" sx={{ color: '#64748b' }}>
-                    {formatDate(text)}
-                </Typography>
-            ),
+            width: 140,
+            render: (text) => {
+                const date = new Date(text);
+                const today = new Date();
+                const timeDiff = date.getTime() - today.getTime();
+                const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                const dateStr = date.toDateString() === today.toDateString() ? 'Today' : `${day}/${month}/${year}`;
+                
+                let dayCounter = '';
+                let dayCounterColor = '#94a3b8';
+                
+                if (daysDiff > 0) {
+                    dayCounter = `${daysDiff} days left`;
+                    // Color coding based on days remaining
+                    if (daysDiff > 30) {
+                        dayCounterColor = '#2e7d32'; // Green
+                    } else if (daysDiff > 14) {
+                        dayCounterColor = '#ff9800'; // Orange
+                    } else {
+                        dayCounterColor = '#d32f2f'; // Red
+                    }
+                } else if (daysDiff < 0) {
+                    dayCounter = `${Math.abs(daysDiff)} days ago`;
+                    dayCounterColor = '#d32f2f'; // Red for overdue
+                }
+                
+                const isToday = dateStr === 'Today';
+                const isOverdue = daysDiff < 0;
+                
+                return (
+                    <Box sx={{ textAlign: 'center' }}>
+                        <Typography 
+                            variant="body2" 
+                            sx={{ 
+                                color: isToday ? '#ff9800' : isOverdue ? '#d32f2f' : '#64748b',
+                                fontWeight: isToday || isOverdue ? 600 : 400,
+                                fontSize: isToday || isOverdue ? '0.875rem' : '0.75rem',
+                                mb: dayCounter ? 0.5 : 0
+                            }}
+                        >
+                            {dateStr}
+                        </Typography>
+                        {dayCounter && (
+                            <Typography 
+                                variant="caption" 
+                                sx={{ 
+                                    color: isToday ? '#ff9800' : dayCounterColor,
+                                    fontSize: '0.7rem',
+                                    display: 'block',
+                                    fontWeight: 500
+                                }}
+                            >
+                                {dayCounter}
+                            </Typography>
+                        )}
+                    </Box>
+                );
+            },
         },
         {
             title: 'School Name',
@@ -305,7 +438,18 @@ export default function GarmentOrders() {
             align: 'left',
             width: 300,
             render: (school) => (
-                <Typography variant="body2" sx={{ fontWeight: 500, color: '#1e293b' }}>
+                <Typography 
+                    variant="body2" 
+                    sx={{ 
+                        fontWeight: 500, 
+                        color: '#1e293b',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        maxWidth: '280px'
+                    }}
+                    title={school?.business || 'School Name'}
+                >
                     {school?.business || 'School Name'}
                 </Typography>
             ),
@@ -410,7 +554,7 @@ export default function GarmentOrders() {
                         mb: 3
                     }}
                 >
-                    Manage and track uniform production orders from schools with real-time updates and status tracking.
+                    Manage and track uniform production orders from schools with status tracking.
                 </Typography>
             </Box>
 
@@ -505,13 +649,46 @@ export default function GarmentOrders() {
                                     mb: 1.5
                                 }}
                             >
-                                <ShippingIcon sx={{ color: "#1976d2", fontSize: 24 }} />
+                                <TrendingUpIcon sx={{ color: "#1976d2", fontSize: 24 }} />
                             </Box>
                             <Typography variant="h5" sx={{ fontWeight: 700, color: "#1976d2", mb: 0.5 }}>
                                 {stats.processing}
                             </Typography>
                             <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
                                 Processing
+                            </Typography>
+                        </CardContent>
+                    </Card>
+
+                    <Card
+                        elevation={0}
+                        sx={{
+                            flex: '1 1 200px',
+                            border: "1px solid #e2e8f0",
+                            borderRadius: 2
+                        }}
+                    >
+                        <CardContent sx={{ textAlign: "center", p: 2 }}>
+                            <Box
+                                sx={{
+                                    width: 50,
+                                    height: 50,
+                                    borderRadius: "50%",
+                                    backgroundColor: "rgba(156, 39, 176, 0.1)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    mx: "auto",
+                                    mb: 1.5
+                                }}
+                            >
+                                <ShippingIcon sx={{ color: "#9c27b0", fontSize: 24 }} />
+                            </Box>
+                            <Typography variant="h5" sx={{ fontWeight: 700, color: "#9c27b0", mb: 0.5 }}>
+                                {stats.delivered}
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
+                                Delivered
                             </Typography>
                         </CardContent>
                     </Card>
@@ -538,7 +715,7 @@ export default function GarmentOrders() {
                                     mb: 1.5
                                 }}
                             >
-                                <StatsIcon sx={{ color: "#2e7d32", fontSize: 24 }} />
+                                <TrendingUpIcon sx={{ color: "#2e7d32", fontSize: 24 }} />
                             </Box>
                             <Typography variant="h5" sx={{ fontWeight: 700, color: "#2e7d32", mb: 0.5 }}>
                                 {stats.completed}
@@ -605,7 +782,7 @@ export default function GarmentOrders() {
                             Production Orders
                         </Typography>
                         <Chip
-                            label={`${filteredOrders.length} Pending Orders`}
+                            label={`${filteredOrders.length} Total`}
                             sx={{
                                 backgroundColor: "rgba(255, 152, 0, 0.1)",
                                 color: "#ff9800",

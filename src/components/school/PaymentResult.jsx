@@ -14,15 +14,15 @@ import {
     UserOutlined
 } from '@ant-design/icons';
 import {parseID} from "../../utils/ParseIDUtil.jsx";
-import {pickQuotation, buyExtraRevision} from "../../services/DesignService.jsx";
+import {buyExtraRevision, pickQuotation} from "../../services/DesignService.jsx";
 import {approveQuotation} from "../../services/OrderService.jsx";
-import {serviceFee} from "../../configs/FixedVariables.jsx";
+import {createDesignTransaction, createOrderTransaction} from "../../services/PaymentService.jsx";
 import {useEffect, useState} from 'react';
 
 export default function PaymentResult() {
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
-    
+
     const [isProcessing, setIsProcessing] = useState(false);
     const [hasProcessed, setHasProcessed] = useState(() => {
         // Check if payment has already been processed from localStorage
@@ -44,17 +44,19 @@ export default function PaymentResult() {
     let revisionPurchaseDetails = null;
     let isOrderPayment = paymentType === 'order';
     let isRevisionPurchase = paymentType === 'revision';
+    let isDepositPayment = paymentType === 'deposit';
 
     // Check if we have valid payment data
-    const hasDesignPayment = !isOrderPayment && !isRevisionPurchase && sessionStorage.getItem('paymentQuotationDetails');
-    const hasOrderPayment = isOrderPayment && sessionStorage.getItem('orderPaymentDetails');
-    const hasRevisionPurchase = isRevisionPurchase && sessionStorage.getItem('revisionPurchaseDetails');
+    const hasDesignPayment = !isOrderPayment && !isRevisionPurchase && !isDepositPayment && !!sessionStorage.getItem('paymentQuotationDetails');
+    const hasOrderPayment = (isOrderPayment || isDepositPayment) && !!sessionStorage.getItem('paymentQuotationDetails');
+    const hasRevisionPurchase = isRevisionPurchase && !!sessionStorage.getItem('revisionPurchaseDetails');
 
     // Debug logs
     console.log('PaymentResult Debug:', {
         paymentType,
         isOrderPayment,
         isRevisionPurchase,
+        isDepositPayment,
         hasDesignPayment: !!hasDesignPayment,
         hasOrderPayment: !!hasOrderPayment,
         hasRevisionPurchase: !!hasRevisionPurchase,
@@ -72,158 +74,242 @@ export default function PaymentResult() {
 
     if (vnpResponseCode !== null) {
         success = vnpResponseCode === '00';
-        if (success && vnpOrderInfo) {
-            try {
-                if (isOrderPayment) {
-                    // For order payments, get from session storage
-                    const storedOrderDetails = sessionStorage.getItem('orderPaymentDetails');
-                    if (storedOrderDetails) {
-                        orderDetails = JSON.parse(storedOrderDetails);
-                    }
-                } else if (isRevisionPurchase) {
-                    // For revision purchase payments, get from session storage
-                    const storedRevisionDetails = sessionStorage.getItem('revisionPurchaseDetails');
-                    if (storedRevisionDetails) {
-                        revisionPurchaseDetails = JSON.parse(storedRevisionDetails);
-                    }
-                } else {
-                    // For design payments, get from session storage
-                    const storedQuotationDetails = sessionStorage.getItem('paymentQuotationDetails');
-                    if (storedQuotationDetails) {
+
+        // Parse payment details regardless of success/failure
+        try {
+            if (isOrderPayment || isDepositPayment) {
+                // For order payments (including deposit), get from session storage
+                const storedOrderDetails = sessionStorage.getItem('paymentQuotationDetails');
+                if (storedOrderDetails) {
+                    orderDetails = JSON.parse(storedOrderDetails);
+                }
+            } else if (isRevisionPurchase) {
+                // For revision purchase payments, get from session storage
+                const storedRevisionDetails = sessionStorage.getItem('revisionPurchaseDetails');
+                if (storedRevisionDetails) {
+                    revisionPurchaseDetails = JSON.parse(storedRevisionDetails);
+                }
+            } else {
+                // For design payments, get from session storage
+                const storedQuotationDetails = sessionStorage.getItem('paymentQuotationDetails');
+                if (storedQuotationDetails) {
+                    try {
                         quotationDetails = JSON.parse(storedQuotationDetails);
+                        console.log('Parsed quotation details:', quotationDetails);
+                        console.log('quotationDetails structure:', {
+                            hasQuotation: !!quotationDetails?.quotation,
+                            hasRequest: !!quotationDetails?.request,
+                            quotationKeys: quotationDetails?.quotation ? Object.keys(quotationDetails.quotation) : null,
+                            requestKeys: quotationDetails?.request ? Object.keys(quotationDetails.request) : null
+                        });
+                    } catch (error) {
+                        console.error('Error parsing quotation details:', error);
+                        quotationDetails = null;
                     }
                 }
-            } catch (error) {
-                console.error('Error parsing payment details:', error);
             }
+        } catch (error) {
+            console.error('Error parsing payment details:', error);
         }
     } else {
-            // Only redirect if we have a payment type but no VNPay response AND this is initial render
-    if (paymentType && vnpResponseCode === null && isInitialRender) {
-        console.log('No VNPay response but have payment type on initial render, redirecting based on type');
-        if (isOrderPayment) {
-            window.location.href = '/school/order';
-        } else if (isRevisionPurchase) {
-            window.location.href = '/school/chat';
-        } else {
-            window.location.href = '/school/design';
+        // Only redirect if we have a payment type but no VNPay response AND this is initial render
+        if (paymentType && isInitialRender) {
+            console.log('No VNPay response but have payment type on initial render, redirecting based on type');
+            if (isOrderPayment) {
+                window.location.href = '/school/order';
+            } else if (isRevisionPurchase) {
+                window.location.href = '/school/chat';
+            } else {
+                window.location.href = '/school/design';
+            }
         }
     }
-    }
 
-    const { quotation, request, serviceFee: designServiceFee, subtotal, totalAmount } = quotationDetails || {};
+    const {quotation, request, serviceFee: designServiceFee, subtotal, totalAmount} = quotationDetails || {};
     const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
+
+    // Handle successful payment
+    const handleSuccessfulPayment = async () => {
+        console.log('Processing successful payment');
+
+        if (isDepositPayment && quotationId && orderDetails) {
+            await handleSuccessfulDeposit();
+        } else if (isOrderPayment && quotationId && orderDetails) {
+            console.log('Full order payment completed - no additional API call needed');
+        } else if (isRevisionPurchase && revisionPurchaseDetails) {
+            await handleSuccessfulRevision();
+        } else if (quotationDetails) {
+            await handleSuccessfulDesign();
+        }
+    };
+
+    // Handle failed payment
+    const handleFailedPayment = async () => {
+        console.log('Processing failed payment');
+
+        if (isDepositPayment || isOrderPayment) {
+            await handleFailedOrder();
+        } else if (quotationDetails) {
+            await handleFailedDesign();
+        }
+    };
+
+    // Helper functions for successful payments
+    const handleSuccessfulDeposit = async () => {
+        console.log('handleSuccessfulDeposit called');
+        const data = {
+            quotationId: parseInt(quotationId),
+            createTransactionRequest: {
+                type: "order",
+                receiverId: orderDetails.quotation.garmentId,
+                itemId: orderDetails.order.id,
+                totalPrice: parseInt(vnpAmount) / 100,
+                gatewayCode: vnpResponseCode,
+                serviceFee: orderDetails.serviceFee,
+                payFromWallet: false
+            }
+        };
+
+        const response = await approveQuotation(data);
+        if (response && response.status === 201) {
+            console.log('Deposit payment processed successfully');
+        } else {
+            console.error('Failed to process deposit payment:', response);
+        }
+    };
+
+    const handleSuccessfulRevision = async () => {
+        console.log('handleSuccessfulRevision called');
+        const response = await buyExtraRevision(
+            revisionPurchaseDetails.requestId,
+            revisionPurchaseDetails.revisionQuantity,
+            revisionPurchaseDetails.designerId,
+            parseInt(vnpAmount) / 100,
+            vnpResponseCode
+        );
+
+        if (response && response.status === 200) {
+            console.log('Extra revisions purchased successfully');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        } else {
+            console.error('Failed to purchase extra revisions');
+        }
+    };
+
+    const handleSuccessfulDesign = async () => {
+        console.log('handleSuccessfulDesign called');
+        const data = {
+            designQuotationId: quotation.id,
+            designRequestId: request.id,
+            extraRevision: extraRevision,
+            serviceFee: designServiceFee || 0,
+            createTransactionRequest: {
+                type: "design",
+                receiverId: quotation.designer.id,
+                itemId: request.id,
+                totalPrice: parseInt(vnpAmount) / 100,
+                gatewayCode: vnpResponseCode,
+                serviceFee: designServiceFee || 0,
+                payFromWallet: false
+            }
+        };
+
+        const response = await pickQuotation(data);
+        if (response && response.status === 200) {
+            console.log('Design quotation picked successfully');
+        } else {
+            console.error('Failed to pick design quotation');
+        }
+    };
+
+    // Helper functions for failed payments
+    const handleFailedOrder = async () => {
+        console.log('handleFailedOrder called');
+        if (!orderDetails) return;
+
+        const response = await createOrderTransaction(
+            orderDetails.quotation.garmentId,
+            orderDetails.order.id,
+            parseInt(vnpAmount) / 100,
+            vnpResponseCode,
+            isDepositPayment ? orderDetails.serviceFee : 0,
+            false
+        );
+        if (response && response.status === 201) {
+            console.log('Failed order/deposit payment transaction recorded successfully');
+        } else {
+            console.error('Failed to record order/deposit payment transaction:', response);
+        }
+    };
+
+    const handleFailedDesign = async () => {
+        console.log('handleFailedDesign called');
+        if (!quotation || !request) {
+            console.error('Missing quotation or request data');
+            return;
+        }
+
+        const response = await createDesignTransaction(
+            quotation.designer?.id,
+            request.id,
+            parseInt(vnpAmount) / 100,
+            vnpResponseCode,
+            designServiceFee || 0,
+            false
+        );
+        if (response && response.status === 201) {
+            console.log('Failed design payment transaction recorded successfully');
+        } else {
+            console.error('Failed to record design payment transaction:', response);
+        }
+    };
 
     // Set isInitialRender to false after first render
     useEffect(() => {
         setIsInitialRender(false);
     }, []);
 
-    // Call appropriate API when payment is successful
+    // Process payment success and failure
     useEffect(() => {
-        const processPaymentSuccess = async () => {
-            console.log('processPaymentSuccess called:', {
+        const processPayment = async () => {
+            // Prevent duplicate processing
+            if (hasProcessed || isProcessing || vnpResponseCode === null) {
+                return;
+            }
+
+            console.log('Processing payment:', {
                 success,
-                hasProcessed,
-                isProcessing,
-                isOrderPayment,
-                isRevisionPurchase,
-                hasRevisionPurchase: !!revisionPurchaseDetails,
-                vnpResponseCode
+                paymentType,
+                vnpResponseCode,
+                vnpAmount
             });
-            
-            // Prevent redirect if we're processing a successful payment
-            if (success && !hasProcessed && !isProcessing) {
-                setIsProcessing(true);
-                try {
-                    if (isOrderPayment && quotationId && orderDetails) {
-                        // For order payment: approve quotation with transaction details
-                        const data = {
-                            quotationId: parseInt(quotationId),
-                            createTransactionRequest: {
-                                type: "order",
-                                receiverId: orderDetails.quotation.garmentId,
-                                itemId: orderDetails.orderId,
-                                totalPrice: parseInt(vnpAmount) / 100,
-                                gatewayCode: vnpResponseCode,
-                                serviceFee: orderDetails.serviceFee,
-                                payFromWallet: false
-                            }
-                        };
-                        const response = await approveQuotation(data);
-                        if (response && response.status === 200) {
-                            console.log('Order quotation approved successfully');
-                        } else {
-                            console.error('Failed to approve order quotation');
-                        }
-                    } else if (isRevisionPurchase && revisionPurchaseDetails) {
-                        // For revision purchase: call buyExtraRevision API
-                        console.log('Processing revision purchase:', {
-                            requestId: revisionPurchaseDetails.requestId,
-                            revisionQuantity: revisionPurchaseDetails.revisionQuantity,
-                            designerId: revisionPurchaseDetails.designerId,
-                            amount: parseInt(vnpAmount) / 100,
-                            responseCode: vnpResponseCode
-                        });
-                        
-                        const response = await buyExtraRevision(
-                            revisionPurchaseDetails.requestId,
-                            revisionPurchaseDetails.revisionQuantity,
-                            revisionPurchaseDetails.designerId,
-                            parseInt(vnpAmount) / 100,
-                            vnpResponseCode
-                        );
-                        if (response && response.status === 200) {
-                            console.log('Extra revisions purchased successfully');
-                            // Add a small delay to ensure the API call completes
-                            await new Promise(resolve => setTimeout(resolve, 1000));
-                        } else {
-                            console.error('Failed to purchase extra revisions');
-                        }
-                    } else if (quotationDetails) {
-                        // For design payment: pick quotation with transaction details
-                        const data = {
-                            designQuotationId: quotation.id,
-                            designRequestId: request.id,
-                            extraRevision: extraRevision,
-                            serviceFee: designServiceFee || 0,
-                            createTransactionRequest: {
-                                type: "design",
-                                receiverId: quotation.designer.id,
-                                itemId: request.id,
-                                totalPrice: parseInt(vnpAmount) / 100,
-                                gatewayCode: vnpResponseCode,
-                                serviceFee: designServiceFee || 0,
-                                payFromWallet: false
-                            }
-                        };
-                        
-                        const response = await pickQuotation(data);
-                        if (response && response.status === 200) {
-                            console.log('Design quotation picked successfully');
-                        } else {
-                            console.error('Failed to pick design quotation');
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error processing payment success:', error);
-                } finally {
-                    setIsProcessing(false);
-                    setHasProcessed(true);
-                    
-                    // Save processing status to localStorage to prevent duplicate API calls on reload
-                    const processedKey = `payment_processed_${vnpTxnRef}`;
-                    localStorage.setItem(processedKey, 'true');
+
+            setIsProcessing(true);
+
+            try {
+                if (success) {
+                    await handleSuccessfulPayment();
+                } else {
+                    await handleFailedPayment();
                 }
+            } catch (error) {
+                console.error('Error processing payment:', error);
+            } finally {
+                setIsProcessing(false);
+                setHasProcessed(true);
+
+                // Save processing status to localStorage
+                const processedKey = `payment_processed_${vnpTxnRef}`;
+                localStorage.setItem(processedKey, 'true');
             }
         };
 
-        processPaymentSuccess();
+        processPayment();
     }, [success, quotationDetails, hasProcessed, isProcessing, quotation, request, isOrderPayment, quotationId, isRevisionPurchase, revisionPurchaseDetails]);
 
     return (
-        <Box sx={{ 
-            minHeight: '100vh', 
+        <Box sx={{
+            minHeight: '100vh',
             backgroundColor: '#f8fafc',
             display: 'flex',
             alignItems: 'center',
@@ -231,16 +317,16 @@ export default function PaymentResult() {
             py: 4
         }}>
             <Container maxWidth="md">
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                    
+                <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4}}>
+
                     {/* Main Result Card */}
-                    <Paper 
+                    <Paper
                         elevation={0}
-                        sx={{ 
-                            p: { xs: 3, md: 5 }, 
-                            borderRadius: 4, 
-                            textAlign: 'center', 
-                            width: '100%', 
+                        sx={{
+                            p: {xs: 3, md: 5},
+                            borderRadius: 4,
+                            textAlign: 'center',
+                            width: '100%',
                             backgroundColor: 'white',
                             border: success ? '2px solid #52c41a' : '2px solid #f5222d',
                             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
@@ -258,24 +344,27 @@ export default function PaymentResult() {
                                     justifyContent: 'center',
                                     mb: 2
                                 }}>
-                                    <CheckCircleOutlined style={{ fontSize: '48px', color: '#52c41a' }} />
+                                    <CheckCircleOutlined style={{fontSize: '48px', color: '#52c41a'}}/>
                                 </Box>
-                                <Typography.Title level={2} style={{ color: '#52c41a', margin: 0, fontWeight: 700 }}>
+                                <Typography.Title level={2} style={{color: '#52c41a', margin: 0, fontWeight: 700}}>
                                     Payment Successful!
                                 </Typography.Title>
-                                <Typography.Paragraph style={{ fontSize: '16px', color: '#475569', margin: 0, maxWidth: '500px' }}>
-                                    {isOrderPayment 
+                                <Typography.Paragraph
+                                    style={{fontSize: '16px', color: '#475569', margin: 0, maxWidth: '500px'}}>
+                                    {isOrderPayment
                                         ? 'Your payment for the order has been successfully processed.'
-                                        : isRevisionPurchase
-                                        ? 'Your payment for extra revisions has been successfully processed.'
-                                        : 'Your payment for the design quotation has been successfully processed.'
+                                        : isDepositPayment
+                                            ? 'Your deposit payment for the order has been successfully processed.'
+                                            : isRevisionPurchase
+                                                ? 'Your payment for extra revisions has been successfully processed.'
+                                                : 'Your payment for the design quotation has been successfully processed.'
                                     }
                                 </Typography.Paragraph>
-                                
+
                                 {/* VNPay Transaction Details */}
                                 {vnpTxnRef && (
-                                    <Box sx={{ 
-                                        mt: 3, 
+                                    <Box sx={{
+                                        mt: 3,
                                         backgroundColor: 'white',
                                         borderRadius: 3,
                                         border: '1px solid #e2e8f0',
@@ -288,7 +377,7 @@ export default function PaymentResult() {
                                             background: 'linear-gradient(135deg, #52c41a 0%, #389e0d 100%)',
                                             color: 'white'
                                         }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 3}}>
                                                 <Box sx={{
                                                     width: 48,
                                                     height: 48,
@@ -299,13 +388,18 @@ export default function PaymentResult() {
                                                     justifyContent: 'center',
                                                     backdropFilter: 'blur(10px)'
                                                 }}>
-                                                    <CheckCircleOutlined style={{ color: 'white', fontSize: '24px' }} />
+                                                    <CheckCircleOutlined style={{color: 'white', fontSize: '24px'}}/>
                                                 </Box>
-                                                <Box sx={{ flex: 1 }}>
-                                                    <Typography.Title level={3} style={{ margin: 0, color: 'white', fontWeight: 700 }}>
+                                                <Box sx={{flex: 1}}>
+                                                    <Typography.Title level={3} style={{
+                                                        margin: 0,
+                                                        color: 'white',
+                                                        fontWeight: 700
+                                                    }}>
                                                         Payment Confirmation
                                                     </Typography.Title>
-                                                    <Typography.Text style={{ color: 'rgba(255, 255, 255, 0.9)', fontSize: '16px' }}>
+                                                    <Typography.Text
+                                                        style={{color: 'rgba(255, 255, 255, 0.9)', fontSize: '16px'}}>
                                                         Transaction completed successfully
                                                     </Typography.Text>
                                                 </Box>
@@ -329,9 +423,9 @@ export default function PaymentResult() {
                                         </Box>
 
                                         {/* Content */}
-                                        <Box sx={{ p: 4 }}>
-                                            <Box sx={{ 
-                                                display: 'grid', 
+                                        <Box sx={{p: 4}}>
+                                            <Box sx={{
+                                                display: 'grid',
                                                 gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
                                                 gap: 3
                                             }}>
@@ -349,7 +443,8 @@ export default function PaymentResult() {
                                                             transform: 'translateY(-2px)'
                                                         }
                                                     }}>
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                                                        <Box
+                                                            sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
                                                             <Box sx={{
                                                                 width: 24,
                                                                 height: 24,
@@ -398,7 +493,7 @@ export default function PaymentResult() {
                                                         transform: 'translateY(-2px)'
                                                     }
                                                 }}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
                                                         <Box sx={{
                                                             width: 24,
                                                             height: 24,
@@ -453,24 +548,25 @@ export default function PaymentResult() {
                                                     fontSize: '16px',
                                                     fontWeight: 500
                                                 }}>
-                                                    Your payment has been processed successfully, you will receive a confirmation email shortly.
+                                                    Your payment has been processed successfully, you will receive a
+                                                    confirmation email shortly.
                                                 </Typography.Text>
                                             </Box>
                                         </Box>
                                     </Box>
                                 )}
-                                
+
                                 {/* Success Features */}
-                                <Box sx={{ display: 'flex', gap: 3, mt: 2 }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <SafetyCertificateOutlined style={{ color: '#52c41a', fontSize: '16px' }} />
-                                        <Typography.Text style={{ fontSize: '14px', color: '#475569' }}>
+                                <Box sx={{display: 'flex', gap: 3, mt: 2}}>
+                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                        <SafetyCertificateOutlined style={{color: '#52c41a', fontSize: '16px'}}/>
+                                        <Typography.Text style={{fontSize: '14px', color: '#475569'}}>
                                             Secure Payment
                                         </Typography.Text>
                                     </Box>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <ClockCircleOutlined style={{ color: '#52c41a', fontSize: '16px' }} />
-                                        <Typography.Text style={{ fontSize: '14px', color: '#475569' }}>
+                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                        <ClockCircleOutlined style={{color: '#52c41a', fontSize: '16px'}}/>
+                                        <Typography.Text style={{fontSize: '14px', color: '#475569'}}>
                                             Instant Processing
                                         </Typography.Text>
                                     </Box>
@@ -488,29 +584,32 @@ export default function PaymentResult() {
                                     justifyContent: 'center',
                                     mb: 2
                                 }}>
-                                    <CloseCircleOutlined style={{ fontSize: '48px', color: '#f5222d' }} />
+                                    <CloseCircleOutlined style={{fontSize: '48px', color: '#f5222d'}}/>
                                 </Box>
-                                <Typography.Title level={2} style={{ color: '#f5222d', margin: 0, fontWeight: 700 }}>
+                                <Typography.Title level={2} style={{color: '#f5222d', margin: 0, fontWeight: 700}}>
                                     Payment Failed
                                 </Typography.Title>
-                                <Typography.Paragraph style={{ fontSize: '16px', color: '#475569', margin: 0, maxWidth: '500px' }}>
-                                    There was an issue with your payment. Please check your payment method and try again.
+                                <Typography.Paragraph
+                                    style={{fontSize: '16px', color: '#475569', margin: 0, maxWidth: '500px'}}>
+                                    There was an issue with your payment. Please check your payment method and try
+                                    again.
                                 </Typography.Paragraph>
-                                
+
                                 {/* VNPay Error Details */}
                                 {vnpResponseCode && vnpResponseCode !== '00' && (
-                                    <Box sx={{ 
-                                        mt: 2, 
-                                        p: 2, 
-                                        backgroundColor: '#fff2f0', 
+                                    <Box sx={{
+                                        mt: 2,
+                                        p: 2,
+                                        backgroundColor: '#fff2f0',
                                         borderRadius: 2,
                                         border: '1px solid #ffccc7'
                                     }}>
-                                        <Typography.Text style={{ fontSize: '14px', color: '#f5222d', fontWeight: 600 }}>
+                                        <Typography.Text style={{fontSize: '14px', color: '#f5222d', fontWeight: 600}}>
                                             Response Code: {vnpResponseCode}
                                         </Typography.Text>
                                         {vnpTxnRef && (
-                                            <Typography.Text style={{ fontSize: '14px', color: '#f5222d', display: 'block', mt: 1 }}>
+                                            <Typography.Text
+                                                style={{fontSize: '14px', color: '#f5222d', display: 'block', mt: 1}}>
                                                 Transaction ID: {vnpTxnRef}
                                             </Typography.Text>
                                         )}
@@ -522,18 +621,18 @@ export default function PaymentResult() {
 
                     {/* Order Summary Card */}
                     {success && (quotationDetails || orderDetails || revisionPurchaseDetails) && (
-                        <Paper 
+                        <Paper
                             elevation={0}
-                            sx={{ 
-                                p: { xs: 3, md: 4 }, 
-                                borderRadius: 4, 
-                                width: '100%', 
+                            sx={{
+                                p: {xs: 3, md: 4},
+                                borderRadius: 4,
+                                width: '100%',
                                 backgroundColor: 'white',
                                 border: '1px solid #e2e8f0',
                                 boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)'
                             }}
                         >
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
                                 <Box sx={{
                                     width: 40,
                                     height: 40,
@@ -544,308 +643,383 @@ export default function PaymentResult() {
                                     justifyContent: 'center',
                                     color: '#1976d2'
                                 }}>
-                                    <FileTextOutlined style={{ fontSize: '18px' }} />
+                                    <FileTextOutlined style={{fontSize: '18px'}}/>
                                 </Box>
-                                <Typography.Title level={4} style={{ margin: 0, color: '#1e293b' }}>
-                                    {isOrderPayment ? 'Order Payment Summary' : isRevisionPurchase ? 'Revision Purchase Summary' : 'Design Order Summary'}
+                                <Typography.Title level={4} style={{margin: 0, color: '#1e293b'}}>
+                                    {isOrderPayment ? 'Order Payment Summary' : isDepositPayment ? 'Deposit Payment Summary' : isRevisionPurchase ? 'Revision Purchase Summary' : 'Design Order Summary'}
                                 </Typography.Title>
                             </Box>
 
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                                {isOrderPayment ? (
+                            <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
+                                {(isOrderPayment || isDepositPayment) ? (
                                     /* Order Payment Info */
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                        <Box sx={{ 
-                                            display: 'flex', 
-                                            justifyContent: 'space-between', 
+                                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                                        <Box sx={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
                                             alignItems: 'center',
                                             p: 2,
                                             backgroundColor: '#f8fafc',
                                             borderRadius: 2
                                         }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                <FileTextOutlined style={{ color: '#64748b', fontSize: '16px' }} />
-                                                <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                <FileTextOutlined style={{color: '#64748b', fontSize: '16px'}}/>
+                                                <Typography.Text style={{color: '#475569', fontSize: '14px'}}>
                                                     <strong>Payment Type:</strong>
                                                 </Typography.Text>
                                             </Box>
-                                            <Typography.Text style={{ color: '#1e293b', fontSize: '14px', fontWeight: 600 }}>
-                                                Order Payment
+                                            <Typography.Text
+                                                style={{color: '#1e293b', fontSize: '14px', fontWeight: 600}}>
+                                                {isDepositPayment ? 'Deposit Payment' : 'Order Payment'}
                                             </Typography.Text>
                                         </Box>
 
-                                        <Box sx={{ 
-                                            display: 'flex', 
-                                            justifyContent: 'space-between', 
+                                        <Box sx={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
                                             alignItems: 'center',
                                             p: 2,
                                             backgroundColor: '#f8fafc',
                                             borderRadius: 2
                                         }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                <UserOutlined style={{ color: '#64748b', fontSize: '16px' }} />
-                                                <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                <FileTextOutlined style={{color: '#64748b', fontSize: '16px'}}/>
+                                                <Typography.Text style={{color: '#475569', fontSize: '14px'}}>
+                                                    <strong>Order ID:</strong>
+                                                </Typography.Text>
+                                            </Box>
+                                            <Typography.Text
+                                                style={{color: '#1e293b', fontSize: '14px', fontWeight: 600}}>
+                                                {parseID(orderDetails?.order?.id, 'ord')}
+                                            </Typography.Text>
+                                        </Box>
+
+                                        <Box sx={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            p: 2,
+                                            backgroundColor: '#f8fafc',
+                                            borderRadius: 2
+                                        }}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                <UserOutlined style={{color: '#64748b', fontSize: '16px'}}/>
+                                                <Typography.Text style={{color: '#475569', fontSize: '14px'}}>
+                                                    <strong>Garment Factory:</strong>
+                                                </Typography.Text>
+                                            </Box>
+                                            <Typography.Text
+                                                style={{color: '#1e293b', fontSize: '14px', fontWeight: 600}}>
+                                                {orderDetails?.quotation?.garment?.customer?.business || 'Unknown Factory'}
+                                            </Typography.Text>
+                                        </Box>
+
+                                        <Box sx={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            p: 2,
+                                            backgroundColor: '#f8fafc',
+                                            borderRadius: 2
+                                        }}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                <UserOutlined style={{color: '#64748b', fontSize: '16px'}}/>
+                                                <Typography.Text style={{color: '#475569', fontSize: '14px'}}>
                                                     <strong>Description:</strong>
                                                 </Typography.Text>
                                             </Box>
-                                            <Typography.Text style={{ color: '#1e293b', fontSize: '14px', fontWeight: 600 }}>
-                                                {orderDetails?.description || 'Order Payment'}
+                                            <Typography.Text
+                                                style={{color: '#1e293b', fontSize: '14px', fontWeight: 600}}>
+                                                {isDepositPayment ? 'Deposit for Order Payment' : (orderDetails?.description || 'Order Payment')}
                                             </Typography.Text>
                                         </Box>
                                     </Box>
                                 ) : isRevisionPurchase ? (
                                     /* Revision Purchase Info */
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                        <Box sx={{ 
-                                            display: 'flex', 
-                                            justifyContent: 'space-between', 
+                                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                                        <Box sx={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
                                             alignItems: 'center',
                                             p: 2,
                                             backgroundColor: '#f8fafc',
                                             borderRadius: 2
                                         }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                <FileTextOutlined style={{ color: '#64748b', fontSize: '16px' }} />
-                                                <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                <FileTextOutlined style={{color: '#64748b', fontSize: '16px'}}/>
+                                                <Typography.Text style={{color: '#475569', fontSize: '14px'}}>
                                                     <strong>Request ID:</strong>
                                                 </Typography.Text>
                                             </Box>
-                                            <Typography.Text style={{ color: '#1e293b', fontSize: '14px', fontWeight: 600 }}>
+                                            <Typography.Text
+                                                style={{color: '#1e293b', fontSize: '14px', fontWeight: 600}}>
                                                 {parseID(revisionPurchaseDetails?.requestId, 'dr')}
                                             </Typography.Text>
                                         </Box>
 
-                                        <Box sx={{ 
-                                            display: 'flex', 
-                                            justifyContent: 'space-between', 
+                                        <Box sx={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
                                             alignItems: 'center',
                                             p: 2,
                                             backgroundColor: '#f8fafc',
                                             borderRadius: 2
                                         }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                <EditOutlined style={{ color: '#64748b', fontSize: '16px' }} />
-                                                <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                <EditOutlined style={{color: '#64748b', fontSize: '16px'}}/>
+                                                <Typography.Text style={{color: '#475569', fontSize: '14px'}}>
                                                     <strong>Revisions Purchased:</strong>
                                                 </Typography.Text>
                                             </Box>
-                                            <Typography.Text style={{ color: '#1e293b', fontSize: '14px', fontWeight: 600 }}>
+                                            <Typography.Text
+                                                style={{color: '#1e293b', fontSize: '14px', fontWeight: 600}}>
                                                 {revisionPurchaseDetails?.revisionQuantity} revision{revisionPurchaseDetails?.revisionQuantity !== 1 ? 's' : ''}
                                             </Typography.Text>
                                         </Box>
 
-                                        <Box sx={{ 
-                                            display: 'flex', 
-                                            justifyContent: 'space-between', 
+                                        <Box sx={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
                                             alignItems: 'center',
                                             p: 2,
                                             backgroundColor: '#f8fafc',
                                             borderRadius: 2
                                         }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                <DollarOutlined style={{ color: '#64748b', fontSize: '16px' }} />
-                                                <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                <DollarOutlined style={{color: '#64748b', fontSize: '16px'}}/>
+                                                <Typography.Text style={{color: '#475569', fontSize: '14px'}}>
                                                     <strong>Price per Revision:</strong>
                                                 </Typography.Text>
                                             </Box>
-                                            <Typography.Text style={{ color: '#1e293b', fontSize: '14px', fontWeight: 600 }}>
+                                            <Typography.Text
+                                                style={{color: '#1e293b', fontSize: '14px', fontWeight: 600}}>
                                                 {revisionPurchaseDetails?.extraRevisionPrice?.toLocaleString('vi-VN')} VND
                                             </Typography.Text>
                                         </Box>
                                     </Box>
                                 ) : (
                                     /* Design Request Info */
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                    <Box sx={{ 
-                                        display: 'flex', 
-                                        justifyContent: 'space-between', 
-                                        alignItems: 'center',
-                                        p: 2,
-                                        backgroundColor: '#f8fafc',
-                                        borderRadius: 2
-                                    }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                            <FileTextOutlined style={{ color: '#64748b', fontSize: '16px' }} />
-                                            <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
-                                                <strong>Request ID:</strong>
-                                            </Typography.Text>
-                                        </Box>
-                                        <Typography.Text style={{ color: '#1e293b', fontSize: '14px', fontWeight: 600 }}>
+                                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                                        <Box sx={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            p: 2,
+                                            backgroundColor: '#f8fafc',
+                                            borderRadius: 2
+                                        }}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                <FileTextOutlined style={{color: '#64748b', fontSize: '16px'}}/>
+                                                <Typography.Text style={{color: '#475569', fontSize: '14px'}}>
+                                                    <strong>Request ID:</strong>
+                                                </Typography.Text>
+                                            </Box>
+                                            <Typography.Text
+                                                style={{color: '#1e293b', fontSize: '14px', fontWeight: 600}}>
                                                 {parseID(request?.id, 'dr')}
-                                        </Typography.Text>
-                                    </Box>
-
-                                    <Box sx={{ 
-                                        display: 'flex', 
-                                        justifyContent: 'space-between', 
-                                        alignItems: 'center',
-                                        p: 2,
-                                        backgroundColor: '#f8fafc',
-                                        borderRadius: 2
-                                    }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                            <UserOutlined style={{ color: '#64748b', fontSize: '16px' }} />
-                                            <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
-                                                <strong>Selected Designer:</strong>
                                             </Typography.Text>
                                         </Box>
-                                        <Typography.Text style={{ color: '#1e293b', fontSize: '14px', fontWeight: 600 }}>
+
+                                        <Box sx={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            p: 2,
+                                            backgroundColor: '#f8fafc',
+                                            borderRadius: 2
+                                        }}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                <UserOutlined style={{color: '#64748b', fontSize: '16px'}}/>
+                                                <Typography.Text style={{color: '#475569', fontSize: '14px'}}>
+                                                    <strong>Selected Designer:</strong>
+                                                </Typography.Text>
+                                            </Box>
+                                            <Typography.Text
+                                                style={{color: '#1e293b', fontSize: '14px', fontWeight: 600}}>
                                                 {quotation?.designer?.customer?.name}
-                                        </Typography.Text>
+                                            </Typography.Text>
+                                        </Box>
                                     </Box>
-                                </Box>
                                 )}
 
-                                <Divider style={{ margin: '16px 0' }} />
+                                <Divider style={{margin: '16px 0'}}/>
 
                                 {/* Payment Details */}
                                 <Box>
-                                    <Typography.Title level={4} style={{ margin: '0 0 16px 0', color: '#475569', fontSize: '16px' }}>
+                                    <Typography.Title level={4} style={{
+                                        margin: '0 0 16px 0',
+                                        color: '#475569',
+                                        fontSize: '16px'
+                                    }}>
                                         Payment Details
                                     </Typography.Title>
-                                    
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                        <Box sx={{ 
-                                            display: 'flex', 
-                                            justifyContent: 'space-between', 
+
+                                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                                        <Box sx={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
                                             alignItems: 'center',
                                             p: 2,
                                             backgroundColor: '#fff7e6',
                                             borderRadius: 2,
                                             border: '1px solid #ffd591'
                                         }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                <DollarOutlined style={{ color: '#fa8c16', fontSize: '16px' }} />
-                                                <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                <DollarOutlined style={{color: '#fa8c16', fontSize: '16px'}}/>
+                                                <Typography.Text style={{color: '#475569', fontSize: '14px'}}>
                                                     <strong>Payment Amount:</strong>
                                                 </Typography.Text>
                                             </Box>
-                                            <Typography.Title level={4} style={{ margin: 0, color: '#fa8c16', fontWeight: 700 }}>
+                                            <Typography.Title level={4}
+                                                              style={{margin: 0, color: '#fa8c16', fontWeight: 700}}>
                                                 {
-                                                    (parseInt(vnpAmount) / 100).toLocaleString('vi-VN') + ' VND'                                           
+                                                    (parseInt(vnpAmount) / 100).toLocaleString('vi-VN') + ' VND'
                                                 }
                                             </Typography.Title>
                                         </Box>
 
-                                        {isOrderPayment && (
+                                        {isDepositPayment && (
                                             <>
-                                                {/* Service Fee */}
-                                                <Box sx={{ 
-                                                    display: 'flex', 
-                                                    justifyContent: 'space-between', 
+                                                {/* Service Fee for Deposit */}
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    justifyContent: 'space-between',
                                                     alignItems: 'center',
                                                     p: 2,
                                                     backgroundColor: '#f0f9ff',
                                                     borderRadius: 2,
                                                     border: '1px solid #bae6fd'
                                                 }}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                        <FileTextOutlined style={{ color: '#0284c7', fontSize: '16px' }} />
-                                                        <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
+                                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                        <FileTextOutlined style={{color: '#0284c7', fontSize: '16px'}}/>
+                                                        <Typography.Text style={{color: '#475569', fontSize: '14px'}}>
                                                             <strong>Service Fee:</strong>
                                                         </Typography.Text>
                                                     </Box>
-                                                    <Typography.Text style={{ color: '#0284c7', fontSize: '14px', fontWeight: 600 }}>
+                                                    <Typography.Text
+                                                        style={{color: '#0284c7', fontSize: '14px', fontWeight: 600}}>
                                                         {orderDetails.serviceFee.toLocaleString('vi-VN')} VND
                                                     </Typography.Text>
-                                                </Box>
-
-                                                {/* Net Amount */}
-                                                <Box sx={{ 
-                                                    display: 'flex', 
-                                                    justifyContent: 'space-between', 
-                                                    alignItems: 'center',
-                                                    p: 2,
-                                                    backgroundColor: '#f0fdf4',
-                                                    borderRadius: 2,
-                                                    border: '1px solid #bbf7d0'
-                                                }}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                        <CheckCircleOutlined style={{ color: '#16a34a', fontSize: '16px' }} />
-                                                        <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
-                                                            <strong>Net Amount (After Service Fee):</strong>
-                                                        </Typography.Text>
-                                                    </Box>
-                                                                                                <Typography.Title level={5} style={{ margin: 0, color: '#16a34a', fontWeight: 700 }}>
-                                                {((parseInt(vnpAmount) / 100) - orderDetails.serviceFee).toLocaleString('vi-VN')} VND
-                                            </Typography.Title>
                                                 </Box>
                                             </>
                                         )}
 
-                                        {!isOrderPayment && !isRevisionPurchase && (
+                                        {!isOrderPayment && !isDepositPayment && !isRevisionPurchase && (
                                             <>
                                                 {/* Service Fee for Design Payment */}
                                                 {designServiceFee && (
-                                                    <Box sx={{ 
-                                                        display: 'flex', 
-                                                        justifyContent: 'space-between', 
+                                                    <Box sx={{
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
                                                         alignItems: 'center',
                                                         p: 2,
                                                         backgroundColor: '#f0f9ff',
                                                         borderRadius: 2,
                                                         border: '1px solid #bae6fd'
                                                     }}>
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                            <FileTextOutlined style={{ color: '#0284c7', fontSize: '16px' }} />
-                                                            <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
+                                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                            <FileTextOutlined
+                                                                style={{color: '#0284c7', fontSize: '16px'}}/>
+                                                            <Typography.Text
+                                                                style={{color: '#475569', fontSize: '14px'}}>
                                                                 <strong>Service Fee:</strong>
                                                             </Typography.Text>
                                                         </Box>
-                                                        <Typography.Text style={{ color: '#0284c7', fontSize: '14px', fontWeight: 600 }}>
+                                                        <Typography.Text style={{
+                                                            color: '#0284c7',
+                                                            fontSize: '14px',
+                                                            fontWeight: 600
+                                                        }}>
                                                             {designServiceFee.toLocaleString('vi-VN')} VND
                                                         </Typography.Text>
                                                     </Box>
                                                 )}
 
-                                                <Box sx={{ display: 'flex', gap: 2 }}>
-                                                    <Box sx={{ 
-                                                        flex: 1, 
-                                                        p: 2, 
-                                                        backgroundColor: '#f8fafc', 
+                                                <Box sx={{display: 'flex', gap: 2}}>
+                                                    <Box sx={{
+                                                        flex: 1,
+                                                        p: 2,
+                                                        backgroundColor: '#f8fafc',
                                                         borderRadius: 2,
                                                         textAlign: 'center'
                                                     }}>
-                                                        <CalendarOutlined style={{ color: '#1976d2', fontSize: '20px', marginBottom: '8px' }} />
-                                                        <Typography.Text style={{ color: '#475569', fontSize: '13px', display: 'block' }}>
+                                                        <CalendarOutlined style={{
+                                                            color: '#1976d2',
+                                                            fontSize: '20px',
+                                                            marginBottom: '8px'
+                                                        }}/>
+                                                        <Typography.Text style={{
+                                                            color: '#475569',
+                                                            fontSize: '13px',
+                                                            display: 'block'
+                                                        }}>
                                                             <strong>Design Time</strong>
                                                         </Typography.Text>
-                                                        <Typography.Text style={{ color: '#1e293b', fontSize: '16px', fontWeight: 'bold' }}>
+                                                        <Typography.Text style={{
+                                                            color: '#1e293b',
+                                                            fontSize: '16px',
+                                                            fontWeight: 'bold'
+                                                        }}>
                                                             {quotation?.deliveryWithIn} days
                                                         </Typography.Text>
                                                     </Box>
 
-                                                    <Box sx={{ 
-                                                        flex: 1, 
-                                                        p: 2, 
-                                                        backgroundColor: '#f8fafc', 
+                                                    <Box sx={{
+                                                        flex: 1,
+                                                        p: 2,
+                                                        backgroundColor: '#f8fafc',
                                                         borderRadius: 2,
                                                         textAlign: 'center'
                                                     }}>
-                                                        <EditOutlined style={{ color: '#1976d2', fontSize: '20px', marginBottom: '8px' }} />
-                                                        <Typography.Text style={{ color: '#475569', fontSize: '13px', display: 'block' }}>
+                                                        <EditOutlined style={{
+                                                            color: '#1976d2',
+                                                            fontSize: '20px',
+                                                            marginBottom: '8px'
+                                                        }}/>
+                                                        <Typography.Text style={{
+                                                            color: '#475569',
+                                                            fontSize: '13px',
+                                                            display: 'block'
+                                                        }}>
                                                             <strong>Max Revisions</strong>
                                                         </Typography.Text>
-                                                        <Typography.Text style={{ color: '#1e293b', fontSize: '16px', fontWeight: 'bold' }}>
+                                                        <Typography.Text style={{
+                                                            color: '#1e293b',
+                                                            fontSize: '16px',
+                                                            fontWeight: 'bold'
+                                                        }}>
                                                             {quotation?.revisionTime === 9999 ? 'Unlimited' : quotation?.revisionTime}
                                                         </Typography.Text>
                                                     </Box>
                                                 </Box>
 
                                                 {extraRevision > 0 && (
-                                                    <Box sx={{ 
-                                                        p: 2, 
-                                                        backgroundColor: '#fff7e6', 
+                                                    <Box sx={{
+                                                        p: 2,
+                                                        backgroundColor: '#fff7e6',
                                                         borderRadius: 2,
                                                         border: '1px solid #ffd591',
                                                         textAlign: 'center'
                                                     }}>
-                                                        <PlusOutlined style={{ color: '#fa8c16', fontSize: '20px', marginBottom: '8px' }} />
-                                                        <Typography.Text style={{ color: '#475569', fontSize: '13px', display: 'block' }}>
+                                                        <PlusOutlined style={{
+                                                            color: '#fa8c16',
+                                                            fontSize: '20px',
+                                                            marginBottom: '8px'
+                                                        }}/>
+                                                        <Typography.Text style={{
+                                                            color: '#475569',
+                                                            fontSize: '13px',
+                                                            display: 'block'
+                                                        }}>
                                                             <strong>Extra Revisions Purchased</strong>
                                                         </Typography.Text>
-                                                        <Typography.Text style={{ color: '#fa8c16', fontSize: '16px', fontWeight: 'bold' }}>
-                                                            {extraRevision} additional revisions - {(extraRevision * (quotation?.extraRevisionPrice || 0)).toLocaleString('vi-VN')} VND
+                                                        <Typography.Text style={{
+                                                            color: '#fa8c16',
+                                                            fontSize: '16px',
+                                                            fontWeight: 'bold'
+                                                        }}>
+                                                            {extraRevision} additional revisions
+                                                            - {(extraRevision * (quotation?.extraRevisionPrice || 0)).toLocaleString('vi-VN')} VND
                                                         </Typography.Text>
                                                     </Box>
                                                 )}
@@ -858,12 +1032,19 @@ export default function PaymentResult() {
                     )}
 
                     {/* Action Buttons */}
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%', maxWidth: '400px', mb: 4 }}>
-                        <Button 
-                            type="primary" 
-                            size="large" 
-                            icon={<ArrowRightOutlined />}
-                            style={{ 
+                    <Box sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 2,
+                        width: '100%',
+                        maxWidth: '400px',
+                        mb: 4
+                    }}>
+                        <Button
+                            type="primary"
+                            size="large"
+                            icon={<ArrowRightOutlined/>}
+                            style={{
                                 height: '48px',
                                 fontSize: '16px',
                                 fontWeight: 600,
@@ -872,8 +1053,8 @@ export default function PaymentResult() {
                             }}
                             onClick={() => {
                                 // Clear sessionStorage and localStorage after successful processing
-                                if (isOrderPayment) {
-                                    sessionStorage.removeItem('orderPaymentDetails');
+                                if (isOrderPayment || isDepositPayment) {
+                                    sessionStorage.removeItem('paymentQuotationDetails');
                                     sessionStorage.removeItem('currentPaymentType');
                                     // Clear payment processed status
                                     const processedKey = `payment_processed_${vnpTxnRef}`;
@@ -897,13 +1078,13 @@ export default function PaymentResult() {
                                 }
                             }}
                         >
-                            {isOrderPayment ? 'Go to Order Management' : isRevisionPurchase ? 'Go to Design Chat' : 'Go to Design Management'}
+                            {isOrderPayment || isDepositPayment ? 'Go to Order Management' : isRevisionPurchase ? 'Go to Design Chat' : 'Go to Design Management'}
                         </Button>
-                        
+
                         {!success && (
-                            <Button 
+                            <Button
                                 size="large"
-                                style={{ 
+                                style={{
                                     height: '48px',
                                     fontSize: '16px',
                                     fontWeight: 600,
@@ -915,13 +1096,13 @@ export default function PaymentResult() {
                                     const processedKey = `payment_processed_${vnpTxnRef}`;
                                     localStorage.removeItem(processedKey);
                                     sessionStorage.removeItem('currentPaymentType');
-                                    
-                                    if (isOrderPayment) {
+
+                                    if (isOrderPayment || isDepositPayment) {
                                         window.location.href = '/school/order';
                                     } else if (isRevisionPurchase) {
                                         window.location.href = '/school/chat';
                                     } else {
-                                        window.location.href = '/school/pending/request';
+                                        window.location.href = '/school/design';
                                     }
                                 }}
                             >
