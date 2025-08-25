@@ -76,7 +76,6 @@ export default function Login() {
     }
 
     const login = useGoogleLogin({
-        flow: 'implicit',
         scope: 'openid email profile',
         onSuccess: HandleSuccess,
         onError: HandleError,
