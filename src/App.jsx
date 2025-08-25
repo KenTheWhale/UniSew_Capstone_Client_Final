@@ -118,7 +118,7 @@ const router = createBrowserRouter([
                 element: <Contact />
             },
             {
-                path: 'tutorial',
+                path: 'guide',
                 element: <HowItWork />
             },
             {
