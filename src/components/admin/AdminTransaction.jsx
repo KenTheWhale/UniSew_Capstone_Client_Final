@@ -1,5 +1,843 @@
-export default function AdminTransaction(){
-    return(
-        <h1>Transaction</h1>
-    )
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { 
+    Box, 
+    Typography, 
+    Button, 
+    IconButton, 
+    Tooltip, 
+    Paper,
+    Card,
+    CardContent,
+    Chip,
+    CircularProgress,
+    Avatar
+} from "@mui/material";
+import { Table, Space, Empty, Input, Select, Modal, Descriptions, Badge, Tag } from 'antd';
+import { SearchOutlined, UserOutlined, BookOutlined, ToolOutlined, ShopOutlined, FilterOutlined, StopOutlined, ReloadOutlined, DollarOutlined, PayCircleOutlined, CreditCardOutlined } from '@ant-design/icons';
+import { Visibility, AccountBalance } from '@mui/icons-material';
+import { enqueueSnackbar } from 'notistack';
+import { getTransactions } from '../../services/PaymentService.jsx';
+
+const { Search } = Input;
+const { Option } = Select;
+
+// Constants
+const STATUS_COLORS = {
+    success: '#52c41a',
+    fail: '#ff4d4f',
+    pending: '#faad14'
+};
+
+const PAYMENT_TYPE_COLORS = {
+    order: '#1890ff',
+    design: '#722ed1', 
+    wallet: '#13c2c2'
+};
+
+// StatCard Component
+const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
+    <Card
+        sx={{
+            height: '100%',
+            background: bgColor || `linear-gradient(135deg, ${color}15 0%, ${color}08 100%)`,
+            border: `1px solid ${color}20`,
+            borderRadius: 2,
+            transition: 'all 0.3s ease',
+            '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: `0 8px 24px ${color}25`
+            },
+            minWidth: 0, // Allow flex items to shrink
+        }}
+    >
+        <CardContent sx={{ p: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box sx={{ minWidth: 0, flex: 1, mr: 1 }}>
+                    <Typography 
+                        variant="h6" 
+                        sx={{ 
+                            fontWeight: 700, 
+                            color: color,
+                            mb: 0.5,
+                            fontSize: { xs: '0.9rem', sm: '1.1rem' },
+                            lineHeight: 1.2,
+                            wordBreak: 'break-word',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                        }}
+                        title={value} // Show full value on hover
+                    >
+                        {value}
+                    </Typography>
+                    <Typography 
+                        variant="body2" 
+                        sx={{ 
+                            color: '#64748b',
+                            fontWeight: 500,
+                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            lineHeight: 1.2
+                        }}
+                    >
+                        {label}
+                    </Typography>
+                </Box>
+                <Box 
+                    sx={{ 
+                        p: 1.5, 
+                        borderRadius: 2, 
+                        backgroundColor: `${color}10`,
+                        color: color,
+                        flexShrink: 0
+                    }}
+                >
+                    {icon}
+                </Box>
+            </Box>
+        </CardContent>
+    </Card>
+));
+
+// EmptyState Component
+const EmptyState = () => (
+    <Box sx={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        py: 8
+    }}>
+        <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={
+                <Typography variant="body1" sx={{ color: '#64748b', mt: 2 }}>
+                    No transactions found
+                </Typography>
+            }
+        />
+    </Box>
+);
+
+export default function AdminTransaction() {
+    const [transactions, setTransactions] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [searchText, setSearchText] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [paymentTypeFilter, setPaymentTypeFilter] = useState('all');
+    const [selectedTransaction, setSelectedTransaction] = useState(null);
+    const [detailModalVisible, setDetailModalVisible] = useState(false);
+
+    // Fetch transactions from API
+    const fetchTransactions = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await getTransactions();
+            
+            if (response && response.status === 200) {
+                let transactionsData = response.data;
+                
+                // Handle different response structures
+                if (transactionsData && typeof transactionsData === 'object') {
+                    if (transactionsData.transactions && Array.isArray(transactionsData.transactions)) {
+                        transactionsData = transactionsData.transactions;
+                    }
+                    else if (Array.isArray(transactionsData)) {
+                        // Data is already an array, use it directly
+                    }
+                    else {
+                        const keys = Object.keys(transactionsData);
+                        const arrayKey = keys.find(key => Array.isArray(transactionsData[key]));
+                        if (arrayKey) {
+                            transactionsData = transactionsData[arrayKey];
+                        } else {
+                            transactionsData = [];
+                        }
+                    }
+                } else {
+                    transactionsData = [];
+                }
+                
+                setTransactions(transactionsData);
+                enqueueSnackbar(`Loaded ${transactionsData.length} transactions successfully`, { variant: 'success' });
+            } else {
+                enqueueSnackbar('Failed to load transactions', { variant: 'error' });
+                setTransactions([]);
+            }
+        } catch (error) {
+            console.error('Error fetching transactions:', error);
+            enqueueSnackbar('Error loading transactions', { variant: 'error' });
+            setTransactions([]);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchTransactions();
+    }, [fetchTransactions]);
+
+    // Helper functions
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'success':
+                return 'success';
+            case 'fail':
+                return 'error';
+            case 'pending':
+                return 'warning';
+            default:
+                return 'default';
+        }
+    };
+
+    const getStatusText = (status) => {
+        switch (status) {
+            case 'success':
+                return 'Success';
+            case 'fail':
+                return 'Failed';
+            case 'pending':
+                return 'Pending';
+            default:
+                return status;
+        }
+    };
+
+    const getPaymentTypeColor = (type) => {
+        switch (type) {
+            case 'order':
+                return 'blue';
+            case 'design':
+                return 'purple';
+            case 'wallet':
+                return 'cyan';
+            default:
+                return 'default';
+        }
+    };
+
+    const getPaymentTypeText = (type) => {
+        switch (type) {
+            case 'order':
+                return 'Order Payment';
+            case 'design':
+                return 'Design Payment';
+            case 'wallet':
+                return 'Wallet Deposit';
+            default:
+                return type;
+        }
+    };
+
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+        }).format(amount);
+    };
+
+    const formatCompactCurrency = (amount) => {
+        if (amount >= 1000000000) {
+            const billions = Math.floor(amount / 1000000000);
+            return `${billions} billion${billions > 1 ? 's' : ''} ₫`;
+        } else if (amount >= 1000000) {
+            const millions = Math.floor(amount / 1000000);
+            return `${millions} million${millions > 1 ? 's' : ''} ₫`;
+        }
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+        }).format(amount);
+    };
+
+    // Event handlers
+    const handleViewDetail = (record) => {
+        setSelectedTransaction(record);
+        setDetailModalVisible(true);
+    };
+
+    const handleSearch = (value) => {
+        setSearchText(value);
+    };
+
+    const handleStatusFilter = (value) => {
+        setStatusFilter(value);
+    };
+
+    const handlePaymentTypeFilter = (value) => {
+        setPaymentTypeFilter(value);
+    };
+
+    const handleRefresh = () => {
+        fetchTransactions();
+    };
+
+    // Filtered transactions
+    const filteredTransactions = useMemo(() => {
+        if (!Array.isArray(transactions)) {
+            return [];
+        }
+        return transactions.filter(transaction => {
+            const matchesSearch = transaction.id.toString().includes(searchText) ||
+                                transaction.sender?.name?.toLowerCase().includes(searchText.toLowerCase()) ||
+                                transaction.receiver?.name?.toLowerCase().includes(searchText.toLowerCase()) ||
+                                transaction.sender?.account?.email?.toLowerCase().includes(searchText.toLowerCase()) ||
+                                transaction.receiver?.account?.email?.toLowerCase().includes(searchText.toLowerCase());
+            const matchesStatus = statusFilter === 'all' || transaction.status === statusFilter;
+            const matchesPaymentType = paymentTypeFilter === 'all' || transaction.paymentType === paymentTypeFilter;
+            
+            return matchesSearch && matchesStatus && matchesPaymentType;
+        });
+    }, [transactions, searchText, statusFilter, paymentTypeFilter]);
+
+    // Statistics
+    const stats = useMemo(() => {
+        if (!Array.isArray(transactions)) {
+            return { total: 0, success: 0, failed: 0, pending: 0, totalAmount: 0, totalFees: 0 };
+        }
+        const total = transactions.length;
+        const success = transactions.filter(t => t.status === 'success').length;
+        const failed = transactions.filter(t => t.status === 'fail').length;
+        const pending = transactions.filter(t => t.status === 'pending').length;
+        const totalAmount = transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+        const totalFees = transactions.reduce((sum, t) => sum + (t.serviceFee || 0), 0);
+
+        return { total, success, failed, pending, totalAmount, totalFees };
+    }, [transactions]);
+
+    // Table columns
+    const columns = useMemo(() => [
+        {
+            title: 'Transaction ID',
+            dataIndex: 'id',
+            key: 'id',
+            width: 120,
+            align: 'center',
+            sorter: (a, b) => a.id - b.id,
+            defaultSortOrder: 'descend',
+            render: (id) => (
+                <Typography variant="body2" sx={{ fontWeight: 600, color: '#1976d2' }}>
+                    #{id}
+                </Typography>
+            )
+        },
+        {
+            title: 'Sender',
+            key: 'sender',
+            width: 200,
+            render: (_, record) => (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Avatar 
+                        src={record.sender?.avatar} 
+                        sx={{ width: 32, height: 32 }}
+                        slotProps={{
+                            img: {
+                                referrerPolicy: 'no-referrer',
+                            }
+                        }}
+                    >
+                        {record.sender?.name?.charAt(0)?.toUpperCase()}
+                    </Avatar>
+                    <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '13px' }}>
+                            {record.sender?.name}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#64748b', fontSize: '11px' }}>
+                            {record.sender?.account?.email}
+                        </Typography>
+                    </Box>
+                </Box>
+            )
+        },
+        {
+            title: 'Receiver',
+            key: 'receiver',
+            width: 200,
+            render: (_, record) => (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Avatar 
+                        src={record.receiver?.avatar} 
+                        sx={{ width: 32, height: 32 }}
+                        slotProps={{
+                            img: {
+                                referrerPolicy: 'no-referrer',
+                            }
+                        }}
+                    >
+                        {record.receiver?.name?.charAt(0)?.toUpperCase()}
+                    </Avatar>
+                    <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '13px' }}>
+                            {record.receiver?.name}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#64748b', fontSize: '11px' }}>
+                            {record.receiver?.account?.email}
+                        </Typography>
+                    </Box>
+                </Box>
+            )
+        },
+        {
+            title: 'Amount',
+            dataIndex: 'amount',
+            key: 'amount',
+            width: 120,
+            align: 'right',
+            sorter: (a, b) => a.amount - b.amount,
+            render: (amount) => (
+                <Typography variant="body2" sx={{ fontWeight: 600, color: '#52c41a' }}>
+                    {formatCurrency(amount)}
+                </Typography>
+            )
+        },
+        {
+            title: 'Service Fee',
+            dataIndex: 'serviceFee',
+            key: 'serviceFee',
+            width: 100,
+            align: 'right',
+            render: (fee) => (
+                <Typography variant="body2" sx={{ color: '#64748b' }}>
+                    {formatCurrency(fee)}
+                </Typography>
+            )
+        },
+        {
+            title: 'Payment Type',
+            dataIndex: 'paymentType',
+            key: 'paymentType',
+            width: 130,
+            align: 'center',
+            filters: [
+                { text: 'Order Payment', value: 'order' },
+                { text: 'Design Payment', value: 'design' },
+                { text: 'Wallet Deposit', value: 'wallet' }
+            ],
+            onFilter: (value, record) => record.paymentType === value,
+            render: (type) => (
+                <Tag color={getPaymentTypeColor(type)}>
+                    {getPaymentTypeText(type)}
+                </Tag>
+            )
+        },
+        {
+            title: 'Status',
+            dataIndex: 'status',
+            key: 'status',
+            width: 100,
+            align: 'center',
+            filters: [
+                { text: 'Success', value: 'success' },
+                { text: 'Failed', value: 'fail' },
+                { text: 'Pending', value: 'pending' }
+            ],
+            onFilter: (value, record) => record.status === value,
+            render: (status) => (
+                <Badge 
+                    status={getStatusColor(status)} 
+                    text={getStatusText(status)}
+                />
+            )
+        },
+        {
+            title: 'Date',
+            dataIndex: 'creationDate',
+            key: 'creationDate',
+            width: 120,
+            align: 'center',
+            sorter: (a, b) => new Date(a.creationDate) - new Date(b.creationDate),
+            render: (date) => {
+                const transactionDate = new Date(date);
+                return (
+                    <Typography variant="body2" sx={{ color: '#64748b' }}>
+                        {transactionDate.toLocaleDateString('vi-VN')}
+                    </Typography>
+                );
+            }
+        },
+        {
+            title: 'Actions',
+            key: 'actions',
+            width: 80,
+            align: 'center',
+            fixed: 'right',
+            render: (_, record) => (
+                <Tooltip title="View Details">
+                    <Button
+                        type="primary"
+                        size="small"
+                        onClick={() => handleViewDetail(record)}
+                        style={{ display: 'flex', alignItems: 'center', padding: '4px 8px' }}
+                    >
+                        <Visibility style={{ fontSize: 16 }} />
+                    </Button>
+                </Tooltip>
+            )
+        }
+    ], []);
+
+    return (
+        <Box sx={{ 
+            height: '100%', 
+            overflowY: 'auto',
+            '& @keyframes pulse': {
+                '0%': { opacity: 1 },
+                '50%': { opacity: 0.4 },
+                '100%': { opacity: 1 }
+            }
+        }}>
+            {/* Header Section */}
+            <Box 
+                sx={{ 
+                    mb: 4,
+                    position: "relative",
+                    p: 4,
+                    borderRadius: 3,
+                    background: "linear-gradient(135deg, rgba(220, 53, 69, 0.05) 0%, rgba(220, 53, 69, 0.08) 100%)",
+                    border: "1px solid rgba(220, 53, 69, 0.1)",
+                }}
+            >
+                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                    <AccountBalance style={{ fontSize: 32, color: '#dc3545', marginRight: 16 }} />
+                    <Box>
+                        <Typography
+                            variant="h4"
+                            sx={{
+                                fontWeight: 800,
+                                color: "#1e293b",
+                                mb: 1
+                            }}
+                        >
+                            System Transactions Management
+                        </Typography>
+                        <Typography
+                            variant="body1"
+                            sx={{
+                                color: "#64748b",
+                                fontWeight: 500
+                            }}
+                        >
+                            Monitor all payment transactions in the UniSew system
+                        </Typography>
+                    </Box>
+                </Box>
+
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <Box sx={{ display: "flex", gap: 2 }}>
+                        {/* Filters */}
+                        <Search
+                            placeholder="Search by ID, sender, receiver..."
+                            allowClear
+                            style={{ width: 300 }}
+                            onSearch={handleSearch}
+                            onChange={(e) => setSearchText(e.target.value)}
+                        />
+                        <Select
+                            placeholder="Filter by payment type"
+                            style={{ width: 170 }}
+                            value={paymentTypeFilter}
+                            onChange={handlePaymentTypeFilter}
+                            loading={loading}
+                        >
+                            <Option value="all">All Types ({loading ? '...' : Array.isArray(transactions) ? transactions.length : 0})</Option>
+                            <Option value="order">Order ({loading ? '...' : Array.isArray(transactions) ? transactions.filter(t => t.paymentType === 'order').length : 0})</Option>
+                            <Option value="design">Design ({loading ? '...' : Array.isArray(transactions) ? transactions.filter(t => t.paymentType === 'design').length : 0})</Option>
+                            <Option value="wallet">Wallet ({loading ? '...' : Array.isArray(transactions) ? transactions.filter(t => t.paymentType === 'wallet').length : 0})</Option>
+                        </Select>
+                        <Select
+                            placeholder="Filter by status"
+                            style={{ width: 150 }}
+                            value={statusFilter}
+                            onChange={handleStatusFilter}
+                            loading={loading}
+                        >
+                            <Option value="all">All Status ({loading ? '...' : Array.isArray(transactions) ? transactions.length : 0})</Option>
+                            <Option value="success">Success ({loading ? '...' : Array.isArray(transactions) ? transactions.filter(t => t.status === 'success').length : 0})</Option>
+                            <Option value="fail">Failed ({loading ? '...' : Array.isArray(transactions) ? transactions.filter(t => t.status === 'fail').length : 0})</Option>
+                            <Option value="pending">Pending ({loading ? '...' : Array.isArray(transactions) ? transactions.filter(t => t.status === 'pending').length : 0})</Option>
+                        </Select>
+                        <Button 
+                            onClick={() => {
+                                setSearchText('');
+                                setPaymentTypeFilter('all');
+                                setStatusFilter('all');
+                            }}
+                        >
+                            Clear Filters
+                        </Button>
+                    </Box>
+
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                        <Tooltip title="Refresh Data">
+                            <IconButton
+                                onClick={handleRefresh}
+                                sx={{
+                                    backgroundColor: '#dc3545',
+                                    color: 'white',
+                                    '&:hover': {
+                                        backgroundColor: '#c82333',
+                                        transform: 'scale(1.05)'
+                                    },
+                                    transition: 'all 0.2s ease'
+                                }}
+                            >
+                                <ReloadOutlined />
+                            </IconButton>
+                        </Tooltip>
+                    </Box>
+                </Box>
+            </Box>
+
+            {/* Statistics Cards */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 2, mb: 4 }}>
+                {loading ? (
+                    // Skeleton loading for stats cards
+                    Array.from({ length: 6 }).map((_, index) => (
+                        <Card key={index} sx={{ height: '100%', borderRadius: 2 }}>
+                            <CardContent sx={{ p: 3 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <Box>
+                                        <Box 
+                                            sx={{ 
+                                                width: 60, 
+                                                height: 40, 
+                                                backgroundColor: '#f0f0f0', 
+                                                borderRadius: 1, 
+                                                mb: 1,
+                                                animation: 'pulse 1.5s ease-in-out infinite'
+                                            }} 
+                                        />
+                                        <Box 
+                                            sx={{ 
+                                                width: 100, 
+                                                height: 16, 
+                                                backgroundColor: '#f0f0f0', 
+                                                borderRadius: 1,
+                                                animation: 'pulse 1.5s ease-in-out infinite'
+                                            }} 
+                                        />
+                                    </Box>
+                                    <Box 
+                                        sx={{ 
+                                            width: 48, 
+                                            height: 48, 
+                                            backgroundColor: '#f0f0f0', 
+                                            borderRadius: 2,
+                                            animation: 'pulse 1.5s ease-in-out infinite'
+                                        }} 
+                                    />
+                                </Box>
+                            </CardContent>
+                        </Card>
+                    ))
+                ) : (
+                    <>
+                        <StatCard
+                            icon={<DollarOutlined style={{ fontSize: 24 }} />}
+                            value={stats.total}
+                            label="Total Transactions"
+                            color="#dc3545"
+                        />
+                        <StatCard
+                            icon={<PayCircleOutlined style={{ fontSize: 24 }} />}
+                            value={stats.success}
+                            label="Successful"
+                            color="#52c41a"
+                        />
+                        <StatCard
+                            icon={<StopOutlined style={{ fontSize: 24 }} />}
+                            value={stats.failed}
+                            label="Failed Transactions"
+                            color="#ff4d4f"
+                        />
+                        <StatCard
+                            icon={<CreditCardOutlined style={{ fontSize: 24 }} />}
+                            value={stats.pending}
+                            label="Pending"
+                            color="#faad14"
+                        />
+                        <StatCard
+                            icon={<DollarOutlined style={{ fontSize: 24 }} />}
+                            value={formatCompactCurrency(stats.totalAmount)}
+                            label="Total Amount"
+                            color="#1890ff"
+                        />
+                        <StatCard
+                            icon={<PayCircleOutlined style={{ fontSize: 24 }} />}
+                            value={formatCompactCurrency(stats.totalFees)}
+                            label="Total Fees"
+                            color="#722ed1"
+                        />
+                    </>
+                )}
+            </Box>
+
+            {/* Table Section */}
+            <Paper
+                elevation={0}
+                sx={{
+                    borderRadius: 2,
+                    border: "1px solid #e2e8f0",
+                    overflow: "hidden"
+                }}
+            >
+                <Box sx={{ p: 3, backgroundColor: "white" }}>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                        <Typography
+                            variant="h6"
+                            sx={{
+                                fontWeight: 700,
+                                color: "#1e293b"
+                            }}
+                        >
+                            All System Transactions
+                        </Typography>
+                        <Chip
+                            label={`${filteredTransactions.length} of ${stats.total} transactions`}
+                            sx={{
+                                backgroundColor: "#fef2f2",
+                                color: "#dc3545",
+                                fontWeight: 600
+                            }}
+                        />
+                    </Box>
+
+                    {loading ? (
+                        <Box sx={{ 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            py: 8
+                        }}>
+                            <CircularProgress size={40} sx={{ color: '#dc3545', mb: 2 }} />
+                            <Typography variant="body1" sx={{ color: '#64748b' }}>
+                                Loading transactions...
+                            </Typography>
+                        </Box>
+                    ) : filteredTransactions.length === 0 ? (
+                        <EmptyState />
+                    ) : (
+                        <Table
+                            columns={columns}
+                            dataSource={filteredTransactions}
+                            rowKey="id"
+                            loading={false}
+                            pagination={{
+                                defaultPageSize: 10,
+                                pageSizeOptions: ['5', '10', '20'],
+                                showSizeChanger: true,
+                                showQuickJumper: true,
+                                showTotal: (total, range) => 
+                                    `Showing ${range[0]}-${range[1]} of ${total} transactions`,
+                                style: { marginTop: 16 }
+                            }}
+                            scroll={{ x: 'max-content' }}
+                            style={{
+                                backgroundColor: 'white',
+                                borderRadius: '8px'
+                            }}
+                        />
+                    )}
+                </Box>
+            </Paper>
+
+            {/* Detail Modal */}
+            <Modal
+                title="Transaction Details"
+                open={detailModalVisible}
+                onCancel={() => setDetailModalVisible(false)}
+                footer={[
+                    <Button key="close" onClick={() => setDetailModalVisible(false)}>
+                        Close
+                    </Button>
+                ]}
+                width={800}
+            >
+                {selectedTransaction && (
+                    <Descriptions bordered column={2}>
+                        <Descriptions.Item label="Transaction ID" span={2}>
+                            <Typography variant="body2" sx={{ fontWeight: 600, color: '#1976d2' }}>
+                                #{selectedTransaction.id}
+                            </Typography>
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Amount">
+                            <Typography variant="body2" sx={{ fontWeight: 600, color: '#52c41a' }}>
+                                {formatCurrency(selectedTransaction.amount)}
+                            </Typography>
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Service Fee">
+                            {formatCurrency(selectedTransaction.serviceFee)}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Payment Type">
+                            <Tag color={getPaymentTypeColor(selectedTransaction.paymentType)}>
+                                {getPaymentTypeText(selectedTransaction.paymentType)}
+                            </Tag>
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Status">
+                            <Badge 
+                                status={getStatusColor(selectedTransaction.status)} 
+                                text={getStatusText(selectedTransaction.status)}
+                            />
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Sender" span={2}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                <Avatar 
+                                    src={selectedTransaction.sender?.avatar} 
+                                    sx={{ width: 40, height: 40 }}
+                                    slotProps={{
+                                        img: {
+                                            referrerPolicy: 'no-referrer',
+                                        }
+                                    }}
+                                >
+                                    {selectedTransaction.sender?.name?.charAt(0)?.toUpperCase()}
+                                </Avatar>
+                                <Box>
+                                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                        {selectedTransaction.sender?.name}
+                                    </Typography>
+                                    <Typography variant="caption" sx={{ color: '#64748b' }}>
+                                        {selectedTransaction.sender?.account?.email}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Receiver" span={2}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                <Avatar 
+                                    src={selectedTransaction.receiver?.avatar} 
+                                    sx={{ width: 40, height: 40 }}
+                                    slotProps={{
+                                        img: {
+                                            referrerPolicy: 'no-referrer',
+                                        }
+                                    }}
+                                >
+                                    {selectedTransaction.receiver?.name?.charAt(0)?.toUpperCase()}
+                                </Avatar>
+                                <Box>
+                                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                        {selectedTransaction.receiver?.name}
+                                    </Typography>
+                                    <Typography variant="caption" sx={{ color: '#64748b' }}>
+                                        {selectedTransaction.receiver?.account?.email}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Gateway Code">
+                            {selectedTransaction.paymentGatewayCode}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Balance Type">
+                            <Tag>{selectedTransaction.balanceType}</Tag>
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Creation Date" span={2}>
+                            {new Date(selectedTransaction.creationDate).toLocaleString('vi-VN')}
+                        </Descriptions.Item>
+                    </Descriptions>
+                )}
+            </Modal>
+        </Box>
+    );
 }

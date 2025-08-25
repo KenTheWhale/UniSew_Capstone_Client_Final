@@ -302,7 +302,7 @@ export default function GarmentDashboardLayout() {
                                 py: 1,
                             }}
                         >
-                            <Typography variant="h5" fontWeight="800" sx={{ color: "#FFFFFF" }}>
+                            <Typography onClick={() => window.location.href = "/home"} variant="h5" fontWeight="800" sx={{ cursor:"pointer", color: "#FFFFFF" }}>
                                 UNISEW
                             </Typography>
                         </Box>
