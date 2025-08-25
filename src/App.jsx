@@ -360,7 +360,11 @@ const router = createBrowserRouter([
         path: 'designer',
         element: (
             <Suspense fallback={<LoadingFallback />}>
-                <DesignerDashboardLayout />
+                <ProtectedRoute allowRoles={['designer']}>
+                    <Suspense fallback={<LoadingFallback />}>
+                        <DesignerDashboardLayout />
+                    </Suspense>
+                </ProtectedRoute>
             </Suspense>
         ),
         children: [
@@ -414,7 +418,11 @@ const router = createBrowserRouter([
         path: 'garment',
         element: (
             <Suspense fallback={<LoadingFallback />}>
-                <GarmentDashboardLayout />
+                <ProtectedRoute allowRoles={['garment']}>
+                    <Suspense fallback={<LoadingFallback />}>
+                        <GarmentDashboardLayout />
+                    </Suspense>
+                </ProtectedRoute>
             </Suspense>
         ),
         children: [
