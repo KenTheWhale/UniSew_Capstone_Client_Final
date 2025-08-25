@@ -4,9 +4,8 @@ import GoogleIcon from '@mui/icons-material/Google';
 import {signin} from '../../services/AuthService.jsx'
 import {enqueueSnackbar} from "notistack";
 import axios from "axios";
-import {getCookie} from "../../utils/CookieUtil.jsx";
-import {jwtDecode} from "jwt-decode";
 import {useState} from "react";
+import {getAccess} from "../../services/AccountService.jsx";
 
 export default function Login() {
     const [isLoading, setIsLoading] = useState(false);
@@ -16,11 +15,13 @@ export default function Login() {
         try {
             const loginResponse = await signin(userInfo.data.email, userInfo.data.name, userInfo.data.picture);
             if (loginResponse && loginResponse.status === 200) {
-                const access = getCookie('access');
-                console.log("Access: ", access)
-                if(access && jwtDecode(access).role){
+                const accessData = await getAccess()
+
+                if(accessData && accessData.status === 200){
+                    const data = accessData.data.body
+                    console.log("Access: ", data.access)
                     localStorage.setItem('user', JSON.stringify(loginResponse.data.body));
-                    const role = jwtDecode(access)?.role
+                    const role = data.role
                     enqueueSnackbar(loginResponse.data.message, {variant: 'success', autoHideDuration: 1000});
                     setTimeout(() => {
                         switch (role) {
