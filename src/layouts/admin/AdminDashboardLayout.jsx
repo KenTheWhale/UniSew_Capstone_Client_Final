@@ -20,6 +20,7 @@ import {
 import {Tag} from "antd";
 import {signout} from "../../services/AccountService.jsx";
 import {enqueueSnackbar} from "notistack";
+import Bell from "../../components/ui/Bell.jsx";
 
 function Navbar({userObj, activeMenu, navigate}) {
     return (
@@ -326,19 +327,20 @@ export default function AdminDashboardLayout() {
                     </Box>
 
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        <Bell />
                         <Box
                             sx={{
                                 display: "flex",
                                 alignItems: "center",
                                 gap: 1.5,
-                                background: "rgba(255, 255, 255, 0.1)",
+                                background: "rgba(255, 255, 255, 0.2)",
                                 borderRadius: 3,
                                 px: 2,
                                 py: 1,
                                 cursor: "pointer",
                                 transition: "all 0.3s ease",
                                 "&:hover": {
-                                    background: "rgba(255, 255, 255, 0.2)",
+                                    background: "rgba(255, 255, 255, 0.3)",
                                     transform: "translateY(-1px)",
                                 },
                             }}

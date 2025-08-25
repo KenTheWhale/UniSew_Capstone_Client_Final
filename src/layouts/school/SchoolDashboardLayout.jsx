@@ -16,6 +16,7 @@ import {useSnackbar} from "notistack";
 import {signout, updateSchoolInfo} from "../../services/AccountService.jsx";
 import UpdateSchoolInfoDialog from "../../components/school/design/dialog/UpdateSchoolInfoDialog.jsx";
 import { Tag } from "antd";
+import Bell from "../../components/ui/Bell.jsx";
 
 function Navbar({school, enqueueSnackbar}) {
     return (
@@ -344,6 +345,7 @@ export default function SchoolDashboardLayout() {
                     </Box>
 
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        <Bell />
                         <Box
                             sx={{
                                 display: "flex",

@@ -31,7 +31,7 @@ import FactoryIcon from '@mui/icons-material/Factory';
 import DesignServicesIcon from '@mui/icons-material/DesignServices';
 import {signout} from "../../services/AccountService.jsx";
 import {enqueueSnackbar} from "notistack";
-import Bell from "../../components/ui/Bell.jsx";
+
 
 function TopBar() {
     const [anchorEl, setAnchorEl] = React.useState(null);
@@ -286,7 +286,6 @@ function MainHeader() {
                     </Box>
                     {/* User Menu Button */}
                     <Box sx={{position: 'relative'}}>
-                        {isSignedIn ? <Bell/> : null}
                         <Button
                             variant="contained"
                             sx={{

@@ -70,7 +70,7 @@ const LoadingFallback = () => (
       color: '#666',
       fontWeight: '500'
     }}>
-      Đang tải...
+      Loading...
     </div>
     <style>{`
       @keyframes spin {

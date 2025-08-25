@@ -209,3 +209,5 @@ export const calculateFee = async (garmentShippingUID, fromDistrictId, fromWardC
 
     return response || null
 }
+
+export const getBanks = async 

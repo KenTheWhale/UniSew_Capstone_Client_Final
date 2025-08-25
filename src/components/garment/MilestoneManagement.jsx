@@ -2709,11 +2709,10 @@ export default function MilestoneManagement() {
                         <Button
                             variant="contained"
                             onClick={() => {
-                                const isLastPhase = viewingOrder?.milestone && viewingOrder.milestone.length > 0 && 
-                                                   viewingOrder.milestone.some(phase => phase.status === 'processing') &&
-                                                   viewingOrder.milestone.find(phase => phase.status === 'processing')?.stage === viewingOrder.milestone.length;
+                                const isLastPhaseCompleted = viewingOrder?.milestone && viewingOrder.milestone.length > 0 && 
+                                   viewingOrder.milestone.find(phase => phase.stage === viewingOrder.milestone.length)?.status === 'completed';
                                 
-                                if (isLastPhase) {
+                                if (isLastPhaseCompleted) {
                                     // Close dialog for "Confirm out of delivery"
                                     setViewMilestoneDialogOpen(false);
                                     enqueueSnackbar('Order confirmed for delivery!', {variant: 'success'});
@@ -2732,8 +2731,7 @@ export default function MilestoneManagement() {
                             }}
                         >
                             {viewingOrder?.milestone && viewingOrder.milestone.length > 0 && 
-                             viewingOrder.milestone.some(phase => phase.status === 'processing') &&
-                             viewingOrder.milestone.find(phase => phase.status === 'processing')?.stage === viewingOrder.milestone.length
+                             viewingOrder.milestone.find(phase => phase.stage === viewingOrder.milestone.length)?.status === 'completed'
                                 ? 'Confirm out of delivery'
                                 : 'Process to Next Phase'
                             }
