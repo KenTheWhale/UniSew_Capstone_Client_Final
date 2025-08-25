@@ -299,12 +299,12 @@ export default function AdminAccount() {
         }
         return accounts.filter(account => {
             const matchesSearch = account.email.toLowerCase().includes(searchText.toLowerCase()) ||
-                                account.id.toString().includes(searchText);
-            const matchesRole = roleFilter === 'all' || account.role === roleFilter;
-            const matchesStatus = statusFilter === 'all' || account.status === statusFilter;
-            
-            return matchesSearch && matchesRole && matchesStatus;
-        });
+                            account.id.toString().includes(searchText);
+        const matchesRole = roleFilter === 'all' || account.role === roleFilter;
+        const matchesStatus = statusFilter === 'all' || account.status === statusFilter;
+        
+        return matchesSearch && matchesRole && matchesStatus;
+    });
     }, [accounts, searchText, roleFilter, statusFilter]);
 
     // Statistics
@@ -411,11 +411,11 @@ export default function AdminAccount() {
             fixed: 'right',
             render: (_, record) => (
                 <Space size="small">
-                    <Tooltip title="View Details">
-                        <Button
-                            type="primary"
-                            size="small"
-                            onClick={() => handleViewDetail(record)}
+                <Tooltip title="View Details">
+                    <Button
+                        type="primary"
+                        size="small"
+                        onClick={() => handleViewDetail(record)}
                             style={{ display: 'flex', alignItems: 'center', padding: '4px 8px' }}
                         >
                             <Visibility style={{ fontSize: 16 }} />
@@ -432,7 +432,7 @@ export default function AdminAccount() {
                             >
                                 <PersonOff style={{ fontSize: 16, color: '#ff4d4f' }} />
                             </Button>
-                        </Tooltip>
+                </Tooltip>
                     )}
                 </Space>
             )
@@ -471,7 +471,7 @@ export default function AdminAccount() {
                                 mb: 1
                             }}
                         >
-                            System Accounts Management
+                        System Accounts Management
                         </Typography>
                         <Typography
                             variant="body1"
@@ -480,53 +480,53 @@ export default function AdminAccount() {
                                 fontWeight: 500
                             }}
                         >
-                            Manage all user accounts in the UniSew system
+                        Manage all user accounts in the UniSew system
                         </Typography>
                     </Box>
                 </Box>
 
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <Box sx={{ display: "flex", gap: 2 }}>
-                        {/* Filters */}
-                        <Search
+                {/* Filters */}
+                    <Search
                             placeholder="Search by email or ID..."
-                            allowClear
-                            style={{ width: 300 }}
-                            onSearch={handleSearch}
-                            onChange={(e) => setSearchText(e.target.value)}
-                        />
-                        <Select
-                            placeholder="Filter by role"
-                            style={{ width: 150 }}
-                            value={roleFilter}
-                            onChange={handleRoleFilter}
+                        allowClear
+                        style={{ width: 300 }}
+                        onSearch={handleSearch}
+                        onChange={(e) => setSearchText(e.target.value)}
+                    />
+                    <Select
+                        placeholder="Filter by role"
+                        style={{ width: 150 }}
+                        value={roleFilter}
+                        onChange={handleRoleFilter}
                             loading={loading}
-                        >
+                    >
                             <Option value="all">All Roles ({loading ? '...' : Array.isArray(accounts) ? accounts.length : 0})</Option>
                             <Option value="SCHOOL">School ({loading ? '...' : Array.isArray(accounts) ? accounts.filter(a => a.role === 'SCHOOL').length : 0})</Option>
                             <Option value="DESIGNER">Designer ({loading ? '...' : Array.isArray(accounts) ? accounts.filter(a => a.role === 'DESIGNER').length : 0})</Option>
                             <Option value="GARMENT">Garment ({loading ? '...' : Array.isArray(accounts) ? accounts.filter(a => a.role === 'GARMENT').length : 0})</Option>
-                        </Select>
-                        <Select
-                            placeholder="Filter by status"
-                            style={{ width: 150 }}
-                            value={statusFilter}
-                            onChange={handleStatusFilter}
+                    </Select>
+                    <Select
+                        placeholder="Filter by status"
+                        style={{ width: 150 }}
+                        value={statusFilter}
+                        onChange={handleStatusFilter}
                             loading={loading}
-                        >
+                    >
                             <Option value="all">All Status ({loading ? '...' : Array.isArray(accounts) ? accounts.length : 0})</Option>
                             <Option value="ACCOUNT_ACTIVE">Active ({loading ? '...' : Array.isArray(accounts) ? accounts.filter(a => a.status === 'ACCOUNT_ACTIVE').length : 0})</Option>
                             <Option value="ACCOUNT_INACTIVE">Inactive ({loading ? '...' : Array.isArray(accounts) ? accounts.filter(a => a.status === 'ACCOUNT_INACTIVE').length : 0})</Option>
-                        </Select>
-                        <Button 
-                            onClick={() => {
-                                setSearchText('');
-                                setRoleFilter('all');
-                                setStatusFilter('all');
-                            }}
-                        >
-                            Clear Filters
-                        </Button>
+                    </Select>
+                    <Button 
+                        onClick={() => {
+                            setSearchText('');
+                            setRoleFilter('all');
+                            setStatusFilter('all');
+                        }}
+                    >
+                        Clear Filters
+                    </Button>
                     </Box>
 
                     <Box sx={{ display: "flex", gap: 1 }}>
@@ -680,20 +680,20 @@ export default function AdminAccount() {
                     ) : filteredAccounts.length === 0 ? (
                         <EmptyState />
                     ) : (
-                        <Table
-                            columns={columns}
-                            dataSource={filteredAccounts}
-                            rowKey="id"
+                <Table
+                    columns={columns}
+                    dataSource={filteredAccounts}
+                    rowKey="id"
                             loading={false}
-                            pagination={{
+                    pagination={{
                                 defaultPageSize: 10,
                                 pageSizeOptions: ['5', '10', '20'],
-                                showSizeChanger: true,
-                                showQuickJumper: true,
-                                showTotal: (total, range) => 
+                        showSizeChanger: true,
+                        showQuickJumper: true,
+                        showTotal: (total, range) => 
                                     `Showing ${range[0]}-${range[1]} of ${total} accounts`,
                                 style: { marginTop: 16 }
-                            }}
+                    }}
                             scroll={{ x: 'max-content' }}
                             style={{
                                 backgroundColor: 'white',
@@ -809,7 +809,7 @@ export default function AdminAccount() {
                                 />
                             </Form.Item>
                         </Form>
-                    </div>
+        </div>
                 )}
             </Modal>
         </Box>
