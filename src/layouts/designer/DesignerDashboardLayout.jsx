@@ -40,8 +40,7 @@ import {Button, Tag} from "antd";
 import {signout} from "../../services/AccountService.jsx";
 import {enqueueSnackbar} from "notistack";
 import {useChatRoomsByEmail} from "../../components/designer/UseChatRoomsByEmail.jsx";
-import {getAccessCookie, getCookie} from "../../utils/CookieUtil.jsx";
-import {jwtDecode} from "jwt-decode";
+import {getAccessCookie} from "../../utils/CookieUtil.jsx";
 
 const drawerWidth = 280;
 
