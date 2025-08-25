@@ -39,6 +39,20 @@ export const createOrderTransaction = async (receiverId, orderId, totalPrice, ga
     return response || null
 }
 
+export const createDepositTransaction = async (receiverId, orderId, totalPrice, gatewayCode, serviceFee, payFromWallet) => {
+    const response = await axiosClient.post("/payment/transaction", {
+        "type": "deposit",
+        "receiverId": receiverId,
+        "itemId": orderId,
+        "totalPrice": totalPrice,
+        "gatewayCode": gatewayCode,
+        "serviceFee": serviceFee,
+        "payFromWallet": payFromWallet
+    })
+
+    return response || null
+}
+
 export const createDepositWalletTransaction = async (receiverId, totalPrice, gatewayCode) => {
     const response = await axiosClient.post("/payment/transaction", {
         "type": "wallet",
