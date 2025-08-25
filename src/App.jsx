@@ -10,7 +10,7 @@ import SchoolDashboardLayout from "./layouts/school/SchoolDashboardLayout.jsx";
 import Contact from "./components/auth/Contact.jsx";
 import {SnackbarProvider} from 'notistack';
 import SchoolChat from "./components/school/design/SchoolChat.jsx";
-import {Slide, ThemeProvider, createTheme, CssBaseline} from '@mui/material';
+import {createTheme, CssBaseline, Slide, ThemeProvider} from '@mui/material';
 import SchoolCreateDesign from './components/school/design/SchoolCreateDesign.jsx';
 import PaymentResult from "./components/school/PaymentResult.jsx";
 import DesignerPendingDesign from "./components/designer/DesignerPendingDesign.jsx";
@@ -29,7 +29,6 @@ import SchoolOrderManagement from "./components/school/order/SchoolOrderManageme
 import SchoolCreateOrder from "./components/school/order/SchoolCreateOrder.jsx";
 import OrderTrackingStatus from "./components/school/order/OrderTrackingStatus.jsx";
 import GarmentDashboardLayout from "./layouts/garment/GarmentDashboardLayout.jsx";
-import GarmentOrders from "./components/garment/GarmentOrders.jsx";
 import GarmentOrderDetail from "./components/garment/dialog/GarmentOrderDetail.jsx";
 import UniSewFAQ from "./components/auth/UniSewFAQ.jsx";
 import TermOfServices from "./components/auth/TermOfServices.jsx";
@@ -252,7 +251,7 @@ const router = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <Navigate to={'/garment/orders'} />
+                element: <Navigate to={'/garment/pending/order'} />
             },
             {
                 path: 'order/detail',
@@ -261,10 +260,6 @@ const router = createBrowserRouter([
             {
                 path: 'pending/order',
                 element: <GarmentPendingOrders />
-            },
-            {
-                path: 'orders',
-                element: <GarmentOrders />
             },
             {
                 path: 'milestone',

@@ -26,13 +26,13 @@ export default function Login() {
                             window.location.href = '/admin/dashboard';
                             break;
                         case 'school':
-                            window.location.href = '/home';
+                            window.location.href = '/school/design';
                             break;
                         case 'designer':
                             window.location.href = '/designer/requests';
                             break;
                         case 'garment':
-                            window.location.href = '/garment/orders';
+                            window.location.href = '/garment/pending/order';
                             break;
                         default:
                             window.location.href = '/home';
