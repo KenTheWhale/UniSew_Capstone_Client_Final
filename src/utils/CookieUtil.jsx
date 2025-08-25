@@ -1,10 +1,13 @@
+import {getAccess} from "../services/AccountService.jsx";
+
 export const getCookie = (name) => {
-    const cookies = document.cookie.split('; ');
-    for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].split('=');
-        if (cookie[0] === name) {
-            return decodeURIComponent(cookie[1]);
-        }
+
+};
+
+export const getAccessCookie = async () => {
+    const response = await getAccess()
+    if(response && response.status === 200){
+        return response.data.body
     }
-    return null;
+    return null
 };
