@@ -35,11 +35,19 @@ export default function ProtectedRoute({ children, allowRoles = [] }) {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [hasValidRole, setHasValidRole] = useState(false);
+    const [hasAttemptedAuth, setHasAttemptedAuth] = useState(false);
 
     useEffect(() => {
         const checkAuthentication = async () => {
+            // Nếu đã thử xác thực và thất bại, không thử lại
+            if (hasAttemptedAuth) {
+                return;
+            }
+
             try {
                 setIsLoading(true);
+                setHasAttemptedAuth(true);
+                
                 const data = await GetAccessData();
                 
                 if (data != null) {
@@ -59,7 +67,7 @@ export default function ProtectedRoute({ children, allowRoles = [] }) {
                 // Nếu không có data, thử refresh token
                 const refreshResponse = await refreshToken();
                 if (refreshResponse.status === 401 || refreshResponse.status === 403) {
-                    await Logout()
+                    await Logout();
                     return;
                 }
 
@@ -76,10 +84,10 @@ export default function ProtectedRoute({ children, allowRoles = [] }) {
                         await Logout();
                         return;
                     }
+                } else {
+                    await Logout();
+                    return;
                 }
-
-                // Nếu vẫn không có data hợp lệ
-                await Logout();
                 
             } catch (error) {
                 console.error("Authentication error:", error);
@@ -99,11 +107,22 @@ export default function ProtectedRoute({ children, allowRoles = [] }) {
                 display: 'flex', 
                 justifyContent: 'center', 
                 alignItems: 'center', 
-                height: '100vh',
-                fontSize: '18px',
-                color: '#666'
+                height: '100vh'
             }}>
-                Authentication...
+                <div style={{
+                    width: '40px',
+                    height: '40px',
+                    border: '4px solid #f3f3f3',
+                    borderTop: '4px solid #3498db',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                }}></div>
+                <style>{`
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                `}</style>
             </div>
         );
     }

@@ -14,6 +14,7 @@ import {
     Divider,
     Grid,
     IconButton,
+    Popover,
     Step,
     StepContent,
     StepLabel,
@@ -166,6 +167,9 @@ export default function OrderTrackingStatus() {
     const [selectedQuantityDetails, setSelectedQuantityDetails] = useState(null);
     const [showImagesDialog, setShowImagesDialog] = useState(false);
     const [selectedItemImages, setSelectedItemImages] = useState(null);
+    const [hoveredMilestone, setHoveredMilestone] = useState(null);
+    const [popoverAnchor, setPopoverAnchor] = useState(null);
+    const [popoverPosition, setPopoverPosition] = useState({ vertical: 'center', horizontal: 'right' });
 
     // Lấy orderId từ sessionStorage
     const orderId = sessionStorage.getItem('trackingOrderId');
@@ -231,6 +235,46 @@ export default function OrderTrackingStatus() {
         setSelectedItemImages(null);
     };
 
+    const handleMilestoneHover = (event, milestone) => {
+        setHoveredMilestone(milestone);
+        setPopoverAnchor(event.currentTarget);
+        
+        // Calculate smart position based on available space
+        const rect = event.currentTarget.getBoundingClientRect();
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        
+        // Check if there's enough space on the right
+        const spaceOnRight = windowWidth - rect.right;
+        const spaceOnLeft = rect.left;
+        
+        // Check if there's enough space above/below
+        const spaceAbove = rect.top;
+        const spaceBelow = windowHeight - rect.bottom;
+        
+        let vertical = 'center';
+        let horizontal = 'right';
+        
+        // If not enough space on right, show on left
+        if (spaceOnRight < 400) {
+            horizontal = 'left';
+        }
+        
+        // If not enough space below, show above
+        if (spaceBelow < 300) {
+            vertical = 'bottom';
+        } else if (spaceAbove < 300) {
+            vertical = 'top';
+        }
+        
+        setPopoverPosition({ vertical, horizontal });
+    };
+
+    const handleMilestoneLeave = () => {
+        setHoveredMilestone(null);
+        setPopoverAnchor(null);
+    };
+
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         const day = String(date.getDate()).padStart(2, '0');
@@ -294,23 +338,69 @@ export default function OrderTrackingStatus() {
 
     // Get milestones from API or default fallback
     const getMilestones = () => {
+        // Always start with "Start Sewing" phase
+        const startSewingPhase = {
+            title: 'Start Sewing',
+            description: 'Production begins with cutting and sewing',
+            isCompleted: true, // Always completed
+            isActive: false,
+            startDate: new Date().toISOString().split('T')[0], // Today
+            endDate: null,
+            completedDate: new Date().toISOString().split('T')[0], // Today
+            stage: 1
+        };
+
         if (!orderDetail?.milestone || orderDetail.milestone.length === 0) {
-            return [{
-                title: 'Waiting for Milestones',
-                description: 'Wait for garment factory to assign their milestones',
-                isCompleted: false,
-                isActive: true
-            }];
+            return [startSewingPhase];
         }
         
-        return orderDetail.milestone.map((milestone, index) => ({
-            title: milestone.title || `Milestone ${index + 1}`,
-            description: milestone.description || 'No description available',
-            isCompleted: milestone.isCompleted || false,
-            isActive: !milestone.isCompleted,
-            dueDate: milestone.dueDate,
-            completedDate: milestone.completedDate
-        }));
+        // Map API milestones starting from index 2 (phase 2)
+        const apiMilestones = orderDetail.milestone.map((milestone, index) => {
+            const status = milestone.status || 'assigned';
+            const isCompleted = status === 'completed';
+            const isActive = status === 'processing';
+            const isNotStarted = status === 'pending' || status === 'assigned';
+            
+            return {
+                title: milestone.name || `Stage ${milestone.stage}`,
+                description: milestone.description || `Production stage ${milestone.stage}`,
+                isCompleted: isCompleted,
+                isActive: isActive,
+                isNotStarted: isNotStarted,
+                startDate: milestone.startDate,
+                endDate: milestone.endDate,
+                completedDate: milestone.completedDate,
+                stage: milestone.stage || (index + 2) // Start from stage 2
+            };
+        });
+        
+        // Add fixed phases at the end
+        const deliveringPhase = {
+            title: 'Delivering',
+            description: 'Order is being shipped to your location',
+            isCompleted: false,
+            isActive: false,
+            isNotStarted: true,
+            startDate: null,
+            endDate: null,
+            completedDate: null,
+            stage: apiMilestones.length + 2
+        };
+
+        const completedPhase = {
+            title: 'Completed',
+            description: 'Order has been delivered successfully',
+            isCompleted: false,
+            isActive: false,
+            isNotStarted: true,
+            startDate: null,
+            endDate: null,
+                            completedDate: null,
+            stage: apiMilestones.length + 3
+        };
+
+        // Combine fixed phases with API phases
+        return [startSewingPhase, ...apiMilestones, deliveringPhase, completedPhase];
     };
 
     if (loading) {
@@ -347,7 +437,7 @@ export default function OrderTrackingStatus() {
                             fontSize: {xs: "1.5rem", md: "2rem"}
                         }}
                     >
-                        Order Tracking
+                        Order Management
                     </Typography>
                 </Box>
 
@@ -494,686 +584,9 @@ export default function OrderTrackingStatus() {
                     </CardContent>
                 </Card>
 
-                {/* Combined Order & Payment Information Card */}
-                <Card sx={{
-                    mb: 3,
-                    background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: 3,
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: '4px',
-                        background: 'linear-gradient(90deg, #3b82f6 0%, #1d4ed8 30%, #22c55e 70%, #16a34a 100%)'
-                    }
-                }}>
-                    {/* Header */}
-                    <Box sx={{
-                        background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                        p: 3,
-                        position: 'relative',
-                        overflow: 'hidden'
-                    }}>
-                        <Box sx={{
-                            position: 'absolute',
-                            top: 0,
-                            right: 0,
-                            width: '100px',
-                            height: '100px',
-                            background: 'rgba(255, 255, 255, 0.1)',
-                            borderRadius: '50%',
-                            transform: 'translate(30px, -30px)'
-                        }}/>
-                        <Box sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 2,
-                            position: 'relative',
-                            zIndex: 1
-                        }}>
-                            <Box sx={{
-                                width: 40,
-                                height: 40,
-                                borderRadius: '50%',
-                                background: 'rgba(255, 255, 255, 0.2)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
-                            }}>
-                                <InfoIcon sx={{color: 'white', fontSize: 20}}/>
-                            </Box>
-                            <Box>
-                                <Typography variant="h6" sx={{
-                                    fontWeight: 700,
-                                    color: 'white',
-                                    fontSize: '1.25rem'
-                                }}>
-                                    Order & Payment Information
-                                </Typography>
-                                <Typography variant="body2" sx={{
-                                    color: 'rgba(255, 255, 255, 0.9)',
-                                    fontWeight: 500
-                                }}>
-                                    Order details, timeline and payment breakdown
-                                </Typography>
-                            </Box>
-                        </Box>
-                    </Box>
-
-                    <CardContent sx={{p: 4}}>
-                        {/* Order Information Section */}
-                        <Box sx={{mb: 4}}>
-                            <Typography variant="h6" sx={{
-                                fontWeight: 600,
-                                color: '#1e293b',
-                                mb: 3,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 1
-                            }}>
-                                <CalendarIcon sx={{fontSize: 20, color: '#3b82f6'}}/>
-                                Order Details
-                            </Typography>
-
-                            {/* Order Information Grid */}
-                            <Box sx={{
-                                display: 'grid',
-                                gridTemplateColumns: {xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)'},
-                                gap: 3
-                            }}>
-                                {/* Order Date */}
-                                <Box sx={{
-                                    p: 3,
-                                    borderRadius: 3,
-                                    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(29, 78, 216, 0.05) 100%)',
-                                    border: '1px solid rgba(59, 130, 246, 0.1)',
-                                    position: 'relative',
-                                    overflow: 'hidden',
-                                    transition: 'all 0.3s ease',
-                                    '&:hover': {
-                                        transform: 'translateY(-2px)',
-                                        boxShadow: '0 8px 25px rgba(59, 130, 246, 0.15)'
-                                    }
-                                }}>
-                                    <Box sx={{
-                                        position: 'absolute',
-                                        top: 0,
-                                        right: 0,
-                                        width: '50px',
-                                        height: '50px',
-                                        background: 'rgba(59, 130, 246, 0.1)',
-                                        borderRadius: '50%',
-                                        transform: 'translate(15px, -15px)'
-                                    }}/>
-                                    <Box sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 2,
-                                        position: 'relative',
-                                        zIndex: 1
-                                    }}>
-                                        <Box sx={{
-                                            width: 36,
-                                            height: 36,
-                                            borderRadius: '50%',
-                                            background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
-                                        }}>
-                                            <CalendarIcon sx={{color: 'white', fontSize: 18}}/>
-                                        </Box>
-                                        <Box>
-                                            <Typography variant="caption" sx={{
-                                                color: '#64748b',
-                                                fontWeight: 500,
-                                                textTransform: 'uppercase',
-                                                letterSpacing: '0.5px',
-                                                display: 'block'
-                                            }}>
-                                                Order Date
-                                            </Typography>
-                                            <Typography variant="h6" sx={{
-                                                fontWeight: 700,
-                                                color: '#1e293b',
-                                                fontSize: '1rem'
-                                            }}>
-                                                {formatDate(orderDetail.orderDate)}
-                                            </Typography>
-                                        </Box>
-                                    </Box>
-                                </Box>
-
-                                {/* Deadline */}
-                                <Box sx={{
-                                    p: 3,
-                                    borderRadius: 3,
-                                    background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(220, 38, 38, 0.05) 100%)',
-                                    border: '1px solid rgba(239, 68, 68, 0.1)',
-                                    position: 'relative',
-                                    overflow: 'hidden',
-                                    transition: 'all 0.3s ease',
-                                    '&:hover': {
-                                        transform: 'translateY(-2px)',
-                                        boxShadow: '0 8px 25px rgba(239, 68, 68, 0.15)'
-                                    }
-                                }}>
-                                    <Box sx={{
-                                        position: 'absolute',
-                                        top: 0,
-                                        right: 0,
-                                        width: '50px',
-                                        height: '50px',
-                                        background: 'rgba(239, 68, 68, 0.1)',
-                                        borderRadius: '50%',
-                                        transform: 'translate(15px, -15px)'
-                                    }}/>
-                                    <Box sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 2,
-                                        position: 'relative',
-                                        zIndex: 1
-                                    }}>
-                                        <Box sx={{
-                                            width: 36,
-                                            height: 36,
-                                            borderRadius: '50%',
-                                            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
-                                        }}>
-                                            <CalendarIcon sx={{color: 'white', fontSize: 18}}/>
-                                        </Box>
-                                        <Box>
-                                            <Typography variant="caption" sx={{
-                                                color: '#64748b',
-                                                fontWeight: 500,
-                                                textTransform: 'uppercase',
-                                                letterSpacing: '0.5px',
-                                                display: 'block'
-                                            }}>
-                                                Deadline
-                                            </Typography>
-                                            <Typography variant="h6" sx={{
-                                                fontWeight: 700,
-                                                color: '#1e293b',
-                                                fontSize: '1rem'
-                                            }}>
-                                                {formatDate(orderDetail.deadline)}
-                                            </Typography>
-                                        </Box>
-                                    </Box>
-                                </Box>
-
-                                {/* Total Uniforms */}
-                                <Box sx={{
-                                    p: 3,
-                                    borderRadius: 3,
-                                    background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%)',
-                                    border: '1px solid rgba(168, 85, 247, 0.1)',
-                                    position: 'relative',
-                                    overflow: 'hidden',
-                                    transition: 'all 0.3s ease',
-                                    '&:hover': {
-                                        transform: 'translateY(-2px)',
-                                        boxShadow: '0 8px 25px rgba(168, 85, 247, 0.15)'
-                                    }
-                                }}>
-                                    <Box sx={{
-                                        position: 'absolute',
-                                        top: 0,
-                                        right: 0,
-                                        width: '50px',
-                                        height: '50px',
-                                        background: 'rgba(168, 85, 247, 0.1)',
-                                        borderRadius: '50%',
-                                        transform: 'translate(15px, -15px)'
-                                    }}/>
-                                    <Box sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 2,
-                                        position: 'relative',
-                                        zIndex: 1
-                                    }}>
-                                        <Box sx={{
-                                            width: 36,
-                                            height: 36,
-                                            borderRadius: '50%',
-                                            background: 'linear-gradient(135deg, #a855f7 0%, #9333ea 100%)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            boxShadow: '0 4px 12px rgba(168, 85, 247, 0.3)'
-                                        }}>
-                                            <SchoolIcon sx={{color: 'white', fontSize: 18}}/>
-                                        </Box>
-                                        <Box>
-                                            <Typography variant="caption" sx={{
-                                                color: '#64748b',
-                                                fontWeight: 500,
-                                                textTransform: 'uppercase',
-                                                letterSpacing: '0.5px',
-                                                display: 'block'
-                                            }}>
-                                                Total Uniforms
-                                            </Typography>
-                                            <Typography variant="h6" sx={{
-                                                fontWeight: 700,
-                                                color: '#1e293b',
-                                                fontSize: '1rem'
-                                            }}>
-                                                {getTotalUniforms()}
-                                            </Typography>
-                                        </Box>
-                                    </Box>
-                                </Box>
-                            </Box>
-                        </Box>
-
-                        {/* Payment Information Section */}
-                        <Box sx={{mb: 3}}>
-                            <Typography variant="h6" sx={{
-                                fontWeight: 600,
-                                color: '#1e293b',
-                                mb: 3,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 1
-                            }}>
-                                <MoneyIcon sx={{fontSize: 20, color: '#22c55e'}}/>
-                                Payment Information
-                            </Typography>
-
-                            {orderDetail.status === 'processing' ? (
-                                /* Processing Status - Show detailed payment breakdown */
-                                <Box sx={{
-                                    display: 'grid',
-                                    gridTemplateColumns: {xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)'},
-                                    gap: 3
-                                }}>
-                                    {/* 1. Base Price */}
-                                    <Box sx={{
-                                        p: 3,
-                                        borderRadius: 3,
-                                        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(37, 99, 235, 0.05) 100%)',
-                                        border: '1px solid rgba(59, 130, 246, 0.1)',
-                                        position: 'relative',
-                                        overflow: 'hidden',
-                                        transition: 'all 0.3s ease',
-                                        '&:hover': {
-                                            transform: 'translateY(-2px)',
-                                            boxShadow: '0 8px 25px rgba(59, 130, 246, 0.15)'
-                                        }
-                                    }}>
-                                        <Box sx={{
-                                            position: 'absolute',
-                                            top: 0,
-                                            right: 0,
-                                            width: '50px',
-                                            height: '50px',
-                                            background: 'rgba(59, 130, 246, 0.1)',
-                                            borderRadius: '50%',
-                                            transform: 'translate(15px, -15px)'
-                                        }}/>
-                                        <Box sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 2,
-                                            position: 'relative',
-                                            zIndex: 1
-                                        }}>
-                                            <Box sx={{
-                                                width: 36,
-                                                height: 36,
-                                                borderRadius: '50%',
-                                                background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
-                                            }}>
-                                                <MoneyIcon sx={{color: 'white', fontSize: 18}}/>
-                                            </Box>
-                                            <Box>
-                                                <Typography variant="caption" sx={{
-                                                    color: '#64748b',
-                                                    fontWeight: 500,
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: '0.5px',
-                                                    display: 'block'
-                                                }}>
-                                                    Base Price
-                                                </Typography>
-                                                <Typography variant="h6" sx={{
-                                                    fontWeight: 700,
-                                                    color: '#1e293b',
-                                                    fontSize: '1rem'
-                                                }}>
-                                                    {formatCurrency(orderDetail.price)}
-                                                </Typography>
-                                            </Box>
-                                        </Box>
-                                    </Box>
-
-                                    {/* 2. Service Fee */}
-                                    <Box sx={{
-                                        p: 3,
-                                        borderRadius: 3,
-                                        background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(217, 119, 6, 0.05) 100%)',
-                                        border: '1px solid rgba(245, 158, 11, 0.1)',
-                                        position: 'relative',
-                                        overflow: 'hidden',
-                                        transition: 'all 0.3s ease',
-                                        '&:hover': {
-                                            transform: 'translateY(-2px)',
-                                            boxShadow: '0 8px 25px rgba(245, 158, 11, 0.15)'
-                                        }
-                                    }}>
-                                        <Box sx={{
-                                            position: 'absolute',
-                                            top: 0,
-                                            right: 0,
-                                            width: '50px',
-                                            height: '50px',
-                                            background: 'rgba(245, 158, 11, 0.1)',
-                                            borderRadius: '50%',
-                                            transform: 'translate(15px, -15px)'
-                                        }}/>
-                                        <Box sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 2,
-                                            position: 'relative',
-                                            zIndex: 1
-                                        }}>
-                                            <Box sx={{
-                                                width: 36,
-                                                height: 36,
-                                                borderRadius: '50%',
-                                                background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)'
-                                            }}>
-                                                <MoneyIcon sx={{color: 'white', fontSize: 18}}/>
-                                            </Box>
-                                            <Box>
-                                                <Typography variant="caption" sx={{
-                                                    color: '#64748b',
-                                                    fontWeight: 500,
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: '0.5px',
-                                                    display: 'block'
-                                                }}>
-                                                    Service Fee
-                                                </Typography>
-                                                <Typography variant="h6" sx={{
-                                                    fontWeight: 700,
-                                                    color: '#1e293b',
-                                                    fontSize: '1rem'
-                                                }}>
-                                                    {formatCurrency(getServiceFee())}
-                                                </Typography>
-                                            </Box>
-                                        </Box>
-                                    </Box>
-
-                                    {/* 3. Total Price */}
-                                    <Box sx={{
-                                        p: 3,
-                                        borderRadius: 3,
-                                        background: 'linear-gradient(135deg, rgba(55, 65, 81, 0.05) 0%, rgba(31, 41, 55, 0.05) 100%)',
-                                        border: '2px solid rgba(55, 65, 81, 0.2)'
-                                    }}>
-                                        <Box sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 2
-                                        }}>
-                                            <Box sx={{
-                                                width: 40,
-                                                height: 40,
-                                                borderRadius: '50%',
-                                                background: 'linear-gradient(135deg, #374151 0%, #1f2937 100%)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                boxShadow: '0 4px 12px rgba(55, 65, 81, 0.3)'
-                                            }}>
-                                                <MoneyIcon sx={{color: 'white', fontSize: 20}}/>
-                                            </Box>
-                                            <Box>
-                                                <Typography variant="caption" sx={{
-                                                    color: '#64748b',
-                                                    fontWeight: 500,
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: '0.5px',
-                                                    display: 'block'
-                                                }}>
-                                                    Total Price
-                                                </Typography>
-                                                <Typography variant="h6" sx={{
-                                                    fontWeight: 700,
-                                                    color: '#1e293b',
-                                                    fontSize: '1rem'
-                                                }}>
-                                                    {formatCurrency(orderDetail.price + getServiceFee())}
-                                                </Typography>
-                                            </Box>
-                                        </Box>
-                                    </Box>
-
-                                    {/* 4. Deposit Amount */}
-                                    <Box sx={{
-                                        p: 3,
-                                        borderRadius: 3,
-                                        background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(22, 163, 74, 0.05) 100%)',
-                                        border: '1px solid rgba(34, 197, 94, 0.1)',
-                                        position: 'relative',
-                                        overflow: 'hidden',
-                                        transition: 'all 0.3s ease',
-                                        '&:hover': {
-                                            transform: 'translateY(-2px)',
-                                            boxShadow: '0 8px 25px rgba(34, 197, 94, 0.15)'
-                                        }
-                                    }}>
-                                        <Box sx={{
-                                            position: 'absolute',
-                                            top: 0,
-                                            right: 0,
-                                            width: '50px',
-                                            height: '50px',
-                                            background: 'rgba(34, 197, 94, 0.1)',
-                                            borderRadius: '50%',
-                                            transform: 'translate(15px, -15px)'
-                                        }}/>
-                                        <Box sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 2,
-                                            position: 'relative',
-                                            zIndex: 1
-                                        }}>
-                                            <Box sx={{
-                                                width: 36,
-                                                height: 36,
-                                                borderRadius: '50%',
-                                                background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)'
-                                            }}>
-                                                <MoneyIcon sx={{color: 'white', fontSize: 18}}/>
-                                            </Box>
-                                            <Box>
-                                                <Typography variant="caption" sx={{
-                                                    color: '#64748b',
-                                                    fontWeight: 500,
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: '0.5px',
-                                                    display: 'block'
-                                                }}>
-                                                    Deposit (50%)
-                                                </Typography>
-                                                <Typography variant="h6" sx={{
-                                                    fontWeight: 700,
-                                                    color: '#1e293b',
-                                                    fontSize: '1rem'
-                                                }}>
-                                                    {formatCurrency(getDepositAmount())}
-                                                </Typography>
-                                            </Box>
-                                        </Box>
-                                    </Box>
-                                </Box>
-                            ) : (
-                                /* Other Status - Show simple base price */
-                                <Box sx={{
-                                    display: 'flex',
-                                    justifyContent: 'center'
-                                }}>
-                                    <Box sx={{
-                                        p: 3,
-                                        borderRadius: 3,
-                                        background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(22, 163, 74, 0.05) 100%)',
-                                        border: '1px solid rgba(34, 197, 94, 0.1)',
-                                        position: 'relative',
-                                        overflow: 'hidden',
-                                        transition: 'all 0.3s ease',
-                                        minWidth: 300,
-                                        '&:hover': {
-                                            transform: 'translateY(-2px)',
-                                            boxShadow: '0 8px 25px rgba(34, 197, 94, 0.15)'
-                                        }
-                                    }}>
-                                        <Box sx={{
-                                            position: 'absolute',
-                                            top: 0,
-                                            right: 0,
-                                            width: '60px',
-                                            height: '60px',
-                                            background: 'rgba(34, 197, 94, 0.1)',
-                                            borderRadius: '50%',
-                                            transform: 'translate(20px, -20px)'
-                                        }}/>
-                                        <Box sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 2,
-                                            position: 'relative',
-                                            zIndex: 1
-                                        }}>
-                                            <Box sx={{
-                                                width: 40,
-                                                height: 40,
-                                                borderRadius: '50%',
-                                                background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)'
-                                            }}>
-                                                <MoneyIcon sx={{color: 'white', fontSize: 20}}/>
-                                            </Box>
-                                            <Box>
-                                                <Typography variant="caption" sx={{
-                                                    color: '#64748b',
-                                                    fontWeight: 500,
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: '0.5px',
-                                                    display: 'block'
-                                                }}>
-                                                    Base Price
-                                                </Typography>
-                                                <Typography variant="h5" sx={{
-                                                    fontWeight: 700,
-                                                    color: '#1e293b',
-                                                    fontSize: '1.25rem'
-                                                }}>
-                                                    {formatCurrency(orderDetail.price)}
-                                                </Typography>
-                                            </Box>
-                                        </Box>
-                                    </Box>
-                                </Box>
-                            )}
-                        </Box>
-
-                        {/* Order Notes */}
-                        {orderDetail.note && (
-                            <Box sx={{
-                                p: 3,
-                                borderRadius: 3,
-                                background: 'linear-gradient(135deg, rgba(107, 114, 128, 0.05) 0%, rgba(75, 85, 99, 0.05) 100%)',
-                                border: '1px solid rgba(107, 114, 128, 0.15)',
-                                borderLeft: '4px solid #6b7280'
-                            }}>
-                                <Box sx={{
-                                    display: 'flex',
-                                    alignItems: 'flex-start',
-                                    gap: 2
-                                }}>
-                                    <Box sx={{
-                                        width: 32,
-                                        height: 32,
-                                        borderRadius: '50%',
-                                        background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        flexShrink: 0,
-                                        mt: 0.5,
-                                        boxShadow: '0 4px 12px rgba(107, 114, 128, 0.3)'
-                                    }}>
-                                        <InfoIcon sx={{color: 'white', fontSize: 16}}/>
-                                    </Box>
-                                    <Box sx={{flex: 1}}>
-                                        <Typography variant="subtitle2" sx={{
-                                            fontWeight: 600,
-                                            color: '#374151',
-                                            mb: 1
-                                        }}>
-                                            Order Notes
-                                        </Typography>
-                                        <Typography variant="body2" sx={{
-                                            color: '#6b7280',
-                                            lineHeight: 1.6,
-                                            fontStyle: 'italic'
-                                        }}>
-                                            {orderDetail.note}
-                                        </Typography>
-                                    </Box>
-                                </Box>
-                            </Box>
-                        )}
-                    </CardContent>
-                </Card>
-            </Box>
-
-            {/* Order Progress and Garment Factory Information */}
-            <Box sx={{
-                display: 'flex',
-                gap: 3,
-                mb: 4,
-                flexDirection: {xs: 'column', lg: 'row'}
-            }}>
                 {/* Order Progress - Redesigned */}
                 <Card sx={{
-                    flex: 1,
+                mb: 4,
                     background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
                     border: 'none',
                     borderRadius: 4,
@@ -1302,120 +715,518 @@ export default function OrderTrackingStatus() {
                                 </Typography>
                             </Box>
                         ) : (
-                            /* Show actual milestones */
-                            <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
-                                {milestones.map((milestone, index) => (
-                                    <Box key={index} sx={{
-                                        display: 'flex',
-                                        alignItems: 'flex-start',
-                                        gap: 3,
-                                        p: 3,
-                                        borderRadius: 3,
-                                        background: milestone.isCompleted 
-                                            ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(22, 163, 74, 0.05) 100%)'
-                                            : milestone.isActive
-                                                ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(37, 99, 235, 0.05) 100%)'
-                                                : 'linear-gradient(135deg, rgba(148, 163, 184, 0.05) 0%, rgba(100, 116, 139, 0.05) 100%)',
-                                        border: milestone.isCompleted 
-                                            ? '1px solid rgba(34, 197, 94, 0.2)'
-                                            : milestone.isActive
-                                                ? '1px solid rgba(59, 130, 246, 0.2)'
-                                                : '1px solid rgba(148, 163, 184, 0.2)',
-                                        position: 'relative',
-                                        overflow: 'hidden',
-                                        transition: 'all 0.3s ease',
+                            /* Show horizontal stepper */
+                            <Box sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: 3
+                            }}>
+                                {/* Horizontal Stepper */}
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    width: '100%',
+                                    height: 200,
+                                    position: 'relative',
+                                    overflowX: 'auto',
+                                    '&::-webkit-scrollbar': {
+                                        height: '8px'
+                                    },
+                                    '&::-webkit-scrollbar-track': {
+                                        background: 'rgba(59, 130, 246, 0.1)',
+                                        borderRadius: '4px'
+                                    },
+                                    '&::-webkit-scrollbar-thumb': {
+                                        background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                                        borderRadius: '4px',
                                         '&:hover': {
-                                            transform: 'translateX(4px)',
-                                            boxShadow: milestone.isCompleted 
-                                                ? '0 8px 25px rgba(34, 197, 94, 0.15)'
-                                                : milestone.isActive
-                                                    ? '0 8px 25px rgba(59, 130, 246, 0.15)'
-                                                    : '0 8px 25px rgba(148, 163, 184, 0.15)'
+                                            background: 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)'
                                         }
+                                    }
+                                }}>
+                                    {milestones.map((milestone, index) => (
+                                        <React.Fragment key={index}>
+                                            {/* Step */}
+                                            <Box sx={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                minWidth: 120,
+                                                minHeight: 180,
+                                                position: 'relative'
+                                            }}>
+                                                {/* Step Icon */}
+                                                <Box
+                                                    onMouseEnter={(e) => handleMilestoneHover(e, milestone)}
+                                                    onMouseLeave={handleMilestoneLeave}
+                                                    sx={{
+                                                        width: 56,
+                                                        height: 56,
+                                                        borderRadius: '50%',
+                                                        background: milestone.isCompleted 
+                                                            ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'
+                                                            : milestone.isActive
+                                                                ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
+                                                                : milestone.isNotStarted
+                                                                    ? 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)'
+                                                                    : 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.3s ease',
+                                                        boxShadow: milestone.isCompleted 
+                                                            ? '0 4px 12px rgba(34, 197, 94, 0.3)'
+                                                            : milestone.isActive
+                                                                ? '0 4px 12px rgba(59, 130, 246, 0.3)'
+                                                                : milestone.isNotStarted
+                                                                    ? '0 4px 12px rgba(148, 163, 184, 0.3)'
+                                                                    : '0 4px 12px rgba(148, 163, 184, 0.3)',
+                                                        '&:hover': {
+                                                            transform: 'scale(1.1)',
+                                                            boxShadow: milestone.isCompleted 
+                                                                ? '0 8px 25px rgba(34, 197, 94, 0.4)'
+                                                                : milestone.isActive
+                                                                    ? '0 8px 25px rgba(59, 130, 246, 0.4)'
+                                                                    : milestone.isNotStarted
+                                                                        ? '0 8px 25px rgba(148, 163, 184, 0.4)'
+                                                                        : '0 8px 25px rgba(148, 163, 184, 0.4)'
+                                                        }
+                                                    }}
+                                                >
+                                                                                                {milestone.isCompleted ? (
+                                                <CheckCircleIcon sx={{color: 'white', fontSize: 28}}/>
+                                            ) : milestone.isActive ? (
+                                                <DesignServicesIcon sx={{color: 'white', fontSize: 28}}/>
+                                            ) : milestone.isNotStarted ? (
+                                                <PendingIcon sx={{color: 'white', fontSize: 28}}/>
+                                            ) : (
+                                                <PendingIcon sx={{color: 'white', fontSize: 28}}/>
+                                            )}
+                                                </Box>
+                                                
+                                                {/* Step Label */}
+                                                <Typography variant="body2" sx={{
+                                                    fontWeight: 600,
+                                                    color: '#1e293b',
+                                                    fontSize: '0.875rem',
+                                                    mt: 2,
+                                                    textAlign: 'center',
+                                                    maxWidth: 100,
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                    whiteSpace: 'nowrap'
+                                                }}>
+                                                    {milestone.title}
+                                                </Typography>
+                                                
+                                                {/* Step Number */}
+                                                <Typography variant="caption" sx={{
+                                                    color: '#64748b',
+                                                    fontSize: '0.75rem',
+                                                    mt: 1
+                                                }}>
+                                                    Step {index + 1}
+                                                </Typography>
+                                            </Box>
+                                            
+                                            {/* Connector Line (except for last step) */}
+                                            {index < milestones.length - 1 && (
+                                                <Box sx={{
+                                                    flex: 1,
+                                                    height: 2,
+                                                    background: milestone.isCompleted 
+                                                        ? 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)'
+                                                        : 'linear-gradient(90deg, #e2e8f0 0%, #cbd5e1 100%)',
+                                                    borderRadius: 1,
+                                                    mx: 2,
+                                                    minWidth: 40
+                                                }}/>
+                                            )}
+                                        </React.Fragment>
+                                    ))}
+                                </Box>
+                                
+                                {/* Progress Summary */}
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    mt: 2
+                                }}>
+                                    <Typography variant="body2" sx={{
+                                        color: '#64748b',
+                                        fontWeight: 500
                                     }}>
-                                        {/* Status Icon */}
+                                        Progress:
+                                    </Typography>
+                                    <Typography variant="h6" sx={{
+                                        color: '#3b82f6',
+                                        fontWeight: 700
+                                    }}>
+                                        {milestones.filter(m => m.isCompleted).length} / {milestones.length}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        )}
+                    </CardContent>
+                </Card>
+            </Box>
+
+            {/* Order Information and Garment Factory Container */}
+            <Box sx={{
+                display: 'flex',
+                gap: 3,
+                mb: 4,
+                flexDirection: {xs: 'column', lg: 'row'}
+            }}>
+                {/* Order Information Card */}
+                <Card sx={{
+                    flex: 1,
+                    background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 3,
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: '4px',
+                        background: 'linear-gradient(90deg, #3b82f6 0%, #1d4ed8 30%, #22c55e 70%, #16a34a 100%)'
+                    }
+                }}>
+                    {/* Header */}
+                    <Box sx={{
+                        background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                        p: 3,
+                        position: 'relative',
+                        overflow: 'hidden'
+                    }}>
+                        <Box sx={{
+                            position: 'absolute',
+                            top: 0,
+                            right: 0,
+                            width: '100px',
+                            height: '100px',
+                            background: 'rgba(255, 255, 255, 0.1)',
+                            borderRadius: '50%',
+                            transform: 'translate(30px, -30px)'
+                        }}/>
+                        <Box sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 2,
+                            position: 'relative',
+                            zIndex: 1
+                        }}>
+                            <Box sx={{
+                                width: 40,
+                                height: 40,
+                                borderRadius: '50%',
+                                background: 'rgba(255, 255, 255, 0.2)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+                            }}>
+                                <InfoIcon sx={{color: 'white', fontSize: 20}}/>
+                            </Box>
+                            <Box>
+                                <Typography variant="h6" sx={{
+                                    fontWeight: 700,
+                                    color: 'white',
+                                    fontSize: '1.25rem'
+                                }}>
+                                    Order Information
+                                </Typography>
+                                <Typography variant="body2" sx={{
+                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    fontWeight: 500
+                                }}>
+                                    Order details and timeline
+                                </Typography>
+                            </Box>
+                        </Box>
+                    </Box>
+
+                    <CardContent sx={{p: 4}}>
+                        {/* Order Information Section */}
+                        <Box sx={{mb: 4}}>
+                            <Typography variant="h6" sx={{
+                                fontWeight: 600,
+                                color: '#1e293b',
+                                mb: 3,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1
+                            }}>
+                                <CalendarIcon sx={{fontSize: 20, color: '#3b82f6'}}/>
+                                Order Basic Information
+                            </Typography>
+
+                            {/* Order Information Grid */}
+                            <Box sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 3
+                            }}>
+                                {/* Order Date & Deadline Row */}
+                                <Box sx={{
+                                    display: 'flex',
+                                    gap: 2
+                            }}>
+                                {/* Order Date */}
+                                <Box sx={{
+                                        flex: 1,
+                                        p: 2.5,
+                                    borderRadius: 3,
+                                    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(29, 78, 216, 0.05) 100%)',
+                                    border: '1px solid rgba(59, 130, 246, 0.1)',
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        transform: 'translateY(-2px)',
+                                        boxShadow: '0 8px 25px rgba(59, 130, 246, 0.15)'
+                                    }
+                                }}>
+                                    <Box sx={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        right: 0,
+                                            width: '40px',
+                                            height: '40px',
+                                        background: 'rgba(59, 130, 246, 0.1)',
+                                        borderRadius: '50%',
+                                            transform: 'translate(10px, -10px)'
+                                    }}/>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                            gap: 1.5,
+                                        position: 'relative',
+                                        zIndex: 1
+                                    }}>
                                         <Box sx={{
-                                            width: 44,
-                                            height: 44,
+                                                width: 32,
+                                                height: 32,
                                             borderRadius: '50%',
-                                            background: milestone.isCompleted 
-                                                ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'
-                                                : milestone.isActive
-                                                    ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
-                                                    : 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)',
+                                            background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            flexShrink: 0,
-                                            boxShadow: milestone.isCompleted 
-                                                ? '0 4px 12px rgba(34, 197, 94, 0.3)'
-                                                : milestone.isActive
-                                                    ? '0 4px 12px rgba(59, 130, 246, 0.3)'
-                                                    : '0 4px 12px rgba(148, 163, 184, 0.3)'
+                                            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
                                         }}>
-                                            {milestone.isCompleted ? (
-                                                <CheckCircleIcon sx={{color: 'white', fontSize: 20}}/>
-                                            ) : milestone.isActive ? (
-                                                <TrendingUpIcon sx={{color: 'white', fontSize: 20}}/>
-                                            ) : (
-                                                <PendingIcon sx={{color: 'white', fontSize: 20}}/>
-                                            )}
+                                                <CalendarIcon sx={{color: 'white', fontSize: 16}}/>
                                         </Box>
-                                        
-                                        {/* Milestone Content */}
-                                        <Box sx={{flex: 1}}>
-                                            <Typography variant="h6" sx={{
-                                                fontWeight: 600,
-                                                color: '#1e293b',
-                                                fontSize: '1rem',
-                                                mb: 0.5
-                                            }}>
-                                                {milestone.title}
-                                            </Typography>
-                                            <Typography variant="body2" sx={{
+                                        <Box>
+                                            <Typography variant="caption" sx={{
                                                 color: '#64748b',
-                                                lineHeight: 1.6,
-                                                mb: milestone.dueDate || milestone.completedDate ? 1 : 0
+                                                fontWeight: 500,
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.5px',
+                                                    display: 'block',
+                                                    fontSize: '0.7rem'
                                             }}>
-                                                {milestone.description}
+                                                Order Date
                                             </Typography>
-                                            
-                                            {/* Dates */}
-                                            {(milestone.dueDate || milestone.completedDate) && (
-                                                <Box sx={{
-                                                    display: 'flex',
-                                                    gap: 2,
-                                                    flexWrap: 'wrap'
-                                                }}>
-                                                    {milestone.completedDate && (
-                                                        <Chip
-                                                            label={`Completed: ${formatDate(milestone.completedDate)}`}
-                                                            size="small"
-                                                            sx={{
-                                                                backgroundColor: '#dcfce7',
-                                                                color: '#065f46',
-                                                                fontWeight: 500,
-                                                                fontSize: '0.75rem'
-                                                            }}
-                                                        />
-                                                    )}
-                                                    {milestone.dueDate && !milestone.completedDate && (
-                                                        <Chip
-                                                            label={`Due: ${formatDate(milestone.dueDate)}`}
-                                                            size="small"
-                                                            sx={{
-                                                                backgroundColor: '#dbeafe',
-                                                                color: '#1e40af',
-                                                                fontWeight: 500,
-                                                                fontSize: '0.75rem'
-                                                            }}
-                                                        />
-                                                    )}
-                                                </Box>
-                                            )}
+                                                <Typography variant="body2" sx={{
+                                                fontWeight: 700,
+                                                color: '#1e293b',
+                                                    fontSize: '0.9rem'
+                                            }}>
+                                                {formatDate(orderDetail.orderDate)}
+                                            </Typography>
                                         </Box>
                                     </Box>
-                                ))}
+                                </Box>
+
+                                {/* Deadline */}
+                                <Box sx={{
+                                        flex: 1,
+                                        p: 2.5,
+                                    borderRadius: 3,
+                                    background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(220, 38, 38, 0.05) 100%)',
+                                    border: '1px solid rgba(239, 68, 68, 0.1)',
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        transform: 'translateY(-2px)',
+                                        boxShadow: '0 8px 25px rgba(239, 68, 68, 0.15)'
+                                    }
+                                }}>
+                                    <Box sx={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        right: 0,
+                                            width: '40px',
+                                            height: '40px',
+                                        background: 'rgba(239, 68, 68, 0.1)',
+                                        borderRadius: '50%',
+                                            transform: 'translate(10px, -10px)'
+                                    }}/>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                            gap: 1.5,
+                                        position: 'relative',
+                                        zIndex: 1
+                                    }}>
+                                        <Box sx={{
+                                                width: 32,
+                                                height: 32,
+                                            borderRadius: '50%',
+                                            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+                                        }}>
+                                                <CalendarIcon sx={{color: 'white', fontSize: 16}}/>
+                                        </Box>
+                                        <Box>
+                                            <Typography variant="caption" sx={{
+                                                color: '#64748b',
+                                                fontWeight: 500,
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.5px',
+                                                    display: 'block',
+                                                    fontSize: '0.7rem'
+                                            }}>
+                                                Deadline
+                                            </Typography>
+                                                <Typography variant="body2" sx={{
+                                                fontWeight: 700,
+                                                color: '#1e293b',
+                                                    fontSize: '0.9rem'
+                                            }}>
+                                                {formatDate(orderDetail.deadline)}
+                                            </Typography>
+                                            </Box>
+                                        </Box>
+                                    </Box>
+                                </Box>
+
+                                {/* Total Uniforms */}
+                                <Box sx={{
+                                    p: 2.5,
+                                    borderRadius: 3,
+                                    background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%)',
+                                    border: '1px solid rgba(168, 85, 247, 0.1)',
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        transform: 'translateY(-2px)',
+                                        boxShadow: '0 8px 25px rgba(168, 85, 247, 0.15)'
+                                    }
+                                }}>
+                                    <Box sx={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        right: 0,
+                                        width: '40px',
+                                        height: '40px',
+                                        background: 'rgba(168, 85, 247, 0.1)',
+                                        borderRadius: '50%',
+                                        transform: 'translate(10px, -10px)'
+                                    }}/>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1.5,
+                                        position: 'relative',
+                                        zIndex: 1
+                                    }}>
+                                        <Box sx={{
+                                            width: 32,
+                                            height: 32,
+                                            borderRadius: '50%',
+                                            background: 'linear-gradient(135deg, #a855f7 0%, #9333ea 100%)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            boxShadow: '0 4px 12px rgba(168, 85, 247, 0.3)'
+                                        }}>
+                                            <SchoolIcon sx={{color: 'white', fontSize: 16}}/>
+                                        </Box>
+                                        <Box>
+                                            <Typography variant="caption" sx={{
+                                                color: '#64748b',
+                                                fontWeight: 500,
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.5px',
+                                                display: 'block',
+                                                fontSize: '0.7rem'
+                                            }}>
+                                                Total Uniforms
+                                            </Typography>
+                                            <Typography variant="body2" sx={{
+                                                fontWeight: 700,
+                                                color: '#1e293b',
+                                                fontSize: '0.9rem'
+                                            }}>
+                                                {getTotalUniforms()}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                </Box>
+                            </Box>
+                        </Box>
+
+
+
+                        {/* Order Notes */}
+                        {orderDetail.note && (
+                            <Box sx={{
+                                p: 3,
+                                borderRadius: 3,
+                                background: 'linear-gradient(135deg, rgba(107, 114, 128, 0.05) 0%, rgba(75, 85, 99, 0.05) 100%)',
+                                border: '1px solid rgba(107, 114, 128, 0.15)',
+                                borderLeft: '4px solid #6b7280'
+                            }}>
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'flex-start',
+                                    gap: 2
+                                }}>
+                                    <Box sx={{
+                                        width: 32,
+                                        height: 32,
+                                        borderRadius: '50%',
+                                        background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        flexShrink: 0,
+                                        mt: 0.5,
+                                        boxShadow: '0 4px 12px rgba(107, 114, 128, 0.3)'
+                                    }}>
+                                        <InfoIcon sx={{color: 'white', fontSize: 16}}/>
+                                    </Box>
+                                    <Box sx={{flex: 1}}>
+                                        <Typography variant="subtitle2" sx={{
+                                            fontWeight: 600,
+                                            color: '#374151',
+                                            mb: 1
+                                        }}>
+                                            Order Notes
+                                        </Typography>
+                                        <Typography variant="body2" sx={{
+                                            color: '#6b7280',
+                                            lineHeight: 1.6,
+                                            fontStyle: 'italic'
+                                        }}>
+                                            {orderDetail.note}
+                                        </Typography>
+                                    </Box>
+                                </Box>
                             </Box>
                         )}
                     </CardContent>
@@ -1510,7 +1321,7 @@ export default function OrderTrackingStatus() {
                                 </Typography>
                             </Box>
                         </Box>
-                    </Box>
+            </Box>
 
                     <CardContent sx={{p: 4, position: 'relative', zIndex: 1}}>
                         {/* Factory Profile */}
@@ -1554,7 +1365,7 @@ export default function OrderTrackingStatus() {
                                     color: '#10b981',
                                     fontWeight: 600,
                                     fontSize: '0.875rem'
-                                }}>
+                                    }}>
                                     {orderDetail.garment?.customer?.name}
                                 </Typography>
                             </Box>
@@ -1587,7 +1398,9 @@ export default function OrderTrackingStatus() {
                                 }}>
                                     <LocationIcon sx={{color: 'white', fontSize: 18}}/>
                                 </Box>
-                                <Box sx={{flex: 1}}>
+                                <Box sx={{
+                                    flex: 1
+                                }}>
                                     <Typography variant="caption" sx={{
                                         color: '#64748b',
                                         fontWeight: 500,
@@ -1632,7 +1445,9 @@ export default function OrderTrackingStatus() {
                                 }}>
                                     <PhoneIcon sx={{color: 'white', fontSize: 18}}/>
                                 </Box>
-                                <Box sx={{flex: 1}}>
+                                <Box sx={{
+                                    flex: 1
+                                }}>
                                     <Typography variant="caption" sx={{
                                         color: '#64748b',
                                         fontWeight: 500,
@@ -1677,7 +1492,9 @@ export default function OrderTrackingStatus() {
                                 }}>
                                     <EmailIcon sx={{color: 'white', fontSize: 18}}/>
                                 </Box>
-                                <Box sx={{flex: 1}}>
+                                <Box sx={{
+                                    flex: 1
+                                }}>
                                     <Typography variant="caption" sx={{
                                         color: '#64748b',
                                         fontWeight: 500,
@@ -1700,6 +1517,422 @@ export default function OrderTrackingStatus() {
                     </CardContent>
                 </Card>
             </Box>
+
+            {/* Payment Information - Full Width */}
+            <Card sx={{
+                mb: 4,
+                background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                border: '1px solid #e2e8f0',
+                borderRadius: 3,
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+                position: 'relative',
+                overflow: 'hidden',
+                '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '4px',
+                    background: 'linear-gradient(90deg, #22c55e 0%, #16a34a 30%, #10b981 70%, #059669 100%)'
+                }
+            }}>
+                {/* Header */}
+                <Box sx={{
+                    background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                    p: 3,
+                    position: 'relative',
+                    overflow: 'hidden'
+                }}>
+                    <Box sx={{
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                        width: '100px',
+                        height: '100px',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        borderRadius: '50%',
+                        transform: 'translate(30px, -30px)'
+                    }}/>
+                    <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 2,
+                        position: 'relative',
+                        zIndex: 1
+                    }}>
+                        <Box sx={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: '50%',
+                            background: 'rgba(255, 255, 255, 0.2)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)'
+                        }}>
+                            <MoneyIcon sx={{color: 'white', fontSize: 20}}/>
+                        </Box>
+                        <Box>
+                            <Typography variant="h6" sx={{
+                                fontWeight: 700,
+                                color: 'white',
+                                fontSize: '1.25rem'
+                            }}>
+                                Payment Information
+                            </Typography>
+                            <Typography variant="body2" sx={{
+                                color: 'rgba(255, 255, 255, 0.9)',
+                                fontWeight: 500
+                            }}>
+                                Payment breakdown and financial details
+                            </Typography>
+                        </Box>
+                    </Box>
+                </Box>
+
+                <CardContent sx={{p: 4}}>
+                    {orderDetail.status === 'processing' ? (
+                        /* Processing Status - Show detailed payment breakdown */
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: {xs: 'column', md: 'row'},
+                            gap: 2
+                        }}>
+                            {/* 1. Base Price */}
+                            <Box sx={{
+                                flex: 1,
+                                p: 3,
+                                borderRadius: 3,
+                                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(37, 99, 235, 0.05) 100%)',
+                                border: '1px solid rgba(59, 130, 246, 0.1)',
+                                position: 'relative',
+                                overflow: 'hidden',
+                                transition: 'all 0.3s ease',
+                                '&:hover': {
+                                    transform: 'translateY(-2px)',
+                                    boxShadow: '0 8px 25px rgba(59, 130, 246, 0.15)'
+                                }
+                            }}>
+                                <Box sx={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    right: 0,
+                                    width: '40px',
+                                    height: '40px',
+                                    background: 'rgba(59, 130, 246, 0.1)',
+                                    borderRadius: '50%',
+                                    transform: 'translate(10px, -10px)'
+                                }}/>
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1.5,
+                                    position: 'relative',
+                                    zIndex: 1
+                                }}>
+                                    <Box sx={{
+                                        width: 32,
+                                        height: 32,
+                                        borderRadius: '50%',
+                                        background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+                                    }}>
+                                        <MoneyIcon sx={{color: 'white', fontSize: 16}}/>
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="caption" sx={{
+                                            color: '#64748b',
+                                            fontWeight: 500,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.5px',
+                                            display: 'block',
+                                            fontSize: '0.7rem'
+                                        }}>
+                                            Base Price
+                                        </Typography>
+                                        <Typography variant="body2" sx={{
+                                            fontWeight: 700,
+                                            color: '#1e293b',
+                                            fontSize: '0.9rem'
+                                        }}>
+                                            {formatCurrency(orderDetail.price)}
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                            </Box>
+
+                            {/* 2. Service Fee */}
+                            <Box sx={{
+                                flex: 1,
+                                p: 3,
+                                borderRadius: 3,
+                                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(217, 119, 6, 0.05) 100%)',
+                                border: '1px solid rgba(245, 158, 11, 0.1)',
+                                position: 'relative',
+                                overflow: 'hidden',
+                                transition: 'all 0.3s ease',
+                                '&:hover': {
+                                    transform: 'translateY(-2px)',
+                                    boxShadow: '0 8px 25px rgba(245, 158, 11, 0.15)'
+                                }
+                            }}>
+                                <Box sx={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    right: 0,
+                                    width: '50px',
+                                    height: '50px',
+                                    background: 'rgba(245, 158, 11, 0.1)',
+                                    borderRadius: '50%',
+                                    transform: 'translate(15px, -15px)'
+                                }}/>
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    position: 'relative',
+                                    zIndex: 1
+                                }}>
+                                    <Box sx={{
+                                        width: 36,
+                                        height: 36,
+                                        borderRadius: '50%',
+                                        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)'
+                                    }}>
+                                        <MoneyIcon sx={{color: 'white', fontSize: 18}}/>
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="caption" sx={{
+                                            color: '#64748b',
+                                            fontWeight: 500,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.5px',
+                                            display: 'block'
+                                        }}>
+                                            Service Fee
+                                        </Typography>
+                                        <Typography variant="h6" sx={{
+                                            fontWeight: 700,
+                                            color: '#1e293b',
+                                            fontSize: '1rem'
+                                        }}>
+                                            {formatCurrency(getServiceFee())}
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                            </Box>
+
+                            {/* 3. Total Price */}
+                            <Box sx={{
+                                flex: 1,
+                                p: 3,
+                                borderRadius: 3,
+                                background: 'linear-gradient(135deg, rgba(55, 65, 81, 0.05) 0%, rgba(31, 41, 55, 0.05) 100%)',
+                                border: '1px solid rgba(55, 65, 81, 0.1)',
+                                position: 'relative',
+                                overflow: 'hidden',
+                                transition: 'all 0.3s ease',
+                                '&:hover': {
+                                    transform: 'translateY(-2px)',
+                                    boxShadow: '0 8px 25px rgba(55, 65, 81, 0.15)'
+                                }
+                            }}>
+                                <Box sx={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    right: 0,
+                                    width: '50px',
+                                    height: '50px',
+                                    background: 'rgba(55, 65, 81, 0.1)',
+                                    borderRadius: '50%',
+                                    transform: 'translate(15px, -15px)'
+                                }}/>
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    position: 'relative',
+                                    zIndex: 1
+                                }}>
+                                    <Box sx={{
+                                        width: 40,
+                                        height: 40,
+                                        borderRadius: '50%',
+                                        background: 'linear-gradient(135deg, #374151 0%, #1f2937 100%)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        boxShadow: '0 4px 12px rgba(55, 65, 81, 0.3)'
+                                    }}>
+                                        <MoneyIcon sx={{color: 'white', fontSize: 20}}/>
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="caption" sx={{
+                                            color: '#64748b',
+                                            fontWeight: 500,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.5px',
+                                            display: 'block'
+                                        }}>
+                                            Total Price
+                                        </Typography>
+                                        <Typography variant="h6" sx={{
+                                            fontWeight: 700,
+                                            color: '#1e293b',
+                                            fontSize: '1rem'
+                                        }}>
+                                            {formatCurrency(orderDetail.price + getServiceFee())}
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                            </Box>
+
+                            {/* 4. Deposit Amount */}
+                            <Box sx={{
+                                flex: 1,
+                                p: 3,
+                                borderRadius: 3,
+                                background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(22, 163, 74, 0.05) 100%)',
+                                border: '1px solid rgba(34, 197, 94, 0.1)',
+                                position: 'relative',
+                                overflow: 'hidden',
+                                transition: 'all 0.3s ease',
+                                '&:hover': {
+                                    transform: 'translateY(-2px)',
+                                    boxShadow: '0 8px 25px rgba(34, 197, 94, 0.15)'
+                                }
+                            }}>
+                                <Box sx={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    right: 0,
+                                    width: '50px',
+                                    height: '50px',
+                                    background: 'rgba(34, 197, 94, 0.1)',
+                                    borderRadius: '50%',
+                                    transform: 'translate(15px, -15px)'
+                                }}/>
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    position: 'relative',
+                                    zIndex: 1
+                                }}>
+                                    <Box sx={{
+                                        width: 36,
+                                        height: 36,
+                                        borderRadius: '50%',
+                                        background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)'
+                                    }}>
+                                        <MoneyIcon sx={{color: 'white', fontSize: 18}}/>
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="caption" sx={{
+                                            color: '#64748b',
+                                            fontWeight: 500,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.5px',
+                                            display: 'block'
+                                        }}>
+                                            Deposit (50% Total Price)
+                                        </Typography>
+                                        <Typography variant="h6" sx={{
+                                            fontWeight: 700,
+                                            color: '#1e293b',
+                                            fontSize: '1rem'
+                                        }}>
+                                            {formatCurrency(getDepositAmount())}
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                            </Box>
+                        </Box>
+                    ) : (
+                        /* Other Status - Show simple base price */
+                        <Box sx={{
+                            display: 'flex',
+                            justifyContent: 'center'
+                        }}>
+                            <Box sx={{
+                                p: 3,
+                                borderRadius: 3,
+                                background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(22, 163, 74, 0.05) 100%)',
+                                border: '1px solid rgba(34, 197, 94, 0.1)',
+                                position: 'relative',
+                                overflow: 'hidden',
+                                transition: 'all 0.3s ease',
+                                minWidth: 300,
+                                '&:hover': {
+                                    transform: 'translateY(-2px)',
+                                    boxShadow: '0 8px 25px rgba(34, 197, 94, 0.15)'
+                                }
+                            }}>
+                                <Box sx={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    right: 0,
+                                    width: '60px',
+                                    height: '60px',
+                                    background: 'rgba(34, 197, 94, 0.1)',
+                                    borderRadius: '50%',
+                                    transform: 'translate(20px, -20px)'
+                                }}/>
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    position: 'relative',
+                                    zIndex: 1
+                                }}>
+                                    <Box sx={{
+                                        width: 40,
+                                        height: 40,
+                                        borderRadius: '50%',
+                                        background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)'
+                                    }}>
+                                        <MoneyIcon sx={{color: 'white', fontSize: 20}}/>
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="caption" sx={{
+                                            color: '#64748b',
+                                            fontWeight: 500,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.5px',
+                                            display: 'block'
+                                        }}>
+                                            Base Price
+                                        </Typography>
+                                        <Typography variant="h5" sx={{
+                                            fontWeight: 700,
+                                            color: '#1e293b',
+                                            fontSize: '1.25rem'
+                                        }}>
+                                            {formatCurrency(orderDetail.price)}
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                            </Box>
+                        </Box>
+                    )}
+                </CardContent>
+            </Card>
 
             {/* Selected Design */}
             {orderDetail.selectedDesign && (
@@ -1836,7 +2069,7 @@ export default function OrderTrackingStatus() {
                                         color: '#1e293b',
                                         fontSize: '1.1rem'
                                     }}>
-                                        {orderDetail.selectedDesign.name}
+                                        {orderDetail.selectedDesign.designRequest?.name || orderDetail.selectedDesign.name || 'Design Request'}
                                     </Typography>
                                 </Box>
                             </Box>
@@ -1954,7 +2187,7 @@ export default function OrderTrackingStatus() {
                                         color: '#10b981',
                                         fontSize: '1.1rem'
                                     }}>
-                                        Approved
+                                        Completed
                                     </Typography>
                                 </Box>
                             </Box>
@@ -2517,8 +2750,7 @@ export default function OrderTrackingStatus() {
         )
     }
 
-    {/* Quantity Details Dialog */
-    }
+    {/* Quantity Details Dialog */}
     <Dialog
         open={showQuantityDetailsDialog}
         onClose={handleCloseQuantityDetails}
@@ -2709,8 +2941,7 @@ export default function OrderTrackingStatus() {
         </DialogActions>
     </Dialog>
 
-    {/* Images Dialog */
-    }
+    {/* Images Dialog */}
     <Dialog
         open={showImagesDialog}
         onClose={handleCloseImagesDialog}
@@ -2907,6 +3138,212 @@ export default function OrderTrackingStatus() {
             </Button>
         </DialogActions>
     </Dialog>
+
+    {/* Milestone Popover */}
+    <Popover
+        open={Boolean(hoveredMilestone)}
+        anchorEl={popoverAnchor}
+        onClose={handleMilestoneLeave}
+        anchorOrigin={{
+            vertical: popoverPosition.vertical,
+            horizontal: popoverPosition.horizontal,
+        }}
+        transformOrigin={{
+            vertical: popoverPosition.vertical,
+            horizontal: popoverPosition.horizontal === 'right' ? 'left' : 'right',
+        }}
+        sx={{
+            pointerEvents: 'none',
+            '& .MuiPopover-paper': {
+                borderRadius: 3,
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
+                border: '1px solid #e2e8f0',
+                maxWidth: 400,
+                minWidth: 350,
+                p: 0,
+                margin: 2
+            }
+        }}
+        disableRestoreFocus
+        disableScrollLock
+    >
+        {hoveredMilestone && (
+            <Box sx={{p: 4}}>
+                {/* Header */}
+                <Box sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 3,
+                    mb: 3
+                }}>
+                    <Box sx={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: '50%',
+                        background: hoveredMilestone.isCompleted 
+                            ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'
+                            : hoveredMilestone.isActive
+                                ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
+                                : 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: hoveredMilestone.isCompleted 
+                            ? '0 4px 12px rgba(34, 197, 94, 0.3)'
+                            : hoveredMilestone.isActive
+                                ? '0 4px 12px rgba(59, 130, 246, 0.3)'
+                                : '0 4px 12px rgba(148, 163, 184, 0.3)'
+                    }}>
+                        {hoveredMilestone.isCompleted ? (
+                            <CheckCircleIcon sx={{color: 'white', fontSize: 20}}/>
+                        ) : hoveredMilestone.isActive ? (
+                            <DesignServicesIcon sx={{color: 'white', fontSize: 20}}/>
+                        ) : (
+                            <PendingIcon sx={{color: 'white', fontSize: 20}}/>
+                        )}
+                    </Box>
+                    <Box>
+                        <Typography variant="h6" sx={{
+                            fontWeight: 700,
+                            color: '#1e293b',
+                            fontSize: '1.1rem'
+                        }}>
+                            {hoveredMilestone.title}
+                        </Typography>
+                    </Box>
+                </Box>
+
+                {/* Dates Information */}
+                {(hoveredMilestone.startDate || hoveredMilestone.endDate || hoveredMilestone.completedDate) && (
+                    <Box sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 2,
+                        mb: 3
+                    }}>
+                        {hoveredMilestone.completedDate && (
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 2,
+                                p: 2,
+                                borderRadius: 2,
+                                backgroundColor: '#dcfce7',
+                                border: '1px solid rgba(34, 197, 94, 0.2)'
+                            }}>
+                                <CheckCircleIcon sx={{color: '#16a34a', fontSize: 18}}/>
+                                <Box>
+                                    <Typography variant="caption" sx={{
+                                        color: '#065f46',
+                                        fontWeight: 600,
+                                        textTransform: 'uppercase',
+                                        fontSize: '0.7rem'
+                                    }}>
+                                        Completed
+                                    </Typography>
+                                    <Typography variant="body2" sx={{
+                                        color: '#065f46',
+                                        fontWeight: 600
+                                    }}>
+                                        {formatDate(hoveredMilestone.completedDate)}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        )}
+                        
+                        {hoveredMilestone.startDate && (
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 2,
+                                p: 2,
+                                borderRadius: 2,
+                                backgroundColor: '#fef3c7',
+                                border: '1px solid rgba(245, 158, 11, 0.2)'
+                            }}>
+                                <CalendarIcon sx={{color: '#d97706', fontSize: 18}}/>
+                                <Box>
+                                    <Typography variant="caption" sx={{
+                                        color: '#92400e',
+                                        fontWeight: 600,
+                                        textTransform: 'uppercase',
+                                        fontSize: '0.7rem'
+                                    }}>
+                                        Start Date
+                                    </Typography>
+                                    <Typography variant="body2" sx={{
+                                        color: '#92400e',
+                                        fontWeight: 600
+                                    }}>
+                                        {formatDate(hoveredMilestone.startDate)}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        )}
+                        
+                        {hoveredMilestone.endDate && !hoveredMilestone.completedDate && (
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 2,
+                                p: 2,
+                                borderRadius: 2,
+                                backgroundColor: '#dbeafe',
+                                border: '1px solid rgba(59, 130, 246, 0.2)'
+                            }}>
+                                <CalendarIcon sx={{color: '#2563eb', fontSize: 18}}/>
+                                <Box>
+                                    <Typography variant="caption" sx={{
+                                        color: '#1e40af',
+                                        fontWeight: 600,
+                                        textTransform: 'uppercase',
+                                        fontSize: '0.7rem'
+                                    }}>
+                                        End Date
+                                    </Typography>
+                                    <Typography variant="body2" sx={{
+                                        color: '#1e40af',
+                                        fontWeight: 600
+                                    }}>
+                                        {formatDate(hoveredMilestone.endDate)}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        )}
+                    </Box>
+                )}
+
+                {/* Status Badge */}
+                <Box sx={{
+                    display: 'flex',
+                    justifyContent: 'center'
+                }}>
+                    <Chip
+                        label={hoveredMilestone.isCompleted ? 'Completed' : hoveredMilestone.isActive ? 'Active' : hoveredMilestone.isNotStarted ? 'Not Started' : 'Pending'}
+                        size="small"
+                        sx={{
+                            backgroundColor: hoveredMilestone.isCompleted 
+                                ? '#dcfce7'
+                                : hoveredMilestone.isActive
+                                    ? '#dbeafe'
+                                    : hoveredMilestone.isNotStarted
+                                        ? '#f1f5f9'
+                                        : '#f1f5f9',
+                            color: hoveredMilestone.isCompleted 
+                                ? '#065f46'
+                                : hoveredMilestone.isActive
+                                    ? '#1e40af'
+                                    : hoveredMilestone.isNotStarted
+                                        ? '#64748b'
+                                        : '#64748b',
+                            fontWeight: 600,
+                            fontSize: '0.75rem'
+                        }}
+                    />
+                </Box>
+            </Box>
+        )}
+    </Popover>
         </Box>
     );
 }

@@ -24,6 +24,7 @@ import {
 import {Tag} from 'antd';
 import {signout} from "../../services/AccountService.jsx";
 import {enqueueSnackbar} from "notistack";
+import Bell from "../../components/ui/Bell.jsx";
 
 function Navbar({userObj, activeMenu, navigate}) {
     return (
@@ -324,6 +325,7 @@ export default function GarmentDashboardLayout() {
                     </Box>
 
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        <Bell />
                         <Box
                             sx={{
                                 display: "flex",

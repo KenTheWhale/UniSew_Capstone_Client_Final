@@ -41,6 +41,7 @@ import {signout} from "../../services/AccountService.jsx";
 import {enqueueSnackbar} from "notistack";
 import {useChatRoomsByEmail} from "../../components/designer/UseChatRoomsByEmail.jsx";
 import {getAccessCookie} from "../../utils/CookieUtil.jsx";
+import Bell from "../../components/ui/Bell.jsx";
 
 const drawerWidth = 280;
 
@@ -161,6 +162,7 @@ export default function DesignerDashboardLayout() {
                 </Box>
 
                 <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
+                    <Bell />
                     <Box
                         sx={{
                             display: "flex",

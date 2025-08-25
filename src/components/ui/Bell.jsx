@@ -14,7 +14,6 @@ import {
 } from "firebase/firestore";
 import {db} from "../../configs/FirebaseConfig.jsx";
 import {getAccessCookie} from "../../utils/CookieUtil.jsx";
-import {jwtDecode} from "jwt-decode";
 
 export const addNotification = async ({email, title, content}) => {
     if (!email || !title || !content) return;
@@ -49,8 +48,8 @@ export default function Bell() {
         return isNaN(date.getTime()) ? new Date() : date;
     };
 
-    const getMail = () => {
-        let cookie = getAccessCookie()
+    const getMail = async () => {
+        let cookie = await getAccessCookie()
         if (!cookie) {
             return false;
         }
@@ -58,8 +57,21 @@ export default function Bell() {
     }
 
     useEffect(() => {
-        setEmail(getMail);
-        console.log("email", email)
+        const fetchEmail = async () => {
+            try {
+                const emailValue = await getMail();
+                if (emailValue) {
+                    setEmail(emailValue);
+                }
+            } catch (error) {
+                console.error("Error fetching email:", error);
+            }
+        };
+
+        fetchEmail();
+    }, []);
+
+    useEffect(() => {
         if (!email) return;
 
         const notifRef = collection(db, "notifications");
@@ -76,7 +88,7 @@ export default function Bell() {
         return () => unsub();
     }, [email]);
 
-    console.log("notifications", notifications);
+
 
 
 
@@ -125,15 +137,25 @@ export default function Bell() {
 
     return (
         <>
-            <Button aria-describedby={id} onClick={handleClick}>
-                <NotificationsIcon/>
+            <Button 
+                aria-describedby={id} 
+                onClick={handleClick}
+                sx={{
+                    color: '#ff9800',
+                    '&:hover': {
+                        color: '#f57c00',
+                        backgroundColor: 'rgba(255, 152, 0, 0.1)'
+                    }
+                }}
+            >
+                <NotificationsIcon sx={{ color: 'inherit' }}/>
                 {/* Badge for unread notifications */}
                 {notifications.filter(n => !n.read).length > 0 && (
                     <span style={{
                         position: 'absolute',
                         top: 0,
                         right: 0,
-                        backgroundColor: '#f44336',
+                        backgroundColor: '#ff9800',
                         color: 'white',
                         borderRadius: '50%',
                         width: 20,
