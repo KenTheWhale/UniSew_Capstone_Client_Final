@@ -214,6 +214,8 @@ export default function MilestoneManagement() {
         setViewMilestoneDialogOpen(true);
         // Initialize phase statuses based on API status
         const statuses = {};
+        let activePhase = 1; // Default to first phase
+        
         if (order.milestone && order.milestone.length > 0) {
             order.milestone.forEach((phase) => {
                 const stage = phase.stage;
@@ -222,6 +224,7 @@ export default function MilestoneManagement() {
                     statuses[stage] = 'done';
                 } else if (phase.status === 'processing') {
                     statuses[stage] = 'active';
+                    activePhase = stage; // Set current active phase
                 } else if (phase.status === 'assigned') {
                     statuses[stage] = 'not_started';
                 } else if (phase.status === 'late') {
@@ -229,7 +232,9 @@ export default function MilestoneManagement() {
                 }
             });
         }
+        
         setPhaseStatuses(statuses);
+        setCurrentPhase(activePhase); // Update current phase to the active one
     };
 
     const handlePhaseSelection = (phase) => {
@@ -2962,23 +2967,28 @@ export default function MilestoneManagement() {
                                             if (updatedOrder) {
                                                 setViewingOrder(updatedOrder);
                                                 
-                                                // Update phase statuses for the updated order
-                                                const statuses = {};
-                                                if (updatedOrder.milestone && updatedOrder.milestone.length > 0) {
-                                                    updatedOrder.milestone.forEach((phase) => {
-                                                        const stage = phase.stage;
-                                                        if (phase.status === 'completed') {
-                                                            statuses[stage] = 'done';
-                                                        } else if (phase.status === 'processing') {
-                                                            statuses[stage] = 'active';
-                                                        } else if (phase.status === 'assigned') {
-                                                            statuses[stage] = 'not_started';
-                                                        } else if (phase.status === 'late') {
-                                                            statuses[stage] = 'late';
-                                                        }
-                                                    });
+                                                                                        // Update phase statuses for the updated order
+                                        const statuses = {};
+                                        let activePhase = 1; // Default to first phase
+                                        
+                                        if (updatedOrder.milestone && updatedOrder.milestone.length > 0) {
+                                            updatedOrder.milestone.forEach((phase) => {
+                                                const stage = phase.stage;
+                                                if (phase.status === 'completed') {
+                                                    statuses[stage] = 'done';
+                                                } else if (phase.status === 'processing') {
+                                                    statuses[stage] = 'active';
+                                                    activePhase = stage; // Set current active phase
+                                                } else if (phase.status === 'assigned') {
+                                                    statuses[stage] = 'not_started';
+                                                } else if (phase.status === 'late') {
+                                                    statuses[stage] = 'late';
                                                 }
-                                                setPhaseStatuses(statuses);
+                                            });
+                                        }
+                                        
+                                        setPhaseStatuses(statuses);
+                                        setCurrentPhase(activePhase); // Update current phase to the active one
                                             }
                                         }
                                     } else {

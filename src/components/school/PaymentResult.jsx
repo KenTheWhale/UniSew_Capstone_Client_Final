@@ -16,7 +16,7 @@ import {
 import {parseID} from "../../utils/ParseIDUtil.jsx";
 import {buyExtraRevision, pickQuotation} from "../../services/DesignService.jsx";
 import {approveQuotation} from "../../services/OrderService.jsx";
-import {createDesignTransaction, createOrderTransaction} from "../../services/PaymentService.jsx";
+import {createDesignTransaction, createOrderTransaction, createDepositTransaction} from "../../services/PaymentService.jsx";
 import {useEffect, useState} from 'react';
 
 export default function PaymentResult() {
@@ -147,7 +147,9 @@ export default function PaymentResult() {
     const handleFailedPayment = async () => {
         console.log('Processing failed payment');
 
-        if (isDepositPayment || isOrderPayment) {
+        if (isDepositPayment) {
+            await handleFailedDeposit();
+        } else if (isOrderPayment) {
             await handleFailedOrder();
         } else if (quotationDetails) {
             await handleFailedDesign();
@@ -160,7 +162,7 @@ export default function PaymentResult() {
         const data = {
             quotationId: parseInt(quotationId),
             createTransactionRequest: {
-                type: "order",
+                type: "deposit",
                 receiverId: orderDetails.quotation.garmentId,
                 itemId: orderDetails.order.id,
                 totalPrice: parseInt(vnpAmount) / 100,
@@ -223,6 +225,25 @@ export default function PaymentResult() {
     };
 
     // Helper functions for failed payments
+    const handleFailedDeposit = async () => {
+        console.log('handleFailedDeposit called');
+        if (!orderDetails) return;
+
+        const response = await createDepositTransaction(
+            orderDetails.quotation.garmentId,
+            orderDetails.order.id,
+            parseInt(vnpAmount) / 100,
+            vnpResponseCode,
+            orderDetails.serviceFee,
+            false
+        );
+        if (response && response.status === 201) {
+            console.log('Failed deposit payment transaction recorded successfully');
+        } else {
+            console.error('Failed to record deposit payment transaction:', response);
+        }
+    };
+
     const handleFailedOrder = async () => {
         console.log('handleFailedOrder called');
         if (!orderDetails) return;

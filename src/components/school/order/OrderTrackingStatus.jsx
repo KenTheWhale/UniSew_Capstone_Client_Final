@@ -338,6 +338,22 @@ export default function OrderTrackingStatus() {
 
     // Get milestones from API or default fallback
     const getMilestones = () => {
+        // If no milestones from API, return waiting message
+        if (!orderDetail?.milestone || orderDetail.milestone.length === 0) {
+            return [{
+                title: 'Waiting for Milestones',
+                description: 'Waiting for garment factory to assign production milestones',
+                isCompleted: false,
+                isActive: false,
+                isNotStarted: true,
+                startDate: null,
+                endDate: null,
+                completedDate: null,
+                stage: 1,
+                isWaiting: true // Special flag for waiting state
+            }];
+        }
+        
         // Always start with "Start Sewing" phase
         const startSewingPhase = {
             title: 'Start Sewing',
@@ -349,10 +365,6 @@ export default function OrderTrackingStatus() {
             completedDate: new Date().toISOString().split('T')[0], // Today
             stage: 1
         };
-
-        if (!orderDetail?.milestone || orderDetail.milestone.length === 0) {
-            return [startSewingPhase];
-        }
         
         // Map API milestones starting from index 2 (phase 2)
         const apiMilestones = orderDetail.milestone.map((milestone, index) => {
@@ -395,7 +407,7 @@ export default function OrderTrackingStatus() {
             isNotStarted: true,
             startDate: null,
             endDate: null,
-                            completedDate: null,
+            completedDate: null,
             stage: apiMilestones.length + 3
         };
 
@@ -676,8 +688,8 @@ export default function OrderTrackingStatus() {
                     </Box>
 
                     <CardContent sx={{p: 4, position: 'relative', zIndex: 1}}>
-                        {milestones.length === 1 && milestones[0].title === 'Waiting for Milestones' ? (
-                            /* Empty milestones - show waiting message */
+                        {milestones.length === 1 && milestones[0].isWaiting ? (
+                            /* Waiting for milestones - show waiting message */
                             <Box sx={{
                                 display: 'flex',
                                 flexDirection: 'column',
@@ -704,14 +716,14 @@ export default function OrderTrackingStatus() {
                                     color: '#92400e',
                                     mb: 1
                                 }}>
-                                    Waiting for Milestones
+                                    Waiting for Garment Factory to Assign Milestones
                                 </Typography>
                                 <Typography variant="body2" sx={{
                                     color: '#64748b',
                                     maxWidth: 300,
                                     lineHeight: 1.6
                                 }}>
-                                    The garment factory will assign production milestones soon. You'll be able to track detailed progress once they're set up.
+                                    Waiting for production milestones to be assigned.
                                 </Typography>
                             </Box>
                         ) : (
