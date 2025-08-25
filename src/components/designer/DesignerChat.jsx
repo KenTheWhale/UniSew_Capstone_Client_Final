@@ -1,6 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {
     Avatar,
+    Badge,
     Button,
     Card,
     Col,
@@ -9,7 +10,6 @@ import {
     Input,
     Radio,
     Row,
-    Select,
     Space,
     Tag,
     Tooltip,
@@ -21,17 +21,12 @@ import {
     CheckCircleOutlined,
     ClockCircleOutlined,
     CloseCircleOutlined,
-    DollarOutlined,
     EditOutlined,
-    EnvironmentOutlined,
     EyeOutlined,
     FileTextOutlined,
     InfoCircleOutlined,
     MessageOutlined,
-    PhoneOutlined,
-    PictureOutlined,
     SendOutlined,
-    ShopOutlined,
     SmileOutlined,
     SyncOutlined,
     UploadOutlined,
@@ -44,13 +39,13 @@ import {parseID} from '../../utils/ParseIDUtil.jsx';
 import {
     addDoc,
     collection,
+    doc,
+    getDocs,
     onSnapshot,
     query,
     serverTimestamp,
-    where,
-    doc,
     setDoc,
-    getDocs,
+    where,
     writeBatch
 } from 'firebase/firestore';
 import {auth, db} from "../../configs/FirebaseConfig.jsx";
@@ -65,9 +60,7 @@ import {
 } from "../../services/DesignService.jsx";
 import {uploadCloudinary} from "../../services/UploadImageService.jsx";
 import AppliedRequestDetail from './AppliedRequestDetail.jsx';
-import { Badge } from "antd";
-import {getCookie} from "../../utils/CookieUtil.jsx";
-import {jwtDecode} from "jwt-decode";
+import {getAccessCookie} from "../../utils/CookieUtil.jsx";
 
 const {TextArea} = Input;
 
@@ -185,13 +178,11 @@ export function UseDesignerChatMessages(roomId) {
         const email = auth.currentUser?.email || "designer@unknown";
         const displayName = auth.currentUser?.displayName || "Designer";
 
-        let cookie = getCookie("access")
+        let cookie = getAccessCookie()
         if (!cookie) {
             return false;
         }
-        const decode = jwtDecode(cookie)
-        console.log("decode", decode)
-        const accountId = decode.id;
+        const accountId = cookie.id;
 
         const payload =
             typeof textOrPayload === "string"

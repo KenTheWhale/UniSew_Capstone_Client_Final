@@ -1,21 +1,5 @@
-import React, {useEffect, useState, useRef} from 'react';
-import {
-    Avatar,
-    Avatar as AntAvatar,
-    Button,
-    Card,
-    Col,
-    Form,
-    Input,
-    Modal,
-    Radio,
-    Rate,
-    Row,
-    Space,
-    Tag,
-    Typography,
-    Badge
-} from 'antd';
+import React, {useEffect, useRef, useState} from 'react';
+import {Avatar, Badge, Button, Col, Form, Input, Modal, Row, Tag, Typography} from 'antd';
 import {
     CheckCircleOutlined,
     CheckCircleOutlined as CheckCircleOutlinedIcon,
@@ -27,28 +11,15 @@ import {
     FileTextOutlined,
     FileTextOutlined as FileTextOutlinedIcon,
     InfoCircleOutlined,
-    InfoCircleOutlined as InfoCircleOutlinedIcon,
     MessageOutlined,
-    PictureOutlined,
     SendOutlined,
     SmileOutlined,
     SyncOutlined,
     UploadOutlined,
     UserOutlined,
-    UserOutlined as UserOutlinedIcon,
     UserSwitchOutlined
 } from '@ant-design/icons';
-import {
-    Box,
-    Box as MuiBox,
-    Chip,
-    Container,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    Paper
-} from '@mui/material';
+import {Box, Chip, Container, Dialog, Paper} from '@mui/material';
 import EmojiPicker from 'emoji-picker-react';
 import {useSnackbar} from 'notistack';
 import {parseID} from '../../../utils/ParseIDUtil.jsx';
@@ -56,13 +27,13 @@ import {
     addDoc,
     collection,
     doc,
+    getDocs,
     onSnapshot,
     query,
     serverTimestamp,
     setDoc,
     where,
-    writeBatch,
-    getDocs
+    writeBatch
 } from 'firebase/firestore';
 import {auth, db} from "../../../configs/FirebaseConfig.jsx";
 import {
@@ -78,8 +49,7 @@ import {GiSkirt} from "react-icons/gi";
 import DisplayImage from '../../ui/DisplayImage.jsx';
 
 import RequestDetailPopup from './dialog/RequestDetailPopup.jsx';
-import {getCookie} from "../../../utils/CookieUtil.jsx";
-import {jwtDecode} from "jwt-decode";
+import {getAccessCookie} from "../../../utils/CookieUtil.jsx";
 
 
 const {TextArea} = Input;
@@ -175,13 +145,11 @@ export function UseDesignChatMessages(roomId) {
         if (!roomId) return;
         const email = auth.currentUser?.email || "designer@unknown";
         const displayName = auth.currentUser?.displayName || "Designer";
-        let cookie = getCookie("access")
+        let cookie = getAccessCookie("access")
         if (!cookie) {
             return false;
         }
-        const decode = jwtDecode(cookie)
-        console.log("decode", decode)
-        const accountId = decode.id;
+        const accountId = cookie.id;
 
         const payload =
             typeof textOrPayload === "string"

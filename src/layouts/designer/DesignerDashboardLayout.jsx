@@ -40,7 +40,7 @@ import {Button, Tag} from "antd";
 import {signout} from "../../services/AccountService.jsx";
 import {enqueueSnackbar} from "notistack";
 import {useChatRoomsByEmail} from "../../components/designer/UseChatRoomsByEmail.jsx";
-import {getCookie} from "../../utils/CookieUtil.jsx";
+import {getAccessCookie, getCookie} from "../../utils/CookieUtil.jsx";
 import {jwtDecode} from "jwt-decode";
 
 const drawerWidth = 280;
@@ -60,11 +60,9 @@ export default function DesignerDashboardLayout() {
         }
     }, []);
 
-    const cookie = getCookie("access")
+    const cookie = getAccessCookie()
 
-    const decode = jwtDecode(cookie)
-    console.log("decode", decode)
-    const accountId = decode.id;
+    const accountId = cookie.id;
 
     const rooms = useChatRoomsByEmail(accountId);
 
