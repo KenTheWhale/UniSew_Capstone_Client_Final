@@ -7,7 +7,7 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import CountUp from "../ui/CountUp.jsx";
 import {useEffect, useState} from "react";
 import {getNumberAccount} from "../../services/AuthService.jsx";
-import {getCookie} from "../../utils/CookieUtil.jsx";
+import {getAccessCookie} from "../../utils/CookieUtil.jsx";
 import {jwtDecode} from "jwt-decode";
 
 
@@ -56,11 +56,11 @@ const testimonials = [
 ];
 
 function handleJoinNow() {
-    const access = getCookie('access');
-    const role = jwtDecode(access)?.role
+    const access = getAccessCookie('access');
     if(access == null) {
         window.location.href = '/login';
     }
+    const role = access.role
     switch (role) {
         case 'admin':
             window.location.href = '/admin/dashboard';

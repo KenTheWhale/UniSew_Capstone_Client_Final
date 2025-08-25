@@ -1,19 +1,19 @@
-import React, {useState, useEffect} from "react";
+import React, {useEffect, useState} from "react";
 import {Button, Popover, Typography} from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import {
     addDoc,
     collection,
+    doc,
     onSnapshot,
     query,
     serverTimestamp,
-    where,
-    doc,
     updateDoc,
+    where,
     writeBatch
 } from "firebase/firestore";
 import {db} from "../../configs/FirebaseConfig.jsx";
-import {getCookie} from "../../utils/CookieUtil.jsx";
+import {getAccessCookie} from "../../utils/CookieUtil.jsx";
 import {jwtDecode} from "jwt-decode";
 
 export const addNotification = async ({email, title, content}) => {
@@ -49,21 +49,16 @@ export default function Bell() {
         return isNaN(date.getTime()) ? new Date() : date;
     };
 
-    function GetMail() {
-        let cookie = getCookie("access")
+    const getMail = () => {
+        let cookie = getAccessCookie()
         if (!cookie) {
             return false;
         }
-        const decode = jwtDecode(cookie)
-        if (!decode || !decode.sub) {
-            return ""
-        } else {
-            return decode.sub
-        }
+        return cookie.email
     }
 
     useEffect(() => {
-        setEmail(GetMail());
+        setEmail(getMail);
         console.log("email", email)
         if (!email) return;
 

@@ -29,3 +29,8 @@ export const changeAccountStatus = async (data) => {
     const response = await axiosClient.put("/account/status", data)
     return response || null;
 }
+
+export const getAccess = async () => {
+    const response = await axiosClient.post("/account/access")
+    return response || null;
+}

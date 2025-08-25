@@ -253,7 +253,7 @@ function MainHeader() {
                                 px: 2,
                                 '&:hover': {color: '#1976d2', bgcolor: 'rgba(25,118,210,0.1)'}
                             }}
-                            onClick={() => window.location.href = '/tutorial'}
+                            onClick={() => window.location.href = '/guide'}
                         >
                             How It Works
                         </Button>

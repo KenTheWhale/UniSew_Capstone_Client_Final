@@ -4,9 +4,8 @@ import GoogleIcon from '@mui/icons-material/Google';
 import {signin} from '../../services/AuthService.jsx'
 import {enqueueSnackbar} from "notistack";
 import axios from "axios";
-import {getCookie} from "../../utils/CookieUtil.jsx";
-import {jwtDecode} from "jwt-decode";
 import {useState} from "react";
+import {getAccess} from "../../services/AccountService.jsx";
 
 export default function Login() {
     const [isLoading, setIsLoading] = useState(false);
@@ -16,29 +15,34 @@ export default function Login() {
         try {
             const loginResponse = await signin(userInfo.data.email, userInfo.data.name, userInfo.data.picture);
             if (loginResponse && loginResponse.status === 200) {
-                localStorage.setItem('user', JSON.stringify(loginResponse.data.body));
-                const access = getCookie('access');
-                const role = jwtDecode(access)?.role
-                enqueueSnackbar(loginResponse.data.message, {variant: 'success', autoHideDuration: 1000});
-                setTimeout(() => {
-                    switch (role) {
-                        case 'admin':
-                            window.location.href = '/admin/dashboard';
-                            break;
-                        case 'school':
-                            window.location.href = '/home';
-                            break;
-                        case 'designer':
-                            window.location.href = '/designer/requests';
-                            break;
-                        case 'garment':
-                            window.location.href = '/garment/orders';
-                            break;
-                        default:
-                            window.location.href = '/home';
-                            break;
-                    }
-                }, 1000)
+                const accessData = await getAccess()
+
+                if(accessData && accessData.status === 200){
+                    const data = accessData.data.body
+                    console.log("Access: ", data.access)
+                    localStorage.setItem('user', JSON.stringify(loginResponse.data.body));
+                    const role = data.role
+                    enqueueSnackbar(loginResponse.data.message, {variant: 'success', autoHideDuration: 1000});
+                    setTimeout(() => {
+                        switch (role) {
+                            case 'admin':
+                                window.location.href = '/admin/dashboard';
+                                break;
+                            case 'school':
+                                window.location.href = '/school/design';
+                                break;
+                            case 'designer':
+                                window.location.href = '/designer/requests';
+                                break;
+                            case 'garment':
+                                window.location.href = '/garment/pending/order';
+                                break;
+                            default:
+                                window.location.href = '/home';
+                                break;
+                        }
+                    }, 1000)
+                }
             }
         } catch (error) {
             console.error("Login error:", error);
@@ -76,7 +80,6 @@ export default function Login() {
     }
 
     const login = useGoogleLogin({
-        flow: 'implicit',
         scope: 'openid email profile',
         onSuccess: HandleSuccess,
         onError: HandleError,
