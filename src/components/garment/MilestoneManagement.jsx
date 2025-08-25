@@ -31,7 +31,14 @@ import {
     Delete as DeleteIcon,
     Edit as EditIcon,
     Refresh as RefreshIcon,
-    Timeline as TimelineIcon
+    Timeline as TimelineIcon,
+    Business as BusinessIcon,
+    Person as PersonIcon,
+    Phone as PhoneIcon,
+    Email as EmailIcon,
+    LocationOn as LocationOnIcon,
+    Checkroom as CheckroomIcon,
+    Info as InfoIcon
 } from '@mui/icons-material';
 import {enqueueSnackbar} from 'notistack';
 import {assignMilestone, createPhase, getGarmentOrders, updateMilestoneStatus, viewPhase} from '../../services/OrderService';
@@ -75,6 +82,16 @@ export default function MilestoneManagement() {
     const [uploadingImage, setUploadingImage] = useState(false);
     const [updatingData, setUpdatingData] = useState(false);
 
+    // States for order detail dialog
+    const [orderDetailDialogOpen, setOrderDetailDialogOpen] = useState(false);
+    const [selectedOrderDetail, setSelectedOrderDetail] = useState(null);
+    const [showQuantityDetailsDialog, setShowQuantityDetailsDialog] = useState(false);
+    const [selectedQuantityDetails, setSelectedQuantityDetails] = useState(null);
+    
+    // States for images dialog
+    const [imagesDialogOpen, setImagesDialogOpen] = useState(false);
+    const [selectedItemImages, setSelectedItemImages] = useState(null);
+
     // Drag and drop states
     const [draggedPhase, setDraggedPhase] = useState(null);
     const [isDragOver, setIsDragOver] = useState(false);
@@ -84,7 +101,7 @@ export default function MilestoneManagement() {
 
 
     // Active tab
-    const [activeTab, setActiveTab] = useState('phases'); // 'phases', 'assignments', or 'manage'
+    const [activeTab, setActiveTab] = useState('manage'); // 'manage', 'assignments', or 'phases'
 
     // Fetch data on component mount
     useEffect(() => {
@@ -494,6 +511,154 @@ export default function MilestoneManagement() {
         return dayjs(dateString).format('DD/MM/YYYY');
     };
 
+    // Helper functions for order detail dialog
+    const getTotalItems = (orderDetails) => {
+        if (!orderDetails) return 0;
+        return orderDetails.reduce((sum, item) => sum + item.quantity, 0);
+    };
+
+    const getDaysUntilDeadline = (deadline) => {
+        const deadlineDate = dayjs(deadline);
+        const today = dayjs();
+        return deadlineDate.diff(today, 'day');
+    };
+
+    const openOrderDetailDialog = (order) => {
+        setSelectedOrderDetail(order);
+        setOrderDetailDialogOpen(true);
+    };
+
+    const closeOrderDetailDialog = () => {
+        setOrderDetailDialogOpen(false);
+        setSelectedOrderDetail(null);
+    };
+
+    // Function to group items by category with rowspan support (similar to GarmentCreateQuotation)
+    const groupItemsByCategory = (orderDetails) => {
+        if (!orderDetails || orderDetails.length === 0) return [];
+
+        // First, group by category
+        const categoryGroups = {};
+
+        orderDetails.forEach((item) => {
+            const category = item.deliveryItem?.designItem?.category || 'regular';
+            const gender = item.deliveryItem?.designItem?.gender || 'unknown';
+            const type = item.deliveryItem?.designItem?.type || 'item';
+
+            if (!categoryGroups[category]) {
+                categoryGroups[category] = {};
+            }
+
+            if (!categoryGroups[category][gender]) {
+                categoryGroups[category][gender] = [];
+            }
+
+            // Find existing group for this type
+            let existingGroup = categoryGroups[category][gender].find(group =>
+                group.type === type
+            );
+
+            if (!existingGroup) {
+                existingGroup = {
+                    category,
+                    gender,
+                    type,
+                    sizes: [],
+                    quantities: {},
+                    items: [],
+                    totalQuantity: 0,
+                    // Common properties from first item
+                    color: item.deliveryItem?.designItem?.color,
+                    logoPosition: item.deliveryItem?.designItem?.logoPosition,
+                    baseLogoHeight: item.deliveryItem?.baseLogoHeight,
+                    baseLogoWidth: item.deliveryItem?.baseLogoWidth,
+                    frontImageUrl: item.deliveryItem?.frontImageUrl,
+                    backImageUrl: item.deliveryItem?.backImageUrl,
+                    logoImageUrl: item.deliveryItem?.designItem?.logoImageUrl
+                };
+                categoryGroups[category][gender].push(existingGroup);
+            }
+
+            const size = item.size || 'M';
+            const quantity = item.quantity || 0;
+
+            if (!existingGroup.sizes.includes(size)) {
+                existingGroup.sizes.push(size);
+            }
+
+            existingGroup.quantities[size] = quantity;
+            existingGroup.items.push(item);
+            existingGroup.totalQuantity += quantity;
+        });
+
+        // Convert to array with category and gender info for rowspan
+        const result = [];
+        Object.entries(categoryGroups).forEach(([category, genderGroups]) => {
+            const totalCategoryRows = Object.values(genderGroups).reduce((sum, groups) =>
+                sum + groups.length, 0
+            );
+
+            Object.entries(genderGroups).forEach(([gender, groups]) => {
+                groups.forEach((group, index) => {
+                    const isFirstInCategory = Object.keys(genderGroups).indexOf(gender) === 0 && index === 0;
+                    const isFirstInGender = index === 0;
+
+                    result.push({
+                        ...group,
+                        isFirstInCategory,
+                        categoryRowSpan: totalCategoryRows,
+                        isFirstInGender,
+                        genderRowSpan: groups.length
+                    });
+                });
+            });
+        });
+
+        return result;
+    };
+
+    const handleOpenQuantityDetails = (groupedItem) => {
+        setSelectedQuantityDetails(groupedItem);
+        setShowQuantityDetailsDialog(true);
+    };
+
+    const handleCloseQuantityDetails = () => {
+        setShowQuantityDetailsDialog(false);
+        setSelectedQuantityDetails(null);
+    };
+
+    // Handle images dialog
+    const handleOpenImagesDialog = (groupedItem) => {
+        setSelectedItemImages(groupedItem);
+        setImagesDialogOpen(true);
+    };
+
+    const handleCloseImagesDialog = () => {
+        setImagesDialogOpen(false);
+        setSelectedItemImages(null);
+    };
+
+    // Helper function to sort sizes properly
+    const sortSizes = (sizes) => {
+        const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+        return sizes.sort((a, b) => {
+            const indexA = sizeOrder.indexOf(a);
+            const indexB = sizeOrder.indexOf(b);
+            
+            // If both sizes are in the standard order, sort by index
+            if (indexA !== -1 && indexB !== -1) {
+                return indexA - indexB;
+            }
+            
+            // If only one size is in standard order, prioritize it
+            if (indexA !== -1) return -1;
+            if (indexB !== -1) return 1;
+            
+            // If neither size is in standard order, sort alphabetically
+            return a.localeCompare(b);
+        });
+    };
+
     if (phasesLoading || ordersLoading) {
         return (
             <Box sx={{
@@ -568,22 +733,22 @@ export default function MilestoneManagement() {
                     }}>
                         <Box sx={{display: 'flex'}}>
                             <Button
-                                onClick={() => setActiveTab('phases')}
+                                onClick={() => setActiveTab('manage')}
                                 sx={{
                                     flex: 1,
                                     py: 2.5,
-                                    backgroundColor: activeTab === 'phases' ? '#3f51b5' : 'transparent',
-                                    color: activeTab === 'phases' ? 'white' : '#64748b',
+                                    backgroundColor: activeTab === 'manage' ? '#3f51b5' : 'transparent',
+                                    color: activeTab === 'manage' ? 'white' : '#64748b',
                                     borderRadius: 0,
                                     fontWeight: 600,
                                     fontSize: '0.9rem',
                                     '&:hover': {
-                                        backgroundColor: activeTab === 'phases' ? '#303f9f' : '#f8fafc'
+                                        backgroundColor: activeTab === 'manage' ? '#303f9f' : '#f8fafc'
                                     }
                                 }}
-                                startIcon={<BuildIcon/>}
+                                startIcon={<TimelineIcon/>}
                             >
-                                Production Phases
+                                Manage Milestones
                             </Button>
                             <Button
                                 onClick={() => setActiveTab('assignments')}
@@ -604,30 +769,394 @@ export default function MilestoneManagement() {
                                 Assign Milestones
                             </Button>
                             <Button
-                                onClick={() => setActiveTab('manage')}
+                                onClick={() => setActiveTab('phases')}
                                 sx={{
                                     flex: 1,
                                     py: 2.5,
-                                    backgroundColor: activeTab === 'manage' ? '#3f51b5' : 'transparent',
-                                    color: activeTab === 'manage' ? 'white' : '#64748b',
+                                    backgroundColor: activeTab === 'phases' ? '#3f51b5' : 'transparent',
+                                    color: activeTab === 'phases' ? 'white' : '#64748b',
                                     borderRadius: 0,
                                     fontWeight: 600,
                                     fontSize: '0.9rem',
                                     '&:hover': {
-                                        backgroundColor: activeTab === 'manage' ? '#303f9f' : '#f8fafc'
+                                        backgroundColor: activeTab === 'phases' ? '#303f9f' : '#f8fafc'
                                     }
                                 }}
-                                startIcon={<TimelineIcon/>}
+                                startIcon={<BuildIcon/>}
                             >
-                                Manage Milestones
+                                Production Phases
                             </Button>
                         </Box>
                     </Paper>
                 </Box>
 
                 {/* Content based on active tab */}
-                {activeTab === 'phases' ? (
-                    /* Phases Management */
+                {activeTab === 'manage' ? (
+                    /* Manage Milestones */
+                    <Box>
+                        {/* Header */}
+                        <Box sx={{mb: 3}}>
+                            <Typography variant="h5" sx={{fontWeight: 700, color: '#1e293b', mb: 1}}>
+                                Manage Milestones
+                            </Typography>
+                            <Typography variant="body2" sx={{color: '#64748b', mb: 2}}>
+                                View and manage all milestone assignments across orders
+                            </Typography>
+
+                        </Box>
+
+                        {/* Orders with Milestones List */}
+                        <Box sx={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))',
+                            gap: 3
+                        }}>
+                            {orders.filter(order => {
+                                const orderMilestone = order.milestone || [];
+                                const hasMilestone = orderMilestone.length > 0;
+                                // Only show orders with milestones in Manage Milestones tab
+                                return hasMilestone;
+                            }).map((order) => {
+                                const orderMilestone = order.milestone || [];
+                                const hasMilestone = orderMilestone.length > 0;
+
+                                return (
+                                    <Box key={order.id}>
+                                        <Card elevation={0} sx={{
+                                            borderRadius: 2,
+                                            border: '2px solid #3f51b5',
+                                            transition: 'all 0.3s ease',
+                                            backgroundColor: '#f8fafc',
+                                            height: '100%',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            '&:hover': {
+                                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                                                transform: 'translateY(-2px)'
+                                            }
+                                        }}>
+                                            <CardContent sx={{p: 3, flex: 1, display: 'flex', flexDirection: 'column'}}>
+                                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                                    <Avatar sx={{
+                                                        bgcolor: '#3f51b5',
+                                                        width: 48,
+                                                        height: 48
+                                                    }}>
+                                                        <TimelineIcon/>
+                                                    </Avatar>
+                                                    <Box sx={{flex: 1, minWidth: 0}}>
+                                                        <Typography variant="h6"
+                                                                    sx={{fontWeight: 'bold', color: '#1e293b'}}>
+                                                            Order #{order.id}
+                                                        </Typography>
+                                                        <Typography 
+                                                            variant="body2" 
+                                                            sx={{
+                                                                color: '#64748b',
+                                                                overflow: 'hidden',
+                                                                textOverflow: 'ellipsis',
+                                                                whiteSpace: 'nowrap'
+                                                            }}
+                                                            title={order.school?.business || 'Unknown School'}
+                                                        >
+                                                            {order.school?.business || 'Unknown School'}
+                                                        </Typography>
+                                                    </Box>
+                                                    <Box sx={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        gap: 1,
+                                                        alignItems: 'flex-end'
+                                                    }}>
+                                                        <Chip
+                                                            label="Processing"
+                                                            sx={{
+                                                                backgroundColor: '#fef3c7',
+                                                                color: '#d97706',
+                                                                fontWeight: 'bold'
+                                                            }}
+                                                        />
+                                                        <Chip
+                                                            label={`${orderMilestone.length} Phases`}
+                                                            size="small"
+                                                            sx={{
+                                                                backgroundColor: '#d1fae5',
+                                                                color: '#059669',
+                                                                fontWeight: 'bold',
+                                                                fontSize: '0.7rem'
+                                                            }}
+                                                        />
+                                                    </Box>
+                                                </Box>
+
+                                                <Box sx={{flex: 1, mb: 3}}>
+                                                    <Box sx={{display: 'flex', justifyContent: 'space-between', mb: 1}}>
+                                                        <Typography variant="body2" sx={{color: '#64748b'}}>
+                                                            Deadline:
+                                                        </Typography>
+                                                        <Typography variant="body2"
+                                                                    sx={{fontWeight: 'bold', color: '#1e293b'}}>
+                                                            {formatDate(order.deadline)}
+                                                        </Typography>
+                                                    </Box>
+                                                    <Box sx={{display: 'flex', justifyContent: 'space-between', mb: 1}}>
+                                                        <Typography variant="body2" sx={{color: '#64748b'}}>
+                                                            Total Uniform:
+                                                        </Typography>
+                                                        <Typography variant="body2"
+                                                                    sx={{fontWeight: 'bold', color: '#1e293b'}}>
+                                                            {Math.floor((order.orderDetails?.reduce((sum, item) => sum + item.quantity, 0) || 0) / 2)}
+                                                        </Typography>
+                                                    </Box>
+                                                    <Box sx={{display: 'flex', justifyContent: 'space-between'}}>
+                                                        <Typography variant="body2" sx={{color: '#64748b'}}>
+                                                            Order Date:
+                                                        </Typography>
+                                                        <Typography variant="body2"
+                                                                    sx={{fontWeight: 'bold', color: '#1e293b'}}>
+                                                            {formatDate(order.orderDate)}
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+
+                                                <Box sx={{display: 'flex', gap: 2, mt: 'auto'}}>
+                                                    <Button
+                                                        variant="contained"
+                                                        startIcon={<TimelineIcon/>}
+                                                        onClick={() => openViewMilestoneDialog(order)}
+                                                        sx={{
+                                                            flex: 1,
+                                                            backgroundColor: '#4caf50',
+                                                            color: 'white',
+                                                            fontWeight: 600,
+                                                            '&:hover': {
+                                                                backgroundColor: '#388e3c'
+                                                            }
+                                                        }}
+                                                    >
+                                                        View Milestone
+                                                    </Button>
+                                                </Box>
+                                            </CardContent>
+                                        </Card>
+                                    </Box>
+                                );
+                            })}
+                        </Box>
+
+                        {/* No Orders with Milestones Message */}
+                        {orders.filter(order => {
+                            const orderMilestone = order.milestone || [];
+                            const hasMilestone = orderMilestone.length > 0;
+                            return hasMilestone;
+                        }).length === 0 && (
+                            <Box sx={{
+                                textAlign: 'center',
+                                py: 8,
+                                backgroundColor: '#f8fafc',
+                                borderRadius: 3,
+                                border: '2px dashed #cbd5e1'
+                            }}>
+                                <TimelineIcon sx={{fontSize: 64, color: '#94a3b8', mb: 2}}/>
+                                <Typography variant="h6" sx={{color: '#64748b', mb: 1}}>
+                                    No Milestones to Manage
+                                </Typography>
+                                <Typography variant="body2" sx={{color: '#94a3b8'}}>
+                                    No orders have milestones assigned yet. Go to the Assign Milestones tab to create
+                                    milestone assignments.
+                                </Typography>
+                            </Box>
+                        )}
+                    </Box>
+                ) : activeTab === 'assignments' ? (
+                    /* Milestone Assignments */
+                    <Box>
+                        {/* Header */}
+                        <Box sx={{mb: 3}}>
+                            <Typography variant="h5" sx={{fontWeight: 700, color: '#1e293b', mb: 1}}>
+                                Assign Milestones to Orders
+                            </Typography>
+                            <Typography variant="body2" sx={{color: '#64748b', mb: 2}}>
+                                Select phases and assign them to processing orders
+                            </Typography>
+
+
+                        </Box>
+
+                        {/* Orders List */}
+                        <Box sx={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))',
+                            gap: 3
+                        }}>
+                            {orders.filter(order => {
+                                const orderMilestone = order.milestone || [];
+                                const hasMilestone = orderMilestone.length > 0;
+                                // Only show orders without milestones in Assign Milestones tab
+                                return !hasMilestone;
+                            }).map((order) => {
+                                const orderMilestone = order.milestone || [];
+                                const hasMilestone = orderMilestone.length > 0;
+                                const isLoading = false; // No longer loading as data comes with orders
+
+                                return (
+                                    <Box key={order.id}>
+                                        <Card elevation={0} sx={{
+                                            borderRadius: 2,
+                                            border: hasMilestone ? '2px solid #3f51b5' : '1px solid #e2e8f0',
+                                            transition: 'all 0.3s ease',
+                                            backgroundColor: hasMilestone ? '#f8fafc' : '#ffffff',
+                                            '&:hover': {
+                                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                                                transform: 'translateY(-2px)'
+                                            }
+                                        }}>
+                                            <CardContent sx={{p: 3}}>
+                                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                                    <Avatar sx={{
+                                                        bgcolor: hasMilestone ? '#3f51b5' : '#ff9800',
+                                                        width: 48,
+                                                        height: 48
+                                                    }}>
+                                                        {hasMilestone ? <CheckCircleIcon/> : <AssignmentIcon/>}
+                                                    </Avatar>
+                                                    <Box sx={{flex: 1}}>
+                                                        <Typography variant="h6"
+                                                                    sx={{fontWeight: 'bold', color: '#1e293b'}}>
+                                                            Order #{order.id}
+                                                        </Typography>
+                                                        <Typography variant="body2" sx={{color: '#64748b'}}>
+                                                            {order.school?.business || 'Unknown School'}
+                                                        </Typography>
+                                                    </Box>
+                                                    <Box sx={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        gap: 1,
+                                                        alignItems: 'flex-end'
+                                                    }}>
+                                                        <Chip
+                                                            label="Processing"
+                                                            sx={{
+                                                                backgroundColor: '#fef3c7',
+                                                                color: '#d97706',
+                                                                fontWeight: 'bold'
+                                                            }}
+                                                        />
+                                                        {isLoading ? (
+                                                            <CircularProgress size={16}/>
+                                                        ) : (
+                                                            <Chip
+                                                                label={hasMilestone ? `${orderMilestone.length} Phases` : 'No Milestone'}
+                                                                size="small"
+                                                                sx={{
+                                                                    backgroundColor: hasMilestone ? '#d1fae5' : '#fee2e2',
+                                                                    color: hasMilestone ? '#059669' : '#dc2626',
+                                                                    fontWeight: 'bold',
+                                                                    fontSize: '0.7rem'
+                                                                }}
+                                                            />
+                                                        )}
+                                                    </Box>
+                                                </Box>
+
+                                                <Box sx={{mb: 3}}>
+                                                    <Box sx={{display: 'flex', justifyContent: 'space-between', mb: 1}}>
+                                                        <Typography variant="body2" sx={{color: '#64748b'}}>
+                                                            Deadline:
+                                                        </Typography>
+                                                        <Typography variant="body2"
+                                                                    sx={{fontWeight: 'bold', color: '#1e293b'}}>
+                                                            {formatDate(order.deadline)}
+                                                        </Typography>
+                                                    </Box>
+                                                    <Box sx={{display: 'flex', justifyContent: 'space-between', mb: 1}}>
+                                                        <Typography variant="body2" sx={{color: '#64748b'}}>
+                                                            Total Uniform:
+                                                        </Typography>
+                                                        <Typography variant="body2"
+                                                                    sx={{fontWeight: 'bold', color: '#1e293b'}}>
+                                                            {Math.floor((order.orderDetails?.reduce((sum, item) => sum + item.quantity, 0) || 0) / 2)}
+                                                        </Typography>
+                                                    </Box>
+                                                    <Box sx={{display: 'flex', justifyContent: 'space-between'}}>
+                                                        <Typography variant="body2" sx={{color: '#64748b'}}>
+                                                            Order Date:
+                                                        </Typography>
+                                                        <Typography variant="body2"
+                                                                    sx={{fontWeight: 'bold', color: '#1e293b'}}>
+                                                            {formatDate(order.orderDate)}
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+
+                                                <Box sx={{display: 'flex', gap: 2, flexDirection: 'column'}}>
+                                                    <Button
+                                                        variant="contained"
+                                                        startIcon={hasMilestone ? <TimelineIcon/> : <AssignmentIcon/>}
+                                                        onClick={() => hasMilestone ? openViewMilestoneDialog(order) : openAssignMilestoneDialog(order)}
+                                                        sx={{
+                                                            backgroundColor: hasMilestone ? '#4caf50' : '#3f51b5',
+                                                            color: 'white',
+                                                            fontWeight: 600,
+                                                            '&:hover': {
+                                                                backgroundColor: hasMilestone ? '#388e3c' : '#303f9f'
+                                                            }
+                                                        }}
+                                                    >
+                                                        {hasMilestone ? 'View Milestone' : 'Assign Milestone'}
+                                                    </Button>
+                                                    
+                                                    <Button
+                                                        variant="outlined"
+                                                        startIcon={<AssignmentIcon/>}
+                                                        onClick={() => openOrderDetailDialog(order)}
+                                                        sx={{
+                                                            borderColor: '#3f51b5',
+                                                            color: '#3f51b5',
+                                                            fontWeight: 600,
+                                                            '&:hover': {
+                                                                borderColor: '#303f9f',
+                                                                backgroundColor: 'rgba(63, 81, 181, 0.04)'
+                                                            }
+                                                        }}
+                                                    >
+                                                        View Detail
+                                                    </Button>
+                                                </Box>
+                                            </CardContent>
+                                        </Card>
+                                    </Box>
+                                );
+                            })}
+                        </Box>
+
+                        {/* No Orders Message */}
+                        {orders.filter(order => {
+                            const orderMilestone = order.milestone || [];
+                            const hasMilestone = orderMilestone.length > 0;
+                            return !hasMilestone;
+                        }).length === 0 && (
+                            <Box sx={{
+                                textAlign: 'center',
+                                py: 8,
+                                backgroundColor: '#f8fafc',
+                                borderRadius: 3,
+                                border: '2px dashed #cbd5e1'
+                            }}>
+                                <AssignmentIcon sx={{fontSize: 64, color: '#94a3b8', mb: 2}}/>
+                                <Typography variant="h6" sx={{color: '#64748b', mb: 1}}>
+                                    No Orders Available for Assignment
+                                </Typography>
+                                <Typography variant="body2" sx={{color: '#94a3b8'}}>
+                                    All processing orders already have milestones assigned. Check the Manage Milestones
+                                    tab to view existing assignments.
+                                </Typography>
+                            </Box>
+                        )}
+                    </Box>
+                ) : (
+                    /* Production Phases */
                     <Box>
                         {/* Header with Create Button */}
                         <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3}}>
@@ -793,336 +1322,6 @@ export default function MilestoneManagement() {
                                 >
                                     {phases.length >= 10 ? 'Max Phases Reached' : 'Create First Phase'}
                                 </Button>
-                            </Box>
-                        )}
-                    </Box>
-                ) : activeTab === 'assignments' ? (
-                    /* Milestone Assignments */
-                    <Box>
-                        {/* Header */}
-                        <Box sx={{mb: 3}}>
-                            <Typography variant="h5" sx={{fontWeight: 700, color: '#1e293b', mb: 1}}>
-                                Assign Milestones to Orders
-                            </Typography>
-                            <Typography variant="body2" sx={{color: '#64748b', mb: 2}}>
-                                Select phases and assign them to processing orders
-                            </Typography>
-
-
-                        </Box>
-
-                        {/* Orders List */}
-                        <Grid container spacing={3}>
-                            {orders.filter(order => {
-                                const orderMilestone = order.milestone || [];
-                                const hasMilestone = orderMilestone.length > 0;
-                                // Only show orders without milestones in Assign Milestones tab
-                                return !hasMilestone;
-                            }).map((order) => {
-                                const orderMilestone = order.milestone || [];
-                                const hasMilestone = orderMilestone.length > 0;
-                                const isLoading = false; // No longer loading as data comes with orders
-
-                                return (
-                                    <Grid item xs={12} md={6} key={order.id}>
-                                        <Card elevation={0} sx={{
-                                            borderRadius: 2,
-                                            border: hasMilestone ? '2px solid #3f51b5' : '1px solid #e2e8f0',
-                                            transition: 'all 0.3s ease',
-                                            backgroundColor: hasMilestone ? '#f8fafc' : '#ffffff',
-                                            '&:hover': {
-                                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-                                                transform: 'translateY(-2px)'
-                                            }
-                                        }}>
-                                            <CardContent sx={{p: 3}}>
-                                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
-                                                    <Avatar sx={{
-                                                        bgcolor: hasMilestone ? '#3f51b5' : '#ff9800',
-                                                        width: 48,
-                                                        height: 48
-                                                    }}>
-                                                        {hasMilestone ? <CheckCircleIcon/> : <AssignmentIcon/>}
-                                                    </Avatar>
-                                                    <Box sx={{flex: 1}}>
-                                                        <Typography variant="h6"
-                                                                    sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                                            Order #{order.id}
-                                                        </Typography>
-                                                        <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                            {order.school?.business || 'Unknown School'}
-                                                        </Typography>
-                                                    </Box>
-                                                    <Box sx={{
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        gap: 1,
-                                                        alignItems: 'flex-end'
-                                                    }}>
-                                                        <Chip
-                                                            label="Processing"
-                                                            sx={{
-                                                                backgroundColor: '#fef3c7',
-                                                                color: '#d97706',
-                                                                fontWeight: 'bold'
-                                                            }}
-                                                        />
-                                                        {isLoading ? (
-                                                            <CircularProgress size={16}/>
-                                                        ) : (
-                                                            <Chip
-                                                                label={hasMilestone ? `${orderMilestone.length} Phases` : 'No Milestone'}
-                                                                size="small"
-                                                                sx={{
-                                                                    backgroundColor: hasMilestone ? '#d1fae5' : '#fee2e2',
-                                                                    color: hasMilestone ? '#059669' : '#dc2626',
-                                                                    fontWeight: 'bold',
-                                                                    fontSize: '0.7rem'
-                                                                }}
-                                                            />
-                                                        )}
-                                                    </Box>
-                                                </Box>
-
-                                                <Box sx={{mb: 3}}>
-                                                    <Box sx={{display: 'flex', justifyContent: 'space-between', mb: 1}}>
-                                                        <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                            Deadline:
-                                                        </Typography>
-                                                        <Typography variant="body2"
-                                                                    sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                                            {formatDate(order.deadline)}
-                                                        </Typography>
-                                                    </Box>
-                                                    <Box sx={{display: 'flex', justifyContent: 'space-between', mb: 1}}>
-                                                        <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                            Total Uniform:
-                                                        </Typography>
-                                                        <Typography variant="body2"
-                                                                    sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                                            {Math.floor((order.orderDetails?.reduce((sum, item) => sum + item.quantity, 0) || 0) / 2)}
-                                                        </Typography>
-                                                    </Box>
-                                                    <Box sx={{display: 'flex', justifyContent: 'space-between'}}>
-                                                        <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                            Order Date:
-                                                        </Typography>
-                                                        <Typography variant="body2"
-                                                                    sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                                            {formatDate(order.orderDate)}
-                                                        </Typography>
-                                                    </Box>
-                                                </Box>
-
-                                                <Box sx={{display: 'flex', gap: 2}}>
-                                                    <Button
-                                                        variant="contained"
-                                                        startIcon={hasMilestone ? <TimelineIcon/> : <AssignmentIcon/>}
-                                                        onClick={() => hasMilestone ? openViewMilestoneDialog(order) : openAssignMilestoneDialog(order)}
-                                                        sx={{
-                                                            flex: 1,
-                                                            backgroundColor: hasMilestone ? '#4caf50' : '#3f51b5',
-                                                            color: 'white',
-                                                            fontWeight: 600,
-                                                            '&:hover': {
-                                                                backgroundColor: hasMilestone ? '#388e3c' : '#303f9f'
-                                                            }
-                                                        }}
-                                                    >
-                                                        {hasMilestone ? 'View Milestone' : 'Assign Milestone'}
-                                                    </Button>
-
-                                                </Box>
-                                            </CardContent>
-                                        </Card>
-                                    </Grid>
-                                );
-                            })}
-                        </Grid>
-
-                        {/* No Orders Message */}
-                        {orders.filter(order => {
-                            const orderMilestone = order.milestone || [];
-                            const hasMilestone = orderMilestone.length > 0;
-                            return !hasMilestone;
-                        }).length === 0 && (
-                            <Box sx={{
-                                textAlign: 'center',
-                                py: 8,
-                                backgroundColor: '#f8fafc',
-                                borderRadius: 3,
-                                border: '2px dashed #cbd5e1'
-                            }}>
-                                <AssignmentIcon sx={{fontSize: 64, color: '#94a3b8', mb: 2}}/>
-                                <Typography variant="h6" sx={{color: '#64748b', mb: 1}}>
-                                    No Orders Available for Assignment
-                                </Typography>
-                                <Typography variant="body2" sx={{color: '#94a3b8'}}>
-                                    All processing orders already have milestones assigned. Check the Manage Milestones
-                                    tab to view existing assignments.
-                                </Typography>
-                            </Box>
-                        )}
-                    </Box>
-                ) : (
-                    /* Manage Milestones */
-                    <Box>
-                        {/* Header */}
-                        <Box sx={{mb: 3}}>
-                            <Typography variant="h5" sx={{fontWeight: 700, color: '#1e293b', mb: 1}}>
-                                Manage Milestones
-                            </Typography>
-                            <Typography variant="body2" sx={{color: '#64748b', mb: 2}}>
-                                View and manage all milestone assignments across orders
-                            </Typography>
-
-
-                        </Box>
-
-                        {/* Orders with Milestones List */}
-                        <Grid container spacing={3}>
-                            {orders.filter(order => {
-                                const orderMilestone = order.milestone || [];
-                                const hasMilestone = orderMilestone.length > 0;
-                                // Only show orders with milestones in Manage Milestones tab
-                                return hasMilestone;
-                            }).map((order) => {
-                                const orderMilestone = order.milestone || [];
-                                const hasMilestone = orderMilestone.length > 0;
-
-                                return (
-                                    <Grid item xs={12} md={6} key={order.id}>
-                                        <Card elevation={0} sx={{
-                                            borderRadius: 2,
-                                            border: '2px solid #3f51b5',
-                                            transition: 'all 0.3s ease',
-                                            backgroundColor: '#f8fafc',
-                                            '&:hover': {
-                                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-                                                transform: 'translateY(-2px)'
-                                            }
-                                        }}>
-                                            <CardContent sx={{p: 3}}>
-                                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
-                                                    <Avatar sx={{
-                                                        bgcolor: '#3f51b5',
-                                                        width: 48,
-                                                        height: 48
-                                                    }}>
-                                                        <TimelineIcon/>
-                                                    </Avatar>
-                                                    <Box sx={{flex: 1}}>
-                                                        <Typography variant="h6"
-                                                                    sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                                            Order #{order.id}
-                                                        </Typography>
-                                                        <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                            {order.school?.business || 'Unknown School'}
-                                                        </Typography>
-                                                    </Box>
-                                                    <Box sx={{
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        gap: 1,
-                                                        alignItems: 'flex-end'
-                                                    }}>
-                                                        <Chip
-                                                            label="Processing"
-                                                            sx={{
-                                                                backgroundColor: '#fef3c7',
-                                                                color: '#d97706',
-                                                                fontWeight: 'bold'
-                                                            }}
-                                                        />
-                                                        <Chip
-                                                            label={`${orderMilestone.length} Phases`}
-                                                            size="small"
-                                                            sx={{
-                                                                backgroundColor: '#d1fae5',
-                                                                color: '#059669',
-                                                                fontWeight: 'bold',
-                                                                fontSize: '0.7rem'
-                                                            }}
-                                                        />
-                                                    </Box>
-                                                </Box>
-
-                                                <Box sx={{mb: 3}}>
-                                                    <Box sx={{display: 'flex', justifyContent: 'space-between', mb: 1}}>
-                                                        <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                            Deadline:
-                                                        </Typography>
-                                                        <Typography variant="body2"
-                                                                    sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                                            {formatDate(order.deadline)}
-                                                        </Typography>
-                                                    </Box>
-                                                    <Box sx={{display: 'flex', justifyContent: 'space-between', mb: 1}}>
-                                                        <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                            Total Uniform:
-                                                        </Typography>
-                                                        <Typography variant="body2"
-                                                                    sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                                            {Math.floor((order.orderDetails?.reduce((sum, item) => sum + item.quantity, 0) || 0) / 2)}
-                                                        </Typography>
-                                                    </Box>
-                                                    <Box sx={{display: 'flex', justifyContent: 'space-between'}}>
-                                                        <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                            Order Date:
-                                                        </Typography>
-                                                        <Typography variant="body2"
-                                                                    sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                                            {formatDate(order.orderDate)}
-                                                        </Typography>
-                                                    </Box>
-                                                </Box>
-
-                                                <Box sx={{display: 'flex', gap: 2}}>
-                                                    <Button
-                                                        variant="contained"
-                                                        startIcon={<TimelineIcon/>}
-                                                        onClick={() => openViewMilestoneDialog(order)}
-                                                        sx={{
-                                                            flex: 1,
-                                                            backgroundColor: '#4caf50',
-                                                            color: 'white',
-                                                            fontWeight: 600,
-                                                            '&:hover': {
-                                                                backgroundColor: '#388e3c'
-                                                            }
-                                                        }}
-                                                    >
-                                                        View Milestone
-                                                    </Button>
-                                                </Box>
-                                            </CardContent>
-                                        </Card>
-                                    </Grid>
-                                );
-                            })}
-                        </Grid>
-
-                        {/* No Orders with Milestones Message */}
-                        {orders.filter(order => {
-                            const orderMilestone = order.milestone || [];
-                            const hasMilestone = orderMilestone.length > 0;
-                            return hasMilestone;
-                        }).length === 0 && (
-                            <Box sx={{
-                                textAlign: 'center',
-                                py: 8,
-                                backgroundColor: '#f8fafc',
-                                borderRadius: 3,
-                                border: '2px dashed #cbd5e1'
-                            }}>
-                                <TimelineIcon sx={{fontSize: 64, color: '#94a3b8', mb: 2}}/>
-                                <Typography variant="h6" sx={{color: '#64748b', mb: 1}}>
-                                    No Milestones to Manage
-                                </Typography>
-                                <Typography variant="body2" sx={{color: '#94a3b8'}}>
-                                    No orders have milestones assigned yet. Go to the Assign Milestones tab to create
-                                    milestone assignments.
-                                </Typography>
                             </Box>
                         )}
                     </Box>
@@ -2019,6 +2218,33 @@ export default function MilestoneManagement() {
                                             </Typography>
                                         </Box>
                                     </Box>
+                                    
+                                    {/* View More Button */}
+                                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                                        <Button
+                                            variant="outlined"
+                                            startIcon={<InfoIcon />}
+                                            onClick={() => {
+                                                setSelectedOrderDetail(viewingOrder);
+                                                setOrderDetailDialogOpen(true);
+                                            }}
+                                            sx={{
+                                                borderColor: '#3f51b5',
+                                                color: '#3f51b5',
+                                                fontWeight: 600,
+                                                px: 3,
+                                                py: 1,
+                                                borderRadius: 2,
+                                                '&:hover': {
+                                                    borderColor: '#303f9f',
+                                                    backgroundColor: 'rgba(63, 81, 181, 0.04)',
+                                                    transform: 'translateY(-1px)'
+                                                }
+                                            }}
+                                        >
+                                            View More Details
+                                        </Button>
+                                    </Box>
                                 </Box>
 
                                 {/* Milestone Phases Header */}
@@ -2788,6 +3014,1480 @@ export default function MilestoneManagement() {
                             ) : (
                                 'Complete Phase'
                             )}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+                {/* Order Detail Dialog */}
+                <Dialog
+                    open={orderDetailDialogOpen}
+                    onClose={closeOrderDetailDialog}
+                    maxWidth="xl"
+                    fullWidth
+                    PaperProps={{
+                        sx: {
+                            borderRadius: 3,
+                            minHeight: '80vh',
+                            maxHeight: '90vh',
+                            background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+                            overflow: 'hidden'
+                        }
+                    }}
+                >
+                    {/* Header */}
+                    <Box sx={{
+                        background: 'linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)',
+                        color: 'white',
+                        p: 3,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between'
+                    }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Avatar sx={{
+                                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                width: 48,
+                                height: 48
+                            }}>
+                                <AssignmentIcon sx={{ fontSize: 24 }} />
+                            </Avatar>
+                            <Box>
+                                <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
+                                    Order Details
+                                </Typography>
+                                <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
+                                    Order #{selectedOrderDetail?.id}
+                                </Typography>
+                            </Box>
+                        </Box>
+                        <IconButton onClick={closeOrderDetailDialog} sx={{ color: 'white' }}>
+                            <CloseIcon />
+                        </IconButton>
+                    </Box>
+
+                    {/* Content */}
+                    <DialogContent sx={{ p: 0, overflow: 'auto' }}>
+                        {selectedOrderDetail && (
+                            <Box sx={{ p: 4, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                {/* Order Information Card */}
+                                <Card sx={{
+                                    background: 'rgba(255, 255, 255, 0.95)',
+                                    border: '1px solid rgba(63, 81, 181, 0.1)',
+                                    borderRadius: 3,
+                                    boxShadow: '0 8px 32px rgba(63, 81, 181, 0.08)',
+                                    backdropFilter: 'blur(10px)',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        boxShadow: '0 12px 40px rgba(63, 81, 181, 0.12)',
+                                        border: '1px solid rgba(63, 81, 181, 0.2)'
+                                    }
+                                }}>
+                                    <Box sx={{
+                                        background: 'linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)',
+                                        p: 3,
+                                        borderRadius: '12px 12px 0 0',
+                                        position: 'relative',
+                                        overflow: 'hidden'
+                                    }}>
+                                        <Typography variant="h6" sx={{
+                                            fontWeight: 700,
+                                            color: 'white',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 1.5
+                                        }}>
+                                            <AssignmentIcon sx={{ fontSize: 20 }} />
+                                            Order Information
+                                        </Typography>
+                                    </Box>
+                                    <CardContent sx={{ p: 3 }}>
+                                        <Box sx={{
+                                            display: 'flex',
+                                            flexWrap: 'wrap',
+                                            gap: 2,
+                                            mb: 3
+                                        }}>
+                                            {/* Order Date */}
+                                            <Box sx={{ 
+                                                flex: 1,
+                                                minWidth: { xs: '100%', sm: 'auto' }
+                                            }}>
+                                                <Box sx={{
+                                                    p: 3,
+                                                    borderRadius: 2,
+                                                    backgroundColor: 'rgba(63, 81, 181, 0.05)',
+                                                    border: '1px solid rgba(63, 81, 181, 0.1)',
+                                                    textAlign: 'center',
+                                                    transition: 'all 0.3s ease',
+                                                    height: '100%',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    justifyContent: 'center',
+                                                    '&:hover': {
+                                                        backgroundColor: 'rgba(63, 81, 181, 0.08)',
+                                                        transform: 'translateY(-2px)'
+                                                    }
+                                                }}>
+                                                    <Box sx={{
+                                                        width: 48,
+                                                        height: 48,
+                                                        borderRadius: '50%',
+                                                        backgroundColor: 'rgba(63, 81, 181, 0.1)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        mx: 'auto',
+                                                        mb: 2
+                                                    }}>
+                                                        <TimelineIcon sx={{ color: '#3f51b5', fontSize: 24 }} />
+                                                    </Box>
+                                                    <Typography variant="body2" sx={{
+                                                        color: '#64748b',
+                                                        fontWeight: 500,
+                                                        mb: 1,
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.5px',
+                                                        fontSize: '0.75rem'
+                                                    }}>
+                                                        Order Date
+                                                    </Typography>
+                                                    <Typography variant="h6" sx={{
+                                                        fontWeight: 700,
+                                                        color: '#1e293b',
+                                                        fontSize: '1rem',
+                                                        mb: 0.5
+                                                    }}>
+                                                        {formatDate(selectedOrderDetail.orderDate)}
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+
+                                            {/* Delivery Deadline */}
+                                            <Box sx={{ 
+                                                flex: 1,
+                                                minWidth: { xs: '100%', sm: 'auto' }
+                                            }}>
+                                                <Box sx={{
+                                                    p: 3,
+                                                    borderRadius: 2,
+                                                    backgroundColor: 'rgba(245, 158, 11, 0.05)',
+                                                    border: '1px solid rgba(245, 158, 11, 0.1)',
+                                                    textAlign: 'center',
+                                                    transition: 'all 0.3s ease',
+                                                    height: '100%',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    justifyContent: 'center',
+                                                    '&:hover': {
+                                                        backgroundColor: 'rgba(245, 158, 11, 0.08)',
+                                                        transform: 'translateY(-2px)'
+                                                    }
+                                                }}>
+                                                    <Box sx={{
+                                                        width: 48,
+                                                        height: 48,
+                                                        borderRadius: '50%',
+                                                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        mx: 'auto',
+                                                        mb: 2
+                                                    }}>
+                                                        <TimelineIcon sx={{ color: '#f59e0b', fontSize: 24 }} />
+                                                    </Box>
+                                                    <Typography variant="body2" sx={{
+                                                        color: '#64748b',
+                                                        fontWeight: 500,
+                                                        mb: 1,
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.5px',
+                                                        fontSize: '0.75rem'
+                                                    }}>
+                                                        Deadline
+                                                    </Typography>
+                                                    <Typography variant="h6" sx={{
+                                                        fontWeight: 700,
+                                                        color: '#1e293b',
+                                                        fontSize: '1rem',
+                                                        mb: 0.5
+                                                    }}>
+                                                        {formatDate(selectedOrderDetail.deadline)}
+                                                    </Typography>
+                                                    <Typography variant="body2" sx={{
+                                                        fontWeight: 600,
+                                                        color: (() => {
+                                                            const daysLeft = getDaysUntilDeadline(selectedOrderDetail.deadline);
+                                                            if (daysLeft > 30) return '#2e7d32';
+                                                            if (daysLeft > 14) return '#ff9800';
+                                                            return '#d32f2f';
+                                                        })(),
+                                                        fontSize: '0.8rem',
+                                                        lineHeight: 1.2
+                                                    }}>
+                                                        {getDaysUntilDeadline(selectedOrderDetail.deadline) > 0 
+                                                            ? `${getDaysUntilDeadline(selectedOrderDetail.deadline)} days left`
+                                                            : 'overdue'
+                                                        }
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+
+                                            {/* Total Uniforms */}
+                                            <Box sx={{ 
+                                                flex: 1,
+                                                minWidth: { xs: '100%', sm: 'auto' }
+                                            }}>
+                                                <Box sx={{
+                                                    p: 3,
+                                                    borderRadius: 2,
+                                                    backgroundColor: 'rgba(139, 92, 246, 0.05)',
+                                                    border: '1px solid rgba(139, 92, 246, 0.1)',
+                                                    textAlign: 'center',
+                                                    transition: 'all 0.3s ease',
+                                                    height: '100%',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    justifyContent: 'center',
+                                                    '&:hover': {
+                                                        backgroundColor: 'rgba(139, 92, 246, 0.08)',
+                                                        transform: 'translateY(-2px)'
+                                                    }
+                                                }}>
+                                                    <Box sx={{
+                                                        width: 48,
+                                                        height: 48,
+                                                        borderRadius: '50%',
+                                                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        mx: 'auto',
+                                                        mb: 2
+                                                    }}>
+                                                        <CheckroomIcon sx={{ color: '#8b5cf6', fontSize: 24 }} />
+                                                    </Box>
+                                                    <Typography variant="body2" sx={{
+                                                        color: '#64748b',
+                                                        fontWeight: 500,
+                                                        mb: 1,
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.5px',
+                                                        fontSize: '0.75rem'
+                                                    }}>
+                                                        Total Uniforms
+                                                    </Typography>
+                                                    <Typography variant="h6" sx={{
+                                                        fontWeight: 700,
+                                                        color: '#1e293b',
+                                                        fontSize: '1rem',
+                                                        mb: 0.5
+                                                    }}>
+                                                        {Math.ceil(getTotalItems(selectedOrderDetail.orderDetails) / 2)}
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+
+                                            {/* Status */}
+                                            <Box sx={{ 
+                                                flex: 1,
+                                                minWidth: { xs: '100%', sm: 'auto' }
+                                            }}>
+                                                <Box sx={{
+                                                    p: 3,
+                                                    borderRadius: 2,
+                                                    backgroundColor: 'rgba(16, 185, 129, 0.05)',
+                                                    border: '1px solid rgba(16, 185, 129, 0.1)',
+                                                    textAlign: 'center',
+                                                    transition: 'all 0.3s ease',
+                                                    height: '100%',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    justifyContent: 'center',
+                                                    '&:hover': {
+                                                        backgroundColor: 'rgba(16, 185, 129, 0.08)',
+                                                        transform: 'translateY(-2px)'
+                                                    }
+                                                }}>
+                                                    <Box sx={{
+                                                        width: 48,
+                                                        height: 48,
+                                                        borderRadius: '50%',
+                                                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        mx: 'auto',
+                                                        mb: 2
+                                                    }}>
+                                                        <CheckCircleIcon sx={{ color: '#10b981', fontSize: 24 }} />
+                                                    </Box>
+                                                    <Typography variant="body2" sx={{
+                                                        color: '#64748b',
+                                                        fontWeight: 500,
+                                                        mb: 1,
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.5px',
+                                                        fontSize: '0.75rem'
+                                                    }}>
+                                                        Status
+                                                    </Typography>
+                                                    <Typography variant="h6" sx={{
+                                                        fontWeight: 700,
+                                                        fontSize: '1rem',
+                                                        textTransform: 'capitalize',
+                                                        color: (() => {
+                                                            const status = selectedOrderDetail.status?.toLowerCase();
+                                                            switch (status) {
+                                                                case 'pending':
+                                                                    return '#f59e0b';
+                                                                case 'processing':
+                                                                    return '#3b82f6';
+                                                                case 'completed':
+                                                                    return '#10b981';
+                                                                case 'cancelled':
+                                                                case 'canceled':
+                                                                    return '#ef4444';
+                                                                default:
+                                                                    return '#6b7280';
+                                                            }
+                                                        })(),
+                                                        mb: 0.5
+                                                    }}>
+                                                        {selectedOrderDetail.status || 'Unknown'}
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+                                        </Box>
+                                        
+                                        {/* Order Notes Section */}
+                                        {selectedOrderDetail.note && (
+                                            <Box sx={{
+                                                mt: 4,
+                                                p: 3,
+                                                backgroundColor: 'rgba(245, 158, 11, 0.05)',
+                                                borderRadius: 3,
+                                                border: '1px solid rgba(245, 158, 11, 0.15)',
+                                                borderLeft: '4px solid #f59e0b'
+                                            }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                                                    <Box sx={{
+                                                        p: 1,
+                                                        borderRadius: 2,
+                                                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}>
+                                                        <AssignmentIcon sx={{ color: '#d97706', fontSize: 20 }} />
+                                                    </Box>
+                                                    <Typography variant="subtitle1" sx={{
+                                                        fontWeight: 600,
+                                                        color: '#92400e',
+                                                        fontSize: '1rem'
+                                                    }}>
+                                                        Order Notes
+                                                    </Typography>
+                                                </Box>
+                                                <Typography variant="body2" sx={{
+                                                    color: '#451a03',
+                                                    lineHeight: 1.6,
+                                                    fontSize: '0.9rem'
+                                                }}>
+                                                    {selectedOrderDetail.note}
+                                                </Typography>
+                                            </Box>
+                                        )}
+                                    </CardContent>
+                                </Card>
+
+                                {/* School Information */}
+                                <Card sx={{
+                                    background: 'rgba(255, 255, 255, 0.95)',
+                                    border: '1px solid rgba(63, 81, 181, 0.1)',
+                                    borderRadius: 3,
+                                    boxShadow: '0 8px 32px rgba(63, 81, 181, 0.08)',
+                                    backdropFilter: 'blur(10px)',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        boxShadow: '0 12px 40px rgba(63, 81, 181, 0.12)',
+                                        border: '1px solid rgba(63, 81, 181, 0.2)'
+                                    }
+                                }}>
+                                    <Box sx={{
+                                        background: 'linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)',
+                                        p: 3,
+                                        borderRadius: '12px 12px 0 0',
+                                        position: 'relative',
+                                        overflow: 'hidden'
+                                    }}>
+                                        <Typography variant="h6" sx={{
+                                            fontWeight: 700,
+                                            color: 'white',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 1.5
+                                        }}>
+                                            <BusinessIcon sx={{ fontSize: 20 }} />
+                                            School Information
+                                        </Typography>
+                                    </Box>
+                                    <CardContent sx={{ p: 3 }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 3 }}>
+                                            {/* Avatar */}
+                                            <Avatar sx={{
+                                                width: 80,
+                                                height: 80,
+                                                backgroundColor: 'rgba(63, 81, 181, 0.1)',
+                                                border: '2px solid rgba(63, 81, 181, 0.2)'
+                                            }}>
+                                                {selectedOrderDetail.school?.avatar ? (
+                                                    <img 
+                                                        src={selectedOrderDetail.school.avatar} 
+                                                        alt="School Logo"
+                                                        referrerPolicy="no-referrer"
+                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                    />
+                                                ) : (
+                                                    <BusinessIcon sx={{ fontSize: 40, color: '#3f51b5' }} />
+                                                )}
+                                            </Avatar>
+
+                                            {/* Information Grid */}
+                                            <Box sx={{ 
+                                                flex: 1,
+                                                display: 'grid', 
+                                                gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+                                                gap: 2 
+                                            }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                    <BusinessIcon sx={{ color: '#3f51b5', fontSize: 20 }} />
+                                                    <Box>
+                                                        <Typography variant="body2" color="text.secondary">
+                                                            School Name
+                                                        </Typography>
+                                                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                            {selectedOrderDetail.school?.business || 'School Name'}
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                    <PersonIcon sx={{ color: '#3b82f6', fontSize: 20 }} />
+                                                    <Box>
+                                                        <Typography variant="body2" color="text.secondary">
+                                                            Contact Person
+                                                        </Typography>
+                                                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                            {selectedOrderDetail.school?.name || 'Contact Person'}
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                    <PhoneIcon sx={{ color: '#10b981', fontSize: 20 }} />
+                                                    <Box>
+                                                        <Typography variant="body2" color="text.secondary">
+                                                            Phone Number
+                                                        </Typography>
+                                                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                            {selectedOrderDetail.school?.phone || 'N/A'}
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                    <EmailIcon sx={{ color: '#f59e0b', fontSize: 20 }} />
+                                                    <Box>
+                                                        <Typography variant="body2" color="text.secondary">
+                                                            Email
+                                                        </Typography>
+                                                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                            {selectedOrderDetail.school?.account?.email || 'N/A'}
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+
+                                                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, gridColumn: { xs: '1', sm: '1 / -1' } }}>
+                                                    <LocationOnIcon sx={{ color: '#ef4444', fontSize: 20, mt: 0.5 }} />
+                                                    <Box>
+                                                        <Typography variant="body2" color="text.secondary">
+                                                            Address
+                                                        </Typography>
+                                                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                            {selectedOrderDetail.school?.address || 'N/A'}
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+                                            </Box>
+                                        </Box>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Order Items */}
+                                <Card sx={{
+                                    background: 'rgba(255, 255, 255, 0.95)',
+                                    border: '1px solid rgba(63, 81, 181, 0.1)',
+                                    borderRadius: 3,
+                                    boxShadow: '0 8px 32px rgba(63, 81, 181, 0.08)',
+                                    backdropFilter: 'blur(10px)',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        boxShadow: '0 12px 40px rgba(63, 81, 181, 0.12)',
+                                        border: '1px solid rgba(63, 81, 181, 0.2)'
+                                    }
+                                }}>
+                                    <Box sx={{
+                                        background: 'linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)',
+                                        p: 3,
+                                        borderRadius: '12px 12px 0 0',
+                                        position: 'relative',
+                                        overflow: 'hidden'
+                                    }}>
+                                        <Typography variant="h6" sx={{
+                                            fontWeight: 700,
+                                            color: 'white',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 1.5
+                                        }}>
+                                            <CheckroomIcon sx={{ fontSize: 20 }} />
+                                            Order Items
+                                        </Typography>
+                                    </Box>
+                                    <CardContent sx={{ p: 3 }}>
+                                        {selectedOrderDetail.orderDetails && selectedOrderDetail.orderDetails.length > 0 ? (
+                                            <Box sx={{
+                                                borderRadius: 3,
+                                                overflow: 'hidden',
+                                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+                                            }}>
+                                                {/* Excel-Style Table */}
+                                                <Box sx={{
+                                                    display: 'grid',
+                                                    gridTemplateColumns: 'repeat(9, 1fr)',
+                                                    backgroundColor: '#ffffff',
+                                                    borderRadius: '8px',
+                                                    overflow: 'hidden',
+                                                    width: '100%',
+                                                    minWidth: '1200px'
+                                                }}>
+                                                    {/* Header Row */}
+                                                    <Box sx={{
+                                                        p: 2,
+                                                        borderRight: '1px solid #000000',
+                                                        borderBottom: '1px solid #000000',
+                                                        backgroundColor: '#e3f2fd',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}>
+                                                        <Typography variant="subtitle1" sx={{
+                                                            fontWeight: 700,
+                                                            color: '#1976d2',
+                                                            fontSize: '14px'
+                                                        }}>
+                                                            Category
+                                                        </Typography>
+                                                    </Box>
+                                                    
+                                                    <Box sx={{
+                                                        p: 2,
+                                                        borderRight: '1px solid #000000',
+                                                        borderBottom: '1px solid #000000',
+                                                        backgroundColor: '#e3f2fd',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}>
+                                                        <Typography variant="subtitle1" sx={{
+                                                            fontWeight: 700,
+                                                            color: '#1976d2',
+                                                            fontSize: '14px'
+                                                        }}>
+                                                            Gender
+                                                        </Typography>
+                                                    </Box>
+                                                    
+                                                    <Box sx={{
+                                                        p: 2,
+                                                        borderRight: '1px solid #000000',
+                                                        borderBottom: '1px solid #000000',
+                                                        backgroundColor: '#e3f2fd',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}>
+                                                        <Typography variant="subtitle1" sx={{
+                                                            fontWeight: 700,
+                                                            color: '#1976d2',
+                                                            fontSize: '14px'
+                                                        }}>
+                                                            Type
+                                                        </Typography>
+                                                    </Box>
+                                                    
+                                                    <Box sx={{
+                                                        p: 2,
+                                                        borderRight: '1px solid #000000',
+                                                        borderBottom: '1px solid #000000',
+                                                        backgroundColor: '#e3f2fd',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}>
+                                                        <Typography variant="subtitle1" sx={{
+                                                            fontWeight: 700,
+                                                            color: '#1976d2',
+                                                            fontSize: '14px'
+                                                        }}>
+                                                            Size
+                                                        </Typography>
+                                                    </Box>
+                                                    
+                                                    <Box sx={{
+                                                        p: 2,
+                                                        borderRight: '1px solid #000000',
+                                                        borderBottom: '1px solid #000000',
+                                                        backgroundColor: '#e3f2fd',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}>
+                                                        <Typography variant="subtitle1" sx={{
+                                                            fontWeight: 700,
+                                                            color: '#1976d2',
+                                                            fontSize: '14px'
+                                                        }}>
+                                                            Quantity
+                                                        </Typography>
+                                                    </Box>
+                                                    
+                                                    <Box sx={{
+                                                        p: 2,
+                                                        borderRight: '1px solid #000000',
+                                                        borderBottom: '1px solid #000000',
+                                                        backgroundColor: '#e3f2fd',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}>
+                                                        <Typography variant="subtitle1" sx={{
+                                                            fontWeight: 700,
+                                                            color: '#1976d2',
+                                                            fontSize: '14px'
+                                                        }}>
+                                                            Color
+                                                        </Typography>
+                                                    </Box>
+                                                    
+                                                    <Box sx={{
+                                                        p: 2,
+                                                        borderRight: '1px solid #000000',
+                                                        borderBottom: '1px solid #000000',
+                                                        backgroundColor: '#e3f2fd',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}>
+                                                        <Typography variant="subtitle1" sx={{
+                                                            fontWeight: 700,
+                                                            color: '#1976d2',
+                                                            fontSize: '14px'
+                                                        }}>
+                                                            Logo Position
+                                                        </Typography>
+                                                    </Box>
+                                                    
+                                                    <Box sx={{
+                                                        p: 2,
+                                                        borderRight: '1px solid #000000',
+                                                        borderBottom: '1px solid #000000',
+                                                        backgroundColor: '#e3f2fd',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        flexDirection: 'column'
+                                                    }}>
+                                                        <Typography variant="subtitle1" sx={{
+                                                            fontWeight: 700,
+                                                            color: '#1976d2',
+                                                            fontSize: '14px'
+                                                        }}>
+                                                            Logo Size
+                                                        </Typography>
+                                                        <Typography variant="caption" sx={{
+                                                            color: '#1976d2',
+                                                            fontSize: '11px',
+                                                            fontWeight: 500
+                                                        }}>
+                                                            (height × width)
+                                                        </Typography>
+                                                    </Box>
+                                                    
+                                                    <Box sx={{
+                                                        p: 2,
+                                                        borderBottom: '1px solid #000000',
+                                                        backgroundColor: '#e3f2fd',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}>
+                                                        <Typography variant="subtitle1" sx={{
+                                                            fontWeight: 700,
+                                                            color: '#1976d2',
+                                                            fontSize: '14px'
+                                                        }}>
+                                                            Images
+                                                        </Typography>
+                                                    </Box>
+                                                    
+                                                    {/* Data Rows */}
+                                                    {(() => {
+                                                        const groupedItems = groupItemsByCategory(selectedOrderDetail.orderDetails);
+                                                        const rows = [];
+
+                                                        groupedItems.forEach((groupedItem, index) => {
+                                                            rows.push(
+                                                                <React.Fragment key={`${groupedItem.category}-${groupedItem.gender}-${groupedItem.type}-${index}`}>
+                                                                    {/* Category - with rowspan */}
+                                                                    {groupedItem.isFirstInCategory && (
+                                                                        <Box sx={{
+                                                                            p: 2,
+                                                                            borderRight: '1px solid #000000',
+                                                                            borderBottom: '1px solid #000000',
+                                                                            backgroundColor: '#f8fafc',
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            justifyContent: 'center',
+                                                                            gridRow: `span ${groupedItem.categoryRowSpan}`,
+                                                                            minHeight: `${60 * groupedItem.categoryRowSpan}px`
+                                                                        }}>
+                                                                            <Chip
+                                                                                label={groupedItem.category === 'pe' ? 'PE' : 'Regular'}
+                                                                                size="small"
+                                                                                sx={{
+                                                                                    backgroundColor: groupedItem.category === 'pe' ? '#dcfce7' : '#dbeafe',
+                                                                                    color: groupedItem.category === 'pe' ? '#065f46' : '#1e40af',
+                                                                                    fontWeight: 600,
+                                                                                    fontSize: '11px',
+                                                                                    height: 20
+                                                                                }}
+                                                                            />
+                                                                        </Box>
+                                                                    )}
+                                                                    
+                                                                    {/* Gender - with rowspan */}
+                                                                    {groupedItem.isFirstInGender && (
+                                                                        <Box sx={{
+                                                                            p: 2,
+                                                                            borderRight: '1px solid #000000',
+                                                                            borderBottom: '1px solid #000000',
+                                                                            backgroundColor: '#f8fafc',
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            justifyContent: 'center',
+                                                                            gridRow: `span ${groupedItem.genderRowSpan}`,
+                                                                            minHeight: `${60 * groupedItem.genderRowSpan}px`
+                                                                        }}>
+                                                                            <Typography variant="body2" sx={{
+                                                                                fontWeight: 600,
+                                                                                color: '#374151',
+                                                                                fontSize: '13px',
+                                                                                textTransform: 'capitalize'
+                                                                            }}>
+                                                                                {groupedItem.gender === 'boy' ? 'Boy' : 
+                                                                                 groupedItem.gender === 'girl' ? 'Girl' : 
+                                                                                 groupedItem.gender || 'Unknown'}
+                                                                            </Typography>
+                                                                        </Box>
+                                                                    )}
+                                                    
+                                                                    {/* Type */}
+                                                                    <Box sx={{
+                                                                        p: 2,
+                                                                        borderRight: '1px solid #000000',
+                                                                        borderBottom: '1px solid #000000',
+                                                                        backgroundColor: '#f8fafc',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center'
+                                                                    }}>
+                                                                        <Typography variant="body2" sx={{
+                                                                            fontWeight: 600,
+                                                                            color: '#374151',
+                                                                            fontSize: '13px',
+                                                                            textTransform: 'capitalize'
+                                                                        }}>
+                                                                            {groupedItem.type || 'Item'}
+                                                                        </Typography>
+                                                                    </Box>
+                                                                    
+                                                                    {/* Size - Show all sizes */}
+                                                                    <Box sx={{
+                                                                        p: 2,
+                                                                        borderRight: '1px solid #000000',
+                                                                        borderBottom: '1px solid #000000',
+                                                                        backgroundColor: '#f8fafc',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center'
+                                                                    }}>
+                                                                        <Typography variant="body2" sx={{
+                                                                            fontWeight: 600,
+                                                                            color: '#3f51b5',
+                                                                            fontSize: '13px'
+                                                                        }}>
+                                                                            {groupedItem.sizes.sort().join(', ')}
+                                                                        </Typography>
+                                                                    </Box>
+                                                                    
+                                                                    {/* Quantity - Show View button */}
+                                                                    <Box sx={{
+                                                                        p: 2,
+                                                                        borderRight: '1px solid #000000',
+                                                                        borderBottom: '1px solid #000000',
+                                                                        backgroundColor: '#f8fafc',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center'
+                                                                    }}>
+                                                                        <Button
+                                                                            variant="outlined"
+                                                                            size="small"
+                                                                            onClick={() => handleOpenQuantityDetails(groupedItem)}
+                                                                            startIcon={<CheckroomIcon />}
+                                                                            sx={{
+                                                                                borderColor: '#3f51b5',
+                                                                                color: '#3f51b5',
+                                                                                fontSize: '11px',
+                                                                                py: 0.5,
+                                                                                px: 1.5,
+                                                                                minWidth: 'auto',
+                                                                                borderRadius: 1.5,
+                                                                                textTransform: 'none',
+                                                                                fontWeight: 600,
+                                                                                '&:hover': {
+                                                                                    borderColor: '#1976d2',
+                                                                                    backgroundColor: 'rgba(63, 81, 181, 0.04)',
+                                                                                    transform: 'scale(1.02)'
+                                                                                },
+                                                                                '& .MuiButton-startIcon': {
+                                                                                    marginRight: '4px',
+                                                                                    '& > svg': {
+                                                                                        fontSize: '14px'
+                                                                                    }
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            View ({groupedItem.totalQuantity})
+                                                                        </Button>
+                                                                    </Box>
+
+                                                                    {/* Color */}
+                                                                    <Box sx={{
+                                                                        p: 2,
+                                                                        borderRight: '1px solid #000000',
+                                                                        borderBottom: '1px solid #000000',
+                                                                        backgroundColor: '#f8fafc',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        flexDirection: 'column',
+                                                                        gap: 1
+                                                                    }}>
+                                                                        <Box sx={{
+                                                                            width: 20,
+                                                                            height: 20,
+                                                                            borderRadius: '50%',
+                                                                            backgroundColor: groupedItem.color || '#cccccc',
+                                                                            border: '2px solid #ffffff',
+                                                                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                                                        }} />
+                                                                        <Typography variant="caption" sx={{
+                                                                            color: '#64748b',
+                                                                            fontSize: '10px',
+                                                                            fontWeight: 500
+                                                                        }}>
+                                                                            {groupedItem.color || 'N/A'}
+                                                                        </Typography>
+                                                                    </Box>
+
+                                                                    {/* Logo Position */}
+                                                                    <Box sx={{
+                                                                        p: 2,
+                                                                        borderRight: '1px solid #000000',
+                                                                        borderBottom: '1px solid #000000',
+                                                                        backgroundColor: '#f8fafc',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center'
+                                                                    }}>
+                                                                        <Typography variant="body2" sx={{
+                                                                            fontWeight: 500,
+                                                                            color: '#374151',
+                                                                            fontSize: '12px',
+                                                                            textAlign: 'center'
+                                                                        }}>
+                                                                            {groupedItem.logoPosition || 'N/A'}
+                                                                        </Typography>
+                                                                    </Box>
+
+                                                                    {/* Logo Size */}
+                                                                    <Box sx={{
+                                                                        p: 2,
+                                                                        borderRight: '1px solid #000000',
+                                                                        borderBottom: '1px solid #000000',
+                                                                        backgroundColor: '#f8fafc',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center'
+                                                                    }}>
+                                                                        <Typography variant="body2" sx={{
+                                                                            fontWeight: 500,
+                                                                            color: '#374151',
+                                                                            fontSize: '12px',
+                                                                            textAlign: 'center'
+                                                                        }}>
+                                                                            {groupedItem.baseLogoHeight && groupedItem.baseLogoWidth 
+                                                                                ? `${groupedItem.baseLogoHeight} × ${groupedItem.baseLogoWidth}`
+                                                                                : 'N/A'
+                                                                            }
+                                                                        </Typography>
+                                                                    </Box>
+
+                                                                                                                        {/* Images */}
+                                                    <Box sx={{
+                                                        p: 2,
+                                                        borderBottom: '1px solid #000000',
+                                                        backgroundColor: '#f8fafc',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}>
+                                                        <Button
+                                                            variant="outlined"
+                                                            size="small"
+                                                            onClick={() => handleOpenImagesDialog(groupedItem)}
+                                                            sx={{
+                                                                fontSize: '11px',
+                                                                py: 0.5,
+                                                                px: 1.5,
+                                                                minWidth: 'auto',
+                                                                borderColor: '#3f51b5',
+                                                                color: '#3f51b5',
+                                                                fontWeight: 600,
+                                                                borderRadius: 1.5,
+                                                                textTransform: 'none',
+                                                                '&:hover': {
+                                                                    borderColor: '#1976d2',
+                                                                    backgroundColor: 'rgba(63, 81, 181, 0.04)',
+                                                                    transform: 'scale(1.02)'
+                                                                }
+                                                            }}
+                                                        >
+                                                            View
+                                                        </Button>
+                                                    </Box>
+                                                                </React.Fragment>
+                                                            );
+                                                        });
+
+                                                        return rows;
+                                                    })()}
+                                                </Box>
+                                            </Box>
+                                        ) : (
+                                            <Box sx={{
+                                                textAlign: 'center',
+                                                py: 6,
+                                                backgroundColor: '#f8fafc',
+                                                borderRadius: 3,
+                                                border: '2px dashed #cbd5e1'
+                                            }}>
+                                                <CheckroomIcon sx={{ fontSize: 64, color: '#94a3b8', mb: 2 }} />
+                                                <Typography variant="h6" sx={{ color: '#64748b', mb: 1 }}>
+                                                    No Order Items
+                                                </Typography>
+                                                <Typography variant="body2" sx={{ color: '#94a3b8' }}>
+                                                    This order doesn't have any items yet.
+                                                </Typography>
+                                            </Box>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </Box>
+                        )}
+                    </DialogContent>
+                </Dialog>
+
+                {/* Quantity Details Dialog */}
+                <Dialog
+                    open={showQuantityDetailsDialog}
+                    onClose={handleCloseQuantityDetails}
+                    maxWidth="sm"
+                    fullWidth
+                    PaperProps={{
+                        sx: {
+                            borderRadius: 3,
+                            '& .MuiDialogContent-root': {
+                                paddingTop: '32px !important'
+                            }
+                        }
+                    }}
+                >
+                    <DialogTitle sx={{
+                        background: 'linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)',
+                        color: 'white',
+                        position: 'relative'
+                    }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <CheckroomIcon />
+                            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                                Size Breakdown Details
+                            </Typography>
+                        </Box>
+                        <IconButton
+                            onClick={handleCloseQuantityDetails}
+                            sx={{
+                                position: 'absolute',
+                                right: 8,
+                                top: 8,
+                                color: 'white'
+                            }}
+                        >
+                            <CloseIcon />
+                        </IconButton>
+                    </DialogTitle>
+
+                    <DialogContent sx={{ p: 4, pb: 2, pt: 6 }}>
+                        {selectedQuantityDetails && (
+                            <Box>
+                                {/* Item Info */}
+                                <Card sx={{
+                                    mb: 3,
+                                    border: '1px solid #e2e8f0',
+                                    borderRadius: 2
+                                }}>
+                                    <CardContent sx={{ p: 3 }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                                            <Chip
+                                                label={selectedQuantityDetails.category}
+                                                size="small"
+                                                sx={{
+                                                    backgroundColor: '#f0f4ff',
+                                                    color: '#3730a3',
+                                                    fontWeight: 600,
+                                                    textTransform: 'capitalize'
+                                                }}
+                                            />
+                                            <Chip
+                                                label={selectedQuantityDetails.gender}
+                                                size="small"
+                                                sx={{
+                                                    backgroundColor: '#fef3c7',
+                                                    color: '#92400e',
+                                                    fontWeight: 600,
+                                                    textTransform: 'capitalize'
+                                                }}
+                                            />
+                                            <Chip
+                                                label={selectedQuantityDetails.type}
+                                                size="small"
+                                                sx={{
+                                                    backgroundColor: '#e0e7ff',
+                                                    color: '#3730a3',
+                                                    fontWeight: 600,
+                                                    textTransform: 'capitalize'
+                                                }}
+                                            />
+                                        </Box>
+                                        
+                                        <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b' }}>
+                                            Total Quantity: {selectedQuantityDetails.totalQuantity}
+                                        </Typography>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Size Breakdown Table */}
+                                <Card sx={{
+                                    border: '1px solid #e2e8f0',
+                                    borderRadius: 2,
+                                    overflow: 'hidden'
+                                }}>
+                                    <Box sx={{
+                                        background: 'linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)',
+                                        p: 2,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1.5
+                                    }}>
+                                        <CheckroomIcon sx={{ color: 'white', fontSize: 20 }} />
+                                        <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
+                                            Size Breakdown
+                                        </Typography>
+                                    </Box>
+                                    
+                                    <Box sx={{ p: 0 }}>
+                                        <Box sx={{
+                                            display: 'grid',
+                                            gridTemplateColumns: '1fr 1fr',
+                                            borderBottom: '2px solid #e2e8f0'
+                                        }}>
+                                            <Box sx={{
+                                                p: 2,
+                                                backgroundColor: '#f8fafc',
+                                                borderRight: '1px solid #e2e8f0',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}>
+                                                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1e293b' }}>
+                                                    Size
+                                                </Typography>
+                                            </Box>
+                                            <Box sx={{
+                                                p: 2,
+                                                backgroundColor: '#f8fafc',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}>
+                                                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1e293b' }}>
+                                                    Quantity
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+                                        
+                                        {selectedQuantityDetails.sizes.sort().map((size) => (
+                                            <Box key={size} sx={{
+                                                display: 'grid',
+                                                gridTemplateColumns: '1fr 1fr',
+                                                '&:hover': {
+                                                    backgroundColor: '#f8fafc'
+                                                }
+                                            }}>
+                                                <Box sx={{
+                                                    p: 2,
+                                                    borderRight: '1px solid #e2e8f0',
+                                                    borderBottom: '1px solid #e2e8f0',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                }}>
+                                                    <Typography variant="body1" sx={{ fontWeight: 600, color: '#1e293b' }}>
+                                                        {size}
+                                                    </Typography>
+                                                </Box>
+                                                <Box sx={{
+                                                    p: 2,
+                                                    borderBottom: '1px solid #e2e8f0',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                }}>
+                                                    <Typography variant="body1" sx={{ color: '#64748b' }}>
+                                                        {selectedQuantityDetails.quantities[size] || 0}
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+                                        ))}
+                                    </Box>
+                                </Card>
+                            </Box>
+                        )}
+                    </DialogContent>
+
+                    <DialogActions sx={{ p: 3, pt: 0 }}>
+                        <Button
+                            onClick={handleCloseQuantityDetails}
+                            sx={{
+                                color: '#64748b',
+                                borderColor: '#d1d5db',
+                                '&:hover': {
+                                    borderColor: '#9ca3af',
+                                    backgroundColor: '#f9fafb'
+                                }
+                            }}
+                        >
+                            Close
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+                {/* Images Dialog */}
+                <Dialog
+                    open={imagesDialogOpen}
+                    onClose={handleCloseImagesDialog}
+                    maxWidth="md"
+                    fullWidth
+                    PaperProps={{
+                        sx: {
+                            borderRadius: 3,
+                            '& .MuiDialogContent-root': {
+                                paddingTop: '32px !important'
+                            }
+                        }
+                    }}
+                >
+                    <DialogTitle sx={{
+                        background: 'linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)',
+                        color: 'white',
+                        position: 'relative'
+                    }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <CheckroomIcon />
+                            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                                Design Images
+                            </Typography>
+                        </Box>
+                        <IconButton
+                            onClick={handleCloseImagesDialog}
+                            sx={{
+                                position: 'absolute',
+                                right: 8,
+                                top: 8,
+                                color: 'white'
+                            }}
+                        >
+                            <CloseIcon />
+                        </IconButton>
+                    </DialogTitle>
+
+                    <DialogContent sx={{ p: 4, pb: 2, pt: 6 }}>
+                        {selectedItemImages && (
+                            <Box>
+                                {/* Item Info Header */}
+                                <Card sx={{
+                                    background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+                                    border: '1px solid #cbd5e1',
+                                    borderRadius: 2,
+                                    mb: 3
+                                }}>
+                                    <CardContent sx={{ p: 2.5 }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                                            <Chip
+                                                label={selectedItemImages.category === 'pe' ? 'PE' : 'Regular'}
+                                                size="small"
+                                                sx={{
+                                                    backgroundColor: selectedItemImages.category === 'pe' ? '#dcfce7' : '#dbeafe',
+                                                    color: selectedItemImages.category === 'pe' ? '#065f46' : '#1e40af',
+                                                    fontWeight: 600
+                                                }}
+                                            />
+                                            <Chip
+                                                label={selectedItemImages.gender === 'boy' ? 'Boy' : 'Girl'}
+                                                size="small"
+                                                sx={{
+                                                    backgroundColor: '#fef3c7',
+                                                    color: '#92400e',
+                                                    fontWeight: 600
+                                                }}
+                                            />
+                                            <Chip
+                                                label={selectedItemImages.type}
+                                                size="small"
+                                                sx={{
+                                                    backgroundColor: '#e0e7ff',
+                                                    color: '#3730a3',
+                                                    fontWeight: 600,
+                                                    textTransform: 'capitalize'
+                                                }}
+                                            />
+                                        </Box>
+                                        
+                                        <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b' }}>
+                                            {selectedItemImages.gender === 'boy' ? 'Boy' : 'Girl'} {selectedItemImages.type} - {selectedItemImages.category === 'pe' ? 'Physical Education' : 'Regular'}
+                                        </Typography>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Images Grid */}
+                                <Box sx={{ 
+                                    display: 'grid', 
+                                    gridTemplateColumns: { xs: '1fr', md: selectedItemImages.logoImageUrl ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)' },
+                                    gap: 3 
+                                }}>
+                                    {/* Logo Image */}
+                                    {selectedItemImages.logoImageUrl && (
+                                        <Card sx={{
+                                            border: '1px solid #e2e8f0',
+                                            borderRadius: 2,
+                                            overflow: 'hidden',
+                                            transition: 'all 0.3s ease',
+                                            '&:hover': {
+                                                transform: 'translateY(-2px)',
+                                                boxShadow: '0 8px 32px rgba(63, 81, 181, 0.15)'
+                                            }
+                                        }}>
+                                            <Box sx={{
+                                                background: 'linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)',
+                                                p: 2,
+                                                textAlign: 'center'
+                                            }}>
+                                                <Typography variant="subtitle1" sx={{ 
+                                                    color: 'white', 
+                                                    fontWeight: 600,
+                                                    fontSize: '14px'
+                                                }}>
+                                                    Logo Image
+                                                </Typography>
+                                            </Box>
+                                            <Box sx={{
+                                                p: 2,
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                backgroundColor: '#f8fafc',
+                                                minHeight: 200
+                                            }}>
+                                                <img 
+                                                    src={selectedItemImages.logoImageUrl} 
+                                                    alt="Logo"
+                                                    style={{
+                                                        maxWidth: '100%',
+                                                        maxHeight: '180px',
+                                                        objectFit: 'contain',
+                                                        borderRadius: '8px',
+                                                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+                                                    }}
+                                                />
+                                            </Box>
+                                        </Card>
+                                    )}
+
+                                    {/* Front Image */}
+                                    {selectedItemImages.frontImageUrl && (
+                                        <Card sx={{
+                                            border: '1px solid #e2e8f0',
+                                            borderRadius: 2,
+                                            overflow: 'hidden',
+                                            transition: 'all 0.3s ease',
+                                            '&:hover': {
+                                                transform: 'translateY(-2px)',
+                                                boxShadow: '0 8px 32px rgba(63, 81, 181, 0.15)'
+                                            }
+                                        }}>
+                                            <Box sx={{
+                                                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                                p: 2,
+                                                textAlign: 'center'
+                                            }}>
+                                                <Typography variant="subtitle1" sx={{ 
+                                                    color: 'white', 
+                                                    fontWeight: 600,
+                                                    fontSize: '14px'
+                                                }}>
+                                                    Front Design
+                                                </Typography>
+                                            </Box>
+                                            <Box sx={{
+                                                p: 2,
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                backgroundColor: '#f8fafc',
+                                                minHeight: 200
+                                            }}>
+                                                <img 
+                                                    src={selectedItemImages.frontImageUrl} 
+                                                    alt="Front Design"
+                                                    style={{
+                                                        maxWidth: '100%',
+                                                        maxHeight: '180px',
+                                                        objectFit: 'contain',
+                                                        borderRadius: '8px',
+                                                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+                                                    }}
+                                                />
+                                            </Box>
+                                        </Card>
+                                    )}
+
+                                    {/* Back Image */}
+                                    {selectedItemImages.backImageUrl && (
+                                        <Card sx={{
+                                            border: '1px solid #e2e8f0',
+                                            borderRadius: 2,
+                                            overflow: 'hidden',
+                                            transition: 'all 0.3s ease',
+                                            '&:hover': {
+                                                transform: 'translateY(-2px)',
+                                                boxShadow: '0 8px 32px rgba(63, 81, 181, 0.15)'
+                                            }
+                                        }}>
+                                            <Box sx={{
+                                                background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                                                p: 2,
+                                                textAlign: 'center'
+                                            }}>
+                                                <Typography variant="subtitle1" sx={{ 
+                                                    color: 'white', 
+                                                    fontWeight: 600,
+                                                    fontSize: '14px'
+                                                }}>
+                                                    Back Design
+                                                </Typography>
+                                            </Box>
+                                            <Box sx={{
+                                                p: 2,
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                backgroundColor: '#f8fafc',
+                                                minHeight: 200
+                                            }}>
+                                                <img 
+                                                    src={selectedItemImages.backImageUrl} 
+                                                    alt="Back Design"
+                                                    style={{
+                                                        maxWidth: '100%',
+                                                        maxHeight: '180px',
+                                                        objectFit: 'contain',
+                                                        borderRadius: '8px',
+                                                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+                                                    }}
+                                                />
+                                            </Box>
+                                        </Card>
+                                    )}
+                                </Box>
+
+                                {/* No Images Message */}
+                                {!selectedItemImages.logoImageUrl && !selectedItemImages.frontImageUrl && !selectedItemImages.backImageUrl && (
+                                    <Box sx={{
+                                        textAlign: 'center',
+                                        py: 6,
+                                        backgroundColor: '#f8fafc',
+                                        borderRadius: 3,
+                                        border: '2px dashed #cbd5e1'
+                                    }}>
+                                        <CheckroomIcon sx={{ fontSize: 64, color: '#94a3b8', mb: 2 }} />
+                                        <Typography variant="h6" sx={{ color: '#64748b', mb: 1 }}>
+                                            No Images Available
+                                        </Typography>
+                                        <Typography variant="body2" sx={{ color: '#94a3b8' }}>
+                                            No design images have been uploaded for this item.
+                                        </Typography>
+                                    </Box>
+                                )}
+                            </Box>
+                        )}
+                    </DialogContent>
+
+                    <DialogActions sx={{ p: 3, pt: 0 }}>
+                        <Button
+                            onClick={handleCloseImagesDialog}
+                            sx={{
+                                color: '#64748b',
+                                borderColor: '#d1d5db',
+                                '&:hover': {
+                                    borderColor: '#9ca3af',
+                                    backgroundColor: '#f9fafb'
+                                }
+                            }}
+                        >
+                            Close
                         </Button>
                     </DialogActions>
                 </Dialog>

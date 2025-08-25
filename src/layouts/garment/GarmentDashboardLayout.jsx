@@ -87,32 +87,6 @@ function Navbar({userObj, activeMenu, navigate}) {
                             </Typography>
                         </Box>
                     </Box>
-
-                    <Box
-                        sx={{
-                            borderRadius: 2,
-                            mx: 1,
-                            my: 0.5,
-                            color: activeMenu === 'orders' ? "#FFFFFF" : "#495057",
-                            p: 2,
-                            cursor: "pointer",
-                            transition: "all 0.3s ease",
-                            background: activeMenu === 'orders' ? "linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)" : "transparent",
-                            "&:hover": {
-                                background: "linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)",
-                                color: "#FFFFFF",
-                                transform: "translateY(-1px)",
-                            },
-                        }}
-                        onClick={() => navigate('/garment/orders')}
-                    >
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                            <Assignment sx={{ color: "inherit", fontSize: 20 }} />
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                Applied Orders
-                            </Typography>
-                        </Box>
-                    </Box>
                 </Box>
 
                 <Divider sx={{ my: 3, borderColor: "#e9ecef" }} />
