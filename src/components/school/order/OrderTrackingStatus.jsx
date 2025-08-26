@@ -44,6 +44,7 @@ import {
 } from '@mui/icons-material';
 import {useNavigate} from 'react-router-dom';
 import {getOrderDetailBySchool} from '../../../services/OrderService';
+import {getPaymentUrl} from '../../../services/PaymentService';
 import {parseID} from '../../../utils/ParseIDUtil';
 import {useSnackbar} from 'notistack';
 import DisplayImage from '../../ui/DisplayImage';
@@ -170,6 +171,10 @@ export default function OrderTrackingStatus() {
     const [hoveredMilestone, setHoveredMilestone] = useState(null);
     const [popoverAnchor, setPopoverAnchor] = useState(null);
     const [popoverPosition, setPopoverPosition] = useState({ vertical: 'center', horizontal: 'right' });
+    
+    // Payment dialog states
+    const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+    const [processingPayment, setProcessingPayment] = useState(false);
 
     // Lấy orderId từ sessionStorage
     const orderId = sessionStorage.getItem('trackingOrderId');
@@ -273,6 +278,73 @@ export default function OrderTrackingStatus() {
     const handleMilestoneLeave = () => {
         setHoveredMilestone(null);
         setPopoverAnchor(null);
+    };
+
+    // Calculate remaining payment amount
+    const getRemainingPaymentAmount = () => {
+        if (!orderDetail?.price) return 0;
+        const basePrice = orderDetail.price;
+        const depositAmount = getDepositAmount();
+        return basePrice - depositAmount;
+    };
+
+    // Handle payment dialog
+    const handleOpenPaymentDialog = () => {
+        setPaymentDialogOpen(true);
+    };
+
+    const handleClosePaymentDialog = () => {
+        setPaymentDialogOpen(false);
+    };
+
+    // Handle payment process
+    const handleProcessPayment = async () => {
+        try {
+            setProcessingPayment(true);
+            
+            const amount = getRemainingPaymentAmount();
+            const description = `Remaining payment for Order ${parseID(orderDetail.id, 'ord')}`;
+            const orderType = 'order';
+            const quotationId = orderDetail.quotationId || orderDetail.quotation?.id;
+            const returnUrl = `/school/payment/result?quotationId=${quotationId}`;
+            
+            // Prepare payment details for PaymentResult component
+            const paymentQuotationDetails = {
+                quotation: {
+                    id: orderDetail.quotationId || orderDetail.quotation?.id,
+                    garmentId: orderDetail.garment?.id,
+                    garment: {
+                        customer: {
+                            business: orderDetail.garment?.customer?.business,
+                            name: orderDetail.garment?.customer?.name
+                        }
+                    }
+                },
+                order: {
+                    id: orderDetail.id
+                },
+                serviceFee: getServiceFee(),
+                description: description
+            };
+            
+            // Set payment type and details in sessionStorage
+            sessionStorage.setItem('currentPaymentType', 'order');
+            sessionStorage.setItem('paymentQuotationDetails', JSON.stringify(paymentQuotationDetails));
+            
+            const response = await getPaymentUrl(amount, description, orderType, returnUrl);
+            
+            if (response && response.status === 200) {
+                // Redirect to payment URL
+                window.location.href = response.data.body.url;
+            } else {
+                enqueueSnackbar('Failed to get payment URL', { variant: 'error' });
+            }
+        } catch (error) {
+            console.error('Error processing payment:', error);
+            enqueueSnackbar('Error processing payment. Please try again.', { variant: 'error' });
+        } finally {
+            setProcessingPayment(false);
+        }
     };
 
     const formatDate = (dateString) => {
@@ -386,13 +458,18 @@ export default function OrderTrackingStatus() {
             };
         });
         
+        // Check if all API phases are completed and order is processing
+        const allApiPhasesCompleted = apiMilestones.length > 0 && apiMilestones.every(phase => phase.isCompleted);
+        const isOrderProcessing = orderDetail.status === 'processing';
+        
         // Add fixed phases at the end
         const deliveringPhase = {
             title: 'Delivering',
             description: 'Order is being shipped to your location',
             isCompleted: false,
-            isActive: false,
-            isNotStarted: true,
+            isActive: orderDetail.status === 'delivering',
+            isNotStarted: orderDetail.status !== 'delivering',
+            isPaymentRequired: orderDetail.status === 'processing' && allApiPhasesCompleted,
             startDate: null,
             endDate: null,
             completedDate: null,
@@ -769,53 +846,91 @@ export default function OrderTrackingStatus() {
                                                 position: 'relative'
                                             }}>
                                                 {/* Step Icon */}
-                                                <Box
-                                                    onMouseEnter={(e) => handleMilestoneHover(e, milestone)}
-                                                    onMouseLeave={handleMilestoneLeave}
-                                                    sx={{
-                                                        width: 56,
-                                                        height: 56,
-                                                        borderRadius: '50%',
-                                                        background: milestone.isCompleted 
-                                                            ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'
-                                                            : milestone.isActive
-                                                                ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
-                                                                : milestone.isNotStarted
-                                                                    ? 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)'
-                                                                    : 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        cursor: 'pointer',
-                                                        transition: 'all 0.3s ease',
-                                                        boxShadow: milestone.isCompleted 
-                                                            ? '0 4px 12px rgba(34, 197, 94, 0.3)'
-                                                            : milestone.isActive
-                                                                ? '0 4px 12px rgba(59, 130, 246, 0.3)'
-                                                                : milestone.isNotStarted
-                                                                    ? '0 4px 12px rgba(148, 163, 184, 0.3)'
-                                                                    : '0 4px 12px rgba(148, 163, 184, 0.3)',
-                                                        '&:hover': {
-                                                            transform: 'scale(1.1)',
-                                                            boxShadow: milestone.isCompleted 
-                                                                ? '0 8px 25px rgba(34, 197, 94, 0.4)'
+                                                <Box sx={{ position: 'relative' }}>
+                                                    <Box
+                                                        onMouseEnter={(e) => handleMilestoneHover(e, milestone)}
+                                                        onMouseLeave={handleMilestoneLeave}
+                                                        sx={{
+                                                            width: 56,
+                                                            height: 56,
+                                                            borderRadius: '50%',
+                                                            background: milestone.isCompleted 
+                                                                ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'
                                                                 : milestone.isActive
-                                                                    ? '0 8px 25px rgba(59, 130, 246, 0.4)'
-                                                                    : milestone.isNotStarted
-                                                                        ? '0 8px 25px rgba(148, 163, 184, 0.4)'
-                                                                        : '0 8px 25px rgba(148, 163, 184, 0.4)'
-                                                        }
-                                                    }}
-                                                >
-                                                                                                {milestone.isCompleted ? (
-                                                <CheckCircleIcon sx={{color: 'white', fontSize: 28}}/>
-                                            ) : milestone.isActive ? (
-                                                <DesignServicesIcon sx={{color: 'white', fontSize: 28}}/>
-                                            ) : milestone.isNotStarted ? (
-                                                <PendingIcon sx={{color: 'white', fontSize: 28}}/>
-                                            ) : (
-                                                <PendingIcon sx={{color: 'white', fontSize: 28}}/>
-                                            )}
+                                                                    ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
+                                                                    : milestone.isPaymentRequired
+                                                                        ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
+                                                                        : milestone.isNotStarted
+                                                                            ? 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)'
+                                                                            : 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            cursor: 'pointer',
+                                                            transition: 'all 0.3s ease',
+                                                            boxShadow: milestone.isCompleted 
+                                                                ? '0 4px 12px rgba(34, 197, 94, 0.3)'
+                                                                : milestone.isActive
+                                                                    ? '0 4px 12px rgba(59, 130, 246, 0.3)'
+                                                                    : milestone.isPaymentRequired
+                                                                        ? '0 4px 12px rgba(239, 68, 68, 0.3)'
+                                                                        : milestone.isNotStarted
+                                                                            ? '0 4px 12px rgba(148, 163, 184, 0.3)'
+                                                                            : '0 4px 12px rgba(148, 163, 184, 0.3)',
+                                                            '&:hover': {
+                                                                transform: 'scale(1.1)',
+                                                                boxShadow: milestone.isCompleted 
+                                                                    ? '0 8px 25px rgba(34, 197, 94, 0.4)'
+                                                                    : milestone.isActive
+                                                                        ? '0 8px 25px rgba(59, 130, 246, 0.4)'
+                                                                        : milestone.isPaymentRequired
+                                                                            ? '0 8px 25px rgba(239, 68, 68, 0.4)'
+                                                                            : milestone.isNotStarted
+                                                                                ? '0 8px 25px rgba(148, 163, 184, 0.4)'
+                                                                                : '0 8px 25px rgba(148, 163, 184, 0.4)'
+                                                            }
+                                                        }}
+                                                    >
+                                                        {milestone.isCompleted ? (
+                                                            <CheckCircleIcon sx={{color: 'white', fontSize: 28}}/>
+                                                        ) : milestone.isActive ? (
+                                                            <DesignServicesIcon sx={{color: 'white', fontSize: 28}}/>
+                                                        ) : milestone.isPaymentRequired ? (
+                                                            <PendingIcon sx={{color: 'white', fontSize: 28}}/>
+                                                        ) : milestone.isNotStarted ? (
+                                                            <PendingIcon sx={{color: 'white', fontSize: 28}}/>
+                                                        ) : (
+                                                            <PendingIcon sx={{color: 'white', fontSize: 28}}/>
+                                                        )}
+                                                    </Box>
+                                                    
+                                                    {/* Exclamation mark icon for Required Payment */}
+                                                    {milestone.isPaymentRequired && (
+                                                        <Box sx={{
+                                                            position: 'absolute',
+                                                            bottom: -8,
+                                                            right: -8,
+                                                            width: 24,
+                                                            height: 24,
+                                                            borderRadius: '50%',
+                                                            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
+                                                            border: '2px solid white',
+                                                            zIndex: 1
+                                                        }}>
+                                                            <Typography sx={{
+                                                                color: 'white',
+                                                                fontSize: '14px',
+                                                                fontWeight: 700,
+                                                                lineHeight: 1
+                                                            }}>
+                                                                !
+                                                            </Typography>
+                                                        </Box>
+                                                    )}
                                                 </Box>
                                                 
                                                 {/* Step Label */}
@@ -850,7 +965,9 @@ export default function OrderTrackingStatus() {
                                                     height: 2,
                                                     background: milestone.isCompleted 
                                                         ? 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)'
-                                                        : 'linear-gradient(90deg, #e2e8f0 0%, #cbd5e1 100%)',
+                                                        : milestone.isPaymentRequired
+                                                            ? 'linear-gradient(90deg, #ef4444 0%, #dc2626 100%)'
+                                                            : 'linear-gradient(90deg, #e2e8f0 0%, #cbd5e1 100%)',
                                                     borderRadius: 1,
                                                     mx: 2,
                                                     minWidth: 40
@@ -880,6 +997,38 @@ export default function OrderTrackingStatus() {
                                         {milestones.filter(m => m.isCompleted).length} / {milestones.length}
                                     </Typography>
                                 </Box>
+                                
+                                {/* Process to Payment Button - Show when Delivering phase needs payment */}
+                                {milestones.some(m => m.isPaymentRequired) && (
+                                    <Box sx={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        mt: 3
+                                    }}>
+                                        <Button
+                                            variant="contained"
+                                            startIcon={<MoneyIcon />}
+                                            onClick={handleOpenPaymentDialog}
+                                            sx={{
+                                                background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                                                color: 'white',
+                                                fontWeight: 600,
+                                                px: 4,
+                                                py: 1.5,
+                                                borderRadius: 2,
+                                                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
+                                                '&:hover': {
+                                                    background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+                                                    boxShadow: '0 8px 25px rgba(239, 68, 68, 0.4)',
+                                                    transform: 'translateY(-2px)'
+                                                },
+                                                transition: 'all 0.3s ease'
+                                            }}
+                                        >
+                                            Process to Payment
+                                        </Button>
+                                    </Box>
+                                )}
                             </Box>
                         )}
                     </CardContent>
@@ -3196,7 +3345,9 @@ export default function OrderTrackingStatus() {
                             ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'
                             : hoveredMilestone.isActive
                                 ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
-                                : 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)',
+                                : hoveredMilestone.isPaymentRequired
+                                    ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
+                                    : 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -3204,12 +3355,16 @@ export default function OrderTrackingStatus() {
                             ? '0 4px 12px rgba(34, 197, 94, 0.3)'
                             : hoveredMilestone.isActive
                                 ? '0 4px 12px rgba(59, 130, 246, 0.3)'
-                                : '0 4px 12px rgba(148, 163, 184, 0.3)'
+                                : hoveredMilestone.isPaymentRequired
+                                    ? '0 4px 12px rgba(239, 68, 68, 0.3)'
+                                    : '0 4px 12px rgba(148, 163, 184, 0.3)'
                     }}>
                         {hoveredMilestone.isCompleted ? (
                             <CheckCircleIcon sx={{color: 'white', fontSize: 20}}/>
                         ) : hoveredMilestone.isActive ? (
                             <DesignServicesIcon sx={{color: 'white', fontSize: 20}}/>
+                        ) : hoveredMilestone.isPaymentRequired ? (
+                            <PendingIcon sx={{color: 'white', fontSize: 20}}/>
                         ) : (
                             <PendingIcon sx={{color: 'white', fontSize: 20}}/>
                         )}
@@ -3331,23 +3486,27 @@ export default function OrderTrackingStatus() {
                     justifyContent: 'center'
                 }}>
                     <Chip
-                        label={hoveredMilestone.isCompleted ? 'Completed' : hoveredMilestone.isActive ? 'Active' : hoveredMilestone.isNotStarted ? 'Not Started' : 'Pending'}
+                        label={hoveredMilestone.isCompleted ? 'Completed' : hoveredMilestone.isActive ? 'Active' : hoveredMilestone.isPaymentRequired ? 'Required Payment' : hoveredMilestone.isNotStarted ? 'Not Started' : 'Pending'}
                         size="small"
                         sx={{
                             backgroundColor: hoveredMilestone.isCompleted 
                                 ? '#dcfce7'
                                 : hoveredMilestone.isActive
                                     ? '#dbeafe'
-                                    : hoveredMilestone.isNotStarted
-                                        ? '#f1f5f9'
-                                        : '#f1f5f9',
+                                    : hoveredMilestone.isPaymentRequired
+                                        ? '#fee2e2'
+                                        : hoveredMilestone.isNotStarted
+                                            ? '#f1f5f9'
+                                            : '#f1f5f9',
                             color: hoveredMilestone.isCompleted 
                                 ? '#065f46'
                                 : hoveredMilestone.isActive
                                     ? '#1e40af'
-                                    : hoveredMilestone.isNotStarted
-                                        ? '#64748b'
-                                        : '#64748b',
+                                    : hoveredMilestone.isPaymentRequired
+                                        ? '#dc2626'
+                                        : hoveredMilestone.isNotStarted
+                                            ? '#64748b'
+                                            : '#64748b',
                             fontWeight: 600,
                             fontSize: '0.75rem'
                         }}
@@ -3356,6 +3515,321 @@ export default function OrderTrackingStatus() {
             </Box>
         )}
     </Popover>
+
+    {/* Payment Dialog */}
+    <Dialog
+        open={paymentDialogOpen}
+        onClose={handleClosePaymentDialog}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+            sx: {
+                borderRadius: 3,
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
+                overflow: 'hidden'
+            }
+        }}
+    >
+        <DialogTitle sx={{
+            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            p: 3
+        }}>
+            <Box sx={{
+                p: 1,
+                borderRadius: 2,
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+            }}>
+                <MoneyIcon sx={{ fontSize: 20 }} />
+            </Box>
+            Complete Payment
+        </DialogTitle>
+
+        <DialogContent sx={{ p: 4 }}>
+            <Box sx={{ textAlign: 'center', mb: 4 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e293b', mb: 2 }}>
+                    Payment Required for Delivery
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#64748b', lineHeight: 1.6 }}>
+                    Please complete the remaining payment to proceed with delivery
+                </Typography>
+            </Box>
+
+            {/* Payment Breakdown */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mb: 4 }}>
+                {/* Base Price */}
+                <Box sx={{
+                    p: 3,
+                    borderRadius: 3,
+                    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(37, 99, 235, 0.05) 100%)',
+                    border: '1px solid rgba(59, 130, 246, 0.1)',
+                    position: 'relative'
+                }}>
+                    <Box sx={{
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                        width: '40px',
+                        height: '40px',
+                        background: 'rgba(59, 130, 246, 0.1)',
+                        borderRadius: '50%',
+                        transform: 'translate(10px, -10px)'
+                    }} />
+                    <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 2,
+                        position: 'relative',
+                        zIndex: 1
+                    }}>
+                        <Box sx={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: '50%',
+                            background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+                        }}>
+                            <MoneyIcon sx={{ color: 'white', fontSize: 16 }} />
+                        </Box>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography variant="caption" sx={{
+                                color: '#64748b',
+                                fontWeight: 500,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                                display: 'block',
+                                fontSize: '0.7rem'
+                            }}>
+                                Base Price
+                            </Typography>
+                            <Typography variant="h6" sx={{
+                                fontWeight: 700,
+                                color: '#1e293b',
+                                fontSize: '1rem'
+                            }}>
+                                {formatCurrency(orderDetail?.price || 0)}
+                            </Typography>
+                        </Box>
+                    </Box>
+                </Box>
+
+                {/* Deposit Amount (Already Paid) */}
+                <Box sx={{
+                    p: 3,
+                    borderRadius: 3,
+                    background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(22, 163, 74, 0.05) 100%)',
+                    border: '1px solid rgba(34, 197, 94, 0.1)',
+                    position: 'relative'
+                }}>
+                    <Box sx={{
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                        width: '40px',
+                        height: '40px',
+                        background: 'rgba(34, 197, 94, 0.1)',
+                        borderRadius: '50%',
+                        transform: 'translate(10px, -10px)'
+                    }} />
+                    <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 2,
+                        position: 'relative',
+                        zIndex: 1
+                    }}>
+                        <Box sx={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: '50%',
+                            background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)'
+                        }}>
+                            <CheckCircleIcon sx={{ color: 'white', fontSize: 16 }} />
+                        </Box>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography variant="caption" sx={{
+                                color: '#64748b',
+                                fontWeight: 500,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                                display: 'block',
+                                fontSize: '0.7rem'
+                            }}>
+                                Deposit (Already Paid)
+                            </Typography>
+                            <Typography variant="h6" sx={{
+                                fontWeight: 700,
+                                color: '#1e293b',
+                                fontSize: '1rem'
+                            }}>
+                                -{formatCurrency(getDepositAmount())}
+                            </Typography>
+                        </Box>
+                    </Box>
+                </Box>
+
+                {/* Remaining Amount */}
+                <Box sx={{
+                    p: 3,
+                    borderRadius: 3,
+                    background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(220, 38, 38, 0.05) 100%)',
+                    border: '1px solid rgba(239, 68, 68, 0.1)',
+                    position: 'relative'
+                }}>
+                    <Box sx={{
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                        width: '40px',
+                        height: '40px',
+                        background: 'rgba(239, 68, 68, 0.1)',
+                        borderRadius: '50%',
+                        transform: 'translate(10px, -10px)'
+                    }} />
+                    <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 2,
+                        position: 'relative',
+                        zIndex: 1
+                    }}>
+                        <Box sx={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: '50%',
+                            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+                        }}>
+                            <MoneyIcon sx={{ color: 'white', fontSize: 20 }} />
+                        </Box>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography variant="caption" sx={{
+                                color: '#64748b',
+                                fontWeight: 500,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                                display: 'block',
+                                fontSize: '0.7rem'
+                            }}>
+                                Remaining Amount
+                            </Typography>
+                            <Typography variant="h5" sx={{
+                                fontWeight: 700,
+                                color: '#dc2626',
+                                fontSize: '1.25rem'
+                            }}>
+                                {formatCurrency(getRemainingPaymentAmount())}
+                            </Typography>
+                        </Box>
+                    </Box>
+                </Box>
+            </Box>
+
+            {/* Payment Note */}
+            <Box sx={{
+                p: 3,
+                borderRadius: 3,
+                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(217, 119, 6, 0.05) 100%)',
+                border: '1px solid rgba(245, 158, 11, 0.15)',
+                borderLeft: '4px solid #f59e0b'
+            }}>
+                <Box sx={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 2
+                }}>
+                    <Box sx={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        mt: 0.5,
+                        boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)'
+                    }}>
+                        <InfoIcon sx={{ color: 'white', fontSize: 18 }} />
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                        <Typography variant="subtitle2" sx={{
+                            fontWeight: 600,
+                            color: '#92400e',
+                            fontSize: '1rem',
+                            mb: 1
+                        }}>
+                            Payment Information
+                        </Typography>
+                        <Typography variant="body2" sx={{
+                            color: '#451a03',
+                            lineHeight: 1.6,
+                            fontSize: '0.9rem'
+                        }}>
+                            You have already paid the deposit amount. This is the remaining balance required to complete your order and proceed with delivery.
+                        </Typography>
+                    </Box>
+                </Box>
+            </Box>
+        </DialogContent>
+
+        <DialogActions sx={{ p: 3, pt: 0 }}>
+            <Button
+                onClick={handleClosePaymentDialog}
+                sx={{
+                    color: '#64748b',
+                    borderColor: '#d1d5db',
+                    '&:hover': {
+                        borderColor: '#9ca3af',
+                        backgroundColor: '#f9fafb'
+                    }
+                }}
+            >
+                Cancel
+            </Button>
+            <Button
+                variant="contained"
+                onClick={handleProcessPayment}
+                disabled={processingPayment}
+                sx={{
+                    background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                    color: 'white',
+                    fontWeight: 600,
+                    '&:hover': {
+                        background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)'
+                    },
+                    '&:disabled': {
+                        background: 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)'
+                    }
+                }}
+            >
+                {processingPayment ? (
+                    <>
+                        <CircularProgress size={16} sx={{ color: 'white', mr: 1 }} />
+                        Processing...
+                    </>
+                ) : (
+                    'Proceed to Payment'
+                )}
+            </Button>
+        </DialogActions>
+    </Dialog>
         </Box>
     );
 }

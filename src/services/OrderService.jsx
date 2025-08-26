@@ -76,4 +76,25 @@ export const viewMilestone = async (orderId) => {
     return response || null
 }
 
+export const deletePhase = async (phaseId) => {
+    const response = await axiosClient.delete(`/order/phase?phaseId=${phaseId}`)
+    return response || null
+}
+
+export const confirmDeliveryOrder = async (orderId, receiverId, totalPrice, gatewayCode) => {
+    const response = await axiosClient.put("/order/status/delivery", {
+        orderId: orderId,
+        createTransactionRequest:{
+            type: 'order',
+            receiverId: receiverId,
+            itemId: orderId,
+            totalPrice: totalPrice,
+            gatewayCode: gatewayCode,
+            serviceFee: 0,
+            payFromWallet: false
+        }
+    })
+    return response || null
+}
+
 

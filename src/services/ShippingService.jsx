@@ -210,4 +210,7 @@ export const calculateFee = async (garmentShippingUID, fromDistrictId, fromWardC
     return response || null
 }
 
-export const getBanks = async 
+export const getBanks = async () => {
+    const response = await axios.get("https://api.vietqr.io/v2/banks")
+    return response || null
+}

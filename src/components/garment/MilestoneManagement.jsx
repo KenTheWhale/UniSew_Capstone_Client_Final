@@ -41,7 +41,7 @@ import {
     Info as InfoIcon
 } from '@mui/icons-material';
 import {enqueueSnackbar} from 'notistack';
-import {assignMilestone, createPhase, getGarmentOrders, updateMilestoneStatus, viewPhase} from '../../services/OrderService';
+import {assignMilestone, createPhase, deletePhase, getGarmentOrders, updateMilestoneStatus, viewPhase} from '../../services/OrderService';
 import {uploadCloudinary} from '../../services/UploadImageService';
 import {DatePicker} from '@mui/x-date-pickers/DatePicker';
 import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
@@ -49,6 +49,50 @@ import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 
 export default function MilestoneManagement() {
+    // Helper function to get display status and styling
+    const getOrderDisplayStatus = (order, orderMilestone) => {
+        let displayStatus = order.status || 'Unknown';
+        let backgroundColor = '#f3f4f6';
+        let textColor = '#6b7280';
+        
+        // Check if order is processing and all phases are completed
+        if (order.status === 'processing' && orderMilestone.length > 0) {
+            const allPhasesCompleted = orderMilestone.every(phase => phase.status === 'completed');
+            if (allPhasesCompleted) {
+                displayStatus = 'waiting for delivery';
+                backgroundColor = '#fef3c7';
+                textColor = '#d97706';
+                return { displayStatus, backgroundColor, textColor };
+            }
+        }
+        
+        // Default status styling
+        switch (order.status?.toLowerCase()) {
+            case 'pending':
+                backgroundColor = '#fef3c7';
+                textColor = '#d97706';
+                break;
+            case 'processing':
+                backgroundColor = '#dbeafe';
+                textColor = '#1d4ed8';
+                break;
+            case 'completed':
+                backgroundColor = '#d1fae5';
+                textColor = '#059669';
+                break;
+            case 'cancelled':
+            case 'canceled':
+                backgroundColor = '#fee2e2';
+                textColor = '#dc2626';
+                break;
+            default:
+                backgroundColor = '#f3f4f6';
+                textColor = '#6b7280';
+        }
+        
+        return { displayStatus, backgroundColor, textColor };
+    };
+
     // States for phases
     const [phases, setPhases] = useState([]);
     const [phasesLoading, setPhasesLoading] = useState(true);
@@ -63,6 +107,9 @@ export default function MilestoneManagement() {
     const [createPhaseDialogOpen, setCreatePhaseDialogOpen] = useState(false);
     const [newPhase, setNewPhase] = useState({name: '', description: ''});
     const [creatingPhase, setCreatingPhase] = useState(false);
+    
+    // States for phase deletion
+    const [deletingPhase, setDeletingPhase] = useState(false);
 
     // States for milestone assignment
     const [assignMilestoneDialogOpen, setAssignMilestoneDialogOpen] = useState(false);
@@ -200,6 +247,29 @@ export default function MilestoneManagement() {
             enqueueSnackbar('Failed to create phase', {variant: 'error'});
         } finally {
             setCreatingPhase(false);
+        }
+    };
+
+    const handleDeletePhase = async (phaseId) => {
+        if (!phaseId) {
+            enqueueSnackbar('Invalid phase ID', {variant: 'error'});
+            return;
+        }
+
+        try {
+            setDeletingPhase(true);
+            const response = await deletePhase(phaseId);
+            if (response && response.status === 200) {
+                enqueueSnackbar('Phase deleted successfully', {variant: 'success'});
+                fetchPhases(); // Refresh phases list
+            } else {
+                enqueueSnackbar('Failed to delete phase', {variant: 'error'});
+            }
+        } catch (error) {
+            console.error('Error deleting phase:', error);
+            enqueueSnackbar('Failed to delete phase', {variant: 'error'});
+        } finally {
+            setDeletingPhase(false);
         }
     };
 
@@ -874,11 +944,21 @@ export default function MilestoneManagement() {
                                                         alignItems: 'flex-end'
                                                     }}>
                                                         <Chip
-                                                            label="Processing"
+                                                            label={(() => {
+                                                                const { displayStatus } = getOrderDisplayStatus(order, orderMilestone);
+                                                                return displayStatus;
+                                                            })()}
                                                             sx={{
-                                                                backgroundColor: '#fef3c7',
-                                                                color: '#d97706',
-                                                                fontWeight: 'bold'
+                                                                backgroundColor: (() => {
+                                                                    const { backgroundColor } = getOrderDisplayStatus(order, orderMilestone);
+                                                                    return backgroundColor;
+                                                                })(),
+                                                                color: (() => {
+                                                                    const { textColor } = getOrderDisplayStatus(order, orderMilestone);
+                                                                    return textColor;
+                                                                })(),
+                                                                fontWeight: 'bold',
+                                                                textTransform: 'capitalize'
                                                             }}
                                                         />
                                                         <Chip
@@ -1041,11 +1121,21 @@ export default function MilestoneManagement() {
                                                         alignItems: 'flex-end'
                                                     }}>
                                                         <Chip
-                                                            label="Processing"
+                                                            label={(() => {
+                                                                const { displayStatus } = getOrderDisplayStatus(order, orderMilestone);
+                                                                return displayStatus;
+                                                            })()}
                                                             sx={{
-                                                                backgroundColor: '#fef3c7',
-                                                                color: '#d97706',
-                                                                fontWeight: 'bold'
+                                                                backgroundColor: (() => {
+                                                                    const { backgroundColor } = getOrderDisplayStatus(order, orderMilestone);
+                                                                    return backgroundColor;
+                                                                })(),
+                                                                color: (() => {
+                                                                    const { textColor } = getOrderDisplayStatus(order, orderMilestone);
+                                                                    return textColor;
+                                                                })(),
+                                                                fontWeight: 'bold',
+                                                                textTransform: 'capitalize'
                                                             }}
                                                         />
                                                         {isLoading ? (
@@ -1271,17 +1361,24 @@ export default function MilestoneManagement() {
                                             <Button
                                                 size="small"
                                                 startIcon={<DeleteIcon/>}
+                                                onClick={() => handleDeletePhase(phase.id)}
+                                                disabled={deletingPhase}
                                                 sx={{
                                                     color: '#d32f2f',
                                                     borderColor: '#d32f2f',
                                                     '&:hover': {
                                                         borderColor: '#c62828',
                                                         backgroundColor: '#ffebee'
+                                                    },
+                                                    '&:disabled': {
+                                                        color: '#9ca3af',
+                                                        borderColor: '#9ca3af',
+                                                        backgroundColor: '#f3f4f6'
                                                     }
                                                 }}
                                                 variant="outlined"
                                             >
-                                                Delete
+                                                {deletingPhase ? 'Deleting...' : 'Delete'}
                                             </Button>
                                         </Box>
                                     </CardContent>
@@ -2711,36 +2808,34 @@ export default function MilestoneManagement() {
                         >
                             Close
                         </Button>
-                        <Button
-                            variant="contained"
-                            onClick={() => {
-                                const isLastPhaseCompleted = viewingOrder?.milestone && viewingOrder.milestone.length > 0 && 
-                                   viewingOrder.milestone.find(phase => phase.stage === viewingOrder.milestone.length)?.status === 'completed';
-                                
-                                if (isLastPhaseCompleted) {
-                                    // Close dialog for "Confirm out of delivery"
-                                    setViewMilestoneDialogOpen(false);
-                                    enqueueSnackbar('Order confirmed for delivery!', {variant: 'success'});
-                                } else {
-                                    // Open upload dialog for "Process to Next Phase"
-                                    setUploadImageDialogOpen(true);
-                                }
-                            }}
-                            sx={{
-                                backgroundColor: '#3f51b5',
-                                color: 'white',
-                                fontWeight: 600,
-                                '&:hover': {
-                                    backgroundColor: '#303f9f'
-                                }
-                            }}
-                        >
-                            {viewingOrder?.milestone && viewingOrder.milestone.length > 0 && 
-                             viewingOrder.milestone.find(phase => phase.stage === viewingOrder.milestone.length)?.status === 'completed'
-                                ? 'Confirm out of delivery'
-                                : 'Process to Next Phase'
+                        {(() => {
+                            // Check if all phases are completed using phaseStatuses
+                            const allPhasesCompleted = viewingOrder?.milestone && 
+                                viewingOrder.milestone.length > 0 && 
+                                viewingOrder.milestone.every(phase => phaseStatuses[phase.stage] === 'done');
+                            
+                            // Only show "Process to Next Phase" button if not all phases are completed
+                            if (!allPhasesCompleted) {
+                                return (
+                                    <Button
+                                        variant="contained"
+                                        onClick={() => {
+                                            setUploadImageDialogOpen(true);
+                                        }}
+                                        sx={{
+                                            backgroundColor: '#3f51b5',
+                                            color: 'white',
+                                            fontWeight: 600,
+                                            '&:hover': {
+                                                backgroundColor: '#303f9f'
+                                            }
+                                        }}
+                                    >
+                                        Process to Next Phase
+                                    </Button>
+                                );
                             }
-                        </Button>
+                        })()}
                     </DialogActions>
                 </Dialog>
 
@@ -3297,75 +3392,89 @@ export default function MilestoneManagement() {
                                             </Box>
 
                                             {/* Status */}
-                                            <Box sx={{ 
-                                                flex: 1,
-                                                minWidth: { xs: '100%', sm: 'auto' }
-                                            }}>
-                                                <Box sx={{
-                                                    p: 3,
-                                                    borderRadius: 2,
-                                                    backgroundColor: 'rgba(16, 185, 129, 0.05)',
-                                                    border: '1px solid rgba(16, 185, 129, 0.1)',
-                                                    textAlign: 'center',
-                                                    transition: 'all 0.3s ease',
-                                                    height: '100%',
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    justifyContent: 'center',
-                                                    '&:hover': {
-                                                        backgroundColor: 'rgba(16, 185, 129, 0.08)',
-                                                        transform: 'translateY(-2px)'
+                                            {(() => {
+                                                const { displayStatus, backgroundColor, textColor } = getOrderDisplayStatus(selectedOrderDetail, selectedOrderDetail.milestone || []);
+                                                
+                                                // Helper function to convert hex to rgba
+                                                const hexToRgba = (hex, alpha) => {
+                                                    const r = parseInt(hex.slice(1, 3), 16);
+                                                    const g = parseInt(hex.slice(3, 5), 16);
+                                                    const b = parseInt(hex.slice(5, 7), 16);
+                                                    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                                                };
+                                                
+                                                // Helper function to get icon based on status
+                                                const getStatusIcon = () => {
+                                                    if (displayStatus === 'waiting for delivery') {
+                                                        return <TimelineIcon sx={{ color: '#d97706', fontSize: 24 }} />;
+                                                    } else if (displayStatus === 'completed') {
+                                                        return <CheckCircleIcon sx={{ color: '#10b981', fontSize: 24 }} />;
+                                                    } else if (displayStatus === 'processing') {
+                                                        return <TimelineIcon sx={{ color: '#1d4ed8', fontSize: 24 }} />;
+                                                    } else if (displayStatus === 'pending') {
+                                                        return <TimelineIcon sx={{ color: '#d97706', fontSize: 24 }} />;
+                                                    } else {
+                                                        return <CheckCircleIcon sx={{ color: '#6b7280', fontSize: 24 }} />;
                                                     }
-                                                }}>
-                                                    <Box sx={{
-                                                        width: 48,
-                                                        height: 48,
-                                                        borderRadius: '50%',
-                                                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        mx: 'auto',
-                                                        mb: 2
+                                                };
+                                                
+                                                return (
+                                                    <Box sx={{ 
+                                                        flex: 1,
+                                                        minWidth: { xs: '100%', sm: 'auto' }
                                                     }}>
-                                                        <CheckCircleIcon sx={{ color: '#10b981', fontSize: 24 }} />
-                                                    </Box>
-                                                    <Typography variant="body2" sx={{
-                                                        color: '#64748b',
-                                                        fontWeight: 500,
-                                                        mb: 1,
-                                                        textTransform: 'uppercase',
-                                                        letterSpacing: '0.5px',
-                                                        fontSize: '0.75rem'
-                                                    }}>
-                                                        Status
-                                                    </Typography>
-                                                    <Typography variant="h6" sx={{
-                                                        fontWeight: 700,
-                                                        fontSize: '1rem',
-                                                        textTransform: 'capitalize',
-                                                        color: (() => {
-                                                            const status = selectedOrderDetail.status?.toLowerCase();
-                                                            switch (status) {
-                                                                case 'pending':
-                                                                    return '#f59e0b';
-                                                                case 'processing':
-                                                                    return '#3b82f6';
-                                                                case 'completed':
-                                                                    return '#10b981';
-                                                                case 'cancelled':
-                                                                case 'canceled':
-                                                                    return '#ef4444';
-                                                                default:
-                                                                    return '#6b7280';
+                                                        <Box sx={{
+                                                            p: 3,
+                                                            borderRadius: 2,
+                                                            backgroundColor: hexToRgba(backgroundColor, 0.15),
+                                                            border: `1px solid ${hexToRgba(backgroundColor, 0.2)}`,
+                                                            textAlign: 'center',
+                                                            transition: 'all 0.3s ease',
+                                                            height: '100%',
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
+                                                            justifyContent: 'center',
+                                                            '&:hover': {
+                                                                backgroundColor: hexToRgba(backgroundColor, 0.25),
+                                                                transform: 'translateY(-2px)'
                                                             }
-                                                        })(),
-                                                        mb: 0.5
-                                                    }}>
-                                                        {selectedOrderDetail.status || 'Unknown'}
-                                                    </Typography>
-                                                </Box>
-                                            </Box>
+                                                        }}>
+                                                            <Box sx={{
+                                                                width: 48,
+                                                                height: 48,
+                                                                borderRadius: '50%',
+                                                                backgroundColor: hexToRgba(backgroundColor, 0.2),
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                mx: 'auto',
+                                                                mb: 2
+                                                            }}>
+                                                                {getStatusIcon()}
+                                                            </Box>
+                                                            <Typography variant="body2" sx={{
+                                                                color: '#64748b',
+                                                                fontWeight: 500,
+                                                                mb: 1,
+                                                                textTransform: 'uppercase',
+                                                                letterSpacing: '0.5px',
+                                                                fontSize: '0.75rem'
+                                                            }}>
+                                                                Status
+                                                            </Typography>
+                                                            <Typography variant="h6" sx={{
+                                                                fontWeight: 700,
+                                                                fontSize: '1rem',
+                                                                textTransform: 'capitalize',
+                                                                color: textColor,
+                                                                mb: 0.5
+                                                            }}>
+                                                                {displayStatus}
+                                                            </Typography>
+                                                        </Box>
+                                                    </Box>
+                                                );
+                                            })()}
                                         </Box>
                                         
                                         {/* Order Notes Section */}
