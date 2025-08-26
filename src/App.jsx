@@ -21,7 +21,7 @@ const DesignerPendingDesign = lazy(() => import("./components/designer/DesignerP
 const DesignerDashboardLayout = lazy(() => import("./layouts/designer/DesignerDashboardLayout.jsx"));
 const PrivacyPolicy = lazy(() => import("./components/auth/PrivacyPolicy.jsx"));
 const HowItWork = lazy(() => import("./components/auth/HowItWork.jsx"));
-const DesignerRegister = lazy(() => import("./components/auth/DesignerRegister.jsx"));
+const PartnerRegister = lazy(() => import("./components/auth/PartnerRegister.jsx"));
 const EmailConfirmation = lazy(() => import("./components/auth/EmailConfirmation.jsx"));
 const DesignerChat = lazy(() => import("./components/designer/DesignerChat.jsx"));
 const AppliedRequestList = lazy(() => import("./components/designer/AppliedRequestList.jsx"));
@@ -151,7 +151,7 @@ const router = createBrowserRouter([
                 path: 'register/designer',
                 element: (
                     <Suspense fallback={<LoadingFallback />}>
-                        <DesignerRegister />
+                        <PartnerRegister />
                     </Suspense>
                 )
             },

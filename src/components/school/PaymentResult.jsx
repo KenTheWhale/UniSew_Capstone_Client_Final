@@ -15,8 +15,8 @@ import {
 } from '@ant-design/icons';
 import {parseID} from "../../utils/ParseIDUtil.jsx";
 import {buyExtraRevision, pickQuotation} from "../../services/DesignService.jsx";
-import {approveQuotation} from "../../services/OrderService.jsx";
-import {createDesignTransaction, createOrderTransaction, createDepositTransaction} from "../../services/PaymentService.jsx";
+import {approveQuotation, confirmDeliveryOrder} from "../../services/OrderService.jsx";
+import {createDesignTransaction, createDepositTransaction} from "../../services/PaymentService.jsx";
 import {useEffect, useState} from 'react';
 
 export default function PaymentResult() {
@@ -125,7 +125,7 @@ export default function PaymentResult() {
         if (isDepositPayment && quotationId && orderDetails) {
             await handleSuccessfulDeposit();
         } else if (isOrderPayment && quotationId && orderDetails) {
-            console.log('Full order payment completed - no additional API call needed');
+            await handleSuccessfulOrder();
         } else if (isRevisionPurchase && revisionPurchaseDetails) {
             await handleSuccessfulRevision();
         } else if (quotationDetails) {
@@ -165,6 +165,22 @@ export default function PaymentResult() {
             console.log('Deposit payment processed successfully');
         } else {
             console.error('Failed to process deposit payment:', response);
+        }
+    };
+
+    const handleSuccessfulOrder = async () => {
+        console.log('handleSuccessfulOrder called');
+        const response = await confirmDeliveryOrder(
+            orderDetails.order.id,
+            orderDetails.quotation.garmentId,
+            parseInt(vnpAmount) / 100,
+            vnpResponseCode
+        );
+        
+        if (response && response.status === 200) {
+            console.log('Order delivery confirmed successfully');
+        } else {
+            console.error('Failed to confirm order delivery:', response);
         }
     };
 

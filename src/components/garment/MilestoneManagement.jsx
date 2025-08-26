@@ -1885,11 +1885,11 @@ export default function MilestoneManagement() {
                                     Order Deadline: {dayjs(selectedOrder.deadline).format('DD/MM/YYYY')}
                                 </Typography>
                                 <Typography variant="body2" sx={{color: '#d32f2f', mb: 0.5}}>
-                                    â€?Start date
+                                    ï¿½?Start date
                                     maximum: {dayjs(selectedOrder.deadline).subtract(2, 'day').format('DD/MM/YYYY')}
                                 </Typography>
                                 <Typography variant="body2" sx={{color: '#d32f2f'}}>
-                                    â€?End date
+                                    ï¿½?End date
                                     maximum: {dayjs(selectedOrder.deadline).subtract(1, 'day').format('DD/MM/YYYY')}
                                 </Typography>
                             </Box>

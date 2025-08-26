@@ -40,16 +40,16 @@ const statusTag = (status) => {
     let icon = null;
     switch (status) {
         case 'pending':
-            color = 'processing';
+            color = 'orange';
             icon = <ClockCircleOutlined/>;
             break;
         case 'processing':
-            color = 'purple';
+            color = 'blue';
             icon = <SyncOutlined/>;
             break;
         case 'delivering':
-            color = 'blue';
-            icon = <SyncOutlined/>;
+            color = 'purple';
+            icon = <LocalShippingIcon style={{fontSize: '14px'}}/>;
             break;
         case 'completed':
             color = 'success';
@@ -199,7 +199,8 @@ export default function SchoolOrderList() {
     }, [fetchOrders]);
 
     const handleViewDetail = (order) => {
-        if (order.status === 'processing') {
+        if (order.status === 'processing' || order.status === 'delivering') {
+            // Lưu orderId vào sessionStorage và điều hướng đến OrderTrackingStatus
             sessionStorage.setItem('trackingOrderId', order.id);
             navigate('/school/order/status');
         } else {

@@ -5,9 +5,76 @@ export const designerMaxQuotation = 5
 export const vietnamProvinces = [
     {
         id: '01', name: 'Hà Nội', districts: [
-            {id: '001', name: 'Ba Đình'},
-            {id: '002', name: 'Hoàn Kiếm'},
-            {id: '003', name: 'Hai Bà Trưng'},
+            {
+                id: '001', 
+                name: 'Ba Đình',
+                wards: [
+                    {id: '00001', name: 'Phúc Xá'},
+                    {id: '00002', name: 'Trúc Bạch'},
+                    {id: '00003', name: 'Vĩnh Phúc'},
+                    {id: '00004', name: 'Cống Vị'},
+                    {id: '00005', name: 'Liễu Giai'},
+                    {id: '00006', name: 'Nguyễn Trung Trực'},
+                    {id: '00007', name: 'Quán Thánh'},
+                    {id: '00008', name: 'Ngọc Hà'},
+                    {id: '00009', name: 'Điện Biên'},
+                    {id: '00010', name: 'Đội Cấn'},
+                    {id: '00011', name: 'Ngọc Khánh'},
+                    {id: '00012', name: 'Kim Mã'},
+                    {id: '00013', name: 'Giảng Võ'},
+                    {id: '00014', name: 'Thành Công'}
+                ]
+            },
+            {
+                id: '002', 
+                name: 'Hoàn Kiếm',
+                wards: [
+                    {id: '00015', name: 'Phúc Tân'},
+                    {id: '00016', name: 'Đồng Xuân'},
+                    {id: '00017', name: 'Hàng Mã'},
+                    {id: '00018', name: 'Hàng Buồm'},
+                    {id: '00019', name: 'Hàng Đào'},
+                    {id: '00020', name: 'Hàng Bồ'},
+                    {id: '00021', name: 'Cửa Đông'},
+                    {id: '00022', name: 'Lý Thái Tổ'},
+                    {id: '00023', name: 'Hàng Bạc'},
+                    {id: '00024', name: 'Hàng Gai'},
+                    {id: '00025', name: 'Cửa Nam'},
+                    {id: '00026', name: 'Hàng Trống'},
+                    {id: '00027', name: 'Hàng Bông'},
+                    {id: '00028', name: 'Tràng Tiền'},
+                    {id: '00029', name: 'Trần Hưng Đạo'},
+                    {id: '00030', name: 'Phan Chu Trinh'},
+                    {id: '00031', name: 'Hàng Bài'},
+                    {id: '00032', name: 'Hàng Thùng'}
+                ]
+            },
+            {
+                id: '003', 
+                name: 'Hai Bà Trưng',
+                wards: [
+                    {id: '00033', name: 'Phương Mai'},
+                    {id: '00034', name: 'Ngã Tư Sở'},
+                    {id: '00035', name: 'Khương Thượng'},
+                    {id: '00036', name: 'Nguyễn Du'},
+                    {id: '00037', name: 'Bùi Thị Xuân'},
+                    {id: '00038', name: 'Phố Huế'},
+                    {id: '00039', name: 'Đống Mác'},
+                    {id: '00040', name: 'Thanh Lương'},
+                    {id: '00041', name: 'Thanh Nhàn'},
+                    {id: '00042', name: 'Cầu Dền'},
+                    {id: '00043', name: 'Bách Khoa'},
+                    {id: '00044', name: 'Đồng Tâm'},
+                    {id: '00045', name: 'Vĩnh Tuy'},
+                    {id: '00046', name: 'Bạch Mai'},
+                    {id: '00047', name: 'Quỳnh Mai'},
+                    {id: '00048', name: 'Quỳnh Lôi'},
+                    {id: '00049', name: 'Minh Khai'},
+                    {id: '00050', name: 'Trương Định'},
+                    {id: '00051', name: 'Tân Mai'},
+                    {id: '00052', name: 'Hoàng Văn Thụ'}
+                ]
+            },
             {id: '004', name: 'Đống Đa'},
             {id: '005', name: 'Tây H�?},
             {id: '006', name: 'Cầu Giấy'},

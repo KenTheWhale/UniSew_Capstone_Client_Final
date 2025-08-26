@@ -83,74 +83,74 @@ function TopBar() {
                         </Typography>
                     </Box>
                 </Box>
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
-                {}
+                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                    <Button
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                            color: 'white',
+                            borderColor: 'rgba(255,255,255,0.3)',
+                            fontSize: 12,
+                            px: 2,
+                            '&:hover': {borderColor: 'white', bgcolor: 'rgba(255,255,255,0.1)'}
+                        }}
+                        onClick={handleRegisterClick}
+                    >
+                        Register to Become a Partner
+                    </Button>
+                    <Menu
+                        anchorEl={anchorEl}
+                        open={Boolean(anchorEl)}
+                        onClose={handleClose}
+                        anchorOrigin={{vertical: 'bottom', horizontal: 'left'}}
+                        transformOrigin={{vertical: 'top', horizontal: 'left'}}
+                        PaperProps={{
+                            sx: {
+                                borderRadius: 2,
+                                boxShadow: '0 6px 24px rgba(25, 118, 210, 0.15)',
+                                minWidth: 200,
+                                mt: 1,
+                                p: 0.5,
+                                bgcolor: 'white',
+                            }
+                        }}
+                    >
+                        <MenuItem
+                            onClick={handleClose}
+                            sx={{
+                                fontSize: 17,
+                                fontWeight: 500,
+                                color: '#1976d2',
+                                borderRadius: 1,
+                                gap: 1.5,
+                                '&:hover': {
+                                    bgcolor: 'rgba(25,118,210,0.08)',
+                                    color: '#1565c0',
+                                },
+                                transition: 'background 0.2s, color 0.2s',
+                            }}
+                        >
+                            <FactoryIcon sx={{color: '#1976d2', mr: 1}}/> Garment Factory
+                        </MenuItem>
+                        <MenuItem
+                            onClick={() => handleRegister('designer')}
+                            sx={{
+                                fontSize: 17,
+                                fontWeight: 500,
+                                color: '#1976d2',
+                                borderRadius: 1,
+                                gap: 1.5,
+                                '&:hover': {
+                                    bgcolor: 'rgba(25,118,210,0.08)',
+                                    color: '#1565c0',
+                                },
+                                transition: 'background 0.2s, color 0.2s',
+                            }}
+                        >
+                            <DesignServicesIcon sx={{color: '#1976d2', mr: 1}}/> Designer
+                        </MenuItem>
+                    </Menu>
+                </Box>
             </Container>
         </Box>
     );
@@ -475,7 +475,7 @@ function Footer() {
                             CONTACT US
                         </Typography>
                         <Typography variant="body2" sx={{mb: 1, color: 'rgba(255,255,255,0.9)'}}>
-                            7 Đ. D1, Long Thạnh M�? Th�?Đức, H�?Chí Minh<br/>VietNam
+                            7 Đ. D1, Long Thạnh M�? Th�?Đức, H�?Chí Minh<br/>VietNam
                         </Typography>
                         <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mb: 0.5}}>
                             <PhoneIcon sx={{fontSize: 18, color: 'rgba(255,255,255,0.8)'}}/>
