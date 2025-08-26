@@ -131,7 +131,7 @@ export default function SchoolProfile() {
             py: 4
         }}>
             <Container maxWidth="lg">
-                {/* Header */}
+                {}
                 <Box sx={{mb: 4, textAlign: 'center'}}>
                     <Typography
                         variant="h3"
@@ -152,9 +152,9 @@ export default function SchoolProfile() {
                     </Typography>
                 </Box>
 
-                {/* Main Flex Container */}
+                {}
                 <Box sx={{display: 'flex', gap: 4}}>
-                    {/* School Account Section */}
+                    {}
                     <Box sx={{flex: 1}}>
                         <Paper
                             elevation={8}
@@ -178,7 +178,7 @@ export default function SchoolProfile() {
                                 }
                             }}
                         >
-                            {/* Section Header */}
+                            {}
                             <Box sx={{
                                 display: 'flex',
                                 alignItems: 'center',
@@ -215,9 +215,9 @@ export default function SchoolProfile() {
                                 </Tooltip>
                             </Box>
 
-                            {/* Profile Section */}
+                            {}
                             <Box sx={{textAlign: 'center', mb: 4}}>
-                                {/* Avatar */}
+                                {}
                                 <Box sx={{position: 'relative', display: 'inline-block', mb: 3}}>
                                     <Avatar
                                         src={profile.avatar}
@@ -253,7 +253,7 @@ export default function SchoolProfile() {
                                     />
                                 </Box>
 
-                                {/* School Name */}
+                                {}
                                 <Typography
                                     variant="h5"
                                     sx={{
@@ -265,7 +265,7 @@ export default function SchoolProfile() {
                                     {profile.name}
                                 </Typography>
 
-                                {/* Business Name */}
+                                {}
                                 <Typography
                                     variant="body1"
                                     sx={{
@@ -278,7 +278,7 @@ export default function SchoolProfile() {
                                 </Typography>
                             </Box>
 
-                            {/* Account Information */}
+                            {}
                             <Box sx={{mb: 4}}>
                                 <Typography
                                     variant="h5"
@@ -471,7 +471,7 @@ export default function SchoolProfile() {
                         </Paper>
                     </Box>
 
-                    {/* Payment Information Section */}
+                    {}
                     <Box sx={{flex: 1}}>
                         <Paper
                             elevation={8}
@@ -558,7 +558,7 @@ export default function SchoolProfile() {
                                                             color: '#1e293b',
                                                             fontSize: '16px'
                                                         }}>
-                                                            Card Information
+                                                            Bank Information
                                                         </Typography>
                                                     </Box>
                                                     <Box sx={{
@@ -567,36 +567,20 @@ export default function SchoolProfile() {
                                                         flexDirection: 'column',
                                                         justifyContent: 'center'
                                                     }}>
-                                                        <Box sx={{mb: 1.5}}>
-                                                            <Typography variant="body2" sx={{
-                                                                color: '#64748b',
-                                                                mb: 0.5,
-                                                                fontSize: '12px'
-                                                            }}>
-                                                                Card Number
-                                                            </Typography>
-                                                            <Typography variant="body1" sx={{
-                                                                color: '#475569',
-                                                                fontWeight: 500,
-                                                                fontSize: '14px'
-                                                            }}>
-                                                                {wallet.cardNumber !== 'N/A' ? wallet.cardNumber : 'No card linked'}
-                                                            </Typography>
-                                                        </Box>
                                                         <Box>
                                                             <Typography variant="body2" sx={{
                                                                 color: '#64748b',
                                                                 mb: 0.5,
                                                                 fontSize: '12px'
                                                             }}>
-                                                                Expiration Date
+                                                                Bank Account Number
                                                             </Typography>
                                                             <Typography variant="body1" sx={{
                                                                 color: '#475569',
                                                                 fontWeight: 500,
                                                                 fontSize: '14px'
                                                             }}>
-                                                                {wallet.cardExpiration !== 'N/A' ? wallet.cardExpiration : 'N/A'}
+                                                                {wallet.bankAccountNumber !== 'N/A' ? wallet.bankAccountNumber : 'No bank account linked'}
                                                             </Typography>
                                                         </Box>
                                                     </Box>

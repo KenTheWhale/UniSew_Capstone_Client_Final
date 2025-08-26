@@ -158,7 +158,7 @@ export const getDistricts = async (provinceId) => {
 }
 
 export const getWards = async (districtId) => {
-    const response = await axios.post("https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id",
+    const response = await axios.post("https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/ward",
         {
             'district_id': districtId
         },
@@ -210,4 +210,3 @@ export const calculateFee = async (garmentShippingUID, fromDistrictId, fromWardC
     return response || null
 }
 
-export const getBanks = async 

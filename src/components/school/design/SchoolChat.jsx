@@ -54,7 +54,6 @@ import {getAccessCookie} from "../../../utils/CookieUtil.jsx";
 
 const {TextArea} = Input;
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function statusTag(status) {
     let color;
     let icon = null;
@@ -82,13 +81,11 @@ export function statusTag(status) {
     return <Tag style={{margin: 0}} color={color}>{icon} {status}</Tag>;
 }
 
-// Format design category for display across components
 const formatCategory = (category) => {
     const v = (category || '').toLowerCase();
     return v === 'pe' ? 'physical education' : (category || '');
 };
 
-// Function to get appropriate icon based on item type
 const getItemIcon = (itemType) => {
     const type = itemType?.toLowerCase() || '';
 
@@ -202,7 +199,6 @@ export function UseDesignChatMessages(roomId) {
 }
 
 
-// New RevisionRequestModal component
 function DeliveryDetailModal({visible, onCancel, delivery}) {
     if (!delivery) return null;
 
@@ -223,7 +219,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                 }
             }}
         >
-            {/* Header */}
+            {}
             <Box sx={{
                 background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
                 color: 'white',
@@ -267,13 +263,13 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                 </Box>
             </Box>
 
-            {/* Content */}
+            {}
             <Box sx={{
                 display: 'flex',
                 height: 'calc(90vh - 120px)',
                 overflow: 'hidden'
             }}>
-                {/* Left Side - Basic Info */}
+                {}
                 <Box sx={{
                     width: '35%',
                     p: 3,
@@ -373,7 +369,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                     </Box>
                 </Box>
 
-                {/* Right Side - Design Items */}
+                {}
                 <Box sx={{
                     width: '65%',
                     p: 3,
@@ -389,7 +385,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                     </Box>
 
                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
-                        {/* Group items by gender */}
+                        {}
                         {(() => {
                             const boyItems = delivery.deliveryItems?.filter(item =>
                                 item.designItem?.gender?.toLowerCase() === 'boy'
@@ -404,7 +400,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
 
                             return (
                                 <>
-                                    {/* Boy Section */}
+                                    {}
                                     {boyItems.length > 0 && (
                                         <Box sx={{mb: 3}}>
                                             <Box sx={{
@@ -443,7 +439,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                                                             transform: 'translateY(-2px)'
                                                         }
                                                     }}>
-                                                        {/* Item Header */}
+                                                        {}
                                                         <Box
                                                             sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
                                                             <Box sx={{
@@ -471,7 +467,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                                                             </Box>
                                                         </Box>
 
-                                                        {/* Item Details Grid */}
+                                                        {}
                                                         <Row gutter={[24, 16]}>
                                                             <Col
                                                                 span={item.designItem?.type?.toLowerCase().includes('shirt') ? 8 : 12}>
@@ -557,7 +553,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                                                         </Row>
 
 
-                                                        {/* Design Images */}
+                                                        {}
                                                         <Row gutter={[24, 16]} style={{marginTop: 16}}>
                                                             <Col span={12}>
                                                                 <Box sx={{
@@ -611,7 +607,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                                                             </Col>
                                                         </Row>
 
-                                                        {/* Item Note */}
+                                                        {}
                                                         {item.designItem?.note && (
                                                             <Box sx={{
                                                                 mt: 2,
@@ -635,7 +631,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                                         </Box>
                                     )}
 
-                                    {/* Girl Section */}
+                                    {}
                                     {girlItems.length > 0 && (
                                         <Box sx={{mb: 3}}>
                                             <Box sx={{
@@ -674,7 +670,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                                                             transform: 'translateY(-2px)'
                                                         }
                                                     }}>
-                                                        {/* Item Header */}
+                                                        {}
                                                         <Box
                                                             sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
                                                             <Box sx={{
@@ -702,7 +698,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                                                             </Box>
                                                         </Box>
 
-                                                        {/* Item Details Grid */}
+                                                        {}
                                                         <Row gutter={[24, 16]}>
                                                             <Col
                                                                 span={item.designItem?.type?.toLowerCase().includes('shirt') ? 8 : 12}>
@@ -787,7 +783,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                                                             )}
                                                         </Row>
 
-                                                        {/* Design Images */}
+                                                        {}
                                                         <Row gutter={[24, 16]} style={{marginTop: 16}}>
                                                             <Col span={12}>
                                                                 <Box sx={{
@@ -841,7 +837,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                                                             </Col>
                                                         </Row>
 
-                                                        {/* Item Note */}
+                                                        {}
                                                         {item.designItem?.note && (
                                                             <Box sx={{
                                                                 mt: 2,
@@ -865,7 +861,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                                         </Box>
                                     )}
 
-                                    {/* Others Section */}
+                                    {}
                                     {otherItems.length > 0 && (
                                         <Box sx={{mb: 3}}>
                                             <Box sx={{
@@ -904,7 +900,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                                                             transform: 'translateY(-2px)'
                                                         }
                                                     }}>
-                                                        {/* Item Header */}
+                                                        {}
                                                         <Box
                                                             sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
                                                             <Box sx={{
@@ -932,7 +928,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                                                             </Box>
                                                         </Box>
 
-                                                        {/* Item Details Grid */}
+                                                        {}
                                                         <Row gutter={[24, 16]}>
                                                             <Col
                                                                 span={item.designItem?.type?.toLowerCase().includes('shirt') ? 8 : 12}>
@@ -1017,7 +1013,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                                                             )}
                                                         </Row>
 
-                                                        {/* Design Images */}
+                                                        {}
                                                         <Row gutter={[24, 16]} style={{marginTop: 16}}>
                                                             <Col span={12}>
                                                                 <Box sx={{
@@ -1071,7 +1067,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                                                             </Col>
                                                         </Row>
 
-                                                        {/* Item Note */}
+                                                        {}
                                                         {item.designItem?.note && (
                                                             <Box sx={{
                                                                 mt: 2,
@@ -1101,7 +1097,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                 </Box>
             </Box>
 
-            {/* Footer */}
+            {}
             <Box sx={{
                 p: 2,
                 borderTop: '1px solid #e2e8f0',
@@ -1250,7 +1246,6 @@ function BuyMoreRevisionsModal({visible, onCancel, onSubmit, extraRevisionPrice}
             .then(values => {
                 const totalPrice = calculatePrice(values.revisionQuantity);
                 if (totalPrice > 200000000) {
-                    // Show error message
                     return;
                 }
                 onSubmit(values);
@@ -1260,15 +1255,13 @@ function BuyMoreRevisionsModal({visible, onCancel, onSubmit, extraRevisionPrice}
             });
     };
 
-    // Calculate price based on quantity using extraRevisionPrice from API
     const calculatePrice = (quantity) => {
-        if (quantity === 9999) return extraRevisionPrice * 20; // Unlimited = 20x normal price
+        if (quantity === 9999) return extraRevisionPrice * 20;
         return quantity * extraRevisionPrice;
     };
 
-    // Calculate max quantity allowed (200 million VND limit)
     const maxQuantityAllowed = () => {
-        const maxPrice = 200000000; // 200 million VND
+        const maxPrice = 200000000;
         return Math.floor(maxPrice / extraRevisionPrice);
     };
 
@@ -1346,7 +1339,7 @@ function BuyMoreRevisionsModal({visible, onCancel, onSubmit, extraRevisionPrice}
                     />
                 </Form.Item>
 
-                {/* Price Display */}
+                {}
                 <Box sx={{
                     p: 2,
                     backgroundColor: '#f6ffed',
@@ -1426,7 +1419,6 @@ export default function SchoolChat() {
     }, [chatMessages, isChatOpen]);
 
 
-    // Fetch design deliveries from API
     const fetchDesignDeliveries = async (designRequestId) => {
         try {
             setLoadingDeliveries(true);
@@ -1436,7 +1428,6 @@ export default function SchoolChat() {
                 const deliveries = response.data.body || [];
                 setDesignDeliveries(deliveries);
 
-                // Check if there's a final delivery
                 const finalDelivery = deliveries.find(delivery => delivery.isFinal);
                 if (finalDelivery) {
                     setFinalDelivery(finalDelivery);
@@ -1454,7 +1445,6 @@ export default function SchoolChat() {
         }
     };
 
-    // Fetch request details from API
     const fetchRequestDetails = async (requestId) => {
         try {
             const response = await getDesignRequestDetailForSchool(requestId);
@@ -1462,7 +1452,6 @@ export default function SchoolChat() {
                 console.log("Request details: ", response.data.body);
                 const request = response.data.body;
                 setRequestData(request);
-                // Fetch deliveries and revision requests for this request
                 if (request.id) {
                     fetchDesignDeliveries(request.id);
                     fetchRevisionRequests(request.id);
@@ -1477,7 +1466,6 @@ export default function SchoolChat() {
         }
     };
 
-    // Fetch revision requests from API
     const fetchRevisionRequests = async (requestId) => {
         try {
             setLoadingRevisionRequests(true);
@@ -1500,15 +1488,12 @@ export default function SchoolChat() {
     useEffect(() => {
         const storedRequestId = localStorage.getItem('currentDesignRequestId');
         if (storedRequestId) {
-            // Fetch request details using API
             fetchRequestDetails(storedRequestId);
         } else {
-            // If no request ID in localStorage, redirect to Design Management
             window.location.href = '/school/design';
         }
     }, []);
 
-    // Close emoji picker when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
@@ -1536,7 +1521,6 @@ export default function SchoolChat() {
     const handleImageUpload = (event) => {
         const file = event.target.files[0];
         if (file) {
-            // Validate file type
             if (!file.type.startsWith('image/')) {
                 enqueueSnackbar('Invalid file type. Only images are accepted.', {variant: 'error'});
                 return;
@@ -1561,7 +1545,7 @@ export default function SchoolChat() {
 
     const onEmojiClick = (emojiData) => {
         setNewMessage(prevMsg => prevMsg + emojiData.emoji);
-        setShowEmojiPicker(false); // Hide picker after selecting
+        setShowEmojiPicker(false);
     };
 
     const handleOpenRevisionModal = (deliveryId) => {
@@ -1588,7 +1572,6 @@ export default function SchoolChat() {
             const extraRevisionPrice = requestData?.finalDesignQuotation?.extraRevisionPrice || 0;
             const price = quantity * extraRevisionPrice;
 
-            // Store revision purchase details in sessionStorage for PaymentResult
             const revisionPurchaseDetails = {
                 requestId: requestData?.id,
                 revisionQuantity: quantity,
@@ -1598,19 +1581,16 @@ export default function SchoolChat() {
             };
             sessionStorage.setItem('revisionPurchaseDetails', JSON.stringify(revisionPurchaseDetails));
 
-            // Get payment URL using getPaymentUrl API
             const amount = price;
             const description = "buy extra revision";
             const orderType = "revision";
             const returnURL = "/school/payment/result";
 
-            // Store payment type in sessionStorage for PaymentResult component
             sessionStorage.setItem('currentPaymentType', orderType);
 
             const paymentResponse = await getPaymentUrl(amount, description, orderType, returnURL);
 
             if (paymentResponse && paymentResponse.status === 200 && paymentResponse.data.body) {
-                // Redirect to payment gateway
                 window.location.href = paymentResponse.data.body.url;
             } else {
                 enqueueSnackbar('Failed to get payment URL. Please try again.', {variant: 'error'});
@@ -1646,25 +1626,21 @@ export default function SchoolChat() {
     const handleConfirmMakeFinal = async () => {
         if (deliveryToMakeFinal) {
             try {
-                // Call makeDesignFinal API
                 const response = await makeDesignFinal({
                     deliveryId: deliveryToMakeFinal.id
                 });
 
                 if (response && response.status === 201) {
-                    // Set final delivery data
                     setFinalDelivery(deliveryToMakeFinal);
                     setIsFinalDesignSet(true);
 
                     enqueueSnackbar(`'${deliveryToMakeFinal.name}' has been set as Final Delivery!`, {variant: 'success'});
                     handleCloseConfirmFinalModal();
 
-                    // Refresh deliveries to get updated status
                     if (requestData?.id) {
                         fetchDesignDeliveries(requestData.id);
                     }
 
-                    // Fetch latest request data from API instead of manually updating
                     try {
                         const latestResponse = await getDesignRequestDetailForSchool(requestData.id);
                         if (latestResponse && latestResponse.status === 200) {
@@ -1694,25 +1670,21 @@ export default function SchoolChat() {
         try {
             console.log('Revision Request:', values);
 
-            // Prepare data for createRevisionRequest API
             const revisionData = {
                 deliveryId: selectedDeliveryIdForRevision,
                 note: values.revisionDescription
             };
 
-            // Call createRevisionRequest API
             const response = await createRevisionRequest(revisionData);
 
             if (response && response.status === 201) {
                 enqueueSnackbar('Revision request submitted successfully!', {variant: 'success'});
                 handleCloseRevisionModal();
 
-                // Refresh deliveries and revision requests
                 if (requestData?.id) {
                     fetchDesignDeliveries(requestData.id);
                     fetchRevisionRequests(requestData.id);
 
-                    // Fetch latest request data from API instead of manually updating
                     try {
                         const latestResponse = await getDesignRequestDetailForSchool(requestData.id);
                         if (latestResponse && latestResponse.status === 200) {
@@ -1743,7 +1715,7 @@ export default function SchoolChat() {
             <Container maxWidth="xl" sx={{height: 'max-content'}}>
                 <Box sx={{display: 'flex', flexDirection: 'column', height: '100%'}}>
 
-                    {/* Header Section */}
+                    {}
                     <Box sx={{
                         mb: 3,
                         p: 2,
@@ -1811,7 +1783,7 @@ export default function SchoolChat() {
                         </Box>
                     </Box>
 
-                    {/* Main Content */}
+                    {}
                     <Box sx={{
                         display: 'flex',
                         flexDirection: 'column',
@@ -1823,7 +1795,7 @@ export default function SchoolChat() {
                     }}>
 
 
-                        {/* Top Row - Chat and Deliveries */}
+                        {}
                         <Box sx={{display: 'flex', gap: 3, flex: 2}}>
 
 
@@ -1837,7 +1809,7 @@ export default function SchoolChat() {
                                 minWidth: 0
                             }}>
 
-                                {/* Design Deliveries Section */}
+                                {}
                                 <Paper
                                     elevation={0}
                                     sx={{
@@ -1852,7 +1824,7 @@ export default function SchoolChat() {
                                         position: 'relative'
                                     }}
                                 >
-                                    {/* Deliveries Header */}
+                                    {}
                                     <Box sx={{
                                         py: 2.5,
                                         px: 4,
@@ -1951,7 +1923,7 @@ export default function SchoolChat() {
                                         </Box>
                                     </Box>
 
-                                    {/* Deliveries List */}
+                                    {}
                                     <Box sx={{
                                         flex: 1,
                                         p: 2,
@@ -2117,7 +2089,7 @@ export default function SchoolChat() {
                                     </Box>
                                 </Paper>
 
-                                {/* Revision Requests Section */}
+                                {}
                                 <Paper
                                     elevation={0}
                                     sx={{
@@ -2133,7 +2105,7 @@ export default function SchoolChat() {
                                         minWidth: 0
                                     }}
                                 >
-                                    {/* Revision Requests Header */}
+                                    {}
                                     <Box sx={{
                                         py: 2.5,
                                         px: 4,
@@ -2196,7 +2168,7 @@ export default function SchoolChat() {
                                         </Box>
                                     </Box>
 
-                                    {/* Revision Requests List */}
+                                    {}
                                     <Box sx={{flex: 1, p: 2, overflowY: 'auto'}}>
                                         {loadingRevisionRequests ? (
                                             <Box sx={{
@@ -2350,7 +2322,7 @@ export default function SchoolChat() {
                             </Box>
                         </Box>
 
-                        {/* Bottom Row - Final Delivery */}
+                        {}
                         <Paper
                             elevation={0}
                             sx={{
@@ -2367,7 +2339,7 @@ export default function SchoolChat() {
                                 flex: 1
                             }}
                         >
-                            {/* Final Delivery Header */}
+                            {}
                             <Box sx={{
                                 py: 2,
                                 px: 3,
@@ -2397,7 +2369,7 @@ export default function SchoolChat() {
                                 </Box>
                             </Box>
 
-                            {/* Final Delivery Content */}
+                            {}
                             <Box sx={{
                                 p: 3,
                                 flex: 1,
@@ -2538,7 +2510,7 @@ export default function SchoolChat() {
                 )}
             </Modal>
 
-            {/* Floating Chat Bubble - only on SchoolChat page */}
+            {}
             <Box sx={{position: 'fixed', bottom: 24, right: 24, zIndex: 2000}}>
                 {isChatOpen ? (
                     <Paper

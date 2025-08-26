@@ -7,7 +7,7 @@ import {CheckCircleOutline, Support} from "@mui/icons-material";
 export default function About() {
   return (
     <Box sx={{ backgroundColor: '#fafafa' }}>
-      {/* Hero Section */}
+      {}
       <Box
         sx={{
           background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
@@ -79,7 +79,7 @@ export default function About() {
         </Container>
       </Box>
 
-      {/* Company Overview */}
+      {}
       <Box sx={{ py: { xs: 8, md: 12 }, backgroundColor: "white" }}>
         <Container maxWidth="lg">
           <Grid container spacing={6} alignItems="center">
@@ -120,7 +120,7 @@ export default function About() {
                   }
                 }}
               >
-                {/* Logo Icon */}
+                {}
                 <Box
                   sx={{
                     width: { xs: 60, md: 70 },
@@ -147,7 +147,7 @@ export default function About() {
                   <SchoolIcon sx={{ fontSize: { xs: 30, md: 35 }, color: "white" }} />
                 </Box>
 
-                {/* Company Name */}
+                {}
                 <Typography
                   variant="h2"
                   sx={{
@@ -163,7 +163,7 @@ export default function About() {
                   UniSew
                 </Typography>
 
-                {/* Tagline */}
+                {}
                 <Typography
                   variant="h6"
                   sx={{
@@ -181,7 +181,7 @@ export default function About() {
                 </Typography>
               </Box>
 
-              {/* Add shimmer animation */}
+              {}
               <style>
                 {`
                   @keyframes shimmer {
@@ -250,7 +250,7 @@ export default function About() {
         </Container>
       </Box>
 
-      {/* Key Features */}
+      {}
       <Box sx={{ py: { xs: 8, md: 12 }, backgroundColor: "#f8fafc" }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: "center", mb: 8 }}>
@@ -423,7 +423,7 @@ export default function About() {
         </Container>
       </Box>
 
-      {/* How It Works */}
+      {}
       <Box sx={{ py: { xs: 8, md: 12 }, backgroundColor: "white" }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: "center", mb: 6 }}>
@@ -546,7 +546,7 @@ export default function About() {
         </Container>
       </Box>
 
-      {/* Stats Section */}
+      {}
       <Box sx={{ py: { xs: 8, md: 12 }, backgroundColor: "#1976d2", color: "white" }}>
         <Container maxWidth="lg">
           <Grid container spacing={4} sx={{ textAlign: "center" }} justifyContent="center" alignItems="center">
@@ -596,7 +596,7 @@ export default function About() {
         </Container>
       </Box>
 
-      {/* Call to Action */}
+      {}
       <Box sx={{ py: { xs: 8, md: 12 }, backgroundColor: "#f8fafc", textAlign: "center" }}>
         <Container maxWidth="md">
           <Typography

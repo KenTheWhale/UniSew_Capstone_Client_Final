@@ -4,13 +4,12 @@ import {ContactSupport, Email, LocationOn, Phone, Send} from '@mui/icons-materia
 export default function Contact() {
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Handle form submission logic here
         console.log('Form submitted');
     };
 
     return (
         <Box sx={{ backgroundColor: '#fafafa', minHeight: '100vh' }}>
-            {/* Hero Section */}
+            {}
             <Box
                 sx={{
                     background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
@@ -59,10 +58,10 @@ export default function Contact() {
                 </Container>
             </Box>
 
-            {/* Main Content */}
+            {}
             <Container maxWidth={false} sx={{ width: '80vw', py: { xs: 6, md: 10 } }}>
                 <Grid container spacing={3} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    {/* Section Header */}
+                    {}
                     <Grid item xs={12}>
                         <Box sx={{ textAlign: "center", mb: 8 }}>
                             <Typography
@@ -91,7 +90,7 @@ export default function Contact() {
                         </Box>
                                 </Grid>
 
-                    {/* Contact Cards in 3 columns */}
+                    {}
                     <Grid item xs={12}>
                         <Grid container spacing={3} justifyContent="center">
                             <Grid item xs={12} sm={6} md={4} sx={{ maxWidth: 350 }}>
@@ -237,7 +236,7 @@ export default function Contact() {
                                 </Grid>
                             </Grid>
 
-                            {/* Contact Form */}
+                            {}
                     <Grid item xs={12}>
                         <Paper
                             elevation={0}
@@ -445,7 +444,7 @@ export default function Contact() {
                 </Grid>
             </Container>
 
-            {/* FAQ Section */}
+            {}
             <Box sx={{ py: { xs: 6, md: 10 }, backgroundColor: "white", width: '100%' }}>
                 <Container maxWidth={false} sx={{ width: '80vw' }}>
                     <Box sx={{ textAlign: "center", mb: 6 }}>

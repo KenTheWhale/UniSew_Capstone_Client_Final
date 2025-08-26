@@ -12,10 +12,10 @@ import {
     Badge
 } from '@mui/material';
 import {
-    AccountCircle, 
-    Assignment, 
-    LocalShipping, 
-    Logout, 
+    AccountCircle,
+    Assignment,
+    LocalShipping,
+    Logout,
     Flag,
     Assessment,
     Settings,
@@ -46,7 +46,7 @@ function Navbar({userObj, activeMenu, navigate}) {
                 },
             }}
         >
-            {/* Sidebar Header */}
+            {}
             <Box sx={{ p: 3, background: "linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)", color: "white", textAlign: "center" }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
                     Garment Dashboard
@@ -56,9 +56,9 @@ function Navbar({userObj, activeMenu, navigate}) {
                 </Typography>
             </Box>
 
-            {/* Navigation */}
+            {}
             <Box sx={{ p: 2 }}>
-                {/* Orders Section */}
+                {}
                 <Typography variant="overline" sx={{ px: 2, pb: 1, color: "#6c757d", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "1px" }}>
                     Order Management
                 </Typography>
@@ -92,7 +92,7 @@ function Navbar({userObj, activeMenu, navigate}) {
 
                 <Divider sx={{ my: 3, borderColor: "#e9ecef" }} />
 
-                {/* Production Section */}
+                {}
                 <Typography variant="overline" sx={{ px: 2, pb: 1, color: "#6c757d", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "1px" }}>
                     PRODUCTION
                 </Typography>
@@ -126,7 +126,7 @@ function Navbar({userObj, activeMenu, navigate}) {
 
                 <Divider sx={{ my: 3, borderColor: "#e9ecef" }} />
 
-                {/* Analytics Section */}
+                {}
                 <Typography variant="overline" sx={{ px: 2, pb: 1, color: "#6c757d", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "1px" }}>
                     ANALYTICS
                 </Typography>
@@ -160,7 +160,7 @@ function Navbar({userObj, activeMenu, navigate}) {
 
                 <Divider sx={{ my: 3, borderColor: "#e9ecef" }} />
 
-                {/* Account Management Section */}
+                {}
                 <Typography variant="overline" sx={{ px: 2, pb: 1, color: "#6c757d", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "1px" }}>
                     ACCOUNT MANAGEMENT
                 </Typography>
@@ -231,7 +231,6 @@ export default function GarmentDashboardLayout() {
         }
     }, []);
 
-    // Determine active menu based on current URL
     useEffect(() => {
         const pathname = location.pathname;
         if (pathname.includes('/garment/pending/order')) {
@@ -280,8 +279,8 @@ export default function GarmentDashboardLayout() {
     return (
         <Box sx={{display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#fafafa', overflow: 'hidden'}}>
             <CssBaseline />
-            
-            {/* Header */}
+
+            {}
             <AppBar
                 position="static"
                 sx={{
@@ -351,7 +350,7 @@ export default function GarmentDashboardLayout() {
                                     <Factory sx={{ fontSize: 16, color: '#3f51b5' }} />
                                 }
                             >
-                                <Avatar 
+                                <Avatar
                                     sx={{ width: 32, height: 32, bgcolor: "rgba(255, 255, 255, 0.2)" }}
                                     src={userObj?.customer?.avatar}
                                     slotProps={{
@@ -391,11 +390,11 @@ export default function GarmentDashboardLayout() {
                             }}
                         >
                             <Box sx={{ p: 2 }}>
-                                <Box sx={{ 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    gap: 2, 
-                                    p: 1.5, 
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    p: 1.5,
                                     borderRadius: 1,
                                     mb: 1,
                                     background: 'rgba(63, 81, 181, 0.05)'
@@ -419,9 +418,9 @@ export default function GarmentDashboardLayout() {
                                         </Typography>
                                     </Box>
                                 </Box>
-                                
+
                                 <Divider sx={{ my: 1 }} />
-                                
+
                                 <Box
                                     sx={{
                                         display: 'flex',
@@ -452,7 +451,7 @@ export default function GarmentDashboardLayout() {
                 </Toolbar>
             </AppBar>
 
-            {/* Main Content */}
+            {}
             <Box sx={{display: 'flex', flex: 1, overflow: 'hidden'}}>
                 <Box sx={{width: 280, flexShrink: 0}}>
                     <Navbar userObj={userObj} activeMenu={activeMenu} navigate={navigate}/>

@@ -50,7 +50,6 @@ import DisplayImage from "../../ui/DisplayImage.jsx";
 import {createQuotation} from "../../../services/OrderService.jsx";
 import {enqueueSnackbar} from "notistack";
 
-// Status chip component
 const StatusChip = ({status}) => {
     const getStatusConfig = (status) => {
         switch (status?.toLowerCase()) {
@@ -119,7 +118,6 @@ const StatusChip = ({status}) => {
     );
 };
 
-// Function to get appropriate icon based on item type
 const getItemIcon = (itemType) => {
     const type = itemType?.toLowerCase() || '';
 
@@ -148,7 +146,6 @@ export default function GarmentOrderDetail({visible, onCancel, order}) {
     const [submittingQuotation, setSubmittingQuotation] = useState(false);
     const [deliveryTimeError, setDeliveryTimeError] = useState('');
 
-    // Fallback data if order is not provided
     const defaultOrder = {
         id: 0,
         status: 'pending',
@@ -196,7 +193,6 @@ export default function GarmentOrderDetail({visible, onCancel, order}) {
     };
 
     const handleStatusUpdate = () => {
-        // TODO: Implement status update API call
         console.log('Updating status to:', newStatus, 'with note:', statusNote);
         setUpdateStatusDialogOpen(false);
         setNewStatus('');
@@ -211,7 +207,6 @@ export default function GarmentOrderDetail({visible, onCancel, order}) {
         try {
             setSubmittingQuotation(true);
 
-            // Validation
             const deliveryDays = parseInt(quotationData.deliveryTime);
             if (deliveryDays < 1) {
                 enqueueSnackbar('Delivery time must be at least 1 day', {variant: 'error'});
@@ -229,14 +224,12 @@ export default function GarmentOrderDetail({visible, onCancel, order}) {
                 return;
             }
 
-            // Calculate early delivery date (current date + delivery time)
             const currentDate = new Date();
             const earlyDeliveryDate = new Date(currentDate);
             earlyDeliveryDate.setDate(currentDate.getDate() + deliveryDays);
 
-            // Check if delivery time exceeds the order deadline
             const orderDeadline = new Date(mergedOrderData.deadline);
-            orderDeadline.setHours(23, 59, 59, 999); // Set to end of day
+            orderDeadline.setHours(23, 59, 59, 999);
 
             if (earlyDeliveryDate > orderDeadline) {
                 enqueueSnackbar(`Delivery time cannot exceed the order deadline (${formatDate(mergedOrderData.deadline)})`, {variant: 'error'});
@@ -244,11 +237,10 @@ export default function GarmentOrderDetail({visible, onCancel, order}) {
                 return;
             }
 
-            // Prepare data according to API structure
             const quotationPayload = {
                 orderId: parseInt(mergedOrderData.id),
-                garmentId: 1, // TODO: Get actual garment ID from authentication context or user state
-                earlyDeliveryDate: earlyDeliveryDate.toISOString().split('T')[0], // Format: YYYY-MM-DD
+                garmentId: 1,
+                earlyDeliveryDate: earlyDeliveryDate.toISOString().split('T')[0],
                 acceptanceDeadline: quotationData.validUntil,
                 price: parseInt(quotationData.totalPrice) || 0,
                 note: quotationData.note || ''
@@ -260,7 +252,6 @@ export default function GarmentOrderDetail({visible, onCancel, order}) {
 
             if (response && response.status === 200) {
                 enqueueSnackbar('Quotation sent successfully!', {variant: 'success'});
-                // Reset form and close
                 setShowQuotationForm(false);
                 setQuotationData({
                     totalPrice: '',
@@ -294,25 +285,22 @@ export default function GarmentOrderDetail({visible, onCancel, order}) {
             deliveryTime: value
         }));
 
-        // Clear error if empty
         if (!value) {
             setDeliveryTimeError('');
             return;
         }
 
-        // Validate delivery time
         if (deliveryDays < 1) {
             setDeliveryTimeError('Delivery time must be at least 1 day');
             return;
         }
 
-        // Check if delivery time exceeds the order deadline
         const currentDate = new Date();
         const earlyDeliveryDate = new Date(currentDate);
         earlyDeliveryDate.setDate(currentDate.getDate() + deliveryDays);
 
         const orderDeadline = new Date(mergedOrderData.deadline);
-        orderDeadline.setHours(23, 59, 59, 999); // Set to end of day
+        orderDeadline.setHours(23, 59, 59, 999);
 
         if (earlyDeliveryDate > orderDeadline) {
             setDeliveryTimeError(`Cannot exceed order deadline (${formatDate(mergedOrderData.deadline)})`);
@@ -340,7 +328,7 @@ export default function GarmentOrderDetail({visible, onCancel, order}) {
                 }
             }}
         >
-            {/* Header */}
+            {}
             <Box sx={{
                 background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
                 color: 'white',
@@ -374,13 +362,13 @@ export default function GarmentOrderDetail({visible, onCancel, order}) {
                 </Box>
             </Box>
 
-            {/* Content */}
+            {}
             <DialogContent sx={{p: 0, overflow: 'auto'}}>
                 <Container maxWidth={false} sx={{p: 3}}>
                     <Grid container spacing={3}>
-                        {/* Main Information */}
+                        {}
                         <Grid item xs={12} lg={8}>
-                            {/* Order Information Card */}
+                            {}
                             <Card sx={{
                                 mb: 3,
                                 background: 'rgba(255, 255, 255, 0.9)',
@@ -492,7 +480,7 @@ export default function GarmentOrderDetail({visible, onCancel, order}) {
                                 </CardContent>
                             </Card>
 
-                            {/* Order Items Table */}
+                            {}
                             <Card sx={{
                                 background: 'rgba(255, 255, 255, 0.9)',
                                 border: '1px solid rgba(255, 255, 255, 0.3)',
@@ -615,9 +603,9 @@ export default function GarmentOrderDetail({visible, onCancel, order}) {
                             </Card>
                         </Grid>
 
-                        {/* Sidebar */}
+                        {}
                         <Grid item xs={12} lg={4}>
-                            {/* School Information */}
+                            {}
                             <Card sx={{
                                 mb: 3,
                                 background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
@@ -709,7 +697,7 @@ export default function GarmentOrderDetail({visible, onCancel, order}) {
                                 </CardContent>
                             </Card>
 
-                            {/* Quotation Panel */}
+                            {}
                             <Card sx={{
                                 background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
                                 borderRadius: 2,
@@ -768,7 +756,7 @@ export default function GarmentOrderDetail({visible, onCancel, order}) {
                                         </Box>
                                     ) : (
                                         <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
-                                            {/* Total Price */}
+                                            {}
                                             <Box>
                                                 <Typography variant="body2" sx={{
                                                     fontWeight: 600,
@@ -801,7 +789,7 @@ export default function GarmentOrderDetail({visible, onCancel, order}) {
                                                 />
                                             </Box>
 
-                                            {/* Order Summary Display */}
+                                            {}
                                             <Box sx={{
                                                 p: 2,
                                                 backgroundColor: '#f0f9ff',
@@ -849,7 +837,7 @@ export default function GarmentOrderDetail({visible, onCancel, order}) {
                                                 )}
                                             </Box>
 
-                                            {/* Delivery Time */}
+                                            {}
                                             <Box>
                                                 <Typography variant="body2" sx={{
                                                     fontWeight: 600,
@@ -890,7 +878,7 @@ export default function GarmentOrderDetail({visible, onCancel, order}) {
                                                 />
                                             </Box>
 
-                                            {/* Valid Until */}
+                                            {}
                                             <Box>
                                                 <Typography variant="body2" sx={{
                                                     fontWeight: 600,
@@ -933,7 +921,7 @@ export default function GarmentOrderDetail({visible, onCancel, order}) {
                                                 />
                                             </Box>
 
-                                            {/* Notes */}
+                                            {}
                                             <Box>
                                                 <Typography variant="body2" sx={{
                                                     fontWeight: 600,
@@ -970,7 +958,7 @@ export default function GarmentOrderDetail({visible, onCancel, order}) {
                                                 />
                                             </Box>
 
-                                            {/* Action Buttons */}
+                                            {}
                                             <Box sx={{display: 'flex', gap: 2, mt: 2}}>
                                                 <Button
                                                     variant="outlined"
@@ -1020,7 +1008,7 @@ export default function GarmentOrderDetail({visible, onCancel, order}) {
                 </Container>
             </DialogContent>
 
-            {/* Update Status Dialog */}
+            {}
             <Dialog
                 open={updateStatusDialogOpen}
                 onClose={() => setUpdateStatusDialogOpen(false)}

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const getTaxInfo = async (taxCode) => {
-        const response = await axios.get(`https://api.vietqr.io/v2/business/${taxCode}`);
+export const checkTaxCode = async (taxCode) => {
+        const response = await axios.get(`https:
         return response.data || null;
 }

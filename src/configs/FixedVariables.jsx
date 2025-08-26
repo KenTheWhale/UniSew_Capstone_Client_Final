@@ -9,31 +9,31 @@ export const vietnamProvinces = [
             {id: '002', name: 'Hoàn Kiếm'},
             {id: '003', name: 'Hai Bà Trưng'},
             {id: '004', name: 'Đống Đa'},
-            {id: '005', name: 'Tây Hồ'},
+            {id: '005', name: 'Tây H�?},
             {id: '006', name: 'Cầu Giấy'},
             {id: '007', name: 'Thanh Xuân'},
             {id: '008', name: 'Hoàng Mai'},
             {id: '009', name: 'Long Biên'},
-            {id: '010', name: 'Nam Từ Liêm'},
-            {id: '011', name: 'Bắc Từ Liêm'},
+            {id: '010', name: 'Nam T�?Liêm'},
+            {id: '011', name: 'Bắc T�?Liêm'},
             {id: '012', name: 'Hà Đông'},
             {id: '013', name: 'Sơn Tây'},
             {id: '014', name: 'Ba Vì'},
-            {id: '015', name: 'Phúc Thọ'},
+            {id: '015', name: 'Phúc Th�?},
             {id: '016', name: 'Đan Phượng'},
             {id: '017', name: 'Hoài Đức'},
             {id: '018', name: 'Quốc Oai'},
             {id: '019', name: 'Thạch Thất'},
-            {id: '020', name: 'Chương Mỹ'},
+            {id: '020', name: 'Chương M�?},
             {id: '021', name: 'Thanh Oai'},
             {id: '022', name: 'Thường Tín'},
             {id: '023', name: 'Phú Xuyên'},
             {id: '024', name: 'Ứng Hòa'},
-            {id: '025', name: 'Mỹ Đức'}
+            {id: '025', name: 'M�?Đức'}
         ]
     },
     {
-        id: '02', name: 'TP. Hồ Chí Minh', districts: [
+        id: '02', name: 'TP. H�?Chí Minh', districts: [
             {id: '026', name: 'District 1'},
             {id: '027', name: 'District 2'},
             {id: '028', name: 'District 3'},
@@ -51,12 +51,12 @@ export const vietnamProvinces = [
             {id: '040', name: 'Phú Nhuận'},
             {id: '041', name: 'Gò Vấp'},
             {id: '042', name: 'Bình Thạnh'},
-            {id: '043', name: 'Thủ Đức'},
-            {id: '044', name: 'Củ Chi'},
+            {id: '043', name: 'Th�?Đức'},
+            {id: '044', name: 'C�?Chi'},
             {id: '045', name: 'Hóc Môn'},
             {id: '046', name: 'Bình Chánh'},
             {id: '047', name: 'Nhà Bè'},
-            {id: '048', name: 'Cần Giờ'}
+            {id: '048', name: 'Cần Gi�?}
         ]
     },
     {
@@ -66,7 +66,7 @@ export const vietnamProvinces = [
             {id: '051', name: 'Sơn Trà'},
             {id: '052', name: 'Ngũ Hành Sơn'},
             {id: '053', name: 'Liên Chiểu'},
-            {id: '054', name: 'Cẩm Lệ'},
+            {id: '054', name: 'Cẩm L�?},
             {id: '055', name: 'Hòa Vang'},
             {id: '056', name: 'Hoàng Sa'}
         ]
@@ -79,7 +79,7 @@ export const vietnamProvinces = [
             {id: '060', name: 'Cái Răng'},
             {id: '061', name: 'Thốt Nốt'},
             {id: '062', name: 'Vĩnh Thạnh'},
-            {id: '063', name: 'Cờ Đỏ'},
+            {id: '063', name: 'C�?Đ�?},
             {id: '064', name: 'Phong Điền'},
             {id: '065', name: 'Thới Lai'}
         ]
@@ -91,7 +91,7 @@ export const vietnamProvinces = [
             {id: '068', name: 'Lê Chân'},
             {id: '069', name: 'Hải An'},
             {id: '070', name: 'Kiến An'},
-            {id: '071', name: 'Đồ Sơn'},
+            {id: '071', name: 'Đ�?Sơn'},
             {id: '072', name: 'Dương Kinh'},
             {id: '073', name: 'Thủy Nguyên'},
             {id: '074', name: 'An Dương'},

@@ -107,7 +107,7 @@ export default function Login() {
                 }
             }}
         >
-            {/* Animated background elements */}
+            {}
             <Box
                 sx={{
                     position: "absolute",
@@ -159,7 +159,7 @@ export default function Login() {
                     transition: "all 0.3s ease"
                 }}
             >
-                {/* Logo Section */}
+                {}
                 <Box sx={{mb: 4, position: "relative"}}>
                     <Box
                         sx={{
@@ -198,8 +198,8 @@ export default function Login() {
                             }}
                         />
                     </Box>
-                    <Typography 
-                        variant="h4" 
+                    <Typography
+                        variant="h4"
                         sx={{
                             fontWeight: 800,
                             background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
@@ -212,8 +212,8 @@ export default function Login() {
                     >
                         UniSew
                     </Typography>
-                    <Typography 
-                        variant="caption" 
+                    <Typography
+                        variant="caption"
                         sx={{
                             color: "#666",
                             fontWeight: 500,
@@ -226,10 +226,10 @@ export default function Login() {
                     </Typography>
                 </Box>
 
-                {/* Welcome Text */}
+                {}
                 <Box sx={{mb: 4}}>
-                    <Typography 
-                        variant="h5" 
+                    <Typography
+                        variant="h5"
                         sx={{
                             mb: 1.5,
                             fontWeight: 700,
@@ -239,8 +239,8 @@ export default function Login() {
                     >
                         Welcome Back
                     </Typography>
-                    <Typography 
-                        variant="body2" 
+                    <Typography
+                        variant="body2"
                         sx={{
                             color: "#7f8c8d",
                             fontSize: "0.95rem",
@@ -253,7 +253,7 @@ export default function Login() {
                     </Typography>
                 </Box>
 
-                {/* Google Login Button */}
+                {}
                 <Box sx={{mb: 4}}>
                     <Button
                         variant="contained"
@@ -262,7 +262,7 @@ export default function Login() {
                         onClick={() => !isLoading && login()}
                         disabled={isLoading}
                         sx={{
-                            background: isLoading 
+                            background: isLoading
                                 ? "linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%)"
                                 : "linear-gradient(135deg, #d32f2f 0%, #f44336 100%)",
                             color: 'white',
@@ -271,7 +271,7 @@ export default function Login() {
                             py: 1.5,
                             fontSize: "1rem",
                             borderRadius: 3,
-                            boxShadow: isLoading 
+                            boxShadow: isLoading
                                 ? "0 4px 15px rgba(149, 165, 166, 0.4)"
                                 : "0 8px 25px rgba(211, 47, 47, 0.4)",
                             textTransform: "none",
@@ -290,10 +290,10 @@ export default function Login() {
                                 transition: "left 0.5s"
                             },
                             "&:hover": {
-                                background: isLoading 
+                                background: isLoading
                                     ? "linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%)"
                                     : "linear-gradient(135deg, #c62828 0%, #d32f2f 100%)",
-                                boxShadow: isLoading 
+                                boxShadow: isLoading
                                     ? "0 4px 15px rgba(149, 165, 166, 0.4)"
                                     : "0 12px 35px rgba(211, 47, 47, 0.6)",
                                 transform: isLoading ? "none" : "translateY(-2px)",
@@ -311,10 +311,10 @@ export default function Login() {
                     </Button>
                 </Box>
 
-                {/* Footer Links */}
+                {}
                 <Box sx={{borderTop: "1px solid rgba(0,0,0,0.1)", pt: 2.5}}>
-                    <Typography 
-                        variant="caption" 
+                    <Typography
+                        variant="caption"
                         sx={{
                             color: "#95a5a6",
                             lineHeight: 1.5,
@@ -322,8 +322,8 @@ export default function Login() {
                         }}
                     >
                         By signing in, you agree to our{" "}
-                        <Link 
-                            href="#" 
+                        <Link
+                            href="#"
                             sx={{
                                 color: "#667eea",
                                 textDecoration: "none",
@@ -336,8 +336,8 @@ export default function Login() {
                             Terms of Service
                         </Link>
                         {" "}and{" "}
-                        <Link 
-                            href="/policy/privacy" 
+                        <Link
+                            href="/policy/privacy"
                             sx={{
                                 color: "#667eea",
                                 textDecoration: "none",

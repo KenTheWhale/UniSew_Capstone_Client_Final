@@ -42,7 +42,7 @@ export default function DisplayImage({
                 overflow: 'hidden',
                 border: '1px solid #e2e8f0'
             }}>
-                {/* Loading Spinner */}
+                {}
                 {isLoading && (
                     <Box sx={{
                         position: 'absolute',
@@ -55,7 +55,7 @@ export default function DisplayImage({
                     </Box>
                 )}
 
-                {/* Error State */}
+                {}
                 {hasError && (
                     <Box sx={{
                         position: 'absolute',
@@ -70,7 +70,7 @@ export default function DisplayImage({
                     </Box>
                 )}
 
-                {/* Image */}
+                {}
                 <img
                     src={imageUrl}
                     alt={alt}
@@ -88,7 +88,7 @@ export default function DisplayImage({
                 />
             </Box>
 
-            {/* Dialog for Full Size Image */}
+            {}
                             <Dialog
                 open={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
@@ -109,8 +109,8 @@ export default function DisplayImage({
                     }
                 }}
             >
-                <DialogContent sx={{ 
-                    p: 0, 
+                <DialogContent sx={{
+                    p: 0,
                     position: 'relative',
                     display: 'flex',
                     justifyContent: 'center',
@@ -132,7 +132,7 @@ export default function DisplayImage({
                     >
                         <CloseIcon />
                     </MuiIconButton>
-                    
+
                     <Box sx={{
                         display: 'flex',
                         flexDirection: 'column',
@@ -155,7 +155,6 @@ export default function DisplayImage({
                             onLoad={() => {}}
                             onError={(e) => {
                                 e.target.style.display = 'none';
-                                // Show error message
                                 const errorDiv = document.createElement('div');
                                 errorDiv.innerHTML = `
                                     <div style="color: white; text-align: center; padding: 20px;">

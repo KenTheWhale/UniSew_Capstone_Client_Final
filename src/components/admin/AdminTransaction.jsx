@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { 
-    Box, 
-    Typography, 
-    Button, 
-    IconButton, 
-    Tooltip, 
+import {
+    Box,
+    Typography,
+    Button,
+    IconButton,
+    Tooltip,
     Paper,
     Card,
     CardContent,
@@ -21,7 +21,6 @@ import { getTransactions } from '../../services/PaymentService.jsx';
 const { Search } = Input;
 const { Option } = Select;
 
-// Constants
 const STATUS_COLORS = {
     success: '#52c41a',
     fail: '#ff4d4f',
@@ -30,11 +29,10 @@ const STATUS_COLORS = {
 
 const PAYMENT_TYPE_COLORS = {
     order: '#1890ff',
-    design: '#722ed1', 
+    design: '#722ed1',
     wallet: '#13c2c2'
 };
 
-// StatCard Component
 const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
     <Card
         sx={{
@@ -47,16 +45,16 @@ const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
                 transform: 'translateY(-2px)',
                 boxShadow: `0 8px 24px ${color}25`
             },
-            minWidth: 0, // Allow flex items to shrink
+            minWidth: 0,
         }}
     >
         <CardContent sx={{ p: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box sx={{ minWidth: 0, flex: 1, mr: 1 }}>
-                    <Typography 
-                        variant="h6" 
-                        sx={{ 
-                            fontWeight: 700, 
+                    <Typography
+                        variant="h6"
+                        sx={{
+                            fontWeight: 700,
                             color: color,
                             mb: 0.5,
                             fontSize: { xs: '0.9rem', sm: '1.1rem' },
@@ -66,13 +64,13 @@ const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap'
                         }}
-                        title={value} // Show full value on hover
+                        title={value}
                     >
                         {value}
                     </Typography>
-                    <Typography 
-                        variant="body2" 
-                        sx={{ 
+                    <Typography
+                        variant="body2"
+                        sx={{
                             color: '#64748b',
                             fontWeight: 500,
                             fontSize: { xs: '0.75rem', sm: '0.875rem' },
@@ -82,10 +80,10 @@ const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
                         {label}
                     </Typography>
                 </Box>
-                <Box 
-                    sx={{ 
-                        p: 1.5, 
-                        borderRadius: 2, 
+                <Box
+                    sx={{
+                        p: 1.5,
+                        borderRadius: 2,
                         backgroundColor: `${color}10`,
                         color: color,
                         flexShrink: 0
@@ -98,12 +96,11 @@ const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
     </Card>
 ));
 
-// EmptyState Component
 const EmptyState = () => (
-    <Box sx={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
+    <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
         justifyContent: 'center',
         py: 8
     }}>
@@ -127,22 +124,19 @@ export default function AdminTransaction() {
     const [selectedTransaction, setSelectedTransaction] = useState(null);
     const [detailModalVisible, setDetailModalVisible] = useState(false);
 
-    // Fetch transactions from API
     const fetchTransactions = useCallback(async () => {
         setLoading(true);
         try {
             const response = await getTransactions();
-            
+
             if (response && response.status === 200) {
                 let transactionsData = response.data;
-                
-                // Handle different response structures
+
                 if (transactionsData && typeof transactionsData === 'object') {
                     if (transactionsData.transactions && Array.isArray(transactionsData.transactions)) {
                         transactionsData = transactionsData.transactions;
                     }
                     else if (Array.isArray(transactionsData)) {
-                        // Data is already an array, use it directly
                     }
                     else {
                         const keys = Object.keys(transactionsData);
@@ -156,7 +150,7 @@ export default function AdminTransaction() {
                 } else {
                     transactionsData = [];
                 }
-                
+
                 setTransactions(transactionsData);
                 enqueueSnackbar(`Loaded ${transactionsData.length} transactions successfully`, { variant: 'success' });
             } else {
@@ -176,7 +170,6 @@ export default function AdminTransaction() {
         fetchTransactions();
     }, [fetchTransactions]);
 
-    // Helper functions
     const getStatusColor = (status) => {
         switch (status) {
             case 'success':
@@ -250,7 +243,6 @@ export default function AdminTransaction() {
         }).format(amount);
     };
 
-    // Event handlers
     const handleViewDetail = (record) => {
         setSelectedTransaction(record);
         setDetailModalVisible(true);
@@ -272,7 +264,6 @@ export default function AdminTransaction() {
         fetchTransactions();
     };
 
-    // Filtered transactions
     const filteredTransactions = useMemo(() => {
         if (!Array.isArray(transactions)) {
             return [];
@@ -285,12 +276,11 @@ export default function AdminTransaction() {
                                 transaction.receiver?.account?.email?.toLowerCase().includes(searchText.toLowerCase());
             const matchesStatus = statusFilter === 'all' || transaction.status === statusFilter;
             const matchesPaymentType = paymentTypeFilter === 'all' || transaction.paymentType === paymentTypeFilter;
-            
+
             return matchesSearch && matchesStatus && matchesPaymentType;
         });
     }, [transactions, searchText, statusFilter, paymentTypeFilter]);
 
-    // Statistics
     const stats = useMemo(() => {
         if (!Array.isArray(transactions)) {
             return { total: 0, success: 0, failed: 0, pending: 0, totalAmount: 0, totalFees: 0 };
@@ -305,7 +295,6 @@ export default function AdminTransaction() {
         return { total, success, failed, pending, totalAmount, totalFees };
     }, [transactions]);
 
-    // Table columns
     const columns = useMemo(() => [
         {
             title: 'Transaction ID',
@@ -327,8 +316,8 @@ export default function AdminTransaction() {
             width: 200,
             render: (_, record) => (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Avatar 
-                        src={record.sender?.avatar} 
+                    <Avatar
+                        src={record.sender?.avatar}
                         sx={{ width: 32, height: 32 }}
                         slotProps={{
                             img: {
@@ -355,8 +344,8 @@ export default function AdminTransaction() {
             width: 200,
             render: (_, record) => (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Avatar 
-                        src={record.receiver?.avatar} 
+                    <Avatar
+                        src={record.receiver?.avatar}
                         sx={{ width: 32, height: 32 }}
                         slotProps={{
                             img: {
@@ -433,8 +422,8 @@ export default function AdminTransaction() {
             ],
             onFilter: (value, record) => record.status === value,
             render: (status) => (
-                <Badge 
-                    status={getStatusColor(status)} 
+                <Badge
+                    status={getStatusColor(status)}
                     text={getStatusText(status)}
                 />
             )
@@ -477,8 +466,8 @@ export default function AdminTransaction() {
     ], []);
 
     return (
-        <Box sx={{ 
-            height: '100%', 
+        <Box sx={{
+            height: '100%',
             overflowY: 'auto',
             '& @keyframes pulse': {
                 '0%': { opacity: 1 },
@@ -486,9 +475,9 @@ export default function AdminTransaction() {
                 '100%': { opacity: 1 }
             }
         }}>
-            {/* Header Section */}
-            <Box 
-                sx={{ 
+            {}
+            <Box
+                sx={{
                     mb: 4,
                     position: "relative",
                     p: 4,
@@ -524,7 +513,7 @@ export default function AdminTransaction() {
 
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <Box sx={{ display: "flex", gap: 2 }}>
-                        {/* Filters */}
+                        {}
                         <Search
                             placeholder="Search by ID, sender, receiver..."
                             allowClear
@@ -556,7 +545,7 @@ export default function AdminTransaction() {
                             <Option value="fail">Failed ({loading ? '...' : Array.isArray(transactions) ? transactions.filter(t => t.status === 'fail').length : 0})</Option>
                             <Option value="pending">Pending ({loading ? '...' : Array.isArray(transactions) ? transactions.filter(t => t.status === 'pending').length : 0})</Option>
                         </Select>
-                        <Button 
+                        <Button
                             onClick={() => {
                                 setSearchText('');
                                 setPaymentTypeFilter('all');
@@ -588,43 +577,42 @@ export default function AdminTransaction() {
                 </Box>
             </Box>
 
-            {/* Statistics Cards */}
+            {}
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 2, mb: 4 }}>
                 {loading ? (
-                    // Skeleton loading for stats cards
                     Array.from({ length: 6 }).map((_, index) => (
                         <Card key={index} sx={{ height: '100%', borderRadius: 2 }}>
                             <CardContent sx={{ p: 3 }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <Box>
-                                        <Box 
-                                            sx={{ 
-                                                width: 60, 
-                                                height: 40, 
-                                                backgroundColor: '#f0f0f0', 
-                                                borderRadius: 1, 
+                                        <Box
+                                            sx={{
+                                                width: 60,
+                                                height: 40,
+                                                backgroundColor: '#f0f0f0',
+                                                borderRadius: 1,
                                                 mb: 1,
                                                 animation: 'pulse 1.5s ease-in-out infinite'
-                                            }} 
+                                            }}
                                         />
-                                        <Box 
-                                            sx={{ 
-                                                width: 100, 
-                                                height: 16, 
-                                                backgroundColor: '#f0f0f0', 
+                                        <Box
+                                            sx={{
+                                                width: 100,
+                                                height: 16,
+                                                backgroundColor: '#f0f0f0',
                                                 borderRadius: 1,
                                                 animation: 'pulse 1.5s ease-in-out infinite'
-                                            }} 
+                                            }}
                                         />
                                     </Box>
-                                    <Box 
-                                        sx={{ 
-                                            width: 48, 
-                                            height: 48, 
-                                            backgroundColor: '#f0f0f0', 
+                                    <Box
+                                        sx={{
+                                            width: 48,
+                                            height: 48,
+                                            backgroundColor: '#f0f0f0',
                                             borderRadius: 2,
                                             animation: 'pulse 1.5s ease-in-out infinite'
-                                        }} 
+                                        }}
                                     />
                                 </Box>
                             </CardContent>
@@ -672,7 +660,7 @@ export default function AdminTransaction() {
                 )}
             </Box>
 
-            {/* Table Section */}
+            {}
             <Paper
                 elevation={0}
                 sx={{
@@ -703,10 +691,10 @@ export default function AdminTransaction() {
                     </Box>
 
                     {loading ? (
-                        <Box sx={{ 
-                            display: 'flex', 
-                            flexDirection: 'column', 
-                            alignItems: 'center', 
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
                             justifyContent: 'center',
                             py: 8
                         }}>
@@ -728,7 +716,7 @@ export default function AdminTransaction() {
                                 pageSizeOptions: ['5', '10', '20'],
                                 showSizeChanger: true,
                                 showQuickJumper: true,
-                                showTotal: (total, range) => 
+                                showTotal: (total, range) =>
                                     `Showing ${range[0]}-${range[1]} of ${total} transactions`,
                                 style: { marginTop: 16 }
                             }}
@@ -742,7 +730,7 @@ export default function AdminTransaction() {
                 </Box>
             </Paper>
 
-            {/* Detail Modal */}
+            {}
             <Modal
                 title="Transaction Details"
                 open={detailModalVisible}
@@ -775,15 +763,15 @@ export default function AdminTransaction() {
                             </Tag>
                         </Descriptions.Item>
                         <Descriptions.Item label="Status">
-                            <Badge 
-                                status={getStatusColor(selectedTransaction.status)} 
+                            <Badge
+                                status={getStatusColor(selectedTransaction.status)}
                                 text={getStatusText(selectedTransaction.status)}
                             />
                         </Descriptions.Item>
                         <Descriptions.Item label="Sender" span={2}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <Avatar 
-                                    src={selectedTransaction.sender?.avatar} 
+                                <Avatar
+                                    src={selectedTransaction.sender?.avatar}
                                     sx={{ width: 40, height: 40 }}
                                     slotProps={{
                                         img: {
@@ -805,8 +793,8 @@ export default function AdminTransaction() {
                         </Descriptions.Item>
                         <Descriptions.Item label="Receiver" span={2}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <Avatar 
-                                    src={selectedTransaction.receiver?.avatar} 
+                                <Avatar
+                                    src={selectedTransaction.receiver?.avatar}
                                     sx={{ width: 40, height: 40 }}
                                     slotProps={{
                                         img: {
