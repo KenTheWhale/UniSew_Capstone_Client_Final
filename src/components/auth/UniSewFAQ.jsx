@@ -34,9 +34,8 @@ const UniSewFAQ = () => {
     const [activeCategory, setActiveCategory] = useState('design');
     const [showScrollTop, setShowScrollTop] = useState(false);
 
-    
 
-    // Scroll to top functionality
+
     useEffect(() => {
         const handleScroll = () => {
             setShowScrollTop(window.scrollY > 400);
@@ -285,8 +284,8 @@ const UniSewFAQ = () => {
     const filteredFAQs = (categoryKey) => {
         const questions = faqData[categoryKey];
         if (!searchQuery.trim()) return questions;
-        
-        return questions.filter(faq => 
+
+        return questions.filter(faq =>
             faq.question.toLowerCase().includes(searchQuery.toLowerCase())
         );
     };
@@ -297,9 +296,9 @@ const UniSewFAQ = () => {
         return (
             <Card key={categoryKey} sx={{ mb: 3, boxShadow: 2 }}>
                 <CardContent sx={{ p: 0 }}>
-                    <Box sx={{ 
-                        p: 3, 
-                        borderBottom: 1, 
+                    <Box sx={{
+                        p: 3,
+                        borderBottom: 1,
                         borderColor: 'divider',
                         display: 'flex',
                         alignItems: 'center',
@@ -313,14 +312,14 @@ const UniSewFAQ = () => {
                                 {title}
                             </Typography>
                         </Box>
-                        <Chip 
+                        <Chip
                             label={`${questions.length} questions`}
                             color="primary"
                             variant="outlined"
                             size="small"
                         />
                     </Box>
-                    
+
                     {questions.length === 0 ? (
                         <Box sx={{ p: 4, textAlign: 'center' }}>
                             <Typography variant="body2" color="text.secondary">
@@ -355,10 +354,10 @@ const UniSewFAQ = () => {
 
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
-            {/* Header */}
-           
-            {/* Hero Section */}
-            <Box sx={{ 
+            {}
+
+            {}
+            <Box sx={{
                 background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
                 color: 'white',
                 py: 8,
@@ -371,8 +370,8 @@ const UniSewFAQ = () => {
                     <Typography variant="h6" sx={{ opacity: 0.9, mb: 4 }}>
                         Everything you need to know about UniSew's elementary school uniform design and manufacturing services
                     </Typography>
-                    
-                    {/* Search */}
+
+                    {}
                     <Box sx={{ maxWidth: 500, mx: 'auto' }}>
                         <TextField
                             fullWidth
@@ -382,7 +381,7 @@ const UniSewFAQ = () => {
                             onChange={(e) => setSearchQuery(e.target.value)}
                             InputProps={{
                                 startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
-                                sx: { 
+                                sx: {
                                     bgcolor: 'white',
                                     borderRadius: 3,
                                     '& .MuiOutlinedInput-notchedOutline': {
@@ -395,12 +394,12 @@ const UniSewFAQ = () => {
                 </Container>
             </Box>
 
-            {/* Category Navigation */}
+            {}
             <Paper elevation={1} sx={{ position: 'sticky', top: 0, zIndex: 10, bgcolor: 'white' }}>
                 <Container maxWidth="lg">
-                    <Box sx={{ 
-                        display: 'flex', 
-                        gap: 1, 
+                    <Box sx={{
+                        display: 'flex',
+                        gap: 1,
                         py: 2,
                         overflowX: 'auto',
                         '&::-webkit-scrollbar': { display: 'none' }
@@ -411,7 +410,7 @@ const UniSewFAQ = () => {
                                 variant={activeCategory === category.key ? "contained" : "outlined"}
                                 startIcon={category.icon}
                                 onClick={() => setActiveCategory(category.key)}
-                                sx={{ 
+                                sx={{
                                     whiteSpace: 'nowrap',
                                     borderRadius: 2,
                                     px: 3
@@ -424,14 +423,14 @@ const UniSewFAQ = () => {
                 </Container>
             </Paper>
 
-            {/* Main Content */}
+            {}
             <Container maxWidth="lg" sx={{ py: 6 }}>
-                {/* Category Overview */}
+                {}
                 <Grid container spacing={3} sx={{ mb: 6 }}>
                     {categories.map((category, index) => (
                         <Grid item xs={12} md={4} key={index}>
-                            <Card 
-                                sx={{ 
+                            <Card
+                                sx={{
                                     height: '100%',
                                     cursor: 'pointer',
                                     transition: 'all 0.3s ease',
@@ -443,9 +442,9 @@ const UniSewFAQ = () => {
                                 onClick={() => setActiveCategory(category.key)}
                             >
                                 <CardContent sx={{ textAlign: 'center', p: 4 }}>
-                                    <Box sx={{ 
-                                        color: 'primary.main', 
-                                        fontSize: 48, 
+                                    <Box sx={{
+                                        color: 'primary.main',
+                                        fontSize: 48,
                                         mb: 2,
                                         display: 'flex',
                                         justifyContent: 'center'
@@ -464,15 +463,15 @@ const UniSewFAQ = () => {
                     ))}
                 </Grid>
 
-                {/* FAQ Sections */}
-                {renderFAQSection(activeCategory, 
+                {}
+                {renderFAQSection(activeCategory,
                     categories.find(c => c.key === activeCategory)?.title || '',
                     categories.find(c => c.key === activeCategory)?.icon
                 )}
             </Container>
 
-            {/* Contact Section */}
-            <Box sx={{ 
+            {}
+            <Box sx={{
                 background: 'linear-gradient(135deg, #424242 0%, #212121 100%)',
                 color: 'white',
                 py: 8,
@@ -491,7 +490,7 @@ const UniSewFAQ = () => {
                             size="large"
                             startIcon={<EmailIcon />}
                             href="mailto:unisewsu2025@gmail.com"
-                            sx={{ 
+                            sx={{
                                 borderRadius: 3,
                                 px: 4,
                                 py: 1.5
@@ -499,12 +498,12 @@ const UniSewFAQ = () => {
                         >
                             Email Consultation
                         </Button>
-                        
+
                     </Box>
                 </Container>
             </Box>
 
-            {/* Scroll to Top Button */}
+            {}
             <Zoom in={showScrollTop}>
                 <Fab
                     color="primary"

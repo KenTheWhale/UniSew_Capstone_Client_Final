@@ -39,8 +39,7 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
             const subtotal = Math.round(rawSubtotal);
             const fee = Math.round(serviceFee(subtotal));
             const totalAmount = Math.round(subtotal + fee);
-            
-            // Store quotation details in sessionStorage for VNPay callback
+
             const quotationDetailsToStore = {
                 quotation: quotation,
                 request: request,
@@ -49,17 +48,16 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
                 totalAmount: totalAmount
             };
             sessionStorage.setItem('paymentQuotationDetails', JSON.stringify(quotationDetailsToStore));
-            
-            // Store payment type in sessionStorage for PaymentResult component
+
             sessionStorage.setItem('currentPaymentType', 'design');
-            
+
             const response = await getPaymentUrl(
                 totalAmount,
                 `Payment for design quotation - Design Request ${parseID(request.id, 'dr')}`,
                 'design',
                 '/school/payment/result'
             );
-            
+
             if (response && response.status === 200) {
                 window.location.href = response.data.body.url;
             } else {
@@ -78,9 +76,9 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
                     <Typography.Title level={4} style={{ margin: 0, color: '#1e293b' }}>
                         Payment Details
                     </Typography.Title>
-                    <Chip 
+                    <Chip
                         label={`${parseID(request.id, 'dr')}`}
-                        color="success" 
+                        color="success"
                         size="small"
                         style={{ backgroundColor: '#2e7d32' }}
                     />
@@ -93,12 +91,12 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
                 <Button key="back" onClick={onCancel} style={{ marginRight: 8 }}>
                     Cancel
                 </Button>,
-                <Button 
-                    key="submit" 
-                    type="primary" 
+                <Button
+                    key="submit"
+                    type="primary"
                     onClick={handleProceedToPayment}
                     icon={<CreditCardOutlined />}
-                    style={{ 
+                    style={{
                         backgroundColor: '#2e7d32',
                         borderColor: '#2e7d32'
                     }}
@@ -107,9 +105,9 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
                 </Button>,
             ]}
             width={800}
-            styles={{ 
-                body: { 
-                    maxHeight: '70vh', 
+            styles={{
+                body: {
+                    maxHeight: '70vh',
                     overflowY: 'auto',
                     padding: '24px'
                 },
@@ -120,10 +118,10 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
             }}
         >
             <Box sx={{ width: '100%' }}>
-                {/* Header Section */}
-                <Box sx={{ 
-                    mb: 4, 
-                    p: 3, 
+                {}
+                <Box sx={{
+                    mb: 4,
+                    p: 3,
                     background: "linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(27, 94, 32, 0.08) 100%)",
                     borderRadius: 2,
                     border: '1px solid rgba(46, 125, 50, 0.1)'
@@ -139,12 +137,12 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
                     </Typography.Text>
                 </Box>
 
-                {/* Designer Information */}
-                <Paper 
+                {}
+                <Paper
                     elevation={0}
-                    sx={{ 
-                        p: 3, 
-                        mb: 3, 
+                    sx={{
+                        p: 3,
+                        mb: 3,
                         border: '1px solid #e2e8f0',
                         borderRadius: 3,
                         backgroundColor: 'white',
@@ -194,12 +192,12 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
                     </Box>
                 </Paper>
 
-                {/* Quotation Details */}
-                <Paper 
+                {}
+                <Paper
                     elevation={0}
-                    sx={{ 
-                        p: 3, 
-                        mb: 3, 
+                    sx={{
+                        p: 3,
+                        mb: 3,
                         border: '1px solid #e2e8f0',
                         borderRadius: 3,
                         backgroundColor: 'white',
@@ -234,9 +232,9 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
                     </Box>
 
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                        <Box sx={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
+                        <Box sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
                             alignItems: 'center',
                             p: 2,
                             background: "linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(27, 94, 32, 0.08) 100%)",
@@ -252,10 +250,10 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
                         </Box>
 
                         <Box sx={{ display: 'flex', gap: 3 }}>
-                            <Box sx={{ 
-                                flex: 1, 
-                                p: 2, 
-                                background: "linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(27, 94, 32, 0.08) 100%)", 
+                            <Box sx={{
+                                flex: 1,
+                                p: 2,
+                                background: "linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(27, 94, 32, 0.08) 100%)",
                                 borderRadius: 2,
                                 textAlign: 'center',
                                 border: '1px solid rgba(46, 125, 50, 0.1)',
@@ -274,10 +272,10 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
                                 </Typography.Text>
                             </Box>
 
-                            <Box sx={{ 
-                                flex: 1, 
-                                p: 2, 
-                                background: "linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(27, 94, 32, 0.08) 100%)", 
+                            <Box sx={{
+                                flex: 1,
+                                p: 2,
+                                background: "linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(27, 94, 32, 0.08) 100%)",
                                 borderRadius: 2,
                                 textAlign: 'center',
                                 border: '1px solid rgba(46, 125, 50, 0.1)',
@@ -297,13 +295,13 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
                             </Box>
                         </Box>
 
-                        {/* Extra Revision Information */}
+                        {}
                         {(() => {
                             const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
                             return extraRevision > 0 ? (
-                                <Box sx={{ 
-                                    p: 2, 
-                                    background: "linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 152, 0, 0.15) 100%)", 
+                                <Box sx={{
+                                    p: 2,
+                                    background: "linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 152, 0, 0.15) 100%)",
                                     borderRadius: 2,
                                     border: '1px solid rgba(255, 193, 7, 0.3)',
                                     textAlign: 'center',
@@ -329,12 +327,12 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
                     </Box>
                 </Paper>
 
-                {/* Service Fee */}
-                <Paper 
+                {}
+                <Paper
                     elevation={0}
-                    sx={{ 
-                        p: 3, 
-                        mb: 3, 
+                    sx={{
+                        p: 3,
+                        mb: 3,
                         border: '1px solid #e2e8f0',
                         borderRadius: 3,
                         backgroundColor: 'white',
@@ -368,9 +366,9 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
                         </Box>
                     </Box>
 
-                    <Box sx={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
+                    <Box sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
                         alignItems: 'center',
                         p: 2,
                         background: "linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(245, 124, 0, 0.15) 100%)",
@@ -392,12 +390,12 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
                     </Box>
                 </Paper>
 
-                {/* Security & Payment Info */}
-                <Paper 
+                {}
+                <Paper
                     elevation={0}
-                    sx={{ 
-                        p: 3, 
-                        mb: 3, 
+                    sx={{
+                        p: 3,
+                        mb: 3,
                         background: "linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(27, 94, 32, 0.08) 100%)",
                         borderRadius: 3,
                         border: '1px solid rgba(46, 125, 50, 0.1)'
@@ -414,11 +412,11 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
                     </Typography.Text>
                 </Paper>
 
-                {/* Total Amount */}
-                <Paper 
+                {}
+                <Paper
                     elevation={0}
-                    sx={{ 
-                        p: 3, 
+                    sx={{
+                        p: 3,
                         border: '2px solid #2e7d32',
                         borderRadius: 3,
                         background: "linear-gradient(135deg, rgba(46, 125, 50, 0.1) 0%, rgba(27, 94, 32, 0.15) 100%)",

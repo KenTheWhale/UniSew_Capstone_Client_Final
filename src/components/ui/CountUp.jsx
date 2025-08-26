@@ -103,7 +103,6 @@ export default function CountUp({
     return () => unsubscribe();
   }, [springValue, separator, maxDecimals]);
 
-  // return <span className={className} ref={ref} />;
   return (
       <Typography className={className} ref={ref} variant="h3" sx={{ fontWeight: 800, color: '#6C63FF', mb: 1 }}/>
   );

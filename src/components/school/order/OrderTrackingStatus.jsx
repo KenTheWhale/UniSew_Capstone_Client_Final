@@ -49,7 +49,6 @@ import {useSnackbar} from 'notistack';
 import DisplayImage from '../../ui/DisplayImage';
 import {serviceFee} from '../../../configs/FixedVariables';
 
-// CSS Keyframes for animations
 const pulseKeyframes = `
   @keyframes pulse {
     0% {
@@ -64,14 +63,12 @@ const pulseKeyframes = `
   }
 `;
 
-// Add the keyframes to the document head
 if (typeof document !== 'undefined') {
     const style = document.createElement('style');
     style.textContent = pulseKeyframes;
     document.head.appendChild(style);
 }
 
-// Status Tag Component
 const statusTag = (status) => {
     let color;
     switch (status) {
@@ -97,7 +94,6 @@ const statusTag = (status) => {
     return <Chip label={status} color={color} variant="outlined"/>;
 };
 
-// Loading State Component
 const LoadingState = () => (
     <Box sx={{
         display: 'flex',
@@ -114,7 +110,6 @@ const LoadingState = () => (
     </Box>
 );
 
-// Error State Component
 const ErrorState = ({error, onRetry, isRetrying}) => (
     <Box sx={{
         display: 'flex',
@@ -171,10 +166,8 @@ export default function OrderTrackingStatus() {
     const [popoverAnchor, setPopoverAnchor] = useState(null);
     const [popoverPosition, setPopoverPosition] = useState({ vertical: 'center', horizontal: 'right' });
 
-    // Lấy orderId từ sessionStorage
     const orderId = sessionStorage.getItem('trackingOrderId');
 
-    // Fetch order details
     const fetchOrderDetail = async (showLoading = true) => {
         if (!orderId) {
             setError('No order ID found. Please go back to order list.');
@@ -238,35 +231,30 @@ export default function OrderTrackingStatus() {
     const handleMilestoneHover = (event, milestone) => {
         setHoveredMilestone(milestone);
         setPopoverAnchor(event.currentTarget);
-        
-        // Calculate smart position based on available space
+
         const rect = event.currentTarget.getBoundingClientRect();
         const windowWidth = window.innerWidth;
         const windowHeight = window.innerHeight;
-        
-        // Check if there's enough space on the right
+
         const spaceOnRight = windowWidth - rect.right;
         const spaceOnLeft = rect.left;
-        
-        // Check if there's enough space above/below
+
         const spaceAbove = rect.top;
         const spaceBelow = windowHeight - rect.bottom;
-        
+
         let vertical = 'center';
         let horizontal = 'right';
-        
-        // If not enough space on right, show on left
+
         if (spaceOnRight < 400) {
             horizontal = 'left';
         }
-        
-        // If not enough space below, show above
+
         if (spaceBelow < 300) {
             vertical = 'bottom';
         } else if (spaceAbove < 300) {
             vertical = 'top';
         }
-        
+
         setPopoverPosition({ vertical, horizontal });
     };
 
@@ -290,13 +278,11 @@ export default function OrderTrackingStatus() {
         }).format(amount);
     };
 
-    // Calculate service fee for the order
     const getServiceFee = () => {
         if (!orderDetail?.price) return 0;
         return serviceFee(orderDetail.price);
     };
 
-    // Calculate deposit amount (50% of total amount + service fee)
     const getDepositAmount = () => {
         if (!orderDetail?.price) return 0;
         const totalAmount = orderDetail.price;
@@ -304,7 +290,6 @@ export default function OrderTrackingStatus() {
         return (totalAmount + fee) * 0.5;
     };
 
-    // Calculate remaining amount after deposit
     const getRemainingAmount = () => {
         if (!orderDetail?.price) return 0;
         const totalAmount = orderDetail.price;
@@ -313,14 +298,12 @@ export default function OrderTrackingStatus() {
         return (totalAmount + fee) - deposit;
     };
 
-    // Tính toán tổng số lượng uniforms
     const getTotalUniforms = () => {
         if (!orderDetail?.orderDetails) return 0;
         const totalItems = orderDetail.orderDetails.reduce((sum, detail) => sum + detail.quantity, 0);
-        return Math.ceil(totalItems / 2); // Mỗi uniform gồm 2 items (áo + quần)
+        return Math.ceil(totalItems / 2);
     };
 
-    // Tính toán tổng số lượng theo size
     const getSizeBreakdown = () => {
         if (!orderDetail?.orderDetails) return {};
 
@@ -336,9 +319,7 @@ export default function OrderTrackingStatus() {
         return sizeBreakdown;
     };
 
-    // Get milestones from API or default fallback
     const getMilestones = () => {
-        // If no milestones from API, return waiting message
         if (!orderDetail?.milestone || orderDetail.milestone.length === 0) {
             return [{
                 title: 'Waiting for Milestones',
@@ -350,29 +331,27 @@ export default function OrderTrackingStatus() {
                 endDate: null,
                 completedDate: null,
                 stage: 1,
-                isWaiting: true // Special flag for waiting state
+                isWaiting: true
             }];
         }
-        
-        // Always start with "Start Sewing" phase
+
         const startSewingPhase = {
             title: 'Start Sewing',
             description: 'Production begins with cutting and sewing',
-            isCompleted: true, // Always completed
+            isCompleted: true,
             isActive: false,
-            startDate: new Date().toISOString().split('T')[0], // Today
+            startDate: new Date().toISOString().split('T')[0],
             endDate: null,
-            completedDate: new Date().toISOString().split('T')[0], // Today
+            completedDate: new Date().toISOString().split('T')[0],
             stage: 1
         };
-        
-        // Map API milestones starting from index 2 (phase 2)
+
         const apiMilestones = orderDetail.milestone.map((milestone, index) => {
             const status = milestone.status || 'assigned';
             const isCompleted = status === 'completed';
             const isActive = status === 'processing';
             const isNotStarted = status === 'pending' || status === 'assigned';
-            
+
             return {
                 title: milestone.name || `Stage ${milestone.stage}`,
                 description: milestone.description || `Production stage ${milestone.stage}`,
@@ -382,11 +361,10 @@ export default function OrderTrackingStatus() {
                 startDate: milestone.startDate,
                 endDate: milestone.endDate,
                 completedDate: milestone.completedDate,
-                stage: milestone.stage || (index + 2) // Start from stage 2
+                stage: milestone.stage || (index + 2)
             };
         });
-        
-        // Add fixed phases at the end
+
         const deliveringPhase = {
             title: 'Delivering',
             description: 'Order is being shipped to your location',
@@ -411,7 +389,6 @@ export default function OrderTrackingStatus() {
             stage: apiMilestones.length + 3
         };
 
-        // Combine fixed phases with API phases
         return [startSewingPhase, ...apiMilestones, deliveringPhase, completedPhase];
     };
 
@@ -432,7 +409,7 @@ export default function OrderTrackingStatus() {
 
     return (
         <Box sx={{height: '100%', overflowY: 'auto', p: 3}}>
-            {/* Header */}
+            {}
             <Box sx={{mb: 4}}>
                 <Box sx={{display: 'flex', alignItems: 'center', mb: 3}}>
                     <IconButton
@@ -453,7 +430,7 @@ export default function OrderTrackingStatus() {
                     </Typography>
                 </Box>
 
-                {/* Order ID & Status Card - Redesigned */}
+                {}
                 <Card sx={{
                     mb: 4,
                     background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
@@ -468,7 +445,7 @@ export default function OrderTrackingStatus() {
                         boxShadow: '0 16px 50px rgba(0, 0, 0, 0.15)'
                     }
                 }}>
-                    {/* Decorative Top Border */}
+                    {}
                     <Box sx={{
                         position: 'absolute',
                         top: 0,
@@ -477,8 +454,8 @@ export default function OrderTrackingStatus() {
                         height: '6px',
                         background: 'linear-gradient(90deg, #2e7d32 0%, #388e3c 30%, #4caf50 60%, #66bb6a 100%)'
                     }}/>
-                    
-                    {/* Background Pattern */}
+
+                    {}
                     <Box sx={{
                         position: 'absolute',
                         top: 0,
@@ -489,7 +466,7 @@ export default function OrderTrackingStatus() {
                         borderRadius: '50%',
                         transform: 'translate(50px, -50px)'
                     }}/>
-                    
+
                     <CardContent sx={{p: 4, position: 'relative', zIndex: 1}}>
                         <Box sx={{
                             display: 'flex',
@@ -498,7 +475,7 @@ export default function OrderTrackingStatus() {
                             flexWrap: {xs: 'wrap', md: 'nowrap'},
                             gap: 3
                         }}>
-                            {/* Order ID Section - Enhanced */}
+                            {}
                             <Box sx={{
                                 display: 'flex',
                                 alignItems: 'center',
@@ -506,7 +483,7 @@ export default function OrderTrackingStatus() {
                                 flex: 1,
                                 minWidth: {xs: '100%', md: 'auto'}
                             }}>
-                                {/* Icon Container */}
+                                {}
                                 <Box sx={{
                                     width: 72,
                                     height: 72,
@@ -529,8 +506,8 @@ export default function OrderTrackingStatus() {
                                 }}>
                                     <InventoryIcon sx={{color: 'white', fontSize: 32}}/>
                                 </Box>
-                                
-                                {/* Order Info */}
+
+                                {}
                                 <Box sx={{flex: 1}}>
                                     <Typography variant="caption" sx={{
                                         color: '#64748b',
@@ -568,7 +545,7 @@ export default function OrderTrackingStatus() {
                                 </Box>
                             </Box>
 
-                            {/* Status Section - Enhanced */}
+                            {}
                             <Box sx={{
                                 display: 'flex',
                                 flexDirection: 'column',
@@ -591,12 +568,12 @@ export default function OrderTrackingStatus() {
                                 </Box>
                             </Box>
                         </Box>
-                        
-                        
+
+
                     </CardContent>
                 </Card>
 
-                {/* Order Progress - Redesigned */}
+                {}
                 <Card sx={{
                 mb: 4,
                     background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
@@ -611,7 +588,7 @@ export default function OrderTrackingStatus() {
                         boxShadow: '0 16px 50px rgba(0, 0, 0, 0.15)'
                     }
                 }}>
-                    {/* Decorative Top Border */}
+                    {}
                     <Box sx={{
                         position: 'absolute',
                         top: 0,
@@ -620,8 +597,8 @@ export default function OrderTrackingStatus() {
                         height: '6px',
                         background: 'linear-gradient(90deg, #3b82f6 0%, #1d4ed8 30%, #8b5cf6 60%, #7c3aed 100%)'
                     }}/>
-                    
-                    {/* Background Pattern */}
+
+                    {}
                     <Box sx={{
                         position: 'absolute',
                         top: 0,
@@ -632,8 +609,8 @@ export default function OrderTrackingStatus() {
                         borderRadius: '50%',
                         transform: 'translate(-30px, -30px)'
                     }}/>
-                    
-                    {/* Header */}
+
+                    {}
                     <Box sx={{
                         background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
                         p: 3,
@@ -689,7 +666,6 @@ export default function OrderTrackingStatus() {
 
                     <CardContent sx={{p: 4, position: 'relative', zIndex: 1}}>
                         {milestones.length === 1 && milestones[0].isWaiting ? (
-                            /* Waiting for milestones - show waiting message */
                             <Box sx={{
                                 display: 'flex',
                                 flexDirection: 'column',
@@ -727,14 +703,13 @@ export default function OrderTrackingStatus() {
                                 </Typography>
                             </Box>
                         ) : (
-                            /* Show horizontal stepper */
                             <Box sx={{
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
                                 gap: 3
                             }}>
-                                {/* Horizontal Stepper */}
+                                {}
                                 <Box sx={{
                                     display: 'flex',
                                     alignItems: 'center',
@@ -759,7 +734,7 @@ export default function OrderTrackingStatus() {
                                 }}>
                                     {milestones.map((milestone, index) => (
                                         <React.Fragment key={index}>
-                                            {/* Step */}
+                                            {}
                                             <Box sx={{
                                                 display: 'flex',
                                                 flexDirection: 'column',
@@ -768,7 +743,7 @@ export default function OrderTrackingStatus() {
                                                 minHeight: 180,
                                                 position: 'relative'
                                             }}>
-                                                {/* Step Icon */}
+                                                {}
                                                 <Box
                                                     onMouseEnter={(e) => handleMilestoneHover(e, milestone)}
                                                     onMouseLeave={handleMilestoneLeave}
@@ -776,7 +751,7 @@ export default function OrderTrackingStatus() {
                                                         width: 56,
                                                         height: 56,
                                                         borderRadius: '50%',
-                                                        background: milestone.isCompleted 
+                                                        background: milestone.isCompleted
                                                             ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'
                                                             : milestone.isActive
                                                                 ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
@@ -788,7 +763,7 @@ export default function OrderTrackingStatus() {
                                                         justifyContent: 'center',
                                                         cursor: 'pointer',
                                                         transition: 'all 0.3s ease',
-                                                        boxShadow: milestone.isCompleted 
+                                                        boxShadow: milestone.isCompleted
                                                             ? '0 4px 12px rgba(34, 197, 94, 0.3)'
                                                             : milestone.isActive
                                                                 ? '0 4px 12px rgba(59, 130, 246, 0.3)'
@@ -797,7 +772,7 @@ export default function OrderTrackingStatus() {
                                                                     : '0 4px 12px rgba(148, 163, 184, 0.3)',
                                                         '&:hover': {
                                                             transform: 'scale(1.1)',
-                                                            boxShadow: milestone.isCompleted 
+                                                            boxShadow: milestone.isCompleted
                                                                 ? '0 8px 25px rgba(34, 197, 94, 0.4)'
                                                                 : milestone.isActive
                                                                     ? '0 8px 25px rgba(59, 130, 246, 0.4)'
@@ -817,8 +792,8 @@ export default function OrderTrackingStatus() {
                                                 <PendingIcon sx={{color: 'white', fontSize: 28}}/>
                                             )}
                                                 </Box>
-                                                
-                                                {/* Step Label */}
+
+                                                {}
                                                 <Typography variant="body2" sx={{
                                                     fontWeight: 600,
                                                     color: '#1e293b',
@@ -832,8 +807,8 @@ export default function OrderTrackingStatus() {
                                                 }}>
                                                     {milestone.title}
                                                 </Typography>
-                                                
-                                                {/* Step Number */}
+
+                                                {}
                                                 <Typography variant="caption" sx={{
                                                     color: '#64748b',
                                                     fontSize: '0.75rem',
@@ -842,13 +817,13 @@ export default function OrderTrackingStatus() {
                                                     Step {index + 1}
                                                 </Typography>
                                             </Box>
-                                            
-                                            {/* Connector Line (except for last step) */}
+
+                                            {}
                                             {index < milestones.length - 1 && (
                                                 <Box sx={{
                                                     flex: 1,
                                                     height: 2,
-                                                    background: milestone.isCompleted 
+                                                    background: milestone.isCompleted
                                                         ? 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)'
                                                         : 'linear-gradient(90deg, #e2e8f0 0%, #cbd5e1 100%)',
                                                     borderRadius: 1,
@@ -859,8 +834,8 @@ export default function OrderTrackingStatus() {
                                         </React.Fragment>
                                     ))}
                                 </Box>
-                                
-                                {/* Progress Summary */}
+
+                                {}
                                 <Box sx={{
                                     display: 'flex',
                                     alignItems: 'center',
@@ -886,14 +861,14 @@ export default function OrderTrackingStatus() {
                 </Card>
             </Box>
 
-            {/* Order Information and Garment Factory Container */}
+            {}
             <Box sx={{
                 display: 'flex',
                 gap: 3,
                 mb: 4,
                 flexDirection: {xs: 'column', lg: 'row'}
             }}>
-                {/* Order Information Card */}
+                {}
                 <Card sx={{
                     flex: 1,
                     background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
@@ -912,7 +887,7 @@ export default function OrderTrackingStatus() {
                         background: 'linear-gradient(90deg, #3b82f6 0%, #1d4ed8 30%, #22c55e 70%, #16a34a 100%)'
                     }
                 }}>
-                    {/* Header */}
+                    {}
                     <Box sx={{
                         background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
                         p: 3,
@@ -967,7 +942,7 @@ export default function OrderTrackingStatus() {
                     </Box>
 
                     <CardContent sx={{p: 4}}>
-                        {/* Order Information Section */}
+                        {}
                         <Box sx={{mb: 4}}>
                             <Typography variant="h6" sx={{
                                 fontWeight: 600,
@@ -981,18 +956,18 @@ export default function OrderTrackingStatus() {
                                 Order Basic Information
                             </Typography>
 
-                            {/* Order Information Grid */}
+                            {}
                             <Box sx={{
                                 display: 'flex',
                                 flexDirection: 'column',
                                 gap: 3
                             }}>
-                                {/* Order Date & Deadline Row */}
+                                {}
                                 <Box sx={{
                                     display: 'flex',
                                     gap: 2
                             }}>
-                                {/* Order Date */}
+                                {}
                                 <Box sx={{
                                         flex: 1,
                                         p: 2.5,
@@ -1058,7 +1033,7 @@ export default function OrderTrackingStatus() {
                                     </Box>
                                 </Box>
 
-                                {/* Deadline */}
+                                {}
                                 <Box sx={{
                                         flex: 1,
                                         p: 2.5,
@@ -1125,7 +1100,7 @@ export default function OrderTrackingStatus() {
                                     </Box>
                                 </Box>
 
-                                {/* Total Uniforms */}
+                                {}
                                 <Box sx={{
                                     p: 2.5,
                                     borderRadius: 3,
@@ -1194,7 +1169,7 @@ export default function OrderTrackingStatus() {
 
 
 
-                        {/* Order Notes */}
+                        {}
                         {orderDetail.note && (
                             <Box sx={{
                                 p: 3,
@@ -1244,7 +1219,7 @@ export default function OrderTrackingStatus() {
                     </CardContent>
                 </Card>
 
-                {/* Garment Factory Information - Redesigned */}
+                {}
                 <Card sx={{
                     flex: 1,
                     background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
@@ -1259,7 +1234,7 @@ export default function OrderTrackingStatus() {
                         boxShadow: '0 16px 50px rgba(0, 0, 0, 0.15)'
                     }
                 }}>
-                    {/* Decorative Top Border */}
+                    {}
                     <Box sx={{
                         position: 'absolute',
                         top: 0,
@@ -1268,8 +1243,8 @@ export default function OrderTrackingStatus() {
                         height: '6px',
                         background: 'linear-gradient(90deg, #10b981 0%, #059669 30%, #0d9488 60%, #0f766e 100%)'
                     }}/>
-                    
-                    {/* Background Pattern */}
+
+                    {}
                     <Box sx={{
                         position: 'absolute',
                         top: 0,
@@ -1280,8 +1255,8 @@ export default function OrderTrackingStatus() {
                         borderRadius: '50%',
                         transform: 'translate(30px, -30px)'
                     }}/>
-                    
-                    {/* Header */}
+
+                    {}
                     <Box sx={{
                         background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                         p: 3,
@@ -1336,7 +1311,7 @@ export default function OrderTrackingStatus() {
             </Box>
 
                     <CardContent sx={{p: 4, position: 'relative', zIndex: 1}}>
-                        {/* Factory Profile */}
+                        {}
                         <Box sx={{
                             display: 'flex',
                             alignItems: 'center',
@@ -1383,7 +1358,7 @@ export default function OrderTrackingStatus() {
                             </Box>
                         </Box>
 
-                        {/* Contact Information */}
+                        {}
                         <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
                             <Box sx={{
                                 display: 'flex',
@@ -1530,7 +1505,7 @@ export default function OrderTrackingStatus() {
                 </Card>
             </Box>
 
-            {/* Payment Information - Full Width */}
+            {}
             <Card sx={{
                 mb: 4,
                 background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
@@ -1549,7 +1524,7 @@ export default function OrderTrackingStatus() {
                     background: 'linear-gradient(90deg, #22c55e 0%, #16a34a 30%, #10b981 70%, #059669 100%)'
                 }
             }}>
-                {/* Header */}
+                {}
                 <Box sx={{
                     background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
                     p: 3,
@@ -1605,13 +1580,12 @@ export default function OrderTrackingStatus() {
 
                 <CardContent sx={{p: 4}}>
                     {orderDetail.status === 'processing' ? (
-                        /* Processing Status - Show detailed payment breakdown */
                         <Box sx={{
                             display: 'flex',
                             flexDirection: {xs: 'column', md: 'row'},
                             gap: 2
                         }}>
-                            {/* 1. Base Price */}
+                            {}
                             <Box sx={{
                                 flex: 1,
                                 p: 3,
@@ -1677,7 +1651,7 @@ export default function OrderTrackingStatus() {
                                 </Box>
                             </Box>
 
-                            {/* 2. Service Fee */}
+                            {}
                             <Box sx={{
                                 flex: 1,
                                 p: 3,
@@ -1742,7 +1716,7 @@ export default function OrderTrackingStatus() {
                                 </Box>
                             </Box>
 
-                            {/* 3. Total Price */}
+                            {}
                             <Box sx={{
                                 flex: 1,
                                 p: 3,
@@ -1807,7 +1781,7 @@ export default function OrderTrackingStatus() {
                                 </Box>
                             </Box>
 
-                            {/* 4. Deposit Amount */}
+                            {}
                             <Box sx={{
                                 flex: 1,
                                 p: 3,
@@ -1873,7 +1847,6 @@ export default function OrderTrackingStatus() {
                             </Box>
                         </Box>
                     ) : (
-                        /* Other Status - Show simple base price */
                         <Box sx={{
                             display: 'flex',
                             justifyContent: 'center'
@@ -1946,7 +1919,7 @@ export default function OrderTrackingStatus() {
                 </CardContent>
             </Card>
 
-            {/* Selected Design */}
+            {}
             {orderDetail.selectedDesign && (
             <Card sx={{
                 mb: 3,
@@ -1966,7 +1939,7 @@ export default function OrderTrackingStatus() {
                     background: 'linear-gradient(90deg, #8b5cf6 0%, #3b82f6 50%, #10b981 100%)'
                 }
             }}>
-                {/* Header */}
+                {}
                 <Box sx={{
                     background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
                     p: 3,
@@ -2021,14 +1994,14 @@ export default function OrderTrackingStatus() {
                 </Box>
 
                 <CardContent sx={{p: 4}}>
-                    {/* Design Information Grid */}
+                    {}
                     <Box sx={{
                         display: 'grid',
                         gridTemplateColumns: {xs: '1fr', md: 'repeat(3, 1fr)'},
                         gap: 3,
                         mb: 4
                     }}>
-                        {/* Design Name */}
+                        {}
                         <Box sx={{
                             p: 3,
                             borderRadius: 3,
@@ -2087,7 +2060,7 @@ export default function OrderTrackingStatus() {
                             </Box>
                         </Box>
 
-                        {/* Submit Date */}
+                        {}
                         <Box sx={{
                             p: 3,
                             borderRadius: 3,
@@ -2146,7 +2119,7 @@ export default function OrderTrackingStatus() {
                             </Box>
                         </Box>
 
-                        {/* Status */}
+                        {}
                         <Box sx={{
                             p: 3,
                             borderRadius: 3,
@@ -2206,7 +2179,7 @@ export default function OrderTrackingStatus() {
                         </Box>
                     </Box>
 
-                    {/* Design Notes */}
+                    {}
                     {orderDetail.selectedDesign.note && (
                         <Box sx={{
                             p: 3,
@@ -2256,7 +2229,7 @@ export default function OrderTrackingStatus() {
                         </Box>
                     )}
 
-                    {/* Order Items with Size Breakdown */}
+                    {}
                     <Box>
                         <Typography variant="subtitle2" sx={{fontWeight: 600, mb: 2}}>
                             Order Items Breakdown
@@ -2266,7 +2239,7 @@ export default function OrderTrackingStatus() {
                             overflow: 'hidden',
                             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
                         }}>
-                            {/* Excel-Style Table */}
+                            {}
                             <Box sx={{
                                 display: 'grid',
                                 gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr',
@@ -2275,7 +2248,7 @@ export default function OrderTrackingStatus() {
                                 overflow: 'hidden',
                                 width: '100%'
                             }}>
-                                {/* Header Row */}
+                                {}
                                 <Box sx={{
                                     p: 2,
                                     borderRight: '1px solid #000000',
@@ -2419,13 +2392,11 @@ export default function OrderTrackingStatus() {
                                     </Typography>
                                 </Box>
 
-                                {/* Data Rows */}
+                                {}
                                 {(() => {
-                                    // Function to group items by category with rowspan support (similar to GarmentCreateQuotation)
                                     const groupItemsByCategory = (orderDetails) => {
                                         if (!orderDetails || orderDetails.length === 0) return [];
 
-                                        // First, group by category
                                         const categoryGroups = {};
 
                                         orderDetails.forEach((item) => {
@@ -2441,7 +2412,6 @@ export default function OrderTrackingStatus() {
                                                 categoryGroups[category][gender] = [];
                                             }
 
-                                            // Find existing group for this type
                                             let existingGroup = categoryGroups[category][gender].find(group =>
                                                 group.type === type
                                             );
@@ -2455,7 +2425,6 @@ export default function OrderTrackingStatus() {
                                                     quantities: {},
                                                     items: [],
                                                     totalQuantity: 0,
-                                                    // Common properties from first item
                                                     color: item.deliveryItem?.designItem?.color,
                                                     logoPosition: item.deliveryItem?.designItem?.logoPosition,
                                                     baseLogoHeight: item.deliveryItem?.baseLogoHeight,
@@ -2479,7 +2448,6 @@ export default function OrderTrackingStatus() {
                                             existingGroup.totalQuantity += quantity;
                                         });
 
-                                        // Convert to array with category and gender info for rowspan
                                         const result = [];
                                         Object.entries(categoryGroups).forEach(([category, genderGroups]) => {
                                             const totalCategoryRows = Object.values(genderGroups).reduce((sum, groups) =>
@@ -2510,7 +2478,7 @@ export default function OrderTrackingStatus() {
                                     return groupedItems.map((groupedItem, index) => (
                                         <React.Fragment
                                             key={`${groupedItem.category}-${groupedItem.gender}-${groupedItem.type}-${index}`}>
-                                            {/* Category - with rowspan */}
+                                            {}
                                             {groupedItem.isFirstInCategory && (
                                                 <Box sx={{
                                                     p: 2,
@@ -2537,7 +2505,7 @@ export default function OrderTrackingStatus() {
                                                 </Box>
                                             )}
 
-                                            {/* Gender - with rowspan */}
+                                            {}
                                             {groupedItem.isFirstInGender && (
                                                 <Box sx={{
                                                     p: 2,
@@ -2563,7 +2531,7 @@ export default function OrderTrackingStatus() {
                                                 </Box>
                                             )}
 
-                                            {/* Type */}
+                                            {}
                                             <Box sx={{
                                                 p: 2,
                                                 borderRight: '1px solid #000000',
@@ -2583,7 +2551,7 @@ export default function OrderTrackingStatus() {
                                                 </Typography>
                                             </Box>
 
-                                            {/* Size - Show all sizes */}
+                                            {}
                                             <Box sx={{
                                                 p: 2,
                                                 borderRight: '1px solid #000000',
@@ -2605,7 +2573,7 @@ export default function OrderTrackingStatus() {
                                                 </Typography>
                                             </Box>
 
-                                            {/* Quantity - Show View button */}
+                                            {}
                                             <Box sx={{
                                                 p: 2,
                                                 borderRight: '1px solid #000000',
@@ -2637,7 +2605,7 @@ export default function OrderTrackingStatus() {
                                                 </Button>
                                             </Box>
 
-                                            {/* Color */}
+                                            {}
                                             <Box sx={{
                                                 p: 2,
                                                 borderRight: '1px solid #000000',
@@ -2664,7 +2632,7 @@ export default function OrderTrackingStatus() {
                                                 </Typography>
                                             </Box>
 
-                                            {/* Logo Position */}
+                                            {}
                                             <Box sx={{
                                                 p: 2,
                                                 borderRight: '1px solid #000000',
@@ -2703,7 +2671,7 @@ export default function OrderTrackingStatus() {
                                                 })()}
                                             </Box>
 
-                                            {/* Images */}
+                                            {}
                                             <Box sx={{
                                                 p: 2,
                                                 borderBottom: '1px solid #000000',
@@ -2745,7 +2713,7 @@ export default function OrderTrackingStatus() {
 
 
 
-    {/* Shipping Information */
+    {
     }
     {
         orderDetail.shippingCode && (
@@ -2762,7 +2730,7 @@ export default function OrderTrackingStatus() {
         )
     }
 
-    {/* Quantity Details Dialog */}
+    {}
     <Dialog
         open={showQuantityDetailsDialog}
         onClose={handleCloseQuantityDetails}
@@ -2800,7 +2768,7 @@ export default function OrderTrackingStatus() {
         <DialogContent sx={{p: 3}}>
             {selectedQuantityDetails && (
                 <Box>
-                    {/* Item Info Header */}
+                    {}
                     <Card sx={{
                         background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
                         border: '1px solid #cbd5e1',
@@ -2836,7 +2804,7 @@ export default function OrderTrackingStatus() {
                         </CardContent>
                     </Card>
 
-                    {/* Size Breakdown Table */}
+                    {}
                     <Card sx={{
                         border: '1px solid #e2e8f0',
                         borderRadius: 2,
@@ -2953,7 +2921,7 @@ export default function OrderTrackingStatus() {
         </DialogActions>
     </Dialog>
 
-    {/* Images Dialog */}
+    {}
     <Dialog
         open={showImagesDialog}
         onClose={handleCloseImagesDialog}
@@ -2991,7 +2959,7 @@ export default function OrderTrackingStatus() {
         <DialogContent sx={{p: 3}}>
             {selectedItemImages && (
                 <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
-                    {/* Logo Image - Only for Shirt */}
+                    {}
                     {selectedItemImages.type === 'shirt' && (
                         <Box sx={{
                             p: 3,
@@ -3037,7 +3005,7 @@ export default function OrderTrackingStatus() {
                         </Box>
                     )}
 
-                    {/* Design Images */}
+                    {}
                     <Box sx={{
                         p: 3,
                         backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -3048,7 +3016,7 @@ export default function OrderTrackingStatus() {
                             Design Images
                         </Typography>
                         <Box sx={{display: 'flex', gap: 2, flexWrap: 'wrap'}}>
-                            {/* Front Design */}
+                            {}
                             <Box sx={{flex: 1, minWidth: 250}}>
                                 <Typography variant="subtitle2" sx={{fontWeight: 600, mb: 1, color: '#10b981'}}>
                                     Front Design
@@ -3089,7 +3057,7 @@ export default function OrderTrackingStatus() {
                                 )}
                             </Box>
 
-                            {/* Back Design */}
+                            {}
                             <Box sx={{flex: 1, minWidth: 250}}>
                                 <Typography variant="subtitle2" sx={{fontWeight: 600, mb: 1, color: '#8b5cf6'}}>
                                     Back Design
@@ -3151,7 +3119,7 @@ export default function OrderTrackingStatus() {
         </DialogActions>
     </Dialog>
 
-    {/* Milestone Popover */}
+    {}
     <Popover
         open={Boolean(hoveredMilestone)}
         anchorEl={popoverAnchor}
@@ -3181,7 +3149,7 @@ export default function OrderTrackingStatus() {
     >
         {hoveredMilestone && (
             <Box sx={{p: 4}}>
-                {/* Header */}
+                {}
                 <Box sx={{
                     display: 'flex',
                     alignItems: 'center',
@@ -3192,7 +3160,7 @@ export default function OrderTrackingStatus() {
                         width: 40,
                         height: 40,
                         borderRadius: '50%',
-                        background: hoveredMilestone.isCompleted 
+                        background: hoveredMilestone.isCompleted
                             ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'
                             : hoveredMilestone.isActive
                                 ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
@@ -3200,7 +3168,7 @@ export default function OrderTrackingStatus() {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        boxShadow: hoveredMilestone.isCompleted 
+                        boxShadow: hoveredMilestone.isCompleted
                             ? '0 4px 12px rgba(34, 197, 94, 0.3)'
                             : hoveredMilestone.isActive
                                 ? '0 4px 12px rgba(59, 130, 246, 0.3)'
@@ -3225,7 +3193,7 @@ export default function OrderTrackingStatus() {
                     </Box>
                 </Box>
 
-                {/* Dates Information */}
+                {}
                 {(hoveredMilestone.startDate || hoveredMilestone.endDate || hoveredMilestone.completedDate) && (
                     <Box sx={{
                         display: 'flex',
@@ -3262,7 +3230,7 @@ export default function OrderTrackingStatus() {
                                 </Box>
                             </Box>
                         )}
-                        
+
                         {hoveredMilestone.startDate && (
                             <Box sx={{
                                 display: 'flex',
@@ -3292,7 +3260,7 @@ export default function OrderTrackingStatus() {
                                 </Box>
                             </Box>
                         )}
-                        
+
                         {hoveredMilestone.endDate && !hoveredMilestone.completedDate && (
                             <Box sx={{
                                 display: 'flex',
@@ -3325,7 +3293,7 @@ export default function OrderTrackingStatus() {
                     </Box>
                 )}
 
-                {/* Status Badge */}
+                {}
                 <Box sx={{
                     display: 'flex',
                     justifyContent: 'center'
@@ -3334,14 +3302,14 @@ export default function OrderTrackingStatus() {
                         label={hoveredMilestone.isCompleted ? 'Completed' : hoveredMilestone.isActive ? 'Active' : hoveredMilestone.isNotStarted ? 'Not Started' : 'Pending'}
                         size="small"
                         sx={{
-                            backgroundColor: hoveredMilestone.isCompleted 
+                            backgroundColor: hoveredMilestone.isCompleted
                                 ? '#dcfce7'
                                 : hoveredMilestone.isActive
                                     ? '#dbeafe'
                                     : hoveredMilestone.isNotStarted
                                         ? '#f1f5f9'
                                         : '#f1f5f9',
-                            color: hoveredMilestone.isCompleted 
+                            color: hoveredMilestone.isCompleted
                                 ? '#065f46'
                                 : hoveredMilestone.isActive
                                     ? '#1e40af'

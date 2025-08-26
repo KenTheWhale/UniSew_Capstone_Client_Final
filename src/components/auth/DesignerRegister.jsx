@@ -29,7 +29,6 @@ import {encryptPartnerData} from "../../services/AuthService.jsx";
 import emailjs from '@emailjs/browser';
 import {vietnamProvinces} from "../../configs/FixedVariables.jsx";
 
-// Vietnam provinces and cities data
 
 
 const steps = ['Personal information', 'Address', 'Business information'];
@@ -40,7 +39,6 @@ export default function DesignerRegister() {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState('');
 
-    // Form data
     const [formData, setFormData] = useState({
         email: '',
         phone: '',
@@ -50,10 +48,8 @@ export default function DesignerRegister() {
         taxCode: ''
     });
 
-    // Validation errors
     const [errors, setErrors] = useState({});
 
-    // Available districts based on selected province
     const availableDistricts = vietnamProvinces.find(p => p.id === formData.province)?.districts || [];
 
     const validateEmail = (email) => {
@@ -103,12 +99,10 @@ export default function DesignerRegister() {
     const handleInputChange = (field, value) => {
         setFormData(prev => ({...prev, [field]: value}));
 
-        // Clear district when province changes
         if (field === 'province') {
             setFormData(prev => ({...prev, district: ''}));
         }
 
-        // Validate field
         const error = validateField(field, value);
         setErrors(prev => ({...prev, [field]: error}));
     };
@@ -138,7 +132,6 @@ export default function DesignerRegister() {
     };
 
     const handleSubmit = async () => {
-        // Validate all fields
         const newErrors = {};
         Object.keys(formData).forEach(field => {
             const error = validateField(field, formData[field]);
@@ -368,7 +361,7 @@ export default function DesignerRegister() {
         }}>
             <Container maxWidth="md">
                 <Paper elevation={8} sx={{p: 4, borderRadius: 3}}>
-                    {/* Header */}
+                    {}
                     <Box sx={{textAlign: 'center', mb: 4}}>
                         <PersonAddIcon sx={{fontSize: 60, color: 'primary.main', mb: 2}}/>
                         <Typography variant="h3" sx={{fontWeight: 700, mb: 2, color: 'text.primary'}}>
@@ -379,14 +372,14 @@ export default function DesignerRegister() {
                         </Typography>
                     </Box>
 
-                    {/* Error Alert */}
+                    {}
                     {error && (
                         <Alert severity="error" sx={{mb: 3}}>
                             {error}
                         </Alert>
                     )}
 
-                    {/* Stepper */}
+                    {}
                     <Stepper activeStep={activeStep} sx={{mb: 4}}>
                         {steps.map((label) => (
                             <Step key={label}>
@@ -395,12 +388,12 @@ export default function DesignerRegister() {
                         ))}
                     </Stepper>
 
-                    {/* Form Content */}
+                    {}
                     <Box sx={{mb: 4}}>
                         {getStepContent(activeStep)}
                     </Box>
 
-                    {/* Navigation Buttons */}
+                    {}
                     <Box sx={{display: 'flex', justifyContent: 'space-between'}}>
                         <Button
                             disabled={activeStep === 0}

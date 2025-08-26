@@ -24,10 +24,10 @@ import { CircularProgress } from '@mui/material';
 import dayjs from 'dayjs';
 import { serviceFee } from '../../../../configs/FixedVariables.jsx';
 
-export default function QuotationSummaryPopup({ 
-    visible, 
-    onCancel, 
-    quotation, 
+export default function QuotationSummaryPopup({
+    visible,
+    onCancel,
+    quotation,
     onPayment,
     isProcessing = false
 }) {
@@ -57,7 +57,7 @@ export default function QuotationSummaryPopup({
                 }
             }}
         >
-            {/* Header */}
+            {}
             <DialogTitle
                 sx={{
                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -91,15 +91,15 @@ export default function QuotationSummaryPopup({
                 </IconButton>
             </DialogTitle>
 
-            {/* Content */}
+            {}
             <DialogContent sx={{ p: 0 }}>
                 <Box sx={{ p: 4 }}>
-                    {/* Garment Manufacturer Info */}
-                    <Paper 
-                        elevation={0} 
-                        sx={{ 
-                            p: 3, 
-                            mb: 3, 
+                    {}
+                    <Paper
+                        elevation={0}
+                        sx={{
+                            p: 3,
+                            mb: 3,
                             backgroundColor: '#f8fafc',
                             border: '1px solid #e2e8f0',
                             borderRadius: 2
@@ -116,13 +116,13 @@ export default function QuotationSummaryPopup({
                         </Typography>
                     </Paper>
 
-                    {/* Quotation Details */}
+                    {}
                     <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3, mb: 3 }}>
-                        {/* Delivery Date */}
-                        <Paper 
+                        {}
+                        <Paper
                             elevation={0}
-                            sx={{ 
-                                p: 3, 
+                            sx={{
+                                p: 3,
                                 backgroundColor: '#fef3f2',
                                 border: '1px solid #fecaca',
                                 borderRadius: 2
@@ -139,11 +139,11 @@ export default function QuotationSummaryPopup({
                             </Typography>
                         </Paper>
 
-                        {/* Valid Until */}
-                        <Paper 
+                        {}
+                        <Paper
                             elevation={0}
-                            sx={{ 
-                                p: 3, 
+                            sx={{
+                                p: 3,
                                 backgroundColor: '#fff7ed',
                                 border: '1px solid #fed7aa',
                                 borderRadius: 2
@@ -161,12 +161,12 @@ export default function QuotationSummaryPopup({
                         </Paper>
                     </Box>
 
-                    {/* Notes */}
+                    {}
                     {quotation.note && (
-                        <Paper 
+                        <Paper
                             elevation={0}
-                            sx={{ 
-                                p: 3, 
+                            sx={{
+                                p: 3,
                                 mb: 3,
                                 backgroundColor: '#f0f9ff',
                                 border: '1px solid #bae6fd',
@@ -184,11 +184,11 @@ export default function QuotationSummaryPopup({
 
                     <Divider sx={{ my: 3 }} />
 
-                    {/* Price Breakdown */}
-                    <Paper 
+                    {}
+                    <Paper
                         elevation={0}
-                        sx={{ 
-                            p: 3, 
+                        sx={{
+                            p: 3,
                             mb: 3,
                             backgroundColor: '#f8fafc',
                             border: '1px solid #e2e8f0',
@@ -198,12 +198,12 @@ export default function QuotationSummaryPopup({
                         <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: '#1e293b' }}>
                             Price Breakdown
                         </Typography>
-                        
+
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                            {/* Quotation Price */}
-                            <Box sx={{ 
-                                display: 'flex', 
-                                justifyContent: 'space-between', 
+                            {}
+                            <Box sx={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
                                 alignItems: 'center',
                                 p: 2,
                                 backgroundColor: '#f0f9ff',
@@ -221,10 +221,10 @@ export default function QuotationSummaryPopup({
                                 </Typography>
                             </Box>
 
-                            {/* Service Fee */}
-                            <Box sx={{ 
-                                display: 'flex', 
-                                justifyContent: 'space-between', 
+                            {}
+                            <Box sx={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
                                 alignItems: 'center',
                                 p: 2,
                                 backgroundColor: '#fef3c7',
@@ -242,10 +242,10 @@ export default function QuotationSummaryPopup({
                                 </Typography>
                             </Box>
 
-                            {/* Total Amount */}
-                            <Box sx={{ 
-                                display: 'flex', 
-                                justifyContent: 'space-between', 
+                            {}
+                            <Box sx={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
                                 alignItems: 'center',
                                 p: 3,
                                 backgroundColor: '#dcfce7',
@@ -268,7 +268,7 @@ export default function QuotationSummaryPopup({
                 </Box>
             </DialogContent>
 
-            {/* Actions */}
+            {}
             <DialogActions sx={{ p: 4, pt: 0 }}>
                 <Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
                     <Button
@@ -318,4 +318,4 @@ export default function QuotationSummaryPopup({
             </DialogActions>
         </Dialog>
     );
-} 
+}

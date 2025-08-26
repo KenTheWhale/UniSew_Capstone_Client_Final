@@ -25,7 +25,6 @@ export default function PaymentResult() {
 
     const [isProcessing, setIsProcessing] = useState(false);
     const [hasProcessed, setHasProcessed] = useState(() => {
-        // Check if payment has already been processed from localStorage
         const processedKey = `payment_processed_${urlParams.get('vnp_TxnRef')}`;
         return localStorage.getItem(processedKey) === 'true';
     });
@@ -35,8 +34,8 @@ export default function PaymentResult() {
     const vnpAmount = urlParams.get('vnp_Amount');
     const vnpOrderInfo = urlParams.get('vnp_OrderInfo');
     const vnpTxnRef = urlParams.get('vnp_TxnRef');
-    const paymentType = sessionStorage.getItem('currentPaymentType') || 'design'; // Get payment type from sessionStorage
-    const quotationId = urlParams.get('quotationId'); // Get quotation ID for order payment
+    const paymentType = sessionStorage.getItem('currentPaymentType') || 'design';
+    const quotationId = urlParams.get('quotationId');
 
     let success = false;
     let quotationDetails = null;
@@ -46,12 +45,10 @@ export default function PaymentResult() {
     let isRevisionPurchase = paymentType === 'revision';
     let isDepositPayment = paymentType === 'deposit';
 
-    // Check if we have valid payment data
     const hasDesignPayment = !isOrderPayment && !isRevisionPurchase && !isDepositPayment && !!sessionStorage.getItem('paymentQuotationDetails');
     const hasOrderPayment = (isOrderPayment || isDepositPayment) && !!sessionStorage.getItem('paymentQuotationDetails');
     const hasRevisionPurchase = isRevisionPurchase && !!sessionStorage.getItem('revisionPurchaseDetails');
 
-    // Debug logs
     console.log('PaymentResult Debug:', {
         paymentType,
         isOrderPayment,
@@ -66,7 +63,6 @@ export default function PaymentResult() {
         success: vnpResponseCode === '00'
     });
 
-    // Only redirect if no payment data AND no VNPay response AND this is initial render
     if (!hasDesignPayment && !hasOrderPayment && !hasRevisionPurchase && vnpResponseCode === null && isInitialRender) {
         console.log('No valid payment data found and no VNPay response on initial render, redirecting to /school/design');
         window.location.href = '/school/design';
@@ -75,22 +71,18 @@ export default function PaymentResult() {
     if (vnpResponseCode !== null) {
         success = vnpResponseCode === '00';
 
-        // Parse payment details regardless of success/failure
         try {
             if (isOrderPayment || isDepositPayment) {
-                // For order payments (including deposit), get from session storage
                 const storedOrderDetails = sessionStorage.getItem('paymentQuotationDetails');
                 if (storedOrderDetails) {
                     orderDetails = JSON.parse(storedOrderDetails);
                 }
             } else if (isRevisionPurchase) {
-                // For revision purchase payments, get from session storage
                 const storedRevisionDetails = sessionStorage.getItem('revisionPurchaseDetails');
                 if (storedRevisionDetails) {
                     revisionPurchaseDetails = JSON.parse(storedRevisionDetails);
                 }
             } else {
-                // For design payments, get from session storage
                 const storedQuotationDetails = sessionStorage.getItem('paymentQuotationDetails');
                 if (storedQuotationDetails) {
                     try {
@@ -112,7 +104,6 @@ export default function PaymentResult() {
             console.error('Error parsing payment details:', error);
         }
     } else {
-        // Only redirect if we have a payment type but no VNPay response AND this is initial render
         if (paymentType && isInitialRender) {
             console.log('No VNPay response but have payment type on initial render, redirecting based on type');
             if (isOrderPayment) {
@@ -128,7 +119,6 @@ export default function PaymentResult() {
     const {quotation, request, serviceFee: designServiceFee, subtotal, totalAmount} = quotationDetails || {};
     const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
 
-    // Handle successful payment
     const handleSuccessfulPayment = async () => {
         console.log('Processing successful payment');
 
@@ -143,7 +133,6 @@ export default function PaymentResult() {
         }
     };
 
-    // Handle failed payment
     const handleFailedPayment = async () => {
         console.log('Processing failed payment');
 
@@ -156,7 +145,6 @@ export default function PaymentResult() {
         }
     };
 
-    // Helper functions for successful payments
     const handleSuccessfulDeposit = async () => {
         console.log('handleSuccessfulDeposit called');
         const data = {
@@ -224,7 +212,6 @@ export default function PaymentResult() {
         }
     };
 
-    // Helper functions for failed payments
     const handleFailedDeposit = async () => {
         console.log('handleFailedDeposit called');
         if (!orderDetails) return;
@@ -285,15 +272,12 @@ export default function PaymentResult() {
         }
     };
 
-    // Set isInitialRender to false after first render
     useEffect(() => {
         setIsInitialRender(false);
     }, []);
 
-    // Process payment success and failure
     useEffect(() => {
         const processPayment = async () => {
-            // Prevent duplicate processing
             if (hasProcessed || isProcessing || vnpResponseCode === null) {
                 return;
             }
@@ -319,7 +303,6 @@ export default function PaymentResult() {
                 setIsProcessing(false);
                 setHasProcessed(true);
 
-                // Save processing status to localStorage
                 const processedKey = `payment_processed_${vnpTxnRef}`;
                 localStorage.setItem(processedKey, 'true');
             }
@@ -340,7 +323,7 @@ export default function PaymentResult() {
             <Container maxWidth="md">
                 <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4}}>
 
-                    {/* Main Result Card */}
+                    {}
                     <Paper
                         elevation={0}
                         sx={{
@@ -382,7 +365,7 @@ export default function PaymentResult() {
                                     }
                                 </Typography.Paragraph>
 
-                                {/* VNPay Transaction Details */}
+                                {}
                                 {vnpTxnRef && (
                                     <Box sx={{
                                         mt: 3,
@@ -392,7 +375,7 @@ export default function PaymentResult() {
                                         boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
                                         overflow: 'hidden'
                                     }}>
-                                        {/* Header */}
+                                        {}
                                         <Box sx={{
                                             p: 4,
                                             background: 'linear-gradient(135deg, #52c41a 0%, #389e0d 100%)',
@@ -443,7 +426,7 @@ export default function PaymentResult() {
                                             </Box>
                                         </Box>
 
-                                        {/* Content */}
+                                        {}
                                         <Box sx={{p: 4}}>
                                             <Box sx={{
                                                 display: 'grid',
@@ -451,7 +434,7 @@ export default function PaymentResult() {
                                                 gap: 3
                                             }}>
 
-                                                {/* Amount */}
+                                                {}
                                                 {vnpAmount && (
                                                     <Box sx={{
                                                         p: 3,
@@ -480,7 +463,7 @@ export default function PaymentResult() {
                                                                     fontSize: '12px',
                                                                     fontWeight: 'bold'
                                                                 }}>
-                                                                    â‚«
+                                                                    â‚?
                                                                 </Typography.Text>
                                                             </Box>
                                                             <Typography.Text style={{
@@ -502,7 +485,7 @@ export default function PaymentResult() {
                                                     </Box>
                                                 )}
 
-                                                {/* Date */}
+                                                {}
                                                 <Box sx={{
                                                     p: 3,
                                                     backgroundColor: '#fef3c7',
@@ -555,7 +538,7 @@ export default function PaymentResult() {
                                                 </Box>
                                             </Box>
 
-                                            {/* Summary */}
+                                            {}
                                             <Box sx={{
                                                 mt: 4,
                                                 p: 3,
@@ -577,7 +560,7 @@ export default function PaymentResult() {
                                     </Box>
                                 )}
 
-                                {/* Success Features */}
+                                {}
                                 <Box sx={{display: 'flex', gap: 3, mt: 2}}>
                                     <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
                                         <SafetyCertificateOutlined style={{color: '#52c41a', fontSize: '16px'}}/>
@@ -616,7 +599,7 @@ export default function PaymentResult() {
                                     again.
                                 </Typography.Paragraph>
 
-                                {/* VNPay Error Details */}
+                                {}
                                 {vnpResponseCode && vnpResponseCode !== '00' && (
                                     <Box sx={{
                                         mt: 2,
@@ -640,7 +623,7 @@ export default function PaymentResult() {
                         )}
                     </Paper>
 
-                    {/* Order Summary Card */}
+                    {}
                     {success && (quotationDetails || orderDetails || revisionPurchaseDetails) && (
                         <Paper
                             elevation={0}
@@ -673,7 +656,6 @@ export default function PaymentResult() {
 
                             <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
                                 {(isOrderPayment || isDepositPayment) ? (
-                                    /* Order Payment Info */
                                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
                                         <Box sx={{
                                             display: 'flex',
@@ -756,7 +738,6 @@ export default function PaymentResult() {
                                         </Box>
                                     </Box>
                                 ) : isRevisionPurchase ? (
-                                    /* Revision Purchase Info */
                                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
                                         <Box sx={{
                                             display: 'flex',
@@ -819,7 +800,6 @@ export default function PaymentResult() {
                                         </Box>
                                     </Box>
                                 ) : (
-                                    /* Design Request Info */
                                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
                                         <Box sx={{
                                             display: 'flex',
@@ -865,7 +845,7 @@ export default function PaymentResult() {
 
                                 <Divider style={{margin: '16px 0'}}/>
 
-                                {/* Payment Details */}
+                                {}
                                 <Box>
                                     <Typography.Title level={4} style={{
                                         margin: '0 0 16px 0',
@@ -901,7 +881,7 @@ export default function PaymentResult() {
 
                                         {isDepositPayment && (
                                             <>
-                                                {/* Service Fee for Deposit */}
+                                                {}
                                                 <Box sx={{
                                                     display: 'flex',
                                                     justifyContent: 'space-between',
@@ -927,7 +907,7 @@ export default function PaymentResult() {
 
                                         {!isOrderPayment && !isDepositPayment && !isRevisionPurchase && (
                                             <>
-                                                {/* Service Fee for Design Payment */}
+                                                {}
                                                 {designServiceFee && (
                                                     <Box sx={{
                                                         display: 'flex',
@@ -1052,7 +1032,7 @@ export default function PaymentResult() {
                         </Paper>
                     )}
 
-                    {/* Action Buttons */}
+                    {}
                     <Box sx={{
                         display: 'flex',
                         flexDirection: 'column',
@@ -1073,18 +1053,15 @@ export default function PaymentResult() {
                                 borderColor: '#1976d2'
                             }}
                             onClick={() => {
-                                // Clear sessionStorage and localStorage after successful processing
                                 if (isOrderPayment || isDepositPayment) {
                                     sessionStorage.removeItem('paymentQuotationDetails');
                                     sessionStorage.removeItem('currentPaymentType');
-                                    // Clear payment processed status
                                     const processedKey = `payment_processed_${vnpTxnRef}`;
                                     localStorage.removeItem(processedKey);
                                     window.location.href = '/school/order';
                                 } else if (isRevisionPurchase) {
                                     sessionStorage.removeItem('revisionPurchaseDetails');
                                     sessionStorage.removeItem('currentPaymentType');
-                                    // Clear payment processed status
                                     const processedKey = `payment_processed_${vnpTxnRef}`;
                                     localStorage.removeItem(processedKey);
                                     window.location.href = '/school/chat';
@@ -1092,7 +1069,6 @@ export default function PaymentResult() {
                                     sessionStorage.removeItem('paymentQuotationDetails');
                                     sessionStorage.removeItem('extraRevision');
                                     sessionStorage.removeItem('currentPaymentType');
-                                    // Clear payment processed status
                                     const processedKey = `payment_processed_${vnpTxnRef}`;
                                     localStorage.removeItem(processedKey);
                                     window.location.href = '/school/design';
@@ -1113,7 +1089,6 @@ export default function PaymentResult() {
                                     color: '#475569'
                                 }}
                                 onClick={() => {
-                                    // Clear payment processed status when trying again
                                     const processedKey = `payment_processed_${vnpTxnRef}`;
                                     localStorage.removeItem(processedKey);
                                     sessionStorage.removeItem('currentPaymentType');

@@ -42,7 +42,7 @@ function Navbar({userObj, activeMenu, navigate}) {
                 },
             }}
         >
-            {/* Sidebar Header */}
+            {}
             <Box sx={{ p: 3, background: "linear-gradient(135deg, #dc3545 0%, #c82333 100%)", color: "white", textAlign: "center" }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
                     Admin Dashboard
@@ -52,9 +52,9 @@ function Navbar({userObj, activeMenu, navigate}) {
                 </Typography>
             </Box>
 
-            {/* Navigation */}
+            {}
             <Box sx={{ p: 2 }}>
-                {/* Dashboard Features Section */}
+                {}
                 <Typography variant="overline" sx={{ px: 2, pb: 1, color: "#6c757d", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "1px" }}>
                     DASHBOARD FEATURES
                 </Typography>
@@ -140,7 +140,7 @@ function Navbar({userObj, activeMenu, navigate}) {
 
                 <Divider sx={{ my: 3, borderColor: "#e9ecef" }} />
 
-                {/* Account Management Section */}
+                {}
                 <Typography variant="overline" sx={{ px: 2, pb: 1, color: "#6c757d", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "1px" }}>
                     ACCOUNT MANAGEMENT
                 </Typography>
@@ -237,7 +237,6 @@ export default function AdminDashboardLayout() {
         }
     }, []);
 
-    // Determine active menu based on current URL
     useEffect(() => {
         const pathname = location.pathname;
         if (pathname.includes('/admin/dashboard')) {
@@ -282,8 +281,8 @@ export default function AdminDashboardLayout() {
     return (
         <Box sx={{display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#fafafa', overflow: 'hidden'}}>
             <CssBaseline />
-            
-            {/* Header */}
+
+            {}
             <AppBar
                 position="static"
                 sx={{
@@ -353,7 +352,7 @@ export default function AdminDashboardLayout() {
                                     <AdminPanelSettings sx={{ fontSize: 16, color: '#dc3545' }} />
                                 }
                             >
-                                <Avatar 
+                                <Avatar
                                     sx={{ width: 32, height: 32, bgcolor: "rgba(255, 255, 255, 0.2)" }}
                                     src={userObj?.customer?.avatar}
                                     slotProps={{
@@ -393,11 +392,11 @@ export default function AdminDashboardLayout() {
                             }}
                         >
                             <Box sx={{ p: 2 }}>
-                                <Box sx={{ 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    gap: 2, 
-                                    p: 1.5, 
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    p: 1.5,
                                     borderRadius: 1,
                                     mb: 1,
                                     background: 'rgba(220, 53, 69, 0.05)'
@@ -421,9 +420,9 @@ export default function AdminDashboardLayout() {
                                         </Typography>
                                     </Box>
                                 </Box>
-                                
+
                                 <Divider sx={{ my: 1 }} />
-                                
+
                                 <Box
                                     sx={{
                                         display: 'flex',
@@ -454,7 +453,7 @@ export default function AdminDashboardLayout() {
                 </Toolbar>
             </AppBar>
 
-            {/* Main Content */}
+            {}
             <Box sx={{display: 'flex', flex: 1, overflow: 'hidden'}}>
                 <Box sx={{width: 280, flexShrink: 0}}>
                     <Navbar userObj={userObj} activeMenu={activeMenu} navigate={navigate}/>
