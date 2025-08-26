@@ -56,7 +56,7 @@ export default function PrivacyPolicy() {
 
     return (
         <Box sx={{ backgroundColor: '#fafafa', minHeight: '100vh', py: { xs: 4, md: 8 } }}>
-            {/* Hero Section */}
+            {}
             <Box
                 sx={{
                     background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
@@ -94,7 +94,7 @@ export default function PrivacyPolicy() {
                 </Container>
             </Box>
 
-            {/* Introduction */}
+            {}
             <Container maxWidth="lg" sx={{ mb: 6 }}>
                 <Paper
                     elevation={0}
@@ -128,7 +128,7 @@ export default function PrivacyPolicy() {
                 </Paper>
             </Container>
 
-            {/* Policy Sections */}
+            {}
             <Container maxWidth="lg">
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {sections.map((section, index) => (
@@ -159,8 +159,8 @@ export default function PrivacyPolicy() {
                                         mr: 3
                                     }}
                                 >
-                                    {React.cloneElement(section.icon, { 
-                                        sx: { color: "#1976d2", fontSize: 28 } 
+                                    {React.cloneElement(section.icon, {
+                                        sx: { color: "#1976d2", fontSize: 28 }
                                     })}
                                 </Box>
                                 <Typography
@@ -255,7 +255,7 @@ export default function PrivacyPolicy() {
                 </Box>
             </Container>
 
-            {/* Footer Notice */}
+            {}
             <Container maxWidth="lg" sx={{ mt: 8 }}>
                 <Paper
                     elevation={0}
@@ -275,7 +275,7 @@ export default function PrivacyPolicy() {
                             fontSize: "0.95rem"
                         }}
                     >
-                        This privacy policy is effective as of the date last updated above. We reserve the right to change this policy at any time. 
+                        This privacy policy is effective as of the date last updated above. We reserve the right to change this policy at any time.
                         Please check this page periodically for updates.
                     </Typography>
                 </Paper>

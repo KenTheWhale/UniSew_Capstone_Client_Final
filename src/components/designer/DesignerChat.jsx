@@ -64,13 +64,11 @@ import {getAccessCookie} from "../../utils/CookieUtil.jsx";
 
 const {TextArea} = Input;
 
-// Format design category for display across components
 const formatCategory = (category) => {
     const v = (category || '').toLowerCase();
     return v === 'pe' ? 'physical education' : (category || '');
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function statusTag(status) {
     let color;
     let icon = null;
@@ -118,7 +116,6 @@ export function statusTag(status) {
     return <Tag style={{margin: 0}} color={color}>{icon} {status}</Tag>;
 }
 
-// Function to get appropriate icon based on item type
 const getItemIcon = (itemType) => {
     const type = itemType?.toLowerCase() || '';
 
@@ -152,7 +149,6 @@ export function UseDesignerChatMessages(roomId) {
             setChatMessages(msgs);
         });
 
-        // stream đếm chưa đọc từ đối phương
         const qUnread = query(
             collection(db, "messages"),
             where("room", "==", roomId),
@@ -234,7 +230,6 @@ export function UseDesignerChatMessages(roomId) {
     return { chatMessages, unreadCount, sendMessage, markAsRead };
 }
 
-// New DeliverySubmissionModal component for designers
 function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton, onAddRevision}) {
     if (!delivery) return null;
 
@@ -255,7 +250,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                 }
             }}
         >
-            {/* Header */}
+            {}
             <Box sx={{
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 color: 'white',
@@ -299,13 +294,13 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                 </Box>
             </Box>
 
-            {/* Content */}
+            {}
             <Box sx={{
                 display: 'flex',
                 height: 'calc(90vh - 120px)',
                 overflow: 'hidden'
             }}>
-                {/* Left Side - Basic Info */}
+                {}
                 <Box sx={{
                     width: '35%',
                     p: 3,
@@ -405,7 +400,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                     </Box>
                 </Box>
 
-                {/* Right Side - Design Items */}
+                {}
                 <Box sx={{
                     width: '65%',
                     p: 3,
@@ -421,14 +416,13 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                     </Box>
 
                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
-                        {/* Group items by gender */}
+                        {}
                         {(() => {
-                            // Handle both old deliveryItems structure and new items structure
                             const items = delivery.deliveryItems || delivery.items || [];
-                            const boyItems = items.filter(item => 
+                            const boyItems = items.filter(item =>
                                 item.designItem?.gender?.toLowerCase() === 'boy'
                             ) || [];
-                            const girlItems = items.filter(item => 
+                            const girlItems = items.filter(item =>
                                 item.designItem?.gender?.toLowerCase() === 'girl'
                             ) || [];
                             const otherItems = items.filter(item => {
@@ -438,7 +432,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
 
                             return (
                                 <>
-                                    {/* Boy Section */}
+                                    {}
                                     {boyItems.length > 0 && (
                                         <Box sx={{mb: 3}}>
                                             <Box sx={{
@@ -472,7 +466,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                     transform: 'translateY(-2px)'
                                 }
                             }}>
-                                {/* Item Header */}
+                                {}
                                 <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
                                     <Box sx={{
                                         width: 40,
@@ -497,7 +491,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                     </Box>
                                 </Box>
 
-                                {/* Item Details Grid */}
+                                {}
                                 <Row gutter={[24, 16]}>
                                     <Col span={item.designItem?.logoPosition ? 8 : 12}>
                                         <Box sx={{
@@ -558,7 +552,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                     )}
                                 </Row>
 
-                                {/* Logo Dimensions for Shirt */}
+                                {}
                                 {item.designItem?.type?.toLowerCase().includes('shirt') && (
                                     <Row gutter={[24, 16]} style={{marginTop: 16}}>
                                         <Col span={12}>
@@ -606,7 +600,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                     </Row>
                                 )}
 
-                                {/* Design Images */}
+                                {}
                                 <Row gutter={[24, 16]} style={{marginTop: 16}}>
                                     <Col span={12}>
                                         <Box sx={{
@@ -660,7 +654,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                     </Col>
                                 </Row>
 
-                                {/* Item Note */}
+                                {}
                                 {item.designItem?.note && (
                                     <Box sx={{
                                         mt: 2,
@@ -681,7 +675,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                         </Box>
                                     )}
 
-                                                                                                                                {/* Girl Section */}
+                                                                                                                                {}
                                                         {girlItems.length > 0 && (
                                                             <Box sx={{mb: 3}}>
                                                                 <Box sx={{
@@ -715,7 +709,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                                                 transform: 'translateY(-2px)'
                                                                             }
                                                                         }}>
-                                                                            {/* Item Header */}
+                                                                            {}
                                                                             <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
                                                                                 <Box sx={{
                                                                                     width: 40,
@@ -740,7 +734,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                             </Box>
                                                         </Box>
 
-                                                        {/* Item Details Grid */}
+                                                        {}
                                                         <Row gutter={[24, 16]}>
                                                             <Col span={item.designItem?.logoPosition ? 8 : 12}>
                                                                 <Box sx={{
@@ -801,7 +795,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                             )}
                                                         </Row>
 
-                                                        {/* Design Images */}
+                                                        {}
                                                         <Row gutter={[24, 16]} style={{marginTop: 16}}>
                                                             <Col span={12}>
                                                                 <Box sx={{
@@ -855,7 +849,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                             </Col>
                                                         </Row>
 
-                                                        {/* Item Note */}
+                                                        {}
                                                         {item.designItem?.note && (
                                                             <Box sx={{
                                                                 mt: 2,
@@ -876,7 +870,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                         </Box>
                                     )}
 
-                                    {/* Others Section */}
+                                    {}
                                     {otherItems.length > 0 && (
                                         <Box sx={{mb: 3}}>
                                             <Box sx={{
@@ -910,7 +904,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                             transform: 'translateY(-2px)'
                                                         }
                                                     }}>
-                                                        {/* Item Header */}
+                                                        {}
                                                         <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
                                                             <Box sx={{
                                                                 width: 40,
@@ -935,7 +929,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                             </Box>
                                                         </Box>
 
-                                                        {/* Item Details Grid */}
+                                                        {}
                                                         <Row gutter={[24, 16]}>
                                                             <Col span={item.designItem?.logoPosition ? 8 : 12}>
                                                                 <Box sx={{
@@ -996,7 +990,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                             )}
                                                         </Row>
 
-                                                        {/* Design Images */}
+                                                        {}
                                                         <Row gutter={[24, 16]} style={{marginTop: 16}}>
                                                             <Col span={12}>
                                                                 <Box sx={{
@@ -1050,7 +1044,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                             </Col>
                                                         </Row>
 
-                                                        {/* Item Note */}
+                                                        {}
                                                         {item.designItem?.note && (
                                                             <Box sx={{
                                                                 mt: 2,
@@ -1077,7 +1071,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                 </Box>
             </Box>
 
-            {/* Footer */}
+            {}
             <Box sx={{
                 p: 2,
                 borderTop: '1px solid #e2e8f0',
@@ -1170,7 +1164,6 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
             const label = getItemLabel(i);
             if (!it.frontUrl) return { ok: false, reason: `${label} missing front design image` };
             if (!it.backUrl) return { ok: false, reason: `${label} missing back design image` };
-            // Require logo size only for original 'shirt' design items (by original index)
             const requireLogoDims = shirtIndexSetRef.current.has(i);
             if (requireLogoDims) {
                 const hOk = Number(it.logoHeight) > 0;
@@ -1179,7 +1172,6 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                 if (!wOk) return { ok: false, reason: `${label}'s logo width invalid` };
             }
         }
-        // If deliveryType is revision, ensure revisionOf exists
         if (currentDeliveryType === 'revision' && !values.revisionOf) {
             return { ok: false, reason: 'missing revisionOf' };
         }
@@ -1193,8 +1185,6 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
             const values = form.getFieldsValue(true);
             const completeness = isFormComplete(values, deliveryType);
             const nextValid = completeness.ok && !hasErrors;
-            // Debug logs to explain invalid reasons
-            // eslint-disable-next-line no-console
             console.debug('[DeliverySubmissionModal] validity check:', {
                 hasErrors,
                 completeness,
@@ -1217,20 +1207,16 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
             setFormInitialValues({ revisionOf: undefined, itemList: [] });
             setFormKey((k) => k + 1);
         } else {
-            // Set initial delivery type when modal opens
             setDeliveryType(initialDeliveryType);
         }
-        // When opening, validity will be updated by onValuesChange/onFieldsChange as fields populate
     }, [visible, initialDeliveryType]);
 
-    // Fetch revision requests when modal opens
     useEffect(() => {
         if (visible && requestData?.id) {
             fetchRevisionRequests();
         }
     }, [visible, requestData?.id]);
 
-    // Clear revision field when delivery type changes
     useEffect(() => {
         if (!visible) return;
         if (deliveryType === 'normal') {
@@ -1240,23 +1226,19 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
         }
     }, [visible, deliveryType]);
 
-    // Auto-fill form data when revision is selected
     useEffect(() => {
         if (!visible) return;
         if (deliveryType !== 'revision') return;
-        
-        // If there's a revision request available, automatically select it
+
         if (revisionRequests.length > 0 && designDeliveries && Array.isArray(designDeliveries)) {
-            const selectedRevision = revisionRequests[0]; // Always use the first (and only) revision
+            const selectedRevision = revisionRequests[0];
             const selectedRevisionId = selectedRevision.id;
 
             const previousDelivery = designDeliveries.find(d => d.id === selectedRevision.deliveryId);
             if (previousDelivery && previousDelivery.deliveryItems) {
-                // Create itemListData with correct indices based on requestData.items
                 const itemListData = Array(requestData?.items?.length || 0).fill(null);
-                
+
                 previousDelivery.deliveryItems.forEach(prevItem => {
-                    // Find the corresponding item in requestData.items by designItemId
                     const requestItemIndex = requestData?.items?.findIndex(reqItem => reqItem.id === prevItem.designItem?.id);
                     if (requestItemIndex !== -1) {
                         itemListData[requestItemIndex] = {
@@ -1269,16 +1251,13 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                     }
                 });
 
-                // Remount form with initial values
                 setFormInitialValues({ revisionOf: selectedRevisionId, itemList: itemListData });
                 setFormKey((k) => k + 1);
-                
-                // Also set form values directly after a short delay to ensure form is mounted
+
                 setTimeout(() => {
                     form.setFieldsValue({ revisionOf: selectedRevisionId, itemList: itemListData });
                 }, 100);
 
-                // Update uploaded files state to show the previous images (use URLs)
                 const uploadedFilesData = {};
                 previousDelivery.deliveryItems.forEach((item, index) => {
                     if (item.frontImageUrl) uploadedFilesData[`front-${index}`] = item.frontImageUrl;
@@ -1294,7 +1273,6 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
             setLoadingRevisions(true);
             const response = await getUndoneRevisionRequests({requestId: requestData.id});
 
-            // Check different possible response formats
             let revisions = [];
             if (response && response.status === 200) {
                 revisions = response.data?.body || response.data || [];
@@ -1320,7 +1298,6 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
         }
     };
 
-    // Check if there are existing deliveries to allow revision type
     const handleOk = async () => {
         const values = form.getFieldsValue(true);
         const hasErrors = form.getFieldsError().some((f) => (f.errors || []).length > 0);
@@ -1334,7 +1311,6 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
             return;
         }
 
-        // As a safety, run validate to catch any rule issues
         try {
             await form.validateFields();
         } catch (e) {
@@ -1364,7 +1340,6 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
         }
     };
 
-    // Group design items by gender to render sections in modal
     const indexedItems = Array.isArray(requestData?.items)
         ? requestData.items.map((it, idx) => ({...it, __index: idx}))
         : [];
@@ -1415,7 +1390,7 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                     initialValues={formInitialValues}
                     onFieldsChange={updateFormValidity}
                 >
-                    {/* Delivery Type Selection */}
+                    {}
                     <Form.Item
                         label="Delivery Type:"
                         required
@@ -1441,7 +1416,7 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                         )}
                     </Form.Item>
 
-                    {/* Revision Display - Only show if revision type is selected */}
+                    {}
                     {deliveryType === 'revision' && (
                         <>
                             <Form.Item
@@ -1487,11 +1462,11 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                                                     Revision #{revisionRequests[0].id}
                                                 </Typography.Text>
                                                 <Typography.Text style={{fontSize: '12px', color: '#ff6b35', display: 'block'}}>
-                                                    {designDeliveries && Array.isArray(designDeliveries) ? 
+                                                    {designDeliveries && Array.isArray(designDeliveries) ?
                                                         (() => {
                                                             const relatedDelivery = designDeliveries.find(d => d.id === revisionRequests[0].deliveryId);
                                                             return relatedDelivery?.name || `Delivery ${revisionRequests[0].deliveryId}`;
-                                                        })() : 
+                                                        })() :
                                                         `Delivery ${revisionRequests[0].deliveryId}`
                                                     }
                                                 </Typography.Text>
@@ -1510,7 +1485,7 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                                             </Typography.Text>
                                         </Box>
                                         )}
-                                    
+
                                     {revisionRequests.length > 0 && (
                                         <Box sx={{
                                             p: 1.5,
@@ -1565,7 +1540,7 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                     </Form.Item>
 
 
-                    {/* Design Items Section */}
+                    {}
                     <Divider>Design Items</Divider>
 
                     {modalBoyItems.length > 0 && (
@@ -1580,7 +1555,7 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                                          </Typography.Title>
                                          <Tag color="blue" style={{marginLeft: 'auto'}}>Boy</Tag>
                                     </Box>
-                                    {/* Logo Dimensions - Only show for shirt */}
+                                    {}
                                     {item.type.toLowerCase().includes('shirt') && (
                                         <Row gutter={[16, 16]}>
                                             <Col span={12}>
@@ -1617,7 +1592,7 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                                             </Col>
                                         </Row>
                                     )}
-                                    {/* Hidden fields for pants/skirt with default value 0 */}
+                                    {}
                                     {!item.type.toLowerCase().includes('shirt') && (
                                         <>
                                             <Form.Item name={['itemList', item.__index, 'logoHeight']} initialValue={0} hidden>
@@ -1698,7 +1673,7 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                                          </Typography.Title>
                                          <Tag color="magenta" style={{marginLeft: 'auto'}}>Girl</Tag>
                                     </Box>
-                                    {/* Reuse same content as above but with indices */}
+                                    {}
                                     {item.type.toLowerCase().includes('shirt') && (
                                         <Row gutter={[16, 16]}>
                                             <Col span={12}>
@@ -1775,7 +1750,7 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                                          </Typography.Title>
                                          <Tag style={{marginLeft: 'auto'}}>Unspecified</Tag>
                                     </Box>
-                                    {/* Non-shirt hidden fields */}
+                                    {}
                                     {!item.type.toLowerCase().includes('shirt') && (
                                         <>
                                             <Form.Item name={['itemList', item.__index, 'logoHeight']} initialValue={0} hidden>
@@ -1892,7 +1867,6 @@ export default function DesignerChat() {
            if (isChatOpen) markAsRead();
          }, [isChatOpen, chatMessages, markAsRead]);
 
-    // Fetch design deliveries from API
     const fetchDesignDeliveries = async (designRequestId) => {
         try {
             setLoadingDeliveries(true);
@@ -1901,12 +1875,10 @@ export default function DesignerChat() {
                 const deliveries = response.data.body || [];
                 setDesignDeliveries(deliveries);
 
-                // Check if there's a final delivery from resultDelivery
                 if (requestData?.resultDelivery) {
                     setFinalDelivery(requestData.resultDelivery);
                     setIsFinalDesignSet(true);
                 } else {
-                    // Fallback to check if there's a final delivery in deliveries array
                     const finalDelivery = deliveries.find(delivery => delivery.isFinal);
                     if (finalDelivery) {
                         setFinalDelivery(finalDelivery);
@@ -1923,7 +1895,6 @@ export default function DesignerChat() {
         }
     };
 
-    // Fetch revision requests from API
     const fetchRevisionRequests = async (requestId) => {
         try {
             setLoadingRevisionRequests(true);
@@ -1940,7 +1911,6 @@ export default function DesignerChat() {
         }
     };
 
-    // Fetch request details from API
     const fetchRequestDetails = async (requestId) => {
         try {
             const response = await getDesignRequestDetailForDesigner(requestId);
@@ -1951,7 +1921,6 @@ export default function DesignerChat() {
 
                     setRequestData(request);
 
-                    // Fetch deliveries and revision requests for this request
                     if (request.id) {
                         await fetchDesignDeliveries(request.id);
                         await fetchRevisionRequests(request.id);
@@ -1967,19 +1936,15 @@ export default function DesignerChat() {
         }
     };
 
-    // Fetch updated request data from API
     useEffect(() => {
         const storedRequestId = localStorage.getItem('currentDesignRequestId');
         if (storedRequestId) {
-            // Fetch request details using API
             fetchRequestDetails(storedRequestId);
         } else {
-            // If no request ID in localStorage, redirect to Designer Request
             window.location.href = '/designer/requests';
         }
     }, []);
 
-    // Update final delivery when requestData changes
     useEffect(() => {
         if (requestData?.resultDelivery) {
             setFinalDelivery(requestData.resultDelivery);
@@ -1990,7 +1955,6 @@ export default function DesignerChat() {
         }
     }, [requestData?.resultDelivery]);
 
-    // Close emoji picker when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
@@ -2018,7 +1982,6 @@ export default function DesignerChat() {
     const handleImageUpload = (event) => {
         const file = event.target.files[0];
         if (file) {
-            // Validate file type
             if (!file.type.startsWith('image/')) {
                 enqueueSnackbar('Invalid file type. Only images are accepted.', {variant: 'error'});
                 return;
@@ -2043,13 +2006,11 @@ export default function DesignerChat() {
 
     const onEmojiClick = (emojiData) => {
         setNewMessage(prevMsg => prevMsg + emojiData.emoji);
-        setShowEmojiPicker(false); // Hide picker after selecting
+        setShowEmojiPicker(false);
     };
 
     const handleOpenDeliveryModal = async () => {
-        // Open modal immediately
         setIsDeliveryModalVisible(true);
-        // Fetch updated request data in background
         if (requestData?.id) {
             getDesignRequestDetailForDesigner(requestData.id)
                 .then((latestResponse) => {
@@ -2066,7 +2027,6 @@ export default function DesignerChat() {
                     }
                 })
                 .catch(() => {
-                    // ignore background fetch errors for UX
                 });
         }
     };
@@ -2106,25 +2066,21 @@ export default function DesignerChat() {
 
     const handleDeliverySubmit = async (deliveryData) => {
         try {
-            // Call createDesignDelivery API
             const response = await createDesignDelivery(deliveryData);
 
             if (response && response.status === 201) {
                 enqueueSnackbar('Delivery submitted successfully!', {variant: 'success'});
                 handleCloseDeliveryModal();
 
-                // Refresh deliveries list and revision requests
                 if (requestData?.id) {
                     fetchDesignDeliveries(requestData.id);
                     fetchRevisionRequests(requestData.id);
 
-                    // Fetch latest request data from API instead of manually updating
                     try {
                         const latestResponse = await getDesignRequestDetailForDesigner(requestData.id);
                         if (latestResponse && latestResponse.status === 200) {
                             const updatedRequest = latestResponse.data.body;
                             if (updatedRequest) {
-                                // Check if request status is completed - redirect to applied requests
                                 if (updatedRequest.status === 'completed') {
                                     window.location.href = '/designer/applied/requests';
                                     return;
@@ -2133,7 +2089,6 @@ export default function DesignerChat() {
                             }
                         }
                     } catch (error) {
-                        // Error fetching latest request data
                     }
                 }
             } else {
@@ -2154,7 +2109,7 @@ export default function DesignerChat() {
             <Container maxWidth="xl" sx={{height: 'max-content'}}>
                 <Box sx={{display: 'flex', flexDirection: 'column', height: '100%'}}>
 
-                    {/* Header Section */}
+                    {}
                     <Box sx={{
                         mb: 3,
                         p: 2,
@@ -2212,7 +2167,7 @@ export default function DesignerChat() {
                                     color={requestData?.status === 'completed' ? 'default' : 'warning'}
                                     size="large"
                                     style={{
-                                        backgroundColor: requestData?.status === 'completed' ? '#1890ff' : 
+                                        backgroundColor: requestData?.status === 'completed' ? '#1890ff' :
                                                        requestData?.status === 'processing' ? '#7c3aed' : '#52c41a',
                                         fontSize: '14px',
                                         fontWeight: 600,
@@ -2224,7 +2179,7 @@ export default function DesignerChat() {
                         </Box>
                     </Box>
 
-                    {/* Main Content */}
+                    {}
                     <Box sx={{
                         display: 'flex',
                         flexDirection: 'column',
@@ -2234,7 +2189,7 @@ export default function DesignerChat() {
                         height: '90vh',
                         position: 'relative'
                     }}>
-                        {/* Top Row - My Deliveries and Revision Requests */}
+                        {}
                         <Box sx={{display: 'flex', gap: 3, flex: 2, alignItems: 'stretch'}}>
                             <Box sx={{
                                 flex: 1,
@@ -2246,7 +2201,7 @@ export default function DesignerChat() {
                                 minWidth: 0
                             }}>
 
-                                {/* My Deliveries Section */}
+                                {}
                                 <Paper
                                     elevation={0}
                                     sx={{
@@ -2261,7 +2216,7 @@ export default function DesignerChat() {
                                         position: 'relative'
                                     }}
                                 >
-                                    {/* My Deliveries Header */}
+                                    {}
                                     <Box sx={{
                                         py: 2.5,
                                         px: 4,
@@ -2318,10 +2273,10 @@ export default function DesignerChat() {
                                         </Box>
                                     </Box>
 
-                                    {/* Deliveries List */}
+                                    {}
                                     <Box sx={{
-                                        flex: 1, 
-                                        p: 2, 
+                                        flex: 1,
+                                        p: 2,
                                         overflowY: 'auto',
                                         maxHeight: 'calc(4 * 140px + 2 * 16px)'
                                     }}>
@@ -2369,8 +2324,8 @@ export default function DesignerChat() {
                                                         </Typography.Text>
                                                     )}
                                                 </Box>
-                                                
-                                                {/* Add New Delivery Button for Empty State */}
+
+                                                {}
                                                 {requestData?.status === 'processing' && (
                                                     <Button
                                                         type="dashed"
@@ -2476,7 +2431,7 @@ export default function DesignerChat() {
                                                     ))
                                                 }
 
-                                                {/* Add New Delivery Button */}
+                                                {}
                                                 {requestData?.status === 'processing' && (
                                                     <Box sx={{
                                                         gridColumn: '1 / -1',
@@ -2505,7 +2460,7 @@ export default function DesignerChat() {
                                     </Box>
                                 </Paper>
 
-                                {/* Revision Requests Section */}
+                                {}
                                 <Paper
                                     elevation={0}
                                     sx={{
@@ -2521,7 +2476,7 @@ export default function DesignerChat() {
                                         minWidth: 0
                                     }}
                                 >
-                                    {/* Revision Requests Header */}
+                                    {}
                                     <Box sx={{
                                         py: 2.5,
                                         px: 4,
@@ -2584,7 +2539,7 @@ export default function DesignerChat() {
                                         </Box>
                                     </Box>
 
-                                    {/* Revision Requests List */}
+                                    {}
                                     <Box sx={{flex: 1, p: 2, overflowY: 'auto'}}>
                                         {loadingRevisionRequests ? (
                                             <Box sx={{
@@ -2730,7 +2685,7 @@ export default function DesignerChat() {
                             </Box>
                         </Box>
 
-                        {/* Bottom Row - Final Delivery */}
+                        {}
                         <Paper
                             elevation={0}
                             sx={{
@@ -2747,7 +2702,7 @@ export default function DesignerChat() {
                                 flex: 1
                             }}
                         >
-                            {/* Final Delivery Header */}
+                            {}
                             <Box sx={{
                                 py: 2,
                                 px: 3,
@@ -2777,7 +2732,7 @@ export default function DesignerChat() {
                                 </Box>
                             </Box>
 
-                            {/* Final Delivery Content */}
+                            {}
                             <Box sx={{
                                 p: 3,
                                 flex: 1,
@@ -2870,7 +2825,7 @@ export default function DesignerChat() {
                 onAddRevision={handleAddRevisionDelivery}
             />
 
-            {/* Floating Chat Bubble - only on DesignerChat page */}
+            {}
             <Box sx={{position: 'fixed', bottom: 24, right: 24, zIndex: 2000}}>
                 {isChatOpen ? (
                     <Paper
@@ -2997,7 +2952,7 @@ export default function DesignerChat() {
                                         }}
                                     />
                                     {showEmojiPicker && (
-                                        <Box 
+                                        <Box
                                             ref={emojiPickerRef}
                                             sx={{
                                                 position: 'absolute',

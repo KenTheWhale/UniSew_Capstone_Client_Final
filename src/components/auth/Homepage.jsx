@@ -132,7 +132,7 @@ export default function Homepage() {
     useMediaQuery(theme.breakpoints.down("md"));
     return (
         <Box sx={{width: "100vw", overflow: "hidden"}}>
-            {/* Hero Video Section */}
+            {}
             <Box
                 sx={{
                     position: "relative",
@@ -161,7 +161,7 @@ export default function Homepage() {
                         zIndex: 0,
                     }}
                 />
-                {/* Content */}
+                {}
                 <Container
                     maxWidth="lg"
                     sx={{position: "relative", zIndex: 2, height: "100%"}}
@@ -180,28 +180,28 @@ export default function Homepage() {
                             pb: {xs: 6, md: 10},
                         }}
                     >
-                        {/* Headline */}
+                        {}
                         <Typography
                             variant="h1"
                             sx={{
-                                fontWeight: 800, // Increased font weight for more impact
+                                fontWeight: 800,
                                 color: "#fff",
-                                mb: 2, // Added margin-bottom to separate from subtitle
-                                fontSize: {xs: "2.5rem", md: "4.8rem", lg: "6rem"}, // Slightly larger font size
+                                mb: 2,
+                                fontSize: {xs: "2.5rem", md: "4.8rem", lg: "6rem"},
                                 lineHeight: 1.08,
-                                textShadow: "0 6px 30px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)", // Stronger shadow
+                                textShadow: "0 6px 30px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6)",
                                 letterSpacing: 0,
                             }}
                         >
                             Revolutionize Your School Uniforms
                         </Typography>
-                        {/* New Subtitle */}
+                        {}
                         <Typography
                             variant="h5"
                             sx={{
                                 fontWeight: 500,
                                 color: "rgba(255,255,255,0.9)",
-                                mb: 4, // Margin before the button
+                                mb: 4,
                                 fontSize: {xs: "1rem", md: "1.5rem", lg: "1.8rem"},
                                 lineHeight: 1.5,
                                 textShadow: "0 2px 8px rgba(0,0,0,0.5)",
@@ -210,7 +210,7 @@ export default function Homepage() {
                         >
                             Design, customize, and order premium primary school uniforms with ease.
                         </Typography>
-                        {/* Join Now Button */}
+                        {}
                         <Button
                             variant="contained"
                             size="large"
@@ -236,7 +236,7 @@ export default function Homepage() {
                     </Box>
                 </Container>
             </Box>
-            {/* About UniSew Block */}
+            {}
             <Box
                 sx={{py: {xs: 6, md: 10}, px: {xs: 2, md: 0}, bgcolor: "white"}}
             >
@@ -325,7 +325,7 @@ export default function Homepage() {
                 </Container>
             </Box>
 
-            {/* Stats Section */}
+            {}
             <Box
                 sx={{
                     background: "white",
@@ -375,9 +375,9 @@ export default function Homepage() {
                                 }}
                             >
                                 <Box sx={{color: "#6C63FF", mb: 2}}>{stat.icon}</Box>
-                                {/*<Typography variant="h3" sx={{ fontWeight: 800, color: '#6C63FF', mb: 1 }}>*/}
-                                {/*  {stat.number}*/}
-                                {/*</Typography>*/}
+                                {}
+                                {}
+                                {}
                                 <CountUp
                                     from={0}
                                     to={stat.number}
@@ -409,7 +409,7 @@ export default function Homepage() {
                 </Container>
             </Box>
 
-            {/* Features Section */}
+            {}
             <Box sx={{background: "#f8fafc", py: 10}}>
                 <Container maxWidth="xl">
                     <Box sx={{textAlign: "center", mb: 8}}>
@@ -479,7 +479,7 @@ export default function Homepage() {
                 </Container>
             </Box>
 
-            {/* How It Works Section */}
+            {}
             <Box sx={{background: "white", py: 10}}>
                 <Container maxWidth="lg">
                     <Box sx={{textAlign: "center", mb: 8}}>
@@ -574,7 +574,7 @@ export default function Homepage() {
                 </Container>
             </Box>
 
-            {/* Testimonials Section */}
+            {}
             <Box
                 sx={{
                     background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
@@ -672,7 +672,7 @@ export default function Homepage() {
                 </Container>
             </Box>
 
-            {/* Call to Action Section */}
+            {}
             <Box sx={{background: "white", py: 10}}>
                 <Container maxWidth="md">
                     <Paper

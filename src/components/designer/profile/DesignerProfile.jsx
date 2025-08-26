@@ -133,7 +133,7 @@ export default function DesignerProfile() {
             py: 4
         }}>
             <Container maxWidth="lg">
-                {/* Header */}
+                {}
                 <Box sx={{mb: 4, textAlign: 'center'}}>
                     <Typography
                         variant="h3"
@@ -154,9 +154,9 @@ export default function DesignerProfile() {
                     </Typography>
                 </Box>
 
-                {/* Main Flex Container */}
+                {}
                 <Box sx={{display: 'flex', gap: 4}}>
-                    {/* Designer Account Section */}
+                    {}
                     <Box sx={{flex: 1}}>
                         <Paper
                             elevation={8}
@@ -180,7 +180,7 @@ export default function DesignerProfile() {
                                 }
                             }}
                         >
-                            {/* Section Header */}
+                            {}
                             <Box sx={{
                                 display: 'flex',
                                 alignItems: 'center',
@@ -217,9 +217,9 @@ export default function DesignerProfile() {
                                 </Tooltip>
                             </Box>
 
-                            {/* Profile Section */}
+                            {}
                             <Box sx={{textAlign: 'center', mb: 4}}>
-                                {/* Avatar */}
+                                {}
                                 <Box sx={{position: 'relative', display: 'inline-block', mb: 3}}>
                                     <Avatar
                                         src={profile.avatar}
@@ -255,7 +255,7 @@ export default function DesignerProfile() {
                                     />
                                 </Box>
 
-                                {/* Designer Name */}
+                                {}
                                 <Typography
                                     variant="h5"
                                     sx={{
@@ -267,7 +267,7 @@ export default function DesignerProfile() {
                                     {profile.name}
                                 </Typography>
 
-                                {/* Business Name */}
+                                {}
                                 <Typography
                                     variant="body1"
                                     sx={{
@@ -280,7 +280,7 @@ export default function DesignerProfile() {
                                     Studio: {profile.businessName}
                                 </Typography>
 
-                                {/* Designer Rating */}
+                                {}
                                 {profile.partner && (
                                     <Box sx={{mb: 3}}>
                                         <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1}}>
@@ -296,7 +296,7 @@ export default function DesignerProfile() {
                                 )}
                             </Box>
 
-                            {/* Account Information */}
+                            {}
                             <Box sx={{mb: 4}}>
                                 <Typography
                                     variant="h5"
@@ -485,7 +485,7 @@ export default function DesignerProfile() {
                                         </Box>
                                     </Box>
 
-                                    {/* Working Hours */}
+                                    {}
                                     {profile.partner && (
                                         <Box sx={{
                                             display: 'flex',
@@ -526,7 +526,7 @@ export default function DesignerProfile() {
                         </Paper>
                     </Box>
 
-                    {/* Payment Information Section */}
+                    {}
                     <Box sx={{flex: 1}}>
                         <Paper
                             elevation={8}
@@ -613,7 +613,7 @@ export default function DesignerProfile() {
                                                             color: '#1e293b',
                                                             fontSize: '16px'
                                                         }}>
-                                                            Card Information
+                                                            Bank Information
                                                         </Typography>
                                                     </Box>
                                                     <Box sx={{
@@ -622,36 +622,20 @@ export default function DesignerProfile() {
                                                         flexDirection: 'column',
                                                         justifyContent: 'center'
                                                     }}>
-                                                        <Box sx={{mb: 1.5}}>
-                                                            <Typography variant="body2" sx={{
-                                                                color: '#64748b',
-                                                                mb: 0.5,
-                                                                fontSize: '12px'
-                                                            }}>
-                                                                Card Number
-                                                            </Typography>
-                                                            <Typography variant="body1" sx={{
-                                                                color: '#475569',
-                                                                fontWeight: 500,
-                                                                fontSize: '14px'
-                                                            }}>
-                                                                {wallet.cardNumber !== 'N/A' ? wallet.cardNumber : 'No card linked'}
-                                                            </Typography>
-                                                        </Box>
                                                         <Box>
                                                             <Typography variant="body2" sx={{
                                                                 color: '#64748b',
                                                                 mb: 0.5,
                                                                 fontSize: '12px'
                                                             }}>
-                                                                Expiration Date
+                                                                Bank Account Number
                                                             </Typography>
                                                             <Typography variant="body1" sx={{
                                                                 color: '#475569',
                                                                 fontWeight: 500,
                                                                 fontSize: '14px'
                                                             }}>
-                                                                {wallet.cardExpiration !== 'N/A' ? wallet.cardExpiration : 'N/A'}
+                                                                {wallet.bankAccountNumber !== 'N/A' ? wallet.bankAccountNumber : 'No bank account linked'}
                                                             </Typography>
                                                         </Box>
                                                     </Box>

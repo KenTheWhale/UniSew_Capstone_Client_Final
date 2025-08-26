@@ -61,7 +61,6 @@ export default function SchoolCreateOrder() {
     const [validationErrors, setValidationErrors] = useState({});
     const [isCreatingOrder, setIsCreatingOrder] = useState(false);
 
-    // Fetch school designs from API
     const fetchSchoolDesigns = async () => {
         try {
             setLoading(true);
@@ -81,7 +80,6 @@ export default function SchoolCreateOrder() {
         }
     };
 
-    // Fetch sizes from API
     const fetchSizes = async () => {
         try {
             const response = await getSizes();
@@ -102,14 +100,13 @@ export default function SchoolCreateOrder() {
     const handleDesignSelect = (event) => {
         const designId = event.target.value;
         setSelectedDesignId(designId);
-        setDeadline(null); // Reset deadline when changing design
-        setSelectedSizes({}); // Reset selected sizes
-        setSelectedUniformSizes({}); // Reset selected uniform sizes
-        setSelectedUniformSizeQuantities({}); // Reset selected uniform size quantities
-        setOrderNote(''); // Reset order note when changing design
-        setValidationErrors({}); // Reset validation errors when changing design
+        setDeadline(null);
+        setSelectedSizes({});
+        setSelectedUniformSizes({});
+        setSelectedUniformSizeQuantities({});
+        setOrderNote('');
+        setValidationErrors({});
 
-        // Automatically load the selected design details
         if (designId) {
             const design = schoolDesigns.find(d => d.id === designId);
             if (design) {
@@ -122,7 +119,6 @@ export default function SchoolCreateOrder() {
 
     const handleDeadlineChange = (date) => {
         setDeadline(date);
-        // Clear deadline error when user selects a date
         if (date && validationErrors.deadline) {
             setValidationErrors(prev => {
                 const newErrors = {...prev};
@@ -136,17 +132,14 @@ export default function SchoolCreateOrder() {
         setOrderNote(event.target.value);
     };
 
-    // Calculate total quantity across all uniforms
     const getTotalQuantity = () => {
         return Object.values(selectedUniformSizeQuantities).reduce((sum, quantity) => sum + quantity, 0);
     };
 
-    // Check if all uniforms have quantities and total is >= 50
     const canCreateOrder = () => {
         const uniforms = groupItemsByUniform(selectedDesign?.delivery?.deliveryItems || []);
         const uniformKeys = Object.keys(uniforms);
-        
-        // Check if all uniforms have at least 1 item
+
         const allUniformsHaveItems = uniformKeys.every(uniformKey => {
             const uniformQuantities = Object.entries(selectedUniformSizeQuantities)
                 .filter(([key]) => key.startsWith(uniformKey))
@@ -155,28 +148,23 @@ export default function SchoolCreateOrder() {
             return uniformTotal > 0;
         });
 
-        // Check if total quantity is >= 50
         const totalQuantity = getTotalQuantity();
-        
+
         return allUniformsHaveItems && totalQuantity >= 50;
     };
 
-    // Validate order data
     const validateOrder = () => {
         const errors = {};
 
-        // Check if deadline is selected
         if (!deadline) {
             errors.deadline = 'Please select a delivery deadline';
         }
 
-        // Check if at least one item is selected
         const totalQuantity = getTotalQuantity();
         if (totalQuantity < 1) {
             errors.quantity = 'Please select at least 1 item to order';
         }
 
-        // Check if each uniform type has at least 1 item selected
         const uniforms = groupItemsByUniform(selectedDesign?.delivery?.designItems || []);
         const uniformKeys = Object.keys(uniforms);
 
@@ -200,23 +188,19 @@ export default function SchoolCreateOrder() {
         return Object.keys(errors).length === 0;
     };
 
-    // Format order details from selected sizes
     const formatOrderDetails = () => {
         const orderDetails = [];
         const uniforms = groupItemsByUniform(selectedDesign.delivery?.deliveryItems || []);
 
         Object.entries(selectedUniformSizeQuantities).forEach(([key, quantity]) => {
             if (quantity > 0) {
-                // Parse the key format: uniformKey_size
                 const parts = key.split('_');
-                const sizeLabel = parts[parts.length - 1]; // Get the last part as size label
-                const uniformKey = parts.slice(0, -1).join('_'); // Get everything before the size
+                const sizeLabel = parts[parts.length - 1];
+                const uniformKey = parts.slice(0, -1).join('_');
 
-                // Find the corresponding uniform and its delivery items
                 const uniform = uniforms[uniformKey];
 
                 if (uniform) {
-                    // Helper function to find enumName for a specific type, gender, and size
                     const findEnumName = (type, gender) => {
                         const sizeData = sizes.find(s =>
                             s.type === type &&
@@ -228,7 +212,6 @@ export default function SchoolCreateOrder() {
 
                     const gender = uniform.gender === 'boy' ? 'male' : 'female';
 
-                    // Add delivery items for this uniform
                     if (uniform.shirt) {
                         const shirtSize = findEnumName('shirt', gender);
                         orderDetails.push({
@@ -260,7 +243,6 @@ export default function SchoolCreateOrder() {
         return orderDetails;
     };
 
-    // Handle create order
     const handleCreateOrder = async () => {
         if (!validateOrder()) {
             return;
@@ -281,7 +263,6 @@ export default function SchoolCreateOrder() {
             if (response && response.status === 201) {
                 enqueueSnackbar('Order created successfully!', {variant: 'success'});
 
-                // Reset form
                 setSelectedDesignId('');
                 setSelectedDesign(null);
                 setDeadline(null);
@@ -289,7 +270,6 @@ export default function SchoolCreateOrder() {
                 setSelectedUniformSizeQuantities({});
                 setValidationErrors({});
 
-                // You might want to redirect to order list
                 window.location.href = '/school/order';
             } else {
                 enqueueSnackbar('Failed to create order. Please try again.', {variant: 'error'});
@@ -308,7 +288,6 @@ export default function SchoolCreateOrder() {
             [`${uniformKey}_${size}`]: quantity
         }));
 
-        // Clear quantity error when user adds items
         if (quantity > 0 && validationErrors.quantity) {
             setValidationErrors(prev => {
                 const newErrors = {...prev};
@@ -317,11 +296,9 @@ export default function SchoolCreateOrder() {
             });
         }
 
-        // Clear uniform-specific errors when user adds items to that uniform
         if (quantity > 0) {
             setValidationErrors(prev => {
                 const newErrors = {...prev};
-                // Check if this uniform now has at least 1 item
                 const uniformQuantities = Object.entries(selectedUniformSizeQuantities)
                     .filter(([key]) => key.startsWith(uniformKey))
                     .map(([, qty]) => qty);
@@ -342,7 +319,6 @@ export default function SchoolCreateOrder() {
             return newState;
         });
 
-        // Check if uniform now has no items and add validation error
         setValidationErrors(prev => {
             const newErrors = {...prev};
             const uniformQuantities = Object.entries(selectedUniformSizeQuantities)
@@ -364,7 +340,6 @@ export default function SchoolCreateOrder() {
         });
     };
 
-    // Group design items by uniform (shirt + pants/skirt) and category
     const groupItemsByUniform = (designItems) => {
         const uniforms = {};
 
@@ -374,7 +349,6 @@ export default function SchoolCreateOrder() {
             const category = item.designItem.category;
 
             if (type === 'shirt') {
-                // Create uniform key for shirt including category
                 const uniformKey = `${gender}_${category}_shirt`;
                 if (!uniforms[uniformKey]) {
                     uniforms[uniformKey] = {
@@ -388,12 +362,10 @@ export default function SchoolCreateOrder() {
                     uniforms[uniformKey].shirt = item;
                 }
             } else if (type === 'pants') {
-                // Find matching shirt for pants (same gender and category)
                 const uniformKey = `${gender}_${category}_shirt`;
                 if (uniforms[uniformKey]) {
                     uniforms[uniformKey].pants = item;
                 } else {
-                    // Pants without shirt
                     const pantsKey = `${gender}_${category}_pants_only`;
                     uniforms[pantsKey] = {
                         gender: gender,
@@ -404,12 +376,10 @@ export default function SchoolCreateOrder() {
                     };
                 }
             } else if (type === 'skirt') {
-                // Find matching shirt for skirt (same gender and category)
                 const uniformKey = `${gender}_${category}_shirt`;
                 if (uniforms[uniformKey]) {
                     uniforms[uniformKey].skirt = item;
                 } else {
-                    // Skirt without shirt
                     const skirtKey = `${gender}_${category}_skirt_only`;
                     uniforms[skirtKey] = {
                         gender: gender,
@@ -468,7 +438,6 @@ export default function SchoolCreateOrder() {
         });
     };
 
-    // Filter sizes by type and gender
     const getAvailableSizes = (itemType, gender) => {
         return sizes.filter(size =>
             size.type === itemType &&
@@ -535,7 +504,7 @@ export default function SchoolCreateOrder() {
                     </MuiCard>
                 ) : (
                     <Box sx={{maxWidth: 1200, mx: 'auto'}}>
-                        {/* Selection Section */}
+                        {}
                         <MuiCard sx={{
                             mb: 4,
                             background: 'rgba(255, 255, 255, 0.95)',
@@ -620,7 +589,7 @@ export default function SchoolCreateOrder() {
                                     </FormControl>
                                 </Box>
 
-                                {/* Selected Design Info Section */}
+                                {}
                                 {selectedDesignId && selectedDesign && (
                                     <Box sx={{
                                         p: 3,
@@ -680,7 +649,7 @@ export default function SchoolCreateOrder() {
                                     </Box>
                                 )}
 
-                                {/* Deadline Section */}
+                                {}
                                 {selectedDesignId && (
                                     <Box sx={{
                                         p: 3,
@@ -710,7 +679,6 @@ export default function SchoolCreateOrder() {
                                                     border: '1px solid #e0e0e0'
                                                 }}
                                                 disabledDate={(current) => {
-                                                    // Minimum date is 2 weeks (14 days) from today
                                                     const minDate = dayjs().add(14, 'day').startOf('day');
                                                     return current && current < minDate;
                                                 }}
@@ -724,7 +692,7 @@ export default function SchoolCreateOrder() {
                                                     fontWeight: 500,
                                                     mt: 0.5
                                                 }}>
-                                                    âš  {validationErrors.deadline}
+                                                    âš?{validationErrors.deadline}
                                                 </Typography>
                                             )}
                                             <Typography variant="body2" sx={{
@@ -739,7 +707,7 @@ export default function SchoolCreateOrder() {
                                     </Box>
                                 )}
 
-                                {/* Order Note Section */}
+                                {}
                                 {selectedDesignId && (
                                     <Box sx={{
                                         p: 3,
@@ -802,7 +770,7 @@ export default function SchoolCreateOrder() {
                             </CardContent>
                         </MuiCard>
 
-                        {/* Excel-Style Uniform Selection Table */}
+                        {}
                         {selectedDesignId && selectedDesign && (
                             <MuiCard sx={{
                                 background: 'rgba(255, 255, 255, 0.95)',
@@ -883,16 +851,15 @@ export default function SchoolCreateOrder() {
                                             );
                                         }
 
-                                        // Get all available sizes for any gender
                                         const allSizes = getAvailableSizes('shirt', 'male');
-                                        
+
                                         return (
                                             <Box sx={{
                                                 borderRadius: 3,
                                                 overflow: 'hidden',
                                                 boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
                                             }}>
-                                                {/* Single Grid Container for Perfect Alignment */}
+                                                {}
                                                 <Box sx={{
                                                     display: 'grid',
                                                     gridTemplateColumns: `120px 100px repeat(${allSizes.length}, 1fr) 100px`,
@@ -901,7 +868,7 @@ export default function SchoolCreateOrder() {
                                                     borderRadius: '8px',
                                                     overflow: 'hidden'
                                                 }}>
-                                                    {/* Header Row - Type */}
+                                                    {}
                                                     <Box sx={{
                                                         p: 2,
                                                         borderRight: '1px solid #000000',
@@ -919,8 +886,8 @@ export default function SchoolCreateOrder() {
                                                             Type
                                                         </Typography>
                                                     </Box>
-                                                    
-                                                    {/* Header Row - Gender */}
+
+                                                    {}
                                                     <Box sx={{
                                                         p: 2,
                                                         borderRight: '1px solid #000000',
@@ -938,8 +905,8 @@ export default function SchoolCreateOrder() {
                                                             Gender
                                                         </Typography>
                                                     </Box>
-                                                    
-                                                    {/* Header Row - Size Columns */}
+
+                                                    {}
                                                     {allSizes.map((size, index) => (
                                                         <Box key={`header-${index}`} sx={{
                                                             p: 2,
@@ -960,8 +927,8 @@ export default function SchoolCreateOrder() {
                                                             </Typography>
                                                         </Box>
                                                     ))}
-                                                    
-                                                    {/* Header Row - Total */}
+
+                                                    {}
                                                     <Box sx={{
                                                         p: 2,
                                                         borderLeft: '1px solid #000000',
@@ -980,21 +947,20 @@ export default function SchoolCreateOrder() {
                                                             Total
                                                         </Typography>
                                                     </Box>
-                                                    
-                                                    {/* Data Rows - Group by Type */}
+
+                                                    {}
                                                     {Object.entries(uniforms).map(([uniformKey, uniform], uniformIndex) => {
                                                         const genderForSizes = uniform.gender === 'boy' ? 'male' : 'female';
-                                                        const isFirstOfType = uniformIndex === 0 || 
+                                                        const isFirstOfType = uniformIndex === 0 ||
                                                             uniforms[Object.keys(uniforms)[uniformIndex - 1]]?.category !== uniform.category;
-                                                        const isLastOfType = uniformIndex === Object.keys(uniforms).length - 1 || 
+                                                        const isLastOfType = uniformIndex === Object.keys(uniforms).length - 1 ||
                                                             uniforms[Object.keys(uniforms)[uniformIndex + 1]]?.category !== uniform.category;
-                                                        
-                                                        // Count how many rows this type spans
+
                                                         const sameTypeCount = Object.values(uniforms).filter(u => u.category === uniform.category).length;
-                                                        
+
                                                         return (
                                                             <React.Fragment key={uniformKey}>
-                                                                {/* Data Row - Type (merged for same type) */}
+                                                                {}
                                                                 {isFirstOfType && (
                                                                     <Box sx={{
                                                                         p: 2,
@@ -1017,8 +983,8 @@ export default function SchoolCreateOrder() {
                                                                         </Typography>
                                                                     </Box>
                                                                 )}
-                                                                
-                                                                {/* Data Row - Gender */}
+
+                                                                {}
                                                                 <Box sx={{
                                                                     p: 2,
                                                                     borderRight: '1px solid #000000',
@@ -1058,8 +1024,8 @@ export default function SchoolCreateOrder() {
                                                                         <InfoOutlinedIcon sx={{fontSize: '14px'}}/>
                                                                     </IconButton>
                                                                 </Box>
-                                                                
-                                                                {/* Data Row - Quantity Inputs */}
+
+                                                                {}
                                                                 {allSizes.map((size, index) => {
                                                                     const quantityKey = `${uniformKey}_${size.size}`;
                                                                     const currentQuantity = selectedUniformSizeQuantities[quantityKey] || 0;
@@ -1112,8 +1078,8 @@ export default function SchoolCreateOrder() {
                                                                         </Box>
                                                                     );
                                                                 })}
-                                                                
-                                                                {/* Data Row - Total */}
+
+                                                                {}
                                                                 <Box sx={{
                                                                     p: 2,
                                                                     borderLeft: '1px solid #000000',
@@ -1145,7 +1111,7 @@ export default function SchoolCreateOrder() {
                             </MuiCard>
                         )}
 
-                        {/* Validation Errors for Uniform Selection */}
+                        {}
                         {selectedDesignId && selectedDesign && Object.keys(validationErrors).some(key => key.startsWith('uniform_')) && (
                             <Box sx={{mt: 3}}>
                                 <MuiCard sx={{
@@ -1162,7 +1128,7 @@ export default function SchoolCreateOrder() {
                                             alignItems: 'center',
                                             gap: 1
                                         }}>
-                                            âš  Required Fields Missing
+                                            âš?Required Fields Missing
                                         </Typography>
                                         <Box sx={{display: 'flex', flexDirection: 'column', gap: 0.5}}>
                                             {Object.entries(validationErrors)
@@ -1173,7 +1139,7 @@ export default function SchoolCreateOrder() {
                                                         fontSize: '14px',
                                                         fontWeight: 500
                                                     }}>
-                                                        â€¢ {error}
+                                                        â€?{error}
                                                     </Typography>
                                                 ))}
                                         </Box>
@@ -1182,7 +1148,7 @@ export default function SchoolCreateOrder() {
                             </Box>
                         )}
 
-                        {/* Create Order Button */}
+                        {}
                         {selectedDesignId && selectedDesign && (
                             <Box sx={{mt: 4, textAlign: 'right'}}>
                                 <Button
@@ -1225,7 +1191,7 @@ export default function SchoolCreateOrder() {
                 )}
             </Container>
 
-            {/* Item Detail Dialog */}
+            {}
             <Dialog
                 open={showItemDialog}
                 onClose={handleCloseItemDialog}
@@ -1259,7 +1225,7 @@ export default function SchoolCreateOrder() {
                 <DialogContent sx={{padding: '24px', overflowY: 'auto', background: '#f8fafc'}}>
                     {selectedUniform && (
                         <Box sx={{display: 'flex', flexDirection: 'column', gap: 4}}>
-                            {/* Uniform Header */}
+                            {}
                             <Box sx={{
                                 p: 4,
                                 borderRadius: 4,
@@ -1330,7 +1296,7 @@ export default function SchoolCreateOrder() {
                                 </Box>
                             </Box>
 
-                            {/* Shirt Details */}
+                            {}
                             {selectedUniform.shirt && (
                                 <Card
                                     title={
@@ -1358,7 +1324,7 @@ export default function SchoolCreateOrder() {
                                     }}
                                 >
                                     <Box sx={{p: 0}}>
-                                        {/* Specifications Section - Full Width */}
+                                        {}
                                         <Box sx={{
                                             p: 3,
                                             borderRadius: 3,
@@ -1460,7 +1426,7 @@ export default function SchoolCreateOrder() {
                                             </Box>
                                         </Box>
 
-                                        {/* Design Images Section - Row with flex 1 */}
+                                        {}
                                         <Row gutter={[24, 0]}>
                                             <Col span={12}>
                                                 <Box sx={{
@@ -1535,7 +1501,7 @@ export default function SchoolCreateOrder() {
                                 </Card>
                             )}
 
-                            {/* Pants Details */}
+                            {}
                             {selectedUniform.pants && (
                                 <Card
                                     title={
@@ -1563,7 +1529,7 @@ export default function SchoolCreateOrder() {
                                     }}
                                 >
                                     <Box sx={{p: 0}}>
-                                        {/* Specifications Section - Full Width */}
+                                        {}
                                         <Box sx={{
                                             p: 3,
                                             borderRadius: 3,
@@ -1665,7 +1631,7 @@ export default function SchoolCreateOrder() {
                                             </Box>
                                         </Box>
 
-                                        {/* Design Images Section - Row with flex 1 */}
+                                        {}
                                         <Row gutter={[24, 0]}>
                                             <Col span={12}>
                                                 <Box sx={{
@@ -1740,7 +1706,7 @@ export default function SchoolCreateOrder() {
                                 </Card>
                             )}
 
-                            {/* Skirt Details */}
+                            {}
                             {selectedUniform.skirt && (
                                 <Card
                                     title={
@@ -1768,7 +1734,7 @@ export default function SchoolCreateOrder() {
                                     }}
                                 >
                                     <Box sx={{p: 0}}>
-                                        {/* Specifications Section - Full Width */}
+                                        {}
                                         <Box sx={{
                                             p: 3,
                                             borderRadius: 3,
@@ -1870,7 +1836,7 @@ export default function SchoolCreateOrder() {
                                             </Box>
                                         </Box>
 
-                                        {/* Design Images Section - Row with flex 1 */}
+                                        {}
                                         <Row gutter={[24, 0]}>
                                             <Col span={12}>
                                                 <Box sx={{
@@ -1955,7 +1921,7 @@ export default function SchoolCreateOrder() {
                 </DialogActions>
             </Dialog>
 
-            {/* Size Specifications Dialog */}
+            {}
             <Dialog
                 open={showSizeSpecsDialog}
                 onClose={handleCloseSizeSpecs}
@@ -1988,7 +1954,7 @@ export default function SchoolCreateOrder() {
 
                 <DialogContent sx={{padding: '20px', overflowY: 'auto'}}>
                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
-                        {/* Selection Controls */}
+                        {}
                         <Box sx={{
                             p: 3,
                             borderRadius: 3,
@@ -2006,9 +1972,9 @@ export default function SchoolCreateOrder() {
                                 <TableChartIcon sx={{fontSize: 20}}/>
                                 Select Specifications to View
                             </Typography>
-                            
+
                             <Box sx={{display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'flex-end'}}>
-                                {/* Gender Selection */}
+                                {}
                                 <Box sx={{minWidth: 200}}>
                                     <Typography variant="body2" sx={{
                                         fontWeight: 600,
@@ -2036,8 +2002,8 @@ export default function SchoolCreateOrder() {
                                         </Select>
                                     </FormControl>
                                 </Box>
-                                
-                                {/* Uniform Type Selection */}
+
+                                {}
                                 <Box sx={{minWidth: 200}}>
                                     <Typography variant="body2" sx={{
                                         fontWeight: 600,
@@ -2117,7 +2083,7 @@ export default function SchoolCreateOrder() {
                             </Box>
                         </Box>
 
-                        {/* Size Specifications Table */}
+                        {}
                         {selectedSizeSpecs && (
                             <Card
                                 title={
@@ -2254,14 +2220,13 @@ export default function SchoolCreateOrder() {
                                             </thead>
                                             <tbody>
                                                                                         {(() => {
-                                                // Get all shirt sizes for the selected gender
                                                 const shirtSizes = sizes.filter(size =>
                                                     size.gender === selectedSizeSpecs.gender &&
                                                     size.type === 'shirt'
                                                 );
-                                                
+
                                                 console.log('Shirt sizes:', shirtSizes);
-                                                
+
                                                 if (shirtSizes.length === 0) {
                                                     return (
                                                         <tr>
@@ -2276,16 +2241,14 @@ export default function SchoolCreateOrder() {
                                                         </tr>
                                                     );
                                                 }
-                                                
+
                                                 return shirtSizes.map((shirtSize) => {
-                                                    // Find corresponding pants size for the same size label
                                                     const pantsSize = sizes.find(s =>
                                                         s.gender === selectedSizeSpecs.gender &&
                                                         s.type === 'pants' &&
                                                         s.size === shirtSize.size
                                                     );
-                                                    
-                                                    // Find corresponding skirt size for females (only for regular uniform)
+
                                                     const skirtSize = selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' ? sizes.find(s =>
                                                         s.gender === selectedSizeSpecs.gender &&
                                                         s.type === 'skirt' &&

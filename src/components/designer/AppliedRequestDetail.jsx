@@ -20,7 +20,6 @@ import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
 import {GiSkirt} from "react-icons/gi";
 import DisplayImage from '../ui/DisplayImage.jsx';
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function statusTag(status) {
     let color;
     let icon = null;
@@ -48,7 +47,6 @@ export function statusTag(status) {
     return <Tag style={{margin: 0}} color={color}>{icon} {status}</Tag>;
 }
 
-// Function to get appropriate icon based on item type
 const getItemIcon = (itemType) => {
     const type = itemType?.toLowerCase() || '';
 
@@ -79,7 +77,6 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
     const {Text, Title} = Typography;
 
     const getFooterButtons = (status) => {
-        // If hideFooterButtons is true, show only Close button
         if (hideFooterButtons) {
             return [
                 <Button key="close" onClick={onCancel}>
@@ -176,8 +173,8 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                 </DialogTitle>
                 <DialogContent sx={{padding: '20px', overflowY: 'auto'}}>
                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
-                        
-                        {/* Compact Header */}
+
+                        {}
                         <Card
                             size="small"
                             style={{
@@ -216,7 +213,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                             </Row>
                         </Card>
 
-                        {/* School & Service Summary - Full Width */}
+                        {}
                         <Box sx={{
                             display: 'flex',
                             flexDirection: 'row',
@@ -225,7 +222,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                             alignItems: 'stretch'
                         }}>
 
-                            {/* School Info */}
+                            {}
                             <Box sx={{flex: 1}}>
                                 <Card
                                     title={
@@ -304,7 +301,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                 </Card>
                             </Box>
 
-                            {/* Service Summary */}
+                            {}
                             {request.finalDesignQuotation && request.price && (
                                 <Box sx={{flex: 1}}>
                                     <Card
@@ -460,7 +457,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                             )}
                         </Box>
 
-                        {/* Logo Image - Full Width */}
+                        {}
                         {request.logoImage && request.logoImage !== '' && (
                             <Card
                                 title={
@@ -487,7 +484,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                             </Card>
                         )}
 
-                        {/* Requested Design Items - Full Width */}
+                        {}
                         <Card
                             title={
                                 <Space>
@@ -513,7 +510,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                 alignItems: 'stretch',
                                 minHeight: '200px'
                             }}>
-                                {/* Boy Section */}
+                                {}
                                 {(() => {
                                     const boyItems = request.items?.filter(item => item.gender === 'boy') || [];
                                     if (boyItems.length > 0) {
@@ -557,7 +554,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                     </Text>
                                                 </Box>
 
-                                                {/* Regular Uniform Subsection */}
+                                                {}
                                                 {regularItems.length > 0 && (
                                                     <Box sx={{mb: 1.5}}>
                                                         <Box sx={{
@@ -570,7 +567,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                             gap: 1,
                                                             height: '100%'
                                                         }}>
-                                                            {/* Header inside the box */}
+                                                            {}
                                                             <Box sx={{
                                                                 display: 'flex',
                                                                 alignItems: 'center',
@@ -633,7 +630,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                             }
                                                                         }}
                                                                     >
-                                                                        {/* Compact Header */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             display: 'flex',
                                                                             alignItems: 'center',
@@ -678,14 +675,14 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                             </Tag>
                                                                         </Box>
 
-                                                                        {/* Compact Details Grid */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             display: 'grid',
                                                                             gridTemplateColumns: '1fr 1fr',
                                                                             gap: 1,
                                                                             mb: 1
                                                                         }}>
-                                                                            {/* Fabric */}
+                                                                            {}
                                                                             <Box sx={{
                                                                                 p: 1,
                                                                                 background: 'rgba(46, 125, 50, 0.08)',
@@ -711,7 +708,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                                 </Text>
                                                                             </Box>
 
-                                                                            {/* Color */}
+                                                                            {}
                                                                             <Box sx={{
                                                                                 p: 1,
                                                                                 background: 'rgba(124, 58, 237, 0.08)',
@@ -751,7 +748,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                                 </Box>
                                                                             </Box>
 
-                                                                            {/* Logo Position */}
+                                                                            {}
                                                                             {item.logoPosition ? (
                                                                                 <Box sx={{
                                                                                     p: 1,
@@ -799,7 +796,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                                 </Box>
                                                                             )}
 
-                                                                            {/* Note */}
+                                                                            {}
                                                                             {item.note ? (
                                                                                 <Box sx={{
                                                                                     p: 1,
@@ -850,7 +847,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                             )}
                                                                         </Box>
 
-                                                                        {/* Compact Sample Images */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             pt: 1,
                                                                             borderTop: '1px solid #f1f5f9',
@@ -923,7 +920,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                     </Box>
                                                 )}
 
-                                                {/* Physical Education Uniform Subsection */}
+                                                {}
                                                 {peItems.length > 0 && (
                                                     <Box sx={{mb: 1.5}}>
                                                         <Box sx={{
@@ -935,7 +932,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                             flexDirection: 'column',
                                                             gap: 1
                                                         }}>
-                                                            {/* Header inside the box */}
+                                                            {}
                                                             <Box sx={{
                                                                 display: 'flex',
                                                                 alignItems: 'center',
@@ -958,7 +955,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                     fontSize: '10px',
                                                                     fontWeight: 600
                                                                 }}>
-                                                                    âš½
+                                                                    âš?
                                                                 </Box>
                                                                 <Text style={{
                                                                     fontSize: '11px',
@@ -993,7 +990,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                             }
                                                                         }}
                                                                     >
-                                                                        {/* Compact Header */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             display: 'flex',
                                                                             alignItems: 'center',
@@ -1038,14 +1035,14 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                             </Tag>
                                                                         </Box>
 
-                                                                        {/* Compact Details Grid */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             display: 'grid',
                                                                             gridTemplateColumns: '1fr 1fr',
                                                                             gap: 1,
                                                                             mb: 1
                                                                         }}>
-                                                                            {/* Fabric */}
+                                                                            {}
                                                                             <Box sx={{
                                                                                 p: 1,
                                                                                 background: 'rgba(46, 125, 50, 0.08)',
@@ -1071,7 +1068,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                                 </Text>
                                                                             </Box>
 
-                                                                            {/* Color */}
+                                                                            {}
                                                                             <Box sx={{
                                                                                 p: 1,
                                                                                 background: 'rgba(124, 58, 237, 0.08)',
@@ -1111,7 +1108,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                                 </Box>
                                                                             </Box>
 
-                                                                            {/* Logo Position */}
+                                                                            {}
                                                                             {item.logoPosition ? (
                                                                                 <Box sx={{
                                                                                     p: 1,
@@ -1159,7 +1156,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                                 </Box>
                                                                             )}
 
-                                                                            {/* Note */}
+                                                                            {}
                                                                             {item.note ? (
                                                                                 <Box sx={{
                                                                                     p: 1,
@@ -1210,7 +1207,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                             )}
                                                                         </Box>
 
-                                                                        {/* Compact Sample Images */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             pt: 1,
                                                                             borderTop: '1px solid #f1f5f9'
@@ -1284,7 +1281,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                     return null;
                                 })()}
 
-                                {/* Girl Section */}
+                                {}
                                 {(() => {
                                     const girlItems = request.items?.filter(item => item.gender === 'girl') || [];
                                     if (girlItems.length > 0) {
@@ -1328,7 +1325,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                     </Text>
                                                 </Box>
 
-                                                {/* Regular Uniform Subsection */}
+                                                {}
                                                 {regularItems.length > 0 && (
                                                     <Box sx={{mb: 1.5}}>
                                                         <Box sx={{
@@ -1341,7 +1338,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                             gap: 1,
                                                             height: '100%'
                                                         }}>
-                                                            {/* Header inside the box */}
+                                                            {}
                                                             <Box sx={{
                                                                 display: 'flex',
                                                                 alignItems: 'center',
@@ -1402,7 +1399,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                             }
                                                                         }}
                                                                     >
-                                                                        {/* Compact Header */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             display: 'flex',
                                                                             alignItems: 'center',
@@ -1447,14 +1444,14 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                             </Tag>
                                                                         </Box>
 
-                                                                        {/* Compact Details Grid */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             display: 'grid',
                                                                             gridTemplateColumns: '1fr 1fr',
                                                                             gap: 1,
                                                                             mb: 1
                                                                         }}>
-                                                                            {/* Fabric */}
+                                                                            {}
                                                                             <Box sx={{
                                                                                 p: 1,
                                                                                 background: 'rgba(46, 125, 50, 0.08)',
@@ -1480,7 +1477,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                                 </Text>
                                                                             </Box>
 
-                                                                            {/* Color */}
+                                                                            {}
                                                                             <Box sx={{
                                                                                 p: 1,
                                                                                 background: 'rgba(124, 58, 237, 0.08)',
@@ -1520,7 +1517,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                                 </Box>
                                                                             </Box>
 
-                                                                            {/* Logo Position */}
+                                                                            {}
                                                                             {item.logoPosition ? (
                                                                                 <Box sx={{
                                                                                     p: 1,
@@ -1569,7 +1566,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                                 </Box>
                                                                             )}
 
-                                                                            {/* Note */}
+                                                                            {}
                                                                             {item.note ? (
                                                                                 <Box sx={{
                                                                                     p: 1,
@@ -1621,7 +1618,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                             )}
                                                                         </Box>
 
-                                                                        {/* Compact Sample Images */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             pt: 1,
                                                                             borderTop: '1px solid #f1f5f9',
@@ -1694,7 +1691,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                     </Box>
                                                 )}
 
-                                                {/* Physical Education Uniform Subsection */}
+                                                {}
                                                 {peItems.length > 0 && (
                                                     <Box sx={{mb: 1.5}}>
                                                         <Box sx={{
@@ -1706,7 +1703,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                             flexDirection: 'column',
                                                             gap: 1
                                                         }}>
-                                                            {/* Header inside the box */}
+                                                            {}
                                                             <Box sx={{
                                                                 display: 'flex',
                                                                 alignItems: 'center',
@@ -1729,7 +1726,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                     fontSize: '10px',
                                                                     fontWeight: 600
                                                                 }}>
-                                                                    âš½
+                                                                    âš?
                                                                 </Box>
                                                                 <Text style={{
                                                                     fontSize: '11px',
@@ -1764,7 +1761,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                             }
                                                                         }}
                                                                     >
-                                                                        {/* Compact Header */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             display: 'flex',
                                                                             alignItems: 'center',
@@ -1809,14 +1806,14 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                             </Tag>
                                                                         </Box>
 
-                                                                        {/* Compact Details Grid */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             display: 'grid',
                                                                             gridTemplateColumns: '1fr 1fr',
                                                                             gap: 1,
                                                                             mb: 1
                                                                         }}>
-                                                                            {/* Fabric */}
+                                                                            {}
                                                                             <Box sx={{
                                                                                 p: 1,
                                                                                 background: 'rgba(46, 125, 50, 0.08)',
@@ -1842,7 +1839,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                                 </Text>
                                                                             </Box>
 
-                                                                            {/* Color */}
+                                                                            {}
                                                                             <Box sx={{
                                                                                 p: 1,
                                                                                 background: 'rgba(124, 58, 237, 0.08)',
@@ -1882,7 +1879,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                                 </Box>
                                                                             </Box>
 
-                                                                            {/* Logo Position */}
+                                                                            {}
                                                                             {item.logoPosition ? (
                                                                                 <Box sx={{
                                                                                     p: 1,
@@ -1930,7 +1927,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                                 </Box>
                                                                             )}
 
-                                                                            {/* Note */}
+                                                                            {}
                                                                             {item.note ? (
                                                                                 <Box sx={{
                                                                                     p: 1,
@@ -1981,7 +1978,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                             )}
                                                                         </Box>
 
-                                                                        {/* Compact Sample Images */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             pt: 1,
                                                                             borderTop: '1px solid #f1f5f9'
@@ -2057,15 +2054,15 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                             </Box>
                         </Card>
 
-                        {/* Feedback */}
+                        {}
                         {request.feedback && request.feedback !== '' && request.feedback !== null && (
-                            <Card 
+                            <Card
                                 title={
                                     <Space>
                                         <InfoCircleOutlined style={{color: '#667eea'}}/>
                                         <span style={{fontWeight: 600, fontSize: '14px'}}>Feedback</span>
                                     </Space>
-                                } 
+                                }
                                 size="small"
                                 style={{
                                     border: '1px solid #e2e8f0',

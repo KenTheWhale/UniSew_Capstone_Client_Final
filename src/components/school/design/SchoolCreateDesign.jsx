@@ -81,7 +81,7 @@ export default function SchoolCreateDesign() {
                             createType: 'new',
                             images: [],
                         },
-                        bottomType: 'pants', // to track whether pants or skirt is selected
+                        bottomType: 'pants',
                         showForm: false,
                     },
                 },
@@ -135,38 +135,35 @@ export default function SchoolCreateDesign() {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const MAX_IMAGES = 4;
-    const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+    const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
     const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
     const [uniformFabrics, setUniformFabrics] = useState([]);
 
-    // Helper functions to check if all required fields are filled
     const isBoyInfoComplete = (uniformType) => {
         const boyDetails = designRequest.uniformTypes[uniformType].details.boy;
         const shirt = boyDetails.shirt;
         const pants = boyDetails.pants;
-        
+
         return shirt.fabric && shirt.logoPlacement && pants.fabric;
     };
 
     const isGirlInfoComplete = (uniformType) => {
         const girlDetails = designRequest.uniformTypes[uniformType].details.girl;
         const shirt = girlDetails.shirt;
-        
+
         if (uniformType === 'regular') {
             const bottomType = designRequest.uniformTypes.regular.details.girl.bottomType;
             const bottomFabric = bottomType === 'skirt' ? girlDetails.skirt.fabric : girlDetails.pants.fabric;
             return shirt.fabric && shirt.logoPlacement && bottomFabric && bottomType;
         } else {
-            // Physical education uniform - girl only has pants
             return shirt.fabric && shirt.logoPlacement && girlDetails.pants.fabric;
         }
     };
 
-    // Helper functions to check missing fields
     const getMissingFields = (uniformType, gender) => {
         const missing = [];
-        
+
         if (gender === 'boy') {
             const boyDetails = designRequest.uniformTypes[uniformType].details.boy;
             if (!boyDetails.shirt.fabric) missing.push('Shirt Fabric');
@@ -176,7 +173,7 @@ export default function SchoolCreateDesign() {
             const girlDetails = designRequest.uniformTypes[uniformType].details.girl;
             if (!girlDetails.shirt.fabric) missing.push('Shirt Fabric');
             if (!girlDetails.shirt.logoPlacement) missing.push('Shirt Logo Placement');
-            
+
             if (uniformType === 'regular') {
                 if (!designRequest.uniformTypes.regular.details.girl.bottomType) {
                     missing.push('Bottom Type');
@@ -189,7 +186,7 @@ export default function SchoolCreateDesign() {
                 if (!girlDetails.pants.fabric) missing.push('Pants Fabric');
             }
         }
-        
+
         return missing;
     };
 
@@ -203,7 +200,7 @@ export default function SchoolCreateDesign() {
             const girlDetails = designRequest.uniformTypes[uniformType].details.girl;
             if (fieldType === 'shirtFabric') return !girlDetails.shirt.fabric;
             if (fieldType === 'shirtLogoPlacement') return !girlDetails.shirt.logoPlacement;
-            
+
             if (uniformType === 'regular') {
                 if (fieldType === 'bottomType') return !designRequest.uniformTypes.regular.details.girl.bottomType;
                 if (fieldType === 'bottomFabric') {
@@ -262,15 +259,13 @@ export default function SchoolCreateDesign() {
     const handleFileChange = (event) => {
         const file = event.target.files[0];
         if (file) {
-            // Validate file type
             const ext = file.name.split('.').pop().toLowerCase();
             if (!ALLOWED_EXTENSIONS.includes(ext)) {
                 enqueueSnackbar('Only JPG, JPEG, PNG, GIF, WEBP files are allowed for logo.', {variant: 'error'});
                 return;
             }
 
-            // Validate file size (5MB for logo)
-            const MAX_LOGO_SIZE = 5 * 1024 * 1024; // 5MB
+            const MAX_LOGO_SIZE = 5 * 1024 * 1024;
             if (file.size > MAX_LOGO_SIZE) {
                 enqueueSnackbar('Logo file must be less than 5MB.', {variant: 'error'});
                 return;
@@ -332,7 +327,7 @@ export default function SchoolCreateDesign() {
             const currentImages = prev.uniformTypes[uniformType].details[gender][itemType].images;
             if (currentImages.length + validFiles.length > MAX_IMAGES) {
                 enqueueSnackbar(`You can upload up to ${MAX_IMAGES} images.`, {variant: 'error'});
-                return prev; // Return previous state if limit exceeded
+                return prev;
             }
             return {
                 ...prev,
@@ -422,7 +417,6 @@ export default function SchoolCreateDesign() {
             return;
         }
 
-        // Validate fabric and color selections for regular uniform
         if (designRequest.uniformTypes.regular.selected) {
             if (designRequest.uniformTypes.regular.genders.boy) {
                 if (!designRequest.uniformTypes.regular.details.boy.shirt.fabric) {
@@ -469,7 +463,6 @@ export default function SchoolCreateDesign() {
             }
         }
 
-        // Validate fabric and color selections for physical education uniform
         if (designRequest.uniformTypes.physicalEducation.selected) {
             if (designRequest.uniformTypes.physicalEducation.genders.boy) {
                 if (!designRequest.uniformTypes.physicalEducation.details.boy.shirt.fabric) {
@@ -507,17 +500,14 @@ export default function SchoolCreateDesign() {
             }
         }
 
-        //Design name
         const designName = designRequest.designName
 
-        //Logo image validation
         if (!designRequest.logo.file) {
             enqueueSnackbar('School Logo is required.', {variant: 'error'});
             setIsSubmitting(false);
             return;
         }
 
-        //Logo image
         const logoFile = designRequest.logo.file
         const logo = await uploadCloudinary(logoFile)
 
@@ -527,7 +517,6 @@ export default function SchoolCreateDesign() {
             return;
         }
 
-        // Design item list
         const designItems = []
         const pe = designRequest.uniformTypes.physicalEducation
         const regular = designRequest.uniformTypes.regular
@@ -696,7 +685,6 @@ export default function SchoolCreateDesign() {
             }
         }
 
-        // Build request
         const request = {
             designName: designName,
             logoImage: logo,
@@ -708,7 +696,7 @@ export default function SchoolCreateDesign() {
             if (createResponse && createResponse.status === 201) {
                 enqueueSnackbar(createResponse.data.message, {variant: 'success', autoHideDuration: 1000})
                 setTimeout(() => {
-                    window.location.href = '/school/design'; // Go to SchoolPendingDesign.jsx after submission
+                    window.location.href = '/school/design';
                 }, 1000)
             } else {
                 enqueueSnackbar("Fail to create design request", {variant: 'error'})
@@ -771,7 +759,7 @@ export default function SchoolCreateDesign() {
         return (
             <>
 
-                {/* Shirt Configuration */}
+                {}
                 <Box sx={{
                     mb: 3,
                     p: 3,
@@ -791,7 +779,7 @@ export default function SchoolCreateDesign() {
                     </Typography>
 
                     <Box sx={{display: 'grid', gap: 3}}>
-                        {/* Create Type Selection */}
+                        {}
                         <Box>
                             <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Design Type *
@@ -820,7 +808,7 @@ export default function SchoolCreateDesign() {
                             </FormControl>
                         </Box>
 
-                        {/* Image Upload for upload type */}
+                        {}
                         {shirtCreateType === 'upload' && (
                             <Box>
                                 <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
@@ -895,10 +883,10 @@ export default function SchoolCreateDesign() {
                             </Box>
                         )}
 
-                        {/* Fabric Selection */}
+                        {}
                         <Box>
                             <Typography variant="subtitle2" sx={{
-                                mb: 1, 
+                                mb: 1,
                                 fontWeight: '600',
                                 color: isFieldMissing(uniformType, 'boy', 'shirtFabric') ? '#d32f2f' : '#1e293b'
                             }}>
@@ -959,7 +947,7 @@ export default function SchoolCreateDesign() {
                             </FormControl>
                         </Box>
 
-                        {/* Color Selection */}
+                        {}
                         <Box>
                             <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Color *
@@ -1010,7 +998,7 @@ export default function SchoolCreateDesign() {
                         </Box>
                     </Box>
                 </Box>
-                {/* Logo Placement */}
+                {}
                 <Box sx={{
                     mb: 3,
                     p: 3,
@@ -1026,7 +1014,7 @@ export default function SchoolCreateDesign() {
                         alignItems: 'center',
                         gap: 1
                     }}>
-                        🏷️ Logo Placement
+                        🏷�?Logo Placement
                     </Typography>
 
                     <Box sx={{display: 'grid', gap: 2}}>
@@ -1046,7 +1034,7 @@ export default function SchoolCreateDesign() {
 
                         <Box>
                             <Typography variant="subtitle2" sx={{
-                                mb: 1, 
+                                mb: 1,
                                 fontWeight: '600',
                                 color: isFieldMissing(uniformType, 'boy', 'shirtLogoPlacement') ? '#d32f2f' : '#1e293b'
                             }}>
@@ -1157,7 +1145,7 @@ export default function SchoolCreateDesign() {
                         </Button>
                     </DialogActions>
                 </Dialog>
-                {/* Designer Notes */}
+                {}
                 <Box sx={{
                     mb: 3,
                     p: 3,
@@ -1209,7 +1197,7 @@ export default function SchoolCreateDesign() {
 
                 <Divider sx={{my: 4, borderColor: '#ddd'}}/>
 
-                {/* Pants Configuration */}
+                {}
                 <Box sx={{
                     mb: 3,
                     p: 3,
@@ -1227,7 +1215,7 @@ export default function SchoolCreateDesign() {
                     }}>
                         👖 Pants Configuration
                     </Typography>
-                    {/* Create Type Selection */}
+                    {}
                     <Box>
                         <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                             Design Type *
@@ -1256,7 +1244,7 @@ export default function SchoolCreateDesign() {
                         </FormControl>
                     </Box>
 
-                    {/* Image Upload for upload type */}
+                    {}
                     {pantsCreateType === 'upload' && (
                         <Box>
                             <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
@@ -1331,10 +1319,10 @@ export default function SchoolCreateDesign() {
                         </Box>
                     )}
                     <Box sx={{display: 'grid', gap: 3}}>
-                        {/* Fabric Selection */}
+                        {}
                         <Box>
                             <Typography variant="subtitle2" sx={{
-                                mb: 1, 
+                                mb: 1,
                                 fontWeight: '600',
                                 color: isFieldMissing(uniformType, 'boy', 'pantsFabric') ? '#d32f2f' : '#1e293b'
                             }}>
@@ -1395,7 +1383,7 @@ export default function SchoolCreateDesign() {
                             </FormControl>
                         </Box>
 
-                        {/* Color Selection */}
+                        {}
                         <Box>
                             <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Color *
@@ -1446,7 +1434,7 @@ export default function SchoolCreateDesign() {
                         </Box>
                     </Box>
                 </Box>
-                {/* Designer Notes for Pants */}
+                {}
                 <Box sx={{
                     mt: 3,
                     p: 3,
@@ -1549,7 +1537,7 @@ export default function SchoolCreateDesign() {
         const bottomImages = designRequest.uniformTypes[uniformType].details.girl[bottomType].images;
         return (
             <>
-                {/* Shirt Configuration */}
+                {}
                 <Box sx={{
                     mb: 3,
                     p: 3,
@@ -1569,7 +1557,7 @@ export default function SchoolCreateDesign() {
                     </Typography>
 
                     <Box sx={{display: 'grid', gap: 3}}>
-                        {/* Create Type Selection */}
+                        {}
                         <Box>
                             <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Design Type *
@@ -1598,7 +1586,7 @@ export default function SchoolCreateDesign() {
                             </FormControl>
                         </Box>
 
-                        {/* Image Upload for upload type */}
+                        {}
                         {shirtCreateType === 'upload' && (
                             <Box>
                                 <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
@@ -1673,10 +1661,10 @@ export default function SchoolCreateDesign() {
                             </Box>
                         )}
 
-                        {/* Fabric Selection */}
+                        {}
                         <Box>
                             <Typography variant="subtitle2" sx={{
-                                mb: 1, 
+                                mb: 1,
                                 fontWeight: '600',
                                 color: isFieldMissing(uniformType, 'girl', 'shirtFabric') ? '#d32f2f' : '#1e293b'
                             }}>
@@ -1737,7 +1725,7 @@ export default function SchoolCreateDesign() {
                             </FormControl>
                         </Box>
 
-                        {/* Color Selection */}
+                        {}
                         <Box>
                             <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Color *
@@ -1789,7 +1777,7 @@ export default function SchoolCreateDesign() {
                     </Box>
                 </Box>
 
-                {/* Logo Placement */}
+                {}
                 <Box sx={{
                     mb: 3,
                     p: 3,
@@ -1805,7 +1793,7 @@ export default function SchoolCreateDesign() {
                         alignItems: 'center',
                         gap: 1
                     }}>
-                        🏷️ Logo Placement
+                        🏷�?Logo Placement
                     </Typography>
 
                     <Box sx={{display: 'grid', gap: 2}}>
@@ -1825,7 +1813,7 @@ export default function SchoolCreateDesign() {
 
                         <Box>
                             <Typography variant="subtitle2" sx={{
-                                mb: 1, 
+                                mb: 1,
                                 fontWeight: '600',
                                 color: isFieldMissing(uniformType, 'girl', 'shirtLogoPlacement') ? '#d32f2f' : '#1e293b'
                             }}>
@@ -1936,7 +1924,7 @@ export default function SchoolCreateDesign() {
                         </Button>
                     </DialogActions>
                 </Dialog>
-                {/* Designer Notes */}
+                {}
                 <Box sx={{
                     mb: 3,
                     p: 3,
@@ -1988,7 +1976,7 @@ export default function SchoolCreateDesign() {
 
                 <Divider sx={{my: 4, borderColor: '#ddd'}}/>
 
-                {/* Bottom Type Selection (for Regular Uniform) */}
+                {}
                 {uniformType === "regular" && (
                     <Box sx={{
                         mb: 3,
@@ -2009,7 +1997,7 @@ export default function SchoolCreateDesign() {
                         </Typography>
                         <FormControl component="fieldset" fullWidth>
                             <FormLabel component="legend" sx={{
-                                mb: 1, 
+                                mb: 1,
                                 fontWeight: '600',
                                 color: isFieldMissing(uniformType, 'girl', 'bottomType') ? '#d32f2f' : '#1e293b'
                             }}>
@@ -2045,7 +2033,7 @@ export default function SchoolCreateDesign() {
                     </Box>
                 )}
 
-                {/* Bottom Configuration */}
+                {}
                 <Box sx={{
                     mb: 3,
                     p: 3,
@@ -2065,7 +2053,7 @@ export default function SchoolCreateDesign() {
                     </Typography>
 
                     <Box sx={{display: 'grid', gap: 3}}>
-                        {/* Create Type Selection */}
+                        {}
                         <Box>
                             <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Design Type *
@@ -2094,7 +2082,7 @@ export default function SchoolCreateDesign() {
                             </FormControl>
                         </Box>
 
-                        {/* Image Upload for upload type */}
+                        {}
                         {bottomCreateType === 'upload' && (
                             <Box>
                                 <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
@@ -2169,10 +2157,10 @@ export default function SchoolCreateDesign() {
                             </Box>
                         )}
 
-                        {/* Fabric Selection */}
+                        {}
                         <Box>
                             <Typography variant="subtitle2" sx={{
-                                mb: 1, 
+                                mb: 1,
                                 fontWeight: '600',
                                 color: isFieldMissing(uniformType, 'girl', uniformType === 'regular' ? 'bottomFabric' : 'pantsFabric') ? '#d32f2f' : '#1e293b'
                             }}>
@@ -2245,7 +2233,7 @@ export default function SchoolCreateDesign() {
                             </FormControl>
                         </Box>
 
-                        {/* Color Selection */}
+                        {}
                         <Box>
                             <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Color *
@@ -2305,7 +2293,7 @@ export default function SchoolCreateDesign() {
                     </Box>
                 </Box>
 
-                {/* Designer Notes for Bottom */}
+                {}
                 <Box sx={{
                     mt: 3,
                     p: 3,
@@ -2367,7 +2355,7 @@ export default function SchoolCreateDesign() {
 
     return (
         <Box sx={{height: '100%', overflowY: 'auto'}}>
-            {/* Header Section */}
+            {}
             <Box
                 sx={{
                     mb: 4,
@@ -2417,7 +2405,7 @@ export default function SchoolCreateDesign() {
                 </Typography>
             </Box>
 
-            {/* Content Section */}
+            {}
             <Box sx={{
                 backgroundColor: 'white',
                 borderRadius: 2,
@@ -2425,7 +2413,7 @@ export default function SchoolCreateDesign() {
                 boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                 border: '1px solid #e2e8f0'
             }}>
-                {/* Design Information */}
+                {}
                 <Box sx={{mb: 4}}>
                     <Typography variant="h6" sx={{
                         color: '#1e293b',
@@ -2478,7 +2466,7 @@ export default function SchoolCreateDesign() {
                     noValidate
                     autoComplete="off"
                 >
-                    {/* Logo Upload */}
+                    {}
                     <Box sx={{mb: 4}}>
                         <Typography variant="h6" sx={{
                             color: '#1e293b',
@@ -2541,7 +2529,7 @@ export default function SchoolCreateDesign() {
                         </Box>
                     </Box>
 
-                    {/* Uniform Type */}
+                    {}
                     <Box sx={{mb: 4}}>
                         <Typography variant="h6" sx={{
                             color: '#1e293b',
@@ -2644,7 +2632,7 @@ export default function SchoolCreateDesign() {
                                     opacity: designRequest.uniformTypes.physicalEducation.selected ? 1 : 0.3,
                                     pointerEvents: 'none'
                                 }}>
-                                    🏃‍♂️
+                                    🏃‍♂�?
                                 </Box>
                             </Box>
                         </Box>
@@ -2704,8 +2692,8 @@ export default function SchoolCreateDesign() {
                                                     Design uniform for male students
                                                 </Typography>
                                                 {designRequest.uniformTypes.regular.genders.boy && (
-                                                    <Typography 
-                                                        variant="caption" 
+                                                    <Typography
+                                                        variant="caption"
                                                         sx={{
                                                             color: isBoyInfoComplete('regular') ? '#2e7d32' : '#d32f2f',
                                                             fontWeight: '600',
@@ -2714,7 +2702,7 @@ export default function SchoolCreateDesign() {
                                                             display: 'block'
                                                         }}
                                                     >
-                                                        {isBoyInfoComplete('regular') ? '✓ All information filled' : '⚠ Information missing'}
+                                                        {isBoyInfoComplete('regular') ? '�?All information filled' : '�?Information missing'}
                                                     </Typography>
                                                 )}
                                             </Box>
@@ -2794,8 +2782,8 @@ export default function SchoolCreateDesign() {
                                                     Design uniform for female students
                                                 </Typography>
                                                 {designRequest.uniformTypes.regular.genders.girl && (
-                                                    <Typography 
-                                                        variant="caption" 
+                                                    <Typography
+                                                        variant="caption"
                                                         sx={{
                                                             color: isGirlInfoComplete('regular') ? '#2e7d32' : '#d32f2f',
                                                             fontWeight: '600',
@@ -2804,7 +2792,7 @@ export default function SchoolCreateDesign() {
                                                             display: 'block'
                                                         }}
                                                     >
-                                                        {isGirlInfoComplete('regular') ? '✓ All information filled' : '⚠ Information missing'}
+                                                        {isGirlInfoComplete('regular') ? '�?All information filled' : '�?Information missing'}
                                                     </Typography>
                                                 )}
                                             </Box>
@@ -2978,8 +2966,8 @@ export default function SchoolCreateDesign() {
                                                     Physical education uniform for male students
                                                 </Typography>
                                                 {designRequest.uniformTypes.physicalEducation.genders.boy && (
-                                                    <Typography 
-                                                        variant="caption" 
+                                                    <Typography
+                                                        variant="caption"
                                                         sx={{
                                                             color: isBoyInfoComplete('physicalEducation') ? '#2e7d32' : '#d32f2f',
                                                             fontWeight: '600',
@@ -2988,7 +2976,7 @@ export default function SchoolCreateDesign() {
                                                             display: 'block'
                                                         }}
                                                     >
-                                                        {isBoyInfoComplete('physicalEducation') ? '✓ All information filled' : '⚠ Information missing'}
+                                                        {isBoyInfoComplete('physicalEducation') ? '�?All information filled' : '�?Information missing'}
                                                     </Typography>
                                                 )}
                                             </Box>
@@ -2997,7 +2985,7 @@ export default function SchoolCreateDesign() {
                                                 opacity: designRequest.uniformTypes.physicalEducation.genders.boy ? 1 : 0.3,
                                                 pointerEvents: 'none'
                                             }}>
-                                                🏃‍♂️
+                                                🏃‍♂�?
                                             </Box>
                                         </Box>
                                         {designRequest.uniformTypes.physicalEducation.genders.boy && (
@@ -3068,8 +3056,8 @@ export default function SchoolCreateDesign() {
                                                     Physical education uniform for female students
                                                 </Typography>
                                                 {designRequest.uniformTypes.physicalEducation.genders.girl && (
-                                                    <Typography 
-                                                        variant="caption" 
+                                                    <Typography
+                                                        variant="caption"
                                                         sx={{
                                                             color: isGirlInfoComplete('physicalEducation') ? '#2e7d32' : '#d32f2f',
                                                             fontWeight: '600',
@@ -3078,7 +3066,7 @@ export default function SchoolCreateDesign() {
                                                             display: 'block'
                                                         }}
                                                     >
-                                                        {isGirlInfoComplete('physicalEducation') ? '✓ All information filled' : '⚠ Information missing'}
+                                                        {isGirlInfoComplete('physicalEducation') ? '�?All information filled' : '�?Information missing'}
                                                     </Typography>
                                                 )}
                                             </Box>
@@ -3087,7 +3075,7 @@ export default function SchoolCreateDesign() {
                                                 opacity: designRequest.uniformTypes.physicalEducation.genders.girl ? 1 : 0.3,
                                                 pointerEvents: 'none'
                                             }}>
-                                                🏃‍♀️
+                                                🏃‍♀�?
                                             </Box>
                                         </Box>
                                         {designRequest.uniformTypes.physicalEducation.genders.girl && (
@@ -3208,7 +3196,7 @@ export default function SchoolCreateDesign() {
                     )}
                 </Box>
             </Box>
-            {/* Action Buttons */}
+            {}
             <Box sx={{
                 mt: 4,
                 pt: 3,

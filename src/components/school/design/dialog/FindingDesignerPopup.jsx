@@ -22,7 +22,6 @@ import {parseID} from "../../../../utils/ParseIDUtil.jsx";
 import DisplayImage from '../../../ui/DisplayImage.jsx';
 import { serviceFee } from '../../../../configs/FixedVariables.jsx';
 
-// Constants
 const STATUS_CONFIG = {
     pending: { color: 'blue', icon: <FileTextOutlined/>, text: 'Finding designer' },
     processing: { color: 'purple', icon: <SyncOutlined/>, text: 'processing' },
@@ -33,7 +32,6 @@ const STATUS_CONFIG = {
 const UNLIMITED_REVISION_CODE = 9999;
 const MAX_EXTRA_REVISIONS = 10;
 
-// Utility functions
 const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('vi-VN', {
         day: '2-digit',
@@ -46,13 +44,11 @@ const formatPrice = (price) => {
     return price.toLocaleString('vi-VN') + ' VND';
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function statusTag(status) {
     const config = STATUS_CONFIG[status] || { color: 'default', icon: null, text: status };
     return <Tag color={config.color}>{config.icon} {config.text}</Tag>;
 }
 
-// Memoized DesignerCard Component
 const DesignerCard = React.memo(({ designer, isSelected, onSelect }) => {
     const handleKeyPress = useCallback((event) => {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -105,7 +101,7 @@ const DesignerCard = React.memo(({ designer, isSelected, onSelect }) => {
             role="button"
             aria-label={`Select quotation from ${designer.designer.customer.name}`}
         >
-            {/* Header */}
+            {}
             <Box sx={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center', columnGap: 1.5, mb: 1.5 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
                     <Avatar
@@ -123,7 +119,7 @@ const DesignerCard = React.memo(({ designer, isSelected, onSelect }) => {
                             {formatPrice(designer.price).replace(' VND','')} <span style={{fontSize: 12, fontWeight: 700}}>VND</span>
                         </Typography>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mt: 0.5 }}>
-                            <Chip size="small" variant="outlined" label={`â­ ${designer.designer.rating}`} sx={{ height: 22 }} />
+                            <Chip size="small" variant="outlined" label={`â­?${designer.designer.rating}`} sx={{ height: 22 }} />
                             <Chip size="small" variant="outlined" icon={<ClockCircleOutlined/>} label={`Valid until ${formatDate(designer.acceptanceDeadline)}`} sx={{ height: 22 }} />
                         </Box>
                     </Box>
@@ -135,7 +131,7 @@ const DesignerCard = React.memo(({ designer, isSelected, onSelect }) => {
 
             <Divider sx={{ my: 1.5 }} />
 
-            {/* Details */}
+            {}
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mb: 1 }}>
                 <Chip size="small" variant="outlined" icon={<CalendarIcon style={{ fontSize: 14 }} />} label={`${designer.deliveryWithIn} days`} sx={{ height: 26 }} />
                 <Chip size="small" variant="outlined" icon={<EditOutlined style={{ fontSize: 14 }} />} label={`${designer.revisionTime === UNLIMITED_REVISION_CODE ? 'Unlimited' : designer.revisionTime} revisions`} sx={{ height: 26 }} />
@@ -144,7 +140,7 @@ const DesignerCard = React.memo(({ designer, isSelected, onSelect }) => {
                 )}
             </Box>
 
-            {/* Contact */}
+            {}
             <Box sx={{
                 display: 'flex',
                 alignItems: 'center',
@@ -165,9 +161,9 @@ const DesignerCard = React.memo(({ designer, isSelected, onSelect }) => {
                 <Divider orientation="vertical" flexItem sx={{ borderColor: '#e2e8f0' }} />
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <PhoneOutlined style={{color: '#64748b'}}/>
-                    <Typography.Text 
-                        style={{fontSize: '12px', cursor: 'pointer'}} 
-                        onClick={() => window.open(`https://zalo.me/${designer.designer.customer.phone}`, "_blank")}
+                    <Typography.Text
+                        style={{fontSize: '12px', cursor: 'pointer'}}
+                        onClick={() => window.open(`https:
                         title="Click to contact"
                     >
                         {designer.designer.customer.phone}
@@ -176,7 +172,7 @@ const DesignerCard = React.memo(({ designer, isSelected, onSelect }) => {
             </Box>
 
 
-            {/* Footer note (optional) */}
+            {}
             {designer.note && (
                 <Box sx={{
                     mt: 1,
@@ -214,12 +210,10 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
     const [extraRevision, setExtraRevision] = useState(0);
     const [error, setError] = useState(null);
     const [isProcessing, setIsProcessing] = useState(false);
-    // Applied designers data
     const [appliedDesigners, setAppliedDesigners] = useState([]);
     const [showRequestDetail, setShowRequestDetail] = useState(false);
-    const [sortCriteria, setSortCriteria] = useState([]); // [{ key: 'rating'|'acceptanceDeadline'|'deliveryWithIn'|'revisionTime'|'price', order: 'asc'|'desc' }]
+    const [sortCriteria, setSortCriteria] = useState([]);
 
-    // Memoized values
     const selectedDesigner = useMemo(() =>
         appliedDesigners.find(d => d.id === selectedQuotation?.designerId),
         [appliedDesigners, selectedQuotation]
@@ -264,7 +258,6 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
         }
     }, [request]);
 
-    // Restore saved sort criteria on mount
     useEffect(() => {
         try {
             const saved = localStorage.getItem('designerSortCriteria');
@@ -278,14 +271,12 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
         } catch {}
     }, []);
 
-    // Persist sort criteria changes
     useEffect(() => {
         try {
             localStorage.setItem('designerSortCriteria', JSON.stringify(sortCriteria));
         } catch {}
     }, [sortCriteria]);
 
-    // Optimized event handlers
     const handleQuotationSelect = useCallback((designerId) => {
         const quotation = appliedDesigners.find(d => d.id === designerId);
         if (quotation) {
@@ -293,7 +284,6 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
             setPaymentDetails({quotation, request});
             setError(null);
 
-            // Reset extra revision if the selected quotation has unlimited revisions
             if (quotation.revisionTime === UNLIMITED_REVISION_CODE) {
                 setExtraRevision(0);
             }
@@ -328,7 +318,6 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                 return;
             }
 
-            // Only store extra revision if not unlimited
             if (!isUnlimited) {
                 sessionStorage.setItem('extraRevision', extraRevision.toString());
             } else {
@@ -416,7 +405,6 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
         return copy;
     }, [appliedDesigners, sortCriteria]);
 
-    // Loading state
     if (!request) {
         return (
             <Modal open={visible} onCancel={onCancel} footer={null} centered>
@@ -500,7 +488,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
         >
             {request.status === 'pending' && (
                 <Box sx={{width: '100%'}}>
-                    {/* Error Display */}
+                    {}
                     {error && (
                         <Box sx={{
                             mb: 3,
@@ -519,7 +507,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                         </Box>
                     )}
 
-                    {/* Header Section */}
+                    {}
                     <Box sx={{
                         mb: 3,
                         p: 3,
@@ -563,13 +551,13 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                             Review and select from the designers who have applied to your request. Each designer offers
                             different quotations with varying timelines and features.
                         </Typography.Text>
-                        {/* Sort controls (only show when viewing designers) */}
+                        {}
                         {showDesigners && (
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2, flexWrap: 'wrap' }}>
                                 <Select
                                     mode="multiple"
                                     allowClear
-                                    placeholder="Sort by (priority left â†’ right)"
+                                    placeholder="Sort by (priority left â†?right)"
                                     style={{ minWidth: 360 }}
                                     value={sortCriteria.map(c => c.key)}
                                     onChange={handleSortChange}
@@ -591,7 +579,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                 deliveryWithIn: 'Delivery',
                                                 revisionTime: 'Revisions',
                                                 price: 'Price'
-                                            }[c.key]} ${c.order === 'asc' ? 'â†‘' : 'â†“'}`}
+                                            }[c.key]} ${c.order === 'asc' ? 'â†? : 'â†?}`}
                                             size="small"
                                             variant="outlined"
                                             onClick={() => handleToggleSortOrder(c.key)}
@@ -606,10 +594,10 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                         )}
                     </Box>
 
-                    {/* Request Detail Panel */}
+                    {}
                     {showRequestDetail && (
                         <Box sx={{ mb: 3, p: 3, backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: 2, width: '100%' }}>
-                            {/* Header with Logo and Metadata */}
+                            {}
                             <Box sx={{ display: 'grid', gridTemplateColumns: 'auto 1fr', alignItems: 'center', gap: 2, mb: 2 }}>
                                 {request.logoImage && (
                                     <DisplayImage imageUrl={request.logoImage} alt="School logo" width={56} height={56} />
@@ -629,15 +617,15 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                 </Box>
                             </Box>
 
-                            {/* Items grouped by gender */}
+                            {}
                             {boyItems.length > 0 && (
                                 <Box sx={{ mb: 2 }}>
                                     <Typography.Title level={5} style={{ margin: 0, color: '#1e293b' }}>Boy</Typography.Title>
                                     <Box sx={{ mt: 1, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
                                         {boyItems.map((item) => (
-                                            <Paper key={item.id} elevation={0} sx={{ 
-                                                p: 2, 
-                                                border: '1px solid #e2e8f0', 
+                                            <Paper key={item.id} elevation={0} sx={{
+                                                p: 2,
+                                                border: '1px solid #e2e8f0',
                                                 borderRadius: 2,
                                                 display: 'flex',
                                                 flexDirection: 'column',
@@ -648,19 +636,19 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                     transform: 'translateY(-2px)'
                                                 }
                                             }}>
-                                                {/* Header with color dot and title */}
+                                                {}
                                                 <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1.5 }}>
-                                                    <Box sx={{ 
-                                                        width: 12, 
-                                                        height: 12, 
-                                                        borderRadius: '50%', 
-                                                        backgroundColor: item.color, 
-                                                        border: '1px solid #e2e8f0', 
+                                                    <Box sx={{
+                                                        width: 12,
+                                                        height: 12,
+                                                        borderRadius: '50%',
+                                                        backgroundColor: item.color,
+                                                        border: '1px solid #e2e8f0',
                                                         mt: '6px',
                                                         flexShrink: 0
                                                     }} />
-                                                    <Typography.Title level={5} style={{ 
-                                                        margin: 0, 
+                                                    <Typography.Title level={5} style={{
+                                                        margin: 0,
                                                         color: '#1e293b',
                                                         fontSize: '14px',
                                                         lineHeight: '1.3'
@@ -669,8 +657,8 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                     </Typography.Title>
                                                 </Box>
 
-                                                {/* Sample Image */}
-                                                <Box sx={{ 
+                                                {}
+                                                <Box sx={{
                                                     display: 'flex',
                                                     justifyContent: 'center',
                                                     alignItems: 'center',
@@ -678,10 +666,10 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                     minHeight: 120
                                                 }}>
                                                     {(item.sampleImages && item.sampleImages.length > 0) ? (
-                                                        <DisplayImage 
-                                                            imageUrl={item.sampleImages[0].url} 
-                                                            alt="Sample" 
-                                                            width="100px" 
+                                                        <DisplayImage
+                                                            imageUrl={item.sampleImages[0].url}
+                                                            alt="Sample"
+                                                            width="100px"
                                                             height="100px"
                                                             style={{ objectFit: 'cover', borderRadius: '8px' }}
                                                         />
@@ -703,7 +691,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                     )}
                                                 </Box>
 
-                                                {/* Tags */}
+                                                {}
                                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mb: 1 }}>
                                                     <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
                                                         <Tag color="blue" style={{ fontSize: '10px', padding: '2px 6px' }}>{item.gender}</Tag>
@@ -716,16 +704,16 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                     </Box>
                                                 </Box>
 
-                                                {/* Note */}
-                                                <Box sx={{ 
+                                                {}
+                                                <Box sx={{
                                                         mt: 'auto',
                                                         p: 1,
                                                         backgroundColor: '#f8fafc',
                                                         borderRadius: 1,
                                                         border: '1px solid #e2e8f0'
                                                     }}>
-                                                        <Typography.Text style={{ 
-                                                            fontSize: '10px', 
+                                                        <Typography.Text style={{
+                                                            fontSize: '10px',
                                                             color: '#64748b',
                                                             display: 'block',
                                                             lineHeight: '1.3'
@@ -744,9 +732,9 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                     <Typography.Title level={5} style={{ margin: 0, color: '#1e293b' }}>Girl</Typography.Title>
                                     <Box sx={{ mt: 1, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
                                         {girlItems.map((item) => (
-                                            <Paper key={item.id} elevation={0} sx={{ 
-                                                p: 2, 
-                                                border: '1px solid #e2e8f0', 
+                                            <Paper key={item.id} elevation={0} sx={{
+                                                p: 2,
+                                                border: '1px solid #e2e8f0',
                                                 borderRadius: 2,
                                                 display: 'flex',
                                                 flexDirection: 'column',
@@ -757,19 +745,19 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                     transform: 'translateY(-2px)'
                                                 }
                                             }}>
-                                                {/* Header with color dot and title */}
+                                                {}
                                                 <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1.5 }}>
-                                                    <Box sx={{ 
-                                                        width: 12, 
-                                                        height: 12, 
-                                                        borderRadius: '50%', 
-                                                        backgroundColor: item.color, 
-                                                        border: '1px solid #e2e8f0', 
+                                                    <Box sx={{
+                                                        width: 12,
+                                                        height: 12,
+                                                        borderRadius: '50%',
+                                                        backgroundColor: item.color,
+                                                        border: '1px solid #e2e8f0',
                                                         mt: '6px',
                                                         flexShrink: 0
                                                     }} />
-                                                    <Typography.Title level={5} style={{ 
-                                                        margin: 0, 
+                                                    <Typography.Title level={5} style={{
+                                                        margin: 0,
                                                         color: '#1e293b',
                                                         fontSize: '14px',
                                                         lineHeight: '1.3'
@@ -778,8 +766,8 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                     </Typography.Title>
                                                 </Box>
 
-                                                {/* Sample Image */}
-                                                <Box sx={{ 
+                                                {}
+                                                <Box sx={{
                                                     display: 'flex',
                                                     justifyContent: 'center',
                                                     alignItems: 'center',
@@ -787,10 +775,10 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                     minHeight: 120
                                                 }}>
                                                     {(item.sampleImages && item.sampleImages.length > 0) ? (
-                                                        <DisplayImage 
-                                                            imageUrl={item.sampleImages[0].url} 
-                                                            alt="Sample" 
-                                                            width="100px" 
+                                                        <DisplayImage
+                                                            imageUrl={item.sampleImages[0].url}
+                                                            alt="Sample"
+                                                            width="100px"
                                                             height="100px"
                                                             style={{ objectFit: 'cover', borderRadius: '8px' }}
                                                         />
@@ -812,7 +800,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                     )}
                                                 </Box>
 
-                                                {/* Tags */}
+                                                {}
                                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mb: 1 }}>
                                                     <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
                                                         <Tag color="pink" style={{ fontSize: '10px', padding: '2px 6px' }}>{item.gender}</Tag>
@@ -823,19 +811,19 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                             </Tag>
                                                         )}
                                                     </Box>
-                                                    
+
                                                 </Box>
 
-                                                {/* Note */}
-                                                <Box sx={{ 
+                                                {}
+                                                <Box sx={{
                                                         mt: 'auto',
                                                         p: 1,
                                                         backgroundColor: '#f8fafc',
                                                         borderRadius: 1,
                                                         border: '1px solid #e2e8f0'
                                                     }}>
-                                                        <Typography.Text style={{ 
-                                                            fontSize: '10px', 
+                                                        <Typography.Text style={{
+                                                            fontSize: '10px',
                                                             color: '#64748b',
                                                             display: 'block',
                                                             lineHeight: '1.3'
@@ -851,7 +839,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                         </Box>
                     )}
 
-                    {/* Designers List */}
+                    {}
                     {showDesigners && (
                         <>
                             {sortedDesigners.length > 0 ? (
@@ -890,7 +878,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                         </>
                     )}
 
-                    {/* Selection Summary */}
+                    {}
                     {selectedQuotation && (
                         <Box sx={{
                             mt: 3,
@@ -910,14 +898,14 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                 from {appliedDesigners.find(d => d.id === selectedQuotation.designerId)?.designer.customer.name}.
                             </Typography.Text>
 
-                                                         {/* Extra Revision Selection */}
+                                                         {}
                             {(() => {
                                 if (isUnlimitedRevisions) {
                                     return (
-                                        <Box sx={{ 
-                                            mt: 3, 
-                                            p: 3, 
-                                            backgroundColor: '#f0fdf4', 
+                                        <Box sx={{
+                                            mt: 3,
+                                            p: 3,
+                                            backgroundColor: '#f0fdf4',
                                             borderRadius: 3,
                                             border: '1px solid #bbf7d0',
                                             textAlign: 'center'
@@ -936,15 +924,15 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                 }
 
                                 return (
-                                    <Box sx={{ 
-                                        mt: 3, 
-                                        backgroundColor: 'white', 
+                                    <Box sx={{
+                                        mt: 3,
+                                        backgroundColor: 'white',
                                         borderRadius: 3,
                                         border: '1px solid #e2e8f0',
                                         overflow: 'hidden',
                                         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
                                     }}>
-                                {/* Header */}
+                                {}
                                 <Box sx={{
                                     p: 3,
                                     backgroundColor: '#f8fafc',
@@ -973,10 +961,10 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                     </Box>
                                 </Box>
 
-                                {/* Content */}
+                                {}
                                 <Box sx={{p: 3}}>
                                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
-                                        {/* Price Info */}
+                                        {}
                                         <Box sx={{
                                             p: 2,
                                             backgroundColor: '#f0f9ff',
@@ -995,7 +983,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                 }}>
                                                     <Typography.Text
                                                         style={{color: 'white', fontSize: '10px', fontWeight: 'bold'}}>
-                                                        â‚«
+                                                        â‚?
                                                     </Typography.Text>
                                                 </Box>
                                                 <Typography.Text
@@ -1009,7 +997,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                             </Typography.Text>
                                         </Box>
 
-                                        {/* Selection Control */}
+                                        {}
                                         <Box sx={{
                                             display: 'flex',
                                             alignItems: 'center',
@@ -1043,7 +1031,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                             </Box>
                                         </Box>
 
-                                        {/* Cost Display */}
+                                        {}
                                         {extraRevision > 0 && (
                                             <Box sx={{
                                                 backgroundColor: 'white',
@@ -1052,7 +1040,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                 overflow: 'hidden',
                                                 boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)'
                                             }}>
-                                                {/* Header */}
+                                                {}
                                                 <Box sx={{
                                                     p: 2,
                                                     backgroundColor: '#fef3c7',
@@ -1076,7 +1064,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                                 fontSize: '12px',
                                                                 fontWeight: 'bold'
                                                             }}>
-                                                                â‚«
+                                                                â‚?
                                                             </Typography.Text>
                                                         </Box>
                                                         <Box>
@@ -1108,10 +1096,10 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                     </Box>
                                                 </Box>
 
-                                                {/* Content */}
+                                                {}
                                                 <Box sx={{ p: 3 }}>
                                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                                                        {/* Total Cost */}
+                                                        {}
                                                         <Box sx={{
                                                             p: 3,
                                                             backgroundColor: '#fef3c7',
@@ -1137,7 +1125,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                             </Typography.Title>
                                                         </Box>
 
-                                                        {/* Summary */}
+                                                        {}
                                                         <Box sx={{
                                                             p: 2,
                                                             backgroundColor: '#f0fdf4',
@@ -1173,7 +1161,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                             </Box>
                                         )}
 
-                                        {/* Payment Summary */}
+                                        {}
                                         <Box sx={{
                                             p: 2.5,
                                             backgroundColor: '#ffffff',

@@ -30,7 +30,6 @@ import GarmentCreateQuotation from "./dialog/GarmentCreateQuotation.jsx";
 
 
 
-// Loading State Component
 const LoadingState = React.memo(() => (
     <Box sx={{
         display: 'flex',
@@ -47,7 +46,6 @@ const LoadingState = React.memo(() => (
     </Box>
 ));
 
-// Error State Component
 const ErrorState = React.memo(({error, onRetry, isRetrying}) => (
     <Box sx={{
         display: 'flex',
@@ -89,7 +87,6 @@ const ErrorState = React.memo(({error, onRetry, isRetrying}) => (
     </Box>
 ));
 
-// Empty State Component
 const EmptyState = React.memo(() => (
     <Box sx={{
         textAlign: 'center',
@@ -115,12 +112,11 @@ export default function GarmentPendingOrders() {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
 
-    // Fetch orders from API
     const fetchOrders = useCallback(async (showLoading = true) => {
         try {
             if (showLoading) setLoading(true);
             setError('');
-            
+
             const response = await getOrdersByGarment();
             if (response && response.status === 200) {
                 console.log("Garment Orders: ", response.data.body);
@@ -129,7 +125,7 @@ export default function GarmentPendingOrders() {
                 console.log("API failed, no data available");
                 setOrders([]);
             }
-            
+
         } catch (err) {
             console.error("Error fetching garment orders:", err);
             setError('An error occurred while fetching pending orders');
@@ -144,7 +140,6 @@ export default function GarmentPendingOrders() {
         fetchOrders();
     }, [fetchOrders]);
 
-    // Refresh data when user returns from other pages
     useEffect(() => {
         const handleFocus = () => {
             fetchOrders(false);
@@ -165,8 +160,7 @@ export default function GarmentPendingOrders() {
         fetchOrders(false);
     }, [fetchOrders]);
 
-    // Filter orders for pending orders only
-    const pendingOrders = orders.filter(order => 
+    const pendingOrders = orders.filter(order =>
         order.status === 'pending'
     );
 
@@ -226,9 +220,9 @@ export default function GarmentPendingOrders() {
 
     const getDaysUntilDeadline = (deadline) => {
         const deadlineDate = new Date(deadline);
-        deadlineDate.setHours(0, 0, 0, 0); // Set to midnight
+        deadlineDate.setHours(0, 0, 0, 0);
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // Set to midnight
+        today.setHours(0, 0, 0, 0);
         const daysUntilDeadline = Math.ceil((deadlineDate - today) / (1000 * 60 * 60 * 24));
         return daysUntilDeadline;
     };
@@ -242,8 +236,8 @@ export default function GarmentPendingOrders() {
             width: 120,
             fixed: 'left',
             render: (text) => (
-                <Typography variant="body2" sx={{ 
-                    color: '#3f51b5', 
+                <Typography variant="body2" sx={{
+                    color: '#3f51b5',
                     fontWeight: 600,
                     fontFamily: 'monospace'
                 }}>
@@ -286,19 +280,19 @@ export default function GarmentPendingOrders() {
             width: 120,
             render: (text) => {
                 const orderDate = new Date(text);
-                orderDate.setHours(0, 0, 0, 0); // Set to midnight
+                orderDate.setHours(0, 0, 0, 0);
                 const today = new Date();
-                today.setHours(0, 0, 0, 0); // Set to midnight
+                today.setHours(0, 0, 0, 0);
                 const daysSinceOrder = Math.ceil((today - orderDate) / (1000 * 60 * 60 * 24));
-                
+
                 return (
                     <Box sx={{ textAlign: 'center' }}>
                         <Typography variant="body2" sx={{ color: '#64748b' }}>
                             {formatDate(text)}
                         </Typography>
-                        <Typography 
-                            variant="caption" 
-                            sx={{ 
+                        <Typography
+                            variant="caption"
+                            sx={{
                                 color: '#3f51b5',
                                 fontWeight: 500
                             }}
@@ -317,31 +311,31 @@ export default function GarmentPendingOrders() {
             width: 120,
             render: (text) => {
                 const daysUntilDeadline = getDaysUntilDeadline(text);
-                let color = '#64748b'; // default gray
+                let color = '#64748b';
                 let fontWeight = 400;
-                
+
                 if (daysUntilDeadline > 30) {
-                    color = '#2e7d32'; // green
+                    color = '#2e7d32';
                     fontWeight = 600;
                 } else if (daysUntilDeadline > 14) {
-                    color = '#ff9800'; // orange
+                    color = '#ff9800';
                     fontWeight = 600;
                 } else if (daysUntilDeadline > 0) {
-                    color = '#d32f2f'; // red
+                    color = '#d32f2f';
                     fontWeight = 600;
                 } else {
-                    color = '#d32f2f'; // red for overdue
+                    color = '#d32f2f';
                     fontWeight = 600;
                 }
-                
+
                 return (
                     <Box sx={{ textAlign: 'center' }}>
                         <Typography variant="body2" sx={{ color: '#64748b' }}>
                             {formatDate(text)}
                         </Typography>
-                        <Typography 
-                            variant="caption" 
-                            sx={{ 
+                        <Typography
+                            variant="caption"
+                            sx={{
                                 color: color,
                                 fontWeight: fontWeight
                             }}
@@ -419,9 +413,9 @@ export default function GarmentPendingOrders() {
 
     return (
         <Box sx={{ height: '100%', overflowY: 'auto' }}>
-            {/* Header Section */}
-            <Box 
-                sx={{ 
+            {}
+            <Box
+                sx={{
                     mb: 4,
                     position: "relative",
                     p: 4,
@@ -470,7 +464,7 @@ export default function GarmentPendingOrders() {
 
 
 
-            {/* Table Section */}
+            {}
             <Paper
                 elevation={0}
                 sx={{
@@ -526,7 +520,7 @@ export default function GarmentPendingOrders() {
                 </Box>
             </Paper>
 
-            {/* Order Detail Modal Component */}
+            {}
             <GarmentCreateQuotation
                 visible={isModalVisible}
                 onCancel={handleCloseModal}

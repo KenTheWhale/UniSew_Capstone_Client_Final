@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { 
-    Box, 
-    Typography, 
-    Button, 
-    IconButton, 
-    Tooltip, 
+import {
+    Box,
+    Typography,
+    Button,
+    IconButton,
+    Tooltip,
     Paper,
     Card,
     CardContent,
@@ -21,6 +21,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { Table, Space, Empty } from 'antd';
 import FeedbackIcon from '@mui/icons-material/Feedback';
 import ReportIcon from '@mui/icons-material/Report';
+import CancelIcon from '@mui/icons-material/Cancel';
 import 'antd/dist/reset.css';
 import RequestDetailPopup, { statusTag } from './dialog/RequestDetailPopup.jsx';
 import FindingDesignerPopup from './dialog/FindingDesignerPopup.jsx';
@@ -28,10 +29,9 @@ import DesignPaymentPopup from './dialog/DesignPaymentPopup.jsx';
 import { enqueueSnackbar } from 'notistack';
 import FeedbackReportPopup from './dialog/FeedbackReportPopup.jsx';
 import { useNavigate } from 'react-router-dom';
-import {getSchoolDesignRequests} from "../../../services/DesignService.jsx";
+import {getSchoolDesignRequests, cancelDesignRequest} from "../../../services/DesignService.jsx";
 import { parseID } from "../../../utils/ParseIDUtil.jsx";
 
-// Constants
 const STATUS_COLORS = {
     completed: '#2e7d32',
     processing: '#7c3aed',
@@ -40,7 +40,6 @@ const STATUS_COLORS = {
 
 const TABLE_PAGE_SIZE_OPTIONS = ['5', '10'];
 
-// StatCard Component
 const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
     <Card
         elevation={0}
@@ -82,7 +81,6 @@ const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
     </Card>
 ));
 
-// Loading State Component
 const LoadingState = React.memo(() => (
     <Box sx={{
         display: 'flex',
@@ -99,7 +97,6 @@ const LoadingState = React.memo(() => (
     </Box>
 ));
 
-// Error State Component
 const ErrorState = React.memo(({error, onRetry, isRetrying}) => (
     <Box sx={{
         display: 'flex',
@@ -141,7 +138,6 @@ const ErrorState = React.memo(({error, onRetry, isRetrying}) => (
     </Box>
 ));
 
-// Empty State Component
 const EmptyState = React.memo(() => (
     <Box sx={{
         textAlign: 'center',
@@ -195,7 +191,6 @@ export default function SchoolDesign() {
         FetchSchoolDesign();
     }, [FetchSchoolDesign]);
 
-    // Refresh data when user returns from other pages
     useEffect(() => {
         const handleFocus = () => {
             FetchSchoolDesign(false);
@@ -219,21 +214,20 @@ export default function SchoolDesign() {
     const [isFeedbackModalVisible, setIsFeedbackModalVisible] = useState(false);
     const [isReportModalVisible, setIsReportModalVisible] = useState(false);
     const [selectedRequestForFeedback, setSelectedRequestForFeedback] = useState(null);
+    const [cancellingRequestId, setCancellingRequestId] = useState(null);
 
-    // Memoized filtered data - now includes all requests
-    const filteredDesignRequests = useMemo(() => 
-        designRequests, // Show all requests including pending
+    const filteredDesignRequests = useMemo(() =>
+        designRequests,
         [designRequests]
     );
 
-    // Memoized statistics
     const stats = useMemo(() => {
         const total = filteredDesignRequests.length;
         const pending = filteredDesignRequests.filter(req => req.status === 'pending').length;
         const completed = filteredDesignRequests.filter(req => req.status === 'completed').length;
         const processing = filteredDesignRequests.filter(req => req.status === 'processing').length;
         const canceled = filteredDesignRequests.filter(req => req.status === 'canceled').length;
-        
+
         return { total, pending, completed, processing, canceled };
     }, [filteredDesignRequests]);
 
@@ -241,13 +235,11 @@ export default function SchoolDesign() {
         const request = designRequests.find(req => req.id === id);
         setSelectedRequest(request);
 
-        // Only open FindingDesignerPopup for 'pending' status
         if (request.status === 'pending') {
             setPaymentRequestDetails(null);
             setIsPaymentModalVisible(false);
             setIsModalVisible(true);
         } else {
-            // For non-pending requests, open RequestDetailPopup
             setIsModalVisible(true);
         }
     }, [designRequests]);
@@ -272,12 +264,10 @@ export default function SchoolDesign() {
     }, []);
 
     const handleOpenFeedback = useCallback((request) => {
-        // Only allow feedback for completed requests
         if (request.status !== 'completed') {
             enqueueSnackbar('Feedback is only available for completed requests', { variant: 'warning' });
             return;
         }
-        // Only allow feedback once per request
         if (request.feedback) {
             enqueueSnackbar('Feedback has already been submitted for this request', { variant: 'warning' });
             return;
@@ -287,12 +277,10 @@ export default function SchoolDesign() {
     }, []);
 
     const handleOpenReport = useCallback((request) => {
-        // Don't allow report for pending requests
         if (request.status === 'pending') {
             enqueueSnackbar('Report is not available for pending requests', { variant: 'warning' });
             return;
         }
-        // Don't allow report for requests that already have feedback
         if (request.feedback) {
             enqueueSnackbar('Report is not available for requests that already have feedback', { variant: 'warning' });
             return;
@@ -312,10 +300,50 @@ export default function SchoolDesign() {
     }, []);
 
     const handleFeedbackSuccess = useCallback(() => {
-        FetchSchoolDesign(); // Refresh data after successful feedback
+        FetchSchoolDesign();
     }, [FetchSchoolDesign]);
 
-    // Memoized table columns
+    const handleCancelRequest = useCallback(async (requestId) => {
+        try {
+            setCancellingRequestId(requestId);
+
+            const request = designRequests.find(req => req.id === requestId);
+            if (!request) {
+                enqueueSnackbar('Request not found', { variant: 'error' });
+                return;
+            }
+
+            if (request.status !== 'pending' && request.status !== 'processing') {
+                enqueueSnackbar('Can only cancel pending or processing requests', { variant: 'warning' });
+                return;
+            }
+
+            const response = await cancelDesignRequest({ requestId: requestId });
+
+            if (response && response.status === 200) {
+                enqueueSnackbar('Design request cancelled successfully!', {
+                    variant: 'success',
+                    autoHideDuration: 3000
+                });
+
+                await FetchSchoolDesign(false);
+            } else {
+                enqueueSnackbar('Failed to cancel design request. Please try again.', {
+                    variant: 'error',
+                    autoHideDuration: 4000
+                });
+            }
+        } catch (error) {
+            console.error('Error cancelling design request:', error);
+            enqueueSnackbar('An error occurred while cancelling the design request. Please try again.', {
+                variant: 'error',
+                autoHideDuration: 4000
+            });
+        } finally {
+            setCancellingRequestId(null);
+        }
+    }, [designRequests, FetchSchoolDesign]);
+
     const columns = useMemo(() => [
         {
             title: 'Request ID',
@@ -392,12 +420,12 @@ export default function SchoolDesign() {
             title: 'Actions',
             key: 'actions',
             align: 'center',
-            width: 200,
+            width: 280,
             fixed: 'right',
             render: (_, record) => (
                 <Space size="middle">
                     <Tooltip title="View Details">
-                        <IconButton 
+                        <IconButton
                             onClick={() => handleViewDetail(record.id)}
                             sx={{
                                 color: '#1976d2',
@@ -462,6 +490,46 @@ export default function SchoolDesign() {
                             <ReportIcon />
                         </IconButton>
                     </Tooltip>
+                    {(record.status === 'pending' || record.status === 'processing') && (
+                        <Tooltip title="Cancel Request">
+                            <IconButton
+                                onClick={() => handleCancelRequest(record.id)}
+                                disabled={cancellingRequestId === record.id}
+                                sx={{
+                                    color: cancellingRequestId === record.id ? '#bdbdbd' : '#d32f2f',
+                                    '&:hover': {
+                                        backgroundColor: cancellingRequestId === record.id ? 'transparent' : '#ffebee',
+                                        transform: cancellingRequestId === record.id ? 'none' : 'scale(1.1)'
+                                    },
+                                    transition: 'all 0.2s ease',
+                                    '&:disabled': {
+                                        cursor: 'not-allowed'
+                                    }
+                                }}
+                                size="small"
+                            >
+                                {cancellingRequestId === record.id ? (
+                                    <Box
+                                        component="span"
+                                        sx={{
+                                            width: 16,
+                                            height: 16,
+                                            border: '2px solid #bdbdbd',
+                                            borderTop: '2px solid transparent',
+                                            borderRadius: '50%',
+                                            animation: 'spin 1s linear infinite',
+                                            '@keyframes spin': {
+                                                '0%': {transform: 'rotate(0deg)'},
+                                                '100%': {transform: 'rotate(360deg)'}
+                                            }
+                                        }}
+                                    />
+                                ) : (
+                                    <CancelIcon/>
+                                )}
+                            </IconButton>
+                        </Tooltip>
+                    )}
                 </Space>
             ),
         },
@@ -477,9 +545,9 @@ export default function SchoolDesign() {
 
     return (
         <Box sx={{ height: '100%', overflowY: 'auto' }}>
-            {/* Header Section */}
-            <Box 
-                sx={{ 
+            {}
+            <Box
+                sx={{
                     mb: 4,
                     position: "relative",
                     p: 4,
@@ -550,7 +618,7 @@ export default function SchoolDesign() {
                 </Button>
             </Box>
 
-            {/* Statistics Section */}
+            {}
             <Box sx={{ mb: 4 }}>
                 <Box sx={{ display: 'flex', gap: 3 }}>
                     <StatCard
@@ -582,7 +650,7 @@ export default function SchoolDesign() {
                         bgColor="#e8f5e8"
                     />
                     <StatCard
-                        icon={<Typography variant="h6" sx={{ color: STATUS_COLORS.canceled, fontWeight: 700 }}>âœ•</Typography>}
+                        icon={<Typography variant="h6" sx={{ color: STATUS_COLORS.canceled, fontWeight: 700 }}>âœ?/Typography>}
                         value={stats.canceled}
                         label="Cancelled"
                         color={STATUS_COLORS.canceled}
@@ -591,7 +659,7 @@ export default function SchoolDesign() {
                 </Box>
             </Box>
 
-            {/* Table Section */}
+            {}
             <Paper
                 elevation={0}
                 sx={{
@@ -647,16 +715,16 @@ export default function SchoolDesign() {
                 </Box>
             </Paper>
 
-            {/* RequestDetailPopup for non-pending requests */}
+            {}
             {selectedRequest && selectedRequest.status !== 'pending' && (
-                <RequestDetailPopup 
+                <RequestDetailPopup
                     visible={isModalVisible}
                     onCancel={handleCancel}
                     request={selectedRequest}
                 />
             )}
 
-            {/* FindingDesignerPopup for pending requests */}
+            {}
             {selectedRequest && selectedRequest.status === 'pending' && (
                 <FindingDesignerPopup
                     visible={isModalVisible}
@@ -665,7 +733,7 @@ export default function SchoolDesign() {
                 />
             )}
 
-            {/* DesignPaymentPopup */}
+            {}
             {isPaymentModalVisible && (
                 <DesignPaymentPopup
                     visible={isPaymentModalVisible}
@@ -674,7 +742,7 @@ export default function SchoolDesign() {
                 />
             )}
 
-            {/* FeedbackReportPopup for Feedback */}
+            {}
             {isFeedbackModalVisible && selectedRequestForFeedback && (
                 <FeedbackReportPopup
                     visible={isFeedbackModalVisible}
@@ -685,7 +753,7 @@ export default function SchoolDesign() {
                 />
             )}
 
-            {/* FeedbackReportPopup for Report */}
+            {}
             {isReportModalVisible && selectedRequestForFeedback && (
                 <FeedbackReportPopup
                     visible={isReportModalVisible}
