@@ -94,7 +94,7 @@ export const createStore = async (districtId, wardCode, address, storeName, phon
     const response = await axios.post("https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shop/register",
         {
             'district_id': districtId,
-            'ward_code': wardCode,
+            'ward_code': wardCode.toString(),
             'address': address,
             'name': storeName,
             'phone': phone

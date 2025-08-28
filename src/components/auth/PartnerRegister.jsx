@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from 'react';
+import {useNavigate} from 'react-router-dom';
 import {
     Alert,
     Box,
@@ -29,16 +30,18 @@ import {
     AccessTime as AccessTimeIcon,
     AccountBalance as AccountBalanceIcon
 } from '@mui/icons-material';
-import {encryptPartnerData} from "../../services/AuthService.jsx";
+import {encryptPartnerData, validateEmail} from "../../services/AuthService.jsx";
 import emailjs from '@emailjs/browser';
 import {getProvinces, getDistricts, getWards, getBanks} from "../../services/ShippingService.jsx";
 import {getTaxInfo} from "../../services/TaxService.jsx";
 import {uploadCloudinary} from "../../services/UploadImageService.jsx";
+import {enqueueSnackbar} from "notistack";
 
 // Vietnam provinces and cities data
-const steps = ['Personal information', 'Address', 'Partner Type', 'Business information', 'Working hours & Banking'];
+const steps = ['Personal information', 'Address', 'Partner Type', 'Business information', 'Basic information & Banking'];
 
 export default function PartnerRegister() {
+    const navigate = useNavigate();
     const [activeStep, setActiveStep] = useState(0);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -79,6 +82,7 @@ export default function PartnerRegister() {
     const [validatingTaxCode, setValidatingTaxCode] = useState(false);
     const [taxCodeValid, setTaxCodeValid] = useState(null);
     const [uploadingImage, setUploadingImage] = useState(false);
+
 
     // Fetch provinces and banks on component mount
     useEffect(() => {
@@ -164,20 +168,31 @@ export default function PartnerRegister() {
             });
     };
 
-    const validateEmail = (email) => {
+    const validateEmailFormat = (email) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     };
 
     const validatePhone = (phone) => {
-        const phoneRegex = /^[0-9]{10}$/;
+        // Phone number format for Vietnam: 10-11 digits, starting with 0
+        const phoneRegex = /^0[0-9]{9,10}$/;
         return phoneRegex.test(phone);
+    };
+
+    const removeVietnameseAccents = (str) => {
+        return str
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+            .replace(/[đĐ]/g, 'd') // Replace đ/Đ with d
+            .replace(/[Đ]/g, 'D'); // Replace Đ with D
     };
 
     const validateTaxCode = (taxCode) => {
         const taxCodeRegex = /^[0-9]{10,13}$/;
         return taxCodeRegex.test(taxCode);
     };
+
+
 
     const validateTaxCodeWithAPI = async (taxCode) => {
         if (!taxCode || taxCode.length < 10 || taxCode.length > 13) {
@@ -208,7 +223,7 @@ export default function PartnerRegister() {
         switch (field) {
             case 'email':
                 if (!value) return 'Please enter your email address';
-                if (!validateEmail(value)) return 'Please enter a valid email address';
+                if (!validateEmailFormat(value)) return 'Please enter a valid email address';
                 return '';
             case 'phone':
                 if (!value) return 'Please enter your phone number';
@@ -261,11 +276,13 @@ export default function PartnerRegister() {
                 return '';
             case 'bankAccountNumber':
                 if (!value) return 'Please enter bank account number';
-                if (value.length < 8) return 'Account number must have at least 8 digits';
+                if (value.length < 6) return 'Account number must have at least 6 characters';
+                if (value.length > 15) return 'Account number must not exceed 15 characters';
                 return '';
             case 'cardOwner':
                 if (!value) return 'Please enter account owner name';
                 if (value.length < 2) return 'Owner name must have at least 2 characters';
+                if (!/^[A-Z\s]+$/.test(value)) return 'Owner name must be uppercase letters only (no accents, no numbers)';
                 return '';
             default:
                 return '';
@@ -282,9 +299,9 @@ export default function PartnerRegister() {
             return;
         }
 
-        // Validate file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-            setErrors(prev => ({...prev, avatar: 'Image size must be less than 5MB'}));
+        // Validate file size (max 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+            setErrors(prev => ({...prev, avatar: 'Image size must be less than 10MB'}));
             return;
         }
 
@@ -332,9 +349,7 @@ export default function PartnerRegister() {
             }
         }
 
-        // Validate field
-        const error = validateField(field, value);
-        setErrors(prev => ({...prev, [field]: error}));
+
         
         // Auto-validate tax code when user types
         if (field === 'taxCode') {
@@ -344,29 +359,50 @@ export default function PartnerRegister() {
             setErrors(prev => ({...prev, taxCode: ''}));
         }
 
+        // Auto-validate email, phone, bankAccountNumber, and cardOwner when user types
+        if (field === 'email' || field === 'phone' || field === 'bankAccountNumber' || field === 'cardOwner') {
+            // Validate field and set error if any
+            const error = validateField(field, value);
+            setErrors(prev => ({...prev, [field]: error}));
+        }
+
         // Re-validate endTime when startTime changes
-        if (field === 'startTime' && formData.endTime) {
-            const endTimeError = validateField('endTime', formData.endTime);
-            setErrors(prev => ({...prev, endTime: endTimeError}));
+        if (field === 'startTime') {
+            if (formData.endTime) {
+                const endTimeError = validateField('endTime', formData.endTime);
+                setErrors(prev => ({...prev, endTime: endTimeError}));
+                
+                // If endTime is now invalid (before new startTime), reset it
+                if (endTimeError) {
+                    setFormData(prev => ({...prev, endTime: ''}));
+                    setErrors(prev => ({...prev, endTime: ''}));
+                }
+            }
         }
     };
 
     const isStepValid = (step) => {
+        if (step === 0) {
+            const isValid = formData.email && formData.phone && validateEmailFormat(formData.email) && validatePhone(formData.phone);
+            console.log('isStepValid(0):', isValid);
+            console.log('formData.email:', formData.email);
+            console.log('formData.phone:', formData.phone);
+            console.log('validateEmailFormat(formData.email):', validateEmailFormat(formData.email));
+            console.log('validatePhone(formData.phone):', validatePhone(formData.phone));
+            return isValid;
+        }
+        
         switch (step) {
             case 0:
-                return !errors.email && !errors.phone && formData.email && formData.phone;
+                return formData.email && formData.phone && validateEmailFormat(formData.email) && validatePhone(formData.phone);
             case 1:
-                return !errors.province && !errors.district && !errors.ward && !errors.street &&
-                    formData.province && formData.district && formData.ward && formData.street;
+                return formData.province && formData.district && formData.ward && formData.street;
             case 2:
                 return !errors.partnerType && formData.partnerType;
             case 3:
                 return !errors.taxCode && formData.taxCode && taxCodeValid === true;
             case 4:
-                return !errors.name && !errors.businessName && !errors.avatar && 
-                       !errors.startTime && !errors.endTime && !errors.bank && 
-                       !errors.bankAccountNumber && !errors.cardOwner &&
-                       formData.name && formData.businessName && formData.avatar &&
+                return formData.name && formData.businessName && formData.avatar &&
                        formData.startTime && formData.endTime && formData.bank &&
                        formData.bankAccountNumber && formData.cardOwner;
             default:
@@ -375,7 +411,33 @@ export default function PartnerRegister() {
     };
 
     const handleNext = async () => {
-        if (isStepValid(activeStep)) {
+        if (activeStep === 0) {
+            // Validate email and phone format before proceeding
+            if (formData.email && formData.phone && validateEmailFormat(formData.email) && validatePhone(formData.phone)) {
+                try {
+                    const response = await validateEmail(formData.email);
+                    if (response && response.status === 200) {
+                        if (response.data.body.existed) {
+                            // Email đã tồn tại
+                            enqueueSnackbar('This email is already registered in the system', { variant: 'error' });
+                        } else {
+                            // Email chưa tồn tại, cho phép tiếp tục
+                            setActiveStep(prev => prev + 1);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error validating email:', error);
+                    enqueueSnackbar('Error validating email. Please try again.', { variant: 'error' });
+                }
+            } else {
+                // Email or phone format không hợp lệ
+                if (!formData.email || !validateEmailFormat(formData.email)) {
+                    enqueueSnackbar('Please enter a valid email address', { variant: 'error' });
+                } else if (!formData.phone || !validatePhone(formData.phone)) {
+                    enqueueSnackbar('Please enter a valid phone number (10-11 digits starting with 0)', { variant: 'error' });
+                }
+            }
+        } else if (isStepValid(activeStep)) {
             setActiveStep(prev => prev + 1);
         }
     };
@@ -386,8 +448,7 @@ export default function PartnerRegister() {
 
     const handleSubmit = async () => {
         // Validate all fields
-        const newErrors = {};
-        
+        const newErrors = {}; 
         // Special handling for tax code validation
         if (formData.taxCode) {
             if (!validateTaxCode(formData.taxCode)) {
@@ -426,10 +487,10 @@ export default function PartnerRegister() {
         const encryptData = {
             accountData: {
                 email: formData.email,
-                role: formData.partnerType,
+                role: formData.partnerType === 'designer' ? 'DESIGNER' : 'GARMENT',
             },
             customerData: {
-                address: formData.street + ', ' + (selectedWard ? selectedWard.WardName + ', ' : '') + selectedDistrict.DistrictName + ', ' + selectedProvince.ProvinceName,
+                address: formData.street + ', ' + selectedWard.WardName + ', ' + selectedDistrict.DistrictName + ', ' + selectedProvince.ProvinceName,
                 taxCode: formData.taxCode,
                 name: formData.name,
                 businessName: formData.businessName,
@@ -444,6 +505,13 @@ export default function PartnerRegister() {
                 bank: formData.bank,
                 bankAccountNumber: formData.bankAccountNumber,
                 cardOwner: formData.cardOwner
+            },
+            storeData: {
+                districtId: parseInt(formData.district),
+                wardCode: parseInt(formData.ward),
+                address: formData.street,
+                name: formData.businessName,
+                phone: formData.phone
             }
         }
 
@@ -498,8 +566,13 @@ export default function PartnerRegister() {
                                     value={formData.email}
                                     onChange={(e) => handleInputChange('email', e.target.value)}
                                     error={!!errors.email}
-                                    helperText={errors.email}
+                                    helperText={errors.email || 'Enter your email address'}
                                     placeholder="your.email@example.com"
+                                    slotProps={{
+                                        input: {
+                                            startAdornment: <EmailIcon sx={{mr: 1, color: 'text.secondary'}}/>
+                                        }
+                                    }}
                                 />
                             </Box>
                             <Box sx={{flex: 1}}>
@@ -509,8 +582,13 @@ export default function PartnerRegister() {
                                     value={formData.phone}
                                     onChange={(e) => handleInputChange('phone', e.target.value)}
                                     error={!!errors.phone}
-                                    helperText={errors.phone}
-                                    placeholder="0912345678"
+                                    helperText={errors.phone || 'Enter 10-11 digit phone number starting with 0'}
+                                    placeholder="0987654321"
+                                    slotProps={{
+                                        input: {
+                                            startAdornment: <PhoneIcon sx={{mr: 1, color: 'text.secondary'}}/>
+                                        }
+                                    }}
                                 />
                             </Box>
                         </Box>
@@ -531,45 +609,58 @@ export default function PartnerRegister() {
 
                         {/* Address Form */}
                         <Box sx={{width: '100%'}}>
-                            {/* First Row - Province and District */}
-                            <Box sx={{display: 'flex', gap: 3, mb: 3}}>
-                                <Box sx={{flex: 1}}>
-                                    <FormControl fullWidth error={!!errors.province}>
-                                        <InputLabel>Province/City</InputLabel>
-                                        <Select
-                                            value={formData.province}
-                                            onChange={(e) => handleInputChange('province', e.target.value)}
-                                            label="Province/City"
-                                            variant='outlined'
-                                            disabled={loadingProvinces}>
-                                            {loadingProvinces ? (
-                                                <MenuItem disabled>
-                                                    <CircularProgress size={20} sx={{mr: 1}} />
-                                                    Loading provinces...
+                            {/* Province - Always visible */}
+                            <Box sx={{mb: 3}}>
+                                <FormControl fullWidth error={!!errors.province}>
+                                    <InputLabel>Province/City</InputLabel>
+                                    <Select
+                                        value={formData.province}
+                                        onChange={(e) => handleInputChange('province', e.target.value)}
+                                        label="Province/City"
+                                        variant='outlined'
+                                        disabled={loadingProvinces}
+                                        inputProps={{
+                                            input: {
+                                                startAdornment: <LocationIcon sx={{mr: 1, color: 'text.secondary'}}/>
+                                            }
+                                        }}>
+                                        {loadingProvinces ? (
+                                            <MenuItem disabled>
+                                                <CircularProgress size={20} sx={{mr: 1}} />
+                                                Loading provinces...
+                                            </MenuItem>
+                                        ) : (
+                                            provinces.map((province) => (
+                                                <MenuItem key={province.ProvinceID} value={province.ProvinceID}>
+                                                    {province.ProvinceName}
                                                 </MenuItem>
-                                            ) : (
-                                                provinces.map((province) => (
-                                                    <MenuItem key={province.ProvinceID} value={province.ProvinceID}>
-                                                        {province.ProvinceName}
-                                                    </MenuItem>
-                                                ))
-                                            )}
-                                        </Select>
-                                        {errors.province && (
-                                            <Typography variant="caption" color="error" sx={{mt: 0.5, display: 'block'}}>
-                                                {errors.province}
-                                            </Typography>
+                                            ))
                                         )}
-                                    </FormControl>
-                                </Box>
-                                <Box sx={{flex: 1}}>
-                                    <FormControl fullWidth error={!!errors.district} disabled={!formData.province || loadingDistricts}>
+                                    </Select>
+                                    {errors.province && (
+                                        <Typography variant="caption" color="error" sx={{mt: 0.5, display: 'block'}}>
+                                            {errors.province}
+                                        </Typography>
+                                    )}
+                                </FormControl>
+                            </Box>
+
+                            {/* District - Only visible when province is selected */}
+                            {formData.province && (
+                                <Box sx={{mb: 3}}>
+                                    <FormControl fullWidth error={!!errors.district}>
                                         <InputLabel>District/County</InputLabel>
                                         <Select
                                             value={formData.district}
                                             onChange={(e) => handleInputChange('district', e.target.value)}
                                             label="District/County"
-                                            variant='outlined'>
+                                            variant='outlined'
+                                            disabled={loadingDistricts}
+                                            inputProps={{
+                                                input: {
+                                                    startAdornment: <LocationIcon sx={{mr: 1, color: 'text.secondary'}}/>
+                                                }
+                                            }}>
                                             {loadingDistricts ? (
                                                 <MenuItem disabled>
                                                     <CircularProgress size={20} sx={{mr: 1}} />
@@ -590,18 +681,24 @@ export default function PartnerRegister() {
                                         )}
                                     </FormControl>
                                 </Box>
-                            </Box>
+                            )}
 
-                            {/* Second Row - Ward and Street */}
-                            <Box sx={{display: 'flex', gap: 3}}>
-                                <Box sx={{flex: 1}}>
-                                    <FormControl fullWidth error={!!errors.ward} disabled={!formData.district || loadingWards}>
+                            {/* Ward - Only visible when district is selected */}
+                            {formData.district && (
+                                <Box sx={{mb: 3}}>
+                                    <FormControl fullWidth error={!!errors.ward}>
                                         <InputLabel>Ward/Commune</InputLabel>
                                         <Select
                                             value={formData.ward}
                                             onChange={(e) => handleInputChange('ward', e.target.value)}
                                             label="Ward/Commune"
-                                            variant='outlined'>
+                                            variant='outlined'
+                                            disabled={loadingWards}
+                                            slotProps={{
+                                                input: {
+                                                    startAdornment: <LocationIcon sx={{mr: 1, color: 'text.secondary'}}/>
+                                                }
+                                            }}>
                                             {loadingWards ? (
                                                 <MenuItem disabled>
                                                     <CircularProgress size={20} sx={{mr: 1}} />
@@ -622,18 +719,27 @@ export default function PartnerRegister() {
                                         )}
                                     </FormControl>
                                 </Box>
-                                <Box sx={{flex: 1}}>
+                            )}
+
+                            {/* Street - Only visible when ward is selected */}
+                            {formData.ward && (
+                                <Box sx={{mb: 3}}>
                                     <TextField
                                         fullWidth
                                         label="House Number & Street Name"
                                         value={formData.street}
                                         onChange={(e) => handleInputChange('street', e.target.value)}
                                         error={!!errors.street}
-                                        helperText={errors.street || ''}
-                                        disabled={!formData.ward}
+                                        helperText={errors.street || 'Enter your house number and street name'}
+                                        placeholder="123, Nguyen Van Linh Street"
+                                        slotProps={{
+                                            input: {
+                                                startAdornment: <LocationIcon sx={{mr: 1, color: 'text.secondary'}}/>
+                                            }
+                                        }}
                                     />
                                 </Box>
-                            </Box>
+                            )}
                         </Box>
 
                         {/* Help Text */}
@@ -809,36 +915,38 @@ export default function PartnerRegister() {
                         {/* Header */}
                         <Box sx={{mb: 3}}>
                             <Typography variant="h6" sx={{mb: 1, color: 'text.primary', fontWeight: 600}}>
-                                ⏰ Working Hours & 💳 Banking
+                                👤 Basic Information
                             </Typography>
                             <Typography variant="body2" sx={{color: 'text.secondary'}}>
-                                Enter your working schedule and bank details
+                                Enter your representative details and working hours
                             </Typography>
                         </Box>
 
                         {/* Representative Information */}
                         <Box sx={{width: '100%', mb: 3}}>
-                            <Box sx={{mb: 3}}>
-                                <TextField
-                                    fullWidth
-                                    label="👤 Representative Name"
-                                    value={formData.name}
-                                    onChange={(e) => handleInputChange('name', e.target.value)}
-                                    error={!!errors.name}
-                                    helperText={errors.name || 'Enter the name of the person representing the business'}
-                                    placeholder="Nguyen Van A"
-                                />
-                            </Box>
-                            <Box sx={{mb: 3}}>
-                                <TextField
-                                    fullWidth
-                                    label="🏢 Business/Organization Name"
-                                    value={formData.businessName}
-                                    onChange={(e) => handleInputChange('businessName', e.target.value)}
-                                    error={!!errors.businessName}
-                                    helperText={errors.businessName || 'Enter your business or organization name'}
-                                    placeholder="ABC Company Ltd."
-                                />
+                            <Box sx={{display: 'flex', gap: 3}}>
+                                <Box sx={{flex: 1}}>
+                                    <TextField
+                                        fullWidth
+                                        label="👤 Representative Name"
+                                        value={formData.name}
+                                        onChange={(e) => handleInputChange('name', e.target.value)}
+                                        error={!!errors.name}
+                                        helperText={errors.name || 'Enter the name of the person representing the business'}
+                                        placeholder="Nguyen Van A"
+                                    />
+                                </Box>
+                                <Box sx={{flex: 1}}>
+                                    <TextField
+                                        fullWidth
+                                        label="🏢 Business/Organization Name"
+                                        value={formData.businessName}
+                                        onChange={(e) => handleInputChange('businessName', e.target.value)}
+                                        error={!!errors.businessName}
+                                        helperText={errors.businessName || 'Enter your business or organization name'}
+                                        placeholder="ABC Company Ltd."
+                                    />
+                                </Box>
                             </Box>
                         </Box>
 
@@ -897,6 +1005,9 @@ export default function PartnerRegister() {
                                         onChange={(e) => handleInputChange('startTime', e.target.value)}
                                         error={!!errors.startTime}
                                         helperText={errors.startTime || 'Select your daily start time'}
+                                        inputProps={{
+                                            step: 900 // 15 minutes intervals
+                                        }}
                                         slotProps={{
                                             input: {
                                                 startAdornment: <AccessTimeIcon sx={{mr: 1, color: 'text.secondary'}}/>
@@ -916,6 +1027,10 @@ export default function PartnerRegister() {
                                         onChange={(e) => handleInputChange('endTime', e.target.value)}
                                         error={!!errors.endTime}
                                         helperText={errors.endTime || 'Select your daily end time'}
+                                        inputProps={{
+                                            min: formData.startTime || undefined,
+                                            step: 900 // 15 minutes intervals
+                                        }}
                                         slotProps={{
                                             input: {
                                                 startAdornment: <AccessTimeIcon sx={{mr: 1, color: 'text.secondary'}}/>
@@ -924,13 +1039,22 @@ export default function PartnerRegister() {
                                         InputLabelProps={{
                                             shrink: true,
                                         }}
+                                        disabled={!formData.startTime}
                                     />
                                 </Box>
                             </Box>
                         </Box>
 
                         {/* Banking Information */}
-                        <Box sx={{width: '100%'}}>
+                        <Box sx={{width: '100%', mt: 4}}>
+                            <Box sx={{mb: 3}}>
+                                <Typography variant="h6" sx={{mb: 1, color: 'text.primary', fontWeight: 600}}>
+                                    💳 Banking Information
+                                </Typography>
+                                <Typography variant="body2" sx={{color: 'text.secondary'}}>
+                                    Enter your banking details for payment processing
+                                </Typography>
+                            </Box>
                             <Box sx={{mb: 3}}>
                                 <FormControl fullWidth error={!!errors.bank} disabled={loadingBanks}>
                                     <InputLabel>🏦 Bank</InputLabel>
@@ -972,8 +1096,8 @@ export default function PartnerRegister() {
                                     value={formData.bankAccountNumber}
                                     onChange={(e) => handleInputChange('bankAccountNumber', e.target.value)}
                                     error={!!errors.bankAccountNumber}
-                                    helperText={errors.bankAccountNumber || 'Enter your bank account number'}
-                                    placeholder="1234567890"
+                                    helperText={errors.bankAccountNumber || 'Enter 6-15 characters (numbers and/or letters)'}
+                                    placeholder="123456789"
                                 />
                             </Box>
                             <Box sx={{mb: 3}}>
@@ -981,9 +1105,9 @@ export default function PartnerRegister() {
                                     fullWidth
                                     label="👤 Account Owner Name"
                                     value={formData.cardOwner}
-                                    onChange={(e) => handleInputChange('cardOwner', e.target.value)}
+                                    onChange={(e) => handleInputChange('cardOwner', removeVietnameseAccents(e.target.value.toUpperCase()))}
                                     error={!!errors.cardOwner}
-                                    helperText={errors.cardOwner || 'Enter the name on the bank account'}
+                                    helperText={errors.cardOwner || 'Enter uppercase letters only (no accents, no numbers)'}
                                     placeholder="NGUYEN VAN A"
                                 />
                             </Box>
@@ -1009,44 +1133,18 @@ export default function PartnerRegister() {
                     <Paper elevation={8} sx={{p: 4, textAlign: 'center', borderRadius: 3}}>
                         <CheckCircleIcon sx={{fontSize: 80, color: 'success.main', mb: 2}}/>
                         <Typography variant="h4" sx={{fontWeight: 700, mb: 2, color: 'success.main'}}>
-                            Request sent!
+                            Please check your email for confirmation!
                         </Typography>
                         <Typography variant="body1" sx={{mb: 3, color: 'text.secondary'}}>
-                            We have received your designer account registration request.
-                            We will contact you as soon as possible.
+                            Thank you for choosing UniSew as your partner!
                         </Typography>
                         <Button
                             variant="contained"
                             size="large"
-                            onClick={() => {
-                                setSuccess(false);
-                                setActiveStep(0);
-                                setFormData({
-                                    email: '',
-                                    phone: '',
-                                    province: '',
-                                    district: '',
-                                    ward: '',
-                                    street: '',
-                                    partnerType: '',
-                                    taxCode: '',
-                                    name: '',
-                                    businessName: '',
-                                    avatar: '',
-                                    startTime: '',
-                                    endTime: '',
-                                    bank: '',
-                                    bankAccountNumber: '',
-                                    cardOwner: ''
-                                });
-                                setDistricts([]);
-                                setWards([]);
-                                setTaxCodeValid(null);
-                                setErrors({});
-                            }}
+                            onClick={() => navigate('/login')}
                             sx={{borderRadius: 2}}
                         >
-                            Send another request
+                            Go to Login
                         </Button>
                     </Paper>
                 </Container>
@@ -1126,7 +1224,11 @@ export default function PartnerRegister() {
                                     startIcon={loading ? <CircularProgress size={20}/> : <PersonAddIcon/>}
                                     sx={{borderRadius: 2, px: 4}}
                                 >
-                                    {loading ? 'Sending...' : 'Send request'}
+                                    {loading ? 'Sending...' : 
+                                     formData.partnerType === 'designer' ? 'Create designer account' :
+                                     formData.partnerType === 'garment' ? 'Create garment factory account' :
+                                     'Create account'
+                                    }
                                 </Button>
                             ) : (
                                 <Button
