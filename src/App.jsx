@@ -151,7 +151,7 @@ const router = createBrowserRouter([
                 )
             },
             {
-                path: 'register/designer',
+                path: 'register/partner',
                 element: (
                     <Suspense fallback={<LoadingFallback />}>
                         <PartnerRegister />

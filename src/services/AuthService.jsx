@@ -29,3 +29,14 @@ export const getNumberAccount = async () => {
     const response = await axiosClient.get("/auth/number")
     return response || null;
 }
+
+export const validateEmail = async (email) => {
+    const response = await axiosClient.get(`/auth/email?email=${email}`)
+    return response || null;
+}
+
+export const updatePartnerStoreID = async (storeId, pid) => {
+    const response = await axiosClient.get(`/auth/partner/suid?suid=${storeId}&pid=${pid}`)
+    return response || null;
+}
+

@@ -24,7 +24,8 @@ import {
     VerifiedUser as VerifiedUserIcon
 } from '@mui/icons-material';
 import {useNavigate} from 'react-router-dom';
-import {createPartnerRequest} from "../../services/AuthService.jsx";
+import {createPartnerRequest, updatePartnerStoreID} from "../../services/AuthService.jsx";
+import {createStore} from "../../services/ShippingService.jsx";
 import {enqueueSnackbar} from "notistack";
 
 export default function EmailConfirmation() {
@@ -50,11 +51,45 @@ export default function EmailConfirmation() {
         createPartnerRequest({
             encryptedData: data
         })
-            .then(res => {
+            .then(async (res) => {
                 if (res && res.status === 201) {
-                    setStatus('success');
-                    setMessage(res.data.message || 'Email confirmed successfully!');
-                    enqueueSnackbar(res.data.message || 'Email confirmed successfully!', {variant: 'success'});
+                    try {
+                        // Extract data from response (excluding pid)
+                        const { districtId, wardCode, address, name, phone } = res.data.body;
+                        
+                        // Call createStore API
+                        const storeResponse = await createStore(districtId, wardCode, address, name, phone);
+                        
+                        if (storeResponse && storeResponse.data.code === 200) {
+                            const shopId = storeResponse.data.data.shop_id;
+                            const pid = res.data.body.pid;
+                            
+                            // Call updatePartnerStoreID API
+                            const updateResponse = await updatePartnerStoreID(shopId, pid);
+                            
+                            if (updateResponse && updateResponse.status === 200) {
+                                setStatus('success');
+                                setMessage('Account created successfully!');
+                                enqueueSnackbar('Account created successfully!', {variant: 'success'});
+                            } else {
+                                setStatus('error');
+                                setMessage('Failed to update partner store ID');
+                                setErrorDetails('Store created but failed to link with partner account. Please contact support.');
+                                enqueueSnackbar('Failed to update partner store ID', {variant: 'error'});
+                            }
+                        } else {
+                            setStatus('error');
+                            setMessage('Failed to create store');
+                            setErrorDetails('Partner account created but failed to create store. Please contact support.');
+                            enqueueSnackbar('Failed to create store', {variant: 'error'});
+                        }
+                    } catch (error) {
+                        console.error('Error in store creation process:', error);
+                        setStatus('error');
+                        setMessage('Store creation failed');
+                        setErrorDetails('Partner account created but store creation failed. Please contact support.');
+                        enqueueSnackbar('Store creation failed', {variant: 'error'});
+                    }
                 } else {
                     setStatus('error');
                     setMessage('Confirmation failed');
@@ -175,106 +210,13 @@ export default function EmailConfirmation() {
                                 Email Confirmed Successfully!
                             </Typography>
                             <Typography variant="h6" sx={{mb: 4, color: '#388e3c', fontWeight: 500}}>
-                                {message}
+                                Your account has been created successfully!
                             </Typography>
-
-                            <Card sx={{
-                                mb: 4,
-                                background: 'linear-gradient(135deg, #f1f8e9 0%, #dcedc8 100%)',
-                                border: '2px solid #8bc34a',
-                                borderRadius: 3,
-                                boxShadow: '0 8px 32px rgba(139, 195, 74, 0.2)'
-                            }}>
-                                <CardContent sx={{p: 4}}>
-                                    <Box sx={{display: 'flex', alignItems: 'center', mb: 3}}>
-                                        <Box sx={{
-                                            width: 60,
-                                            height: 60,
-                                            borderRadius: '50%',
-                                            background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            mr: 2,
-                                            boxShadow: '0 4px 16px rgba(76, 175, 80, 0.3)'
-                                        }}>
-                                            <PersonAddIcon sx={{fontSize: 30, color: 'white'}}/>
-                                        </Box>
-                                        <Box>
-                                            <Typography variant="h5" sx={{fontWeight: 700, color: '#2e7d32'}}>
-                                                Designer Account Registration
-                                            </Typography>
-                                            <Typography variant="body1" sx={{color: '#388e3c', fontWeight: 500}}>
-                                                Your application is now under review
-                                            </Typography>
-                                        </Box>
-                                    </Box>
-
-                                    <Divider sx={{my: 3, borderColor: '#8bc34a'}}/>
-
-                                    <Box sx={{
-                                        background: 'linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%)',
-                                        borderRadius: 3,
-                                        p: 3,
-                                        border: '1px solid #4caf50'
-                                    }}>
-                                        <Box sx={{display: 'flex', alignItems: 'center', mb: 2}}>
-                                            <VerifiedUserIcon sx={{color: '#2e7d32', mr: 1}}/>
-                                            <Typography variant="h6" sx={{fontWeight: 700, color: '#2e7d32'}}>
-                                                Next Steps:
-                                            </Typography>
-                                        </Box>
-
-                                        <Grid container spacing={2}>
-                                            <Grid item xs={12} md={4}>
-                                                <Box sx={{display: 'flex', alignItems: 'center', mb: 2}}>
-                                                    <ScheduleIcon sx={{color: '#1976d2', mr: 1}}/>
-                                                    <Typography variant="body2"
-                                                                sx={{color: '#1565c0', fontWeight: 500}}>
-                                                        Review Process
-                                                    </Typography>
-                                                </Box>
-                                                <Typography variant="body2" sx={{color: '#388e3c', pl: 3}}>
-                                                    Our admin team will review your application within 2-3 business days
-                                                </Typography>
-                                            </Grid>
-
-                                            <Grid item xs={12} md={4}>
-                                                <Box sx={{display: 'flex', alignItems: 'center', mb: 2}}>
-                                                    <NotificationsIcon sx={{color: '#f57c00', mr: 1}}/>
-                                                    <Typography variant="body2"
-                                                                sx={{color: '#e65100', fontWeight: 500}}>
-                                                        Email Notification
-                                                    </Typography>
-                                                </Box>
-                                                <Typography variant="body2" sx={{color: '#388e3c', pl: 3}}>
-                                                    You'll receive an email once your account is approved
-                                                </Typography>
-                                            </Grid>
-
-                                            <Grid item xs={12} md={4}>
-                                                <Box sx={{display: 'flex', alignItems: 'center', mb: 2}}>
-                                                    <BusinessIcon sx={{color: '#9c27b0', mr: 1}}/>
-                                                    <Typography variant="body2"
-                                                                sx={{color: '#7b1fa2', fontWeight: 500}}>
-                                                        Access Portal
-                                                    </Typography>
-                                                </Box>
-                                                <Typography variant="body2" sx={{color: '#388e3c', pl: 3}}>
-                                                    Once approved, you can access the designer portal and start
-                                                    receiving projects
-                                                </Typography>
-                                            </Grid>
-                                        </Grid>
-                                    </Box>
-                                </CardContent>
-                            </Card>
 
                             <Button
                                 variant="contained"
                                 size="large"
-                                startIcon={<HomeIcon/>}
-                                onClick={handleGoHome}
+                                onClick={() => navigate('/login')}
                                 sx={{
                                     borderRadius: 3,
                                     px: 5,
@@ -291,7 +233,7 @@ export default function EmailConfirmation() {
                                     transition: 'all 0.3s ease'
                                 }}
                             >
-                                Go to Home
+                                Go to Login
                             </Button>
                         </Box>
                     ) : (
@@ -333,28 +275,6 @@ export default function EmailConfirmation() {
                             </Alert>
 
                             <Grid container spacing={3} justifyContent="center">
-                                <Grid item>
-                                    <Button
-                                        variant="outlined"
-                                        size="large"
-                                        onClick={handleRetry}
-                                        sx={{
-                                            borderRadius: 3,
-                                            px: 4,
-                                            py: 2,
-                                            fontSize: '1rem',
-                                            fontWeight: 600,
-                                            borderColor: '#f44336',
-                                            color: '#f44336',
-                                            '&:hover': {
-                                                borderColor: '#d32f2f',
-                                                backgroundColor: '#ffebee'
-                                            }
-                                        }}
-                                    >
-                                        Try Again
-                                    </Button>
-                                </Grid>
                                 <Grid item>
                                     <Button
                                         variant="contained"
