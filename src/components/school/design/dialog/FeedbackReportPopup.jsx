@@ -125,7 +125,7 @@ export default function FeedbackReportPopup({
             setSubmitting(true);
 
             const payload = {
-                requestId: requestData.id || null,
+                requestId: requestData.orderId ? null : (requestData.id || null),
                 orderId: requestData.orderId || null,
                 rating: rating,
                 content: content.trim(),
@@ -248,25 +248,35 @@ export default function FeedbackReportPopup({
                         border: '1px solid #e2e8f0'
                     }}>
                         <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1e293b' }}>
-                            Request Information
+                            {requestData?.orderId ? 'Order Information' : 'Request Information'}
                         </Typography>
                         <Grid container spacing={2}>
                             <Grid item xs={12} sm={6}>
                                 <Typography variant="body2" sx={{ color: '#64748b' }}>
-                                    Request ID
+                                    {requestData?.orderId ? 'Order ID' : 'Request ID'}
                                 </Typography>
                                 <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
-                                    {requestData?.id ? `#${requestData.id}` : 'N/A'}
+                                    {requestData?.orderId ? `#${requestData.orderId}` : (requestData?.id ? `#${requestData.id}` : 'N/A')}
                                 </Typography>
                             </Grid>
                             <Grid item xs={12} sm={6}>
                                 <Typography variant="body2" sx={{ color: '#64748b' }}>
-                                    Request Name
+                                    {requestData?.orderId ? 'Order Date' : 'Request Name'}
                                 </Typography>
                                 <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
-                                    {requestData?.name || 'N/A'}
+                                    {requestData?.orderId ? (requestData?.orderDate || 'N/A') : (requestData?.name || 'N/A')}
                                 </Typography>
                             </Grid>
+                            {requestData?.orderId && (
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                        Total Uniforms
+                                    </Typography>
+                                    <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                        {requestData?.orderDetails ? Math.ceil(requestData.orderDetails.reduce((sum, detail) => sum + detail.quantity, 0) / 2) : 'N/A'}
+                                    </Typography>
+                                </Grid>
+                            )}
                             <Grid item xs={12} sm={6}>
                                 <Typography variant="body2" sx={{ color: '#64748b' }}>
                                     Status

@@ -14,13 +14,23 @@ import {
     UpOutlined,
     DownOutlined
 } from '@ant-design/icons';
-import {Box, Chip, Divider, Paper, Avatar} from '@mui/material';
+import {Box, Chip, Divider, Paper, Avatar, IconButton, Tooltip, Badge, Rating, Typography as MuiTypography} from '@mui/material';
 import {useEffect, useState, useMemo, useCallback} from 'react';
 import React from 'react';
 import DesignPaymentPopup from './DesignPaymentPopup.jsx';
 import {parseID} from "../../../../utils/ParseIDUtil.jsx";
 import DisplayImage from '../../../ui/DisplayImage.jsx';
 import { serviceFee } from '../../../../configs/FixedVariables.jsx';
+import PersonSearchIcon from '@mui/icons-material/PersonSearch';
+import EmailIcon from '@mui/icons-material/Email';
+import PhoneIcon from '@mui/icons-material/Phone';
+import BusinessIcon from '@mui/icons-material/Business';
+import HomeIcon from '@mui/icons-material/Home';
+import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import StarIcon from '@mui/icons-material/Star';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import BlockIcon from '@mui/icons-material/Block';
 
 // Constants
 const STATUS_CONFIG = {
@@ -53,7 +63,7 @@ export function statusTag(status) {
 }
 
 // Memoized DesignerCard Component
-const DesignerCard = React.memo(({ designer, isSelected, onSelect }) => {
+const DesignerCard = React.memo(({ designer, isSelected, onSelect, onViewProfile }) => {
     const handleKeyPress = useCallback((event) => {
         if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
@@ -82,21 +92,17 @@ const DesignerCard = React.memo(({ designer, isSelected, onSelect }) => {
                     boxShadow: '0 18px 40px rgba(0,0,0,0.18)',
                     transform: 'translateY(-3px) scale(1.01)'
                 },
-                '&::after': {
-                    content: '""',
+                '& .profile-btn': {
                     position: 'absolute',
-                    top: 0,
-                    left: '-60%',
-                    width: '60%',
-                    height: '100%',
-                    background: 'linear-gradient(120deg, transparent, rgba(255,255,255,0.5), transparent)',
-                    transform: 'skewX(-20deg) translateX(-120%)',
-                    transition: 'transform 1s ease',
-                    pointerEvents: 'none',
-                    willChange: 'transform'
+                    top: 12,
+                    right: 12,
+                    zIndex: 2
                 },
-                '&:hover::after': {
-                    transform: 'skewX(-20deg) translateX(420%)'
+                '& .selected-badge': {
+                    position: 'absolute',
+                    top: 48,
+                    right: 12,
+                    zIndex: 2
                 }
             }}
             onClick={() => onSelect(designer.id)}
@@ -105,8 +111,18 @@ const DesignerCard = React.memo(({ designer, isSelected, onSelect }) => {
             role="button"
             aria-label={`Select quotation from ${designer.designer.customer.name}`}
         >
+            {/* Nút View Profile */}
+            <Tooltip title="View Profile">
+                <IconButton className="profile-btn" onClick={e => { e.stopPropagation(); onViewProfile(designer.designer); }} size="small" sx={{ bgcolor: '#e3f2fd', '&:hover': { bgcolor: '#1976d2', color: 'white' } }}>
+                    <PersonSearchIcon />
+                </IconButton>
+            </Tooltip>
+            {/* Chip Selected ngay dưới nút profile */}
+            {isSelected && (
+                <Chip className="selected-badge" label="Selected" color="success" size="small" sx={{ fontWeight: 600, fontSize: 13, px: 1.5, borderRadius: 1, boxShadow: 1 }} />
+            )}
             {/* Header */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center', columnGap: 1.5, mb: 1.5 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'auto 1fr', alignItems: 'center', columnGap: 1.5, mb: 1.5 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
                     <Avatar
                         sx={{ width: 44, height: 44, bgcolor: '#2e7d32', border: isSelected ? '2px solid #2e7d32' : '2px solid transparent' }}
@@ -128,9 +144,6 @@ const DesignerCard = React.memo(({ designer, isSelected, onSelect }) => {
                         </Box>
                     </Box>
                 </Box>
-                {isSelected && (
-                    <Chip size="small" color="success" label="Selected" sx={{ justifySelf: 'end', alignSelf: 'start' }} />
-                )}
             </Box>
 
             <Divider sx={{ my: 1.5 }} />
@@ -206,6 +219,91 @@ const DesignerCard = React.memo(({ designer, isSelected, onSelect }) => {
 
 DesignerCard.displayName = 'DesignerCard';
 
+// Thêm DesignerProfileModal
+const DesignerProfileModal = ({ open, onClose, designer }) => {
+    if (!designer) return null;
+    const customer = designer.customer || {};
+    const account = customer.account || {};
+    return (
+        <Modal
+            open={open}
+            onCancel={onClose}
+            footer={null}
+            centered
+            width={480}
+            title={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <PersonSearchIcon style={{ color: '#1976d2', fontSize: 28 }} />
+                    <MuiTypography variant="h6" sx={{ fontWeight: 700, color: '#1e293b', m: 0 }}>
+                        Designer Profile
+                    </MuiTypography>
+                </Box>
+            }
+        >
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 2 }}>
+                <Badge
+                    overlap="circular"
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                    badgeContent={
+                        account.status === 'active' ? (
+                            <CheckCircleIcon sx={{ color: '#16a34a', fontSize: 28, bgcolor: 'white', borderRadius: '50%' }} />
+                        ) : (
+                            <BlockIcon sx={{ color: '#dc2626', fontSize: 28, bgcolor: 'white', borderRadius: '50%' }} />
+                        )
+                    }
+                >
+                    <Avatar
+                        src={customer.avatar}
+                        alt={customer.name}
+                        sx={{ width: 96, height: 96, mb: 2, border: '3px solid #1976d2' }}
+                    >
+                        {customer.name?.charAt(0)}
+                    </Avatar>
+                </Badge>
+                <MuiTypography variant="h5" sx={{ fontWeight: 700, color: '#1976d2', mb: 1, textAlign: 'center' }}>
+                    {customer.name}
+                </MuiTypography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <Rating value={designer.rating || 0} precision={0.1} readOnly size="small" icon={<StarIcon fontSize="inherit" />} />
+                    <MuiTypography variant="body2" sx={{ color: '#f59e0b', fontWeight: 600 }}>{designer.rating?.toFixed(1) || 0}</MuiTypography>
+                </Box>
+                <Divider sx={{ width: '100%', my: 2 }} />
+                <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <EmailIcon sx={{ color: '#1976d2' }} />
+                        <MuiTypography variant="body2" sx={{ color: '#1e293b', fontWeight: 500 }}>{account.email}</MuiTypography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <PhoneIcon sx={{ color: '#1976d2' }} />
+                        <MuiTypography variant="body2" sx={{ color: '#1e293b', fontWeight: 500 }}>{customer.phone}</MuiTypography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <HomeIcon sx={{ color: '#1976d2' }} />
+                        <MuiTypography variant="body2" sx={{ color: '#1e293b', fontWeight: 500 }}>{customer.address}</MuiTypography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <BusinessIcon sx={{ color: '#1976d2' }} />
+                        <MuiTypography variant="body2" sx={{ color: '#1e293b', fontWeight: 500 }}>{customer.business}</MuiTypography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <AssignmentIndIcon sx={{ color: '#1976d2' }} />
+                        <MuiTypography variant="body2" sx={{ color: '#1e293b', fontWeight: 500 }}>Registered: {account.registerDate}</MuiTypography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Chip
+                            label={account.status === 'active' ? 'Active' : 'Inactive'}
+                            color={account.status === 'active' ? 'success' : 'error'}
+                            size="small"
+                            sx={{ fontWeight: 600 }}
+                        />
+                        <Chip label={account.role} color="primary" size="small" />
+                    </Box>
+                </Box>
+            </Box>
+        </Modal>
+    );
+};
+
 export default function FindingDesignerPopup({visible, onCancel, request}) {
     const [selectedQuotation, setSelectedQuotation] = useState(null);
     const [isPaymentModalVisible, setIsPaymentModalVisible] = useState(false);
@@ -218,6 +316,9 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
     const [appliedDesigners, setAppliedDesigners] = useState([]);
     const [showRequestDetail, setShowRequestDetail] = useState(false);
     const [sortCriteria, setSortCriteria] = useState([]); // [{ key: 'rating'|'acceptanceDeadline'|'deliveryWithIn'|'revisionTime'|'price', order: 'asc'|'desc' }]
+    // Thêm state quản lý modal profile
+    const [profileModalOpen, setProfileModalOpen] = useState(false);
+    const [profileDesigner, setProfileDesigner] = useState(null);
 
     // Memoized values
     const selectedDesigner = useMemo(() =>
@@ -866,6 +967,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                 designer={designer}
                                                 isSelected={selectedQuotation && selectedQuotation.designerId === designer.id}
                                                 onSelect={handleQuotationSelect}
+                                                onViewProfile={designerObj => { setProfileDesigner(designerObj); setProfileModalOpen(true); }}
                                             />
                                         </Box>
                                     ))}
@@ -1233,6 +1335,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                 onCancel={handleClosePaymentModal}
                 selectedQuotationDetails={paymentDetails}
             />
+            <DesignerProfileModal open={profileModalOpen} onClose={() => setProfileModalOpen(false)} designer={profileDesigner} />
         </Modal>
     );
 }

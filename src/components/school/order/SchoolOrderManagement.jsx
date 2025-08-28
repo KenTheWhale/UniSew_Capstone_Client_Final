@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState, useMemo} from 'react';
 import {
     Box,
     Button,
@@ -9,7 +9,9 @@ import {
     IconButton,
     Paper,
     Tooltip,
-    Typography
+    Typography,
+    Menu,
+    MenuItem
 } from '@mui/material';
 import {
     Add as AddIcon,
@@ -20,7 +22,10 @@ import {
     Pending as PendingIcon,
     Refresh as RefreshIcon,
     ShoppingCart as ShoppingCartIcon,
-    TrendingUp as TrendingUpIcon
+    TrendingUp as TrendingUpIcon,
+    Feedback as FeedbackIcon,
+    Report as ReportIcon,
+    MoreVert as MoreVertIcon
 } from '@mui/icons-material';
 import {Empty, Space, Table, Tag} from 'antd';
 import 'antd/dist/reset.css';
@@ -29,6 +34,7 @@ import {CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, SyncOutli
 import {cancelOrder, getOrdersBySchool} from '../../../services/OrderService';
 import {parseID} from '../../../utils/ParseIDUtil';
 import OrderDetailPopup from './dialog/OrderDetailPopup.jsx';
+import FeedbackReportPopup from '../design/dialog/FeedbackReportPopup.jsx';
 import {useSnackbar} from 'notistack';
 
 // Status Tag Component
@@ -150,6 +156,13 @@ export default function SchoolOrderList() {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
     const [cancellingOrderId, setCancellingOrderId] = useState(null);
+    
+    // Feedback and Report states
+    const [isFeedbackModalVisible, setIsFeedbackModalVisible] = useState(false);
+    const [isReportModalVisible, setIsReportModalVisible] = useState(false);
+    const [selectedOrderForFeedback, setSelectedOrderForFeedback] = useState(null);
+    const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+    const [menuRowId, setMenuRowId] = useState(null);
 
     // Fetch orders on component mount
     const fetchOrders = useCallback(async (showLoading = true) => {
@@ -250,6 +263,64 @@ export default function SchoolOrderList() {
         setSelectedOrder(null);
     };
 
+    // Feedback and Report handlers
+    const handleOpenFeedback = useCallback((order) => {
+        // Only allow feedback for completed orders
+        if (order.status !== 'completed') {
+            enqueueSnackbar('Feedback is only available for completed orders', { variant: 'warning' });
+            return;
+        }
+        // Only allow feedback once per order
+        if (order.feedback) {
+            enqueueSnackbar('Feedback has already been submitted for this order', { variant: 'warning' });
+            return;
+        }
+        // Create order object with orderId for FeedbackReportPopup
+        const orderForFeedback = { ...order, orderId: order.id };
+        setSelectedOrderForFeedback(orderForFeedback);
+        setIsFeedbackModalVisible(true);
+    }, [enqueueSnackbar]);
+
+    const handleOpenReport = useCallback((order) => {
+        // Don't allow report for pending orders
+        if (order.status === 'pending') {
+            enqueueSnackbar('Report is not available for pending orders', { variant: 'warning' });
+            return;
+        }
+        // Don't allow report for orders that already have feedback
+        if (order.feedback) {
+            enqueueSnackbar('Report is not available for orders that already have feedback', { variant: 'warning' });
+            return;
+        }
+        // Create order object with orderId for FeedbackReportPopup
+        const orderForFeedback = { ...order, orderId: order.id };
+        setSelectedOrderForFeedback(orderForFeedback);
+        setIsReportModalVisible(true);
+    }, [enqueueSnackbar]);
+
+    const handleCloseFeedbackModal = useCallback(() => {
+        setIsFeedbackModalVisible(false);
+        setSelectedOrderForFeedback(null);
+    }, []);
+
+    const handleCloseReportModal = useCallback(() => {
+        setIsReportModalVisible(false);
+        setSelectedOrderForFeedback(null);
+    }, []);
+
+    const handleFeedbackSuccess = useCallback(() => {
+        fetchOrders(); // Refresh data after successful feedback
+    }, [fetchOrders]);
+
+    const handleOpenMenu = (event, rowId) => {
+        setMenuAnchorEl(event.currentTarget);
+        setMenuRowId(rowId);
+    };
+
+    const handleCloseMenu = () => {
+        setMenuAnchorEl(null);
+        setMenuRowId(null);
+    };
 
     // Calculate statistics
     const stats = {
@@ -310,7 +381,7 @@ export default function SchoolOrderList() {
         }
     };
 
-    const columns = [
+    const columns = useMemo(() => [
         {
             title: 'Order ID',
             dataIndex: 'id',
@@ -389,7 +460,7 @@ export default function SchoolOrderList() {
             title: 'Actions',
             key: 'actions',
             align: 'center',
-            width: 200,
+            width: 280,
             fixed: 'right',
             render: (_, record) => (
                 <Space size="small">
@@ -409,6 +480,43 @@ export default function SchoolOrderList() {
                             <InfoIcon/>
                         </IconButton>
                     </Tooltip>
+                    
+                    <Tooltip title="Feedback">
+                        <IconButton
+                            onClick={() => handleOpenFeedback(record)}
+                            disabled={record.status !== 'completed' || !!record.feedback}
+                            sx={{
+                                color: (record.status === 'completed' && !record.feedback) ? '#10b981' : '#9ca3af',
+                                '&:hover': {
+                                    backgroundColor: (record.status === 'completed' && !record.feedback) ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
+                                    transform: (record.status === 'completed' && !record.feedback) ? 'scale(1.1)' : 'none'
+                                },
+                                transition: 'all 0.2s ease'
+                            }}
+                            size="small"
+                        >
+                            <FeedbackIcon/>
+                        </IconButton>
+                    </Tooltip>
+                    
+                    <Tooltip title="Report">
+                        <IconButton
+                            onClick={() => handleOpenReport(record)}
+                            disabled={record.status === 'pending' || !!record.feedback}
+                            sx={{
+                                color: (record.status !== 'pending' && !record.feedback) ? '#ef4444' : '#9ca3af',
+                                '&:hover': {
+                                    backgroundColor: (record.status !== 'pending' && !record.feedback) ? 'rgba(239, 68, 68, 0.1)' : 'transparent',
+                                    transform: (record.status !== 'pending' && !record.feedback) ? 'scale(1.1)' : 'none'
+                                },
+                                transition: 'all 0.2s ease'
+                            }}
+                            size="small"
+                        >
+                            <ReportIcon/>
+                        </IconButton>
+                    </Tooltip>
+                    
                     {record.status === 'pending' && (
                         <Tooltip title="Cancel Order">
                             <IconButton
@@ -452,7 +560,7 @@ export default function SchoolOrderList() {
                 </Space>
             ),
         },
-    ];
+    ], [orders, handleViewDetail, handleOpenFeedback, handleOpenReport, handleCancelOrder, cancellingOrderId]);
 
     if (loading) {
         return <LoadingState/>;
@@ -802,6 +910,27 @@ export default function SchoolOrderList() {
                 />
             )}
 
+            {/* FeedbackReportPopup for Feedback */}
+            {isFeedbackModalVisible && selectedOrderForFeedback && (
+                <FeedbackReportPopup
+                    visible={isFeedbackModalVisible}
+                    onCancel={handleCloseFeedbackModal}
+                    type="feedback"
+                    requestData={selectedOrderForFeedback}
+                    onSuccess={handleFeedbackSuccess}
+                />
+            )}
+
+            {/* FeedbackReportPopup for Report */}
+            {isReportModalVisible && selectedOrderForFeedback && (
+                <FeedbackReportPopup
+                    visible={isReportModalVisible}
+                    onCancel={handleCloseReportModal}
+                    type="report"
+                    requestData={selectedOrderForFeedback}
+                    onSuccess={handleFeedbackSuccess}
+                />
+            )}
 
         </Box>
     );
