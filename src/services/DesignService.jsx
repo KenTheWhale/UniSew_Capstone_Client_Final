@@ -96,6 +96,6 @@ export const buyExtraRevision = async (requestId, revisionTime, receiverId, tota
 }
 
 export const cancelDesignRequest = async (data) => {
-    const response = await axiosClient.post("/design/request/cancel", data)
+    const response = await axiosClient.put("/design/request/cancel", data)
     return response || null
 }

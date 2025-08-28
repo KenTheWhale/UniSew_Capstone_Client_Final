@@ -38,7 +38,6 @@ import {createDesignQuotation} from "../../services/DesignService.jsx";
 import {enqueueSnackbar} from "notistack";
 import DisplayImage from "../ui/DisplayImage.jsx";
 
-// Simplified Status chip component
 const StatusChip = ({status}) => {
     const getStatusConfig = (status) => {
         switch (status) {
@@ -113,7 +112,6 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
     const [imageViewer, setImageViewer] = React.useState({ open: false, title: '', images: [], mode: 'reference' });
     const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-    // Quotation form state
     const [quotationData, setQuotationData] = React.useState({
         note: '',
         deliveryWithIn: '',
@@ -122,7 +120,6 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
         price: '',
         acceptanceDeadline: ''
     });
-// Function to get appropriate icon based on item type
     const getItemIcon = (itemType) => {
         const type = itemType?.toLowerCase() || '';
 
@@ -136,14 +133,13 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
             return <CheckroomIcon/>;
         } else if (type.includes('jacket') || type.includes('áo khoác')) {
             return <CheckroomIcon/>;
-        } else if (type.includes('sport') || type.includes('thể thao')) {
+        } else if (type.includes('sport') || type.includes('th�?thao')) {
             return <SportsIcon/>;
         } else {
             return <CheckroomIcon/>;
         }
     };
 
-    // Function to render color with picker
     const renderColorWithPicker = (colorHex, themeColor) => {
         return (
             <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
@@ -214,7 +210,6 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                 enqueueSnackbar(res.data.message, {variant: "success", autoHideDuration: 1000})
                 setTimeout(() => {
                     onCancel()
-                    // Reload the page after successful quotation creation
                     window.location.reload()
                 }, 1000)
             }
@@ -274,23 +269,21 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                 return;
             }
 
-            // Validate extra revision price when not unlimited
             if (!isUnlimitedRevisions && !isPriceAtCap) {
                 if (parseFloat(quotationData.extraRevisionPrice) < 10000) {
                     enqueueSnackbar('Extra revision price must be at least 10.000 VND', {variant: 'error'});
                     setIsSubmitting(false);
                     return;
                 }
-                
+
                 const combined = parseFloat(quotationData.price || '0') + parseFloat(quotationData.extraRevisionPrice || '0');
                 if (combined > 200000000) {
-                    enqueueSnackbar('Price + Extra revision must be ≤ 200.000.000 VND', {variant: 'error'});
+                    enqueueSnackbar('Price + Extra revision must be �?200.000.000 VND', {variant: 'error'});
                     setIsSubmitting(false);
                     return;
                 }
             }
 
-            // Force extra revision to 0 at price cap
             if (isPriceAtCap) {
                 quotationData.extraRevisionPrice = '0';
             }
@@ -313,25 +306,21 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
     const calculateDaysFromRequest = (dateString) => {
         const requestDate = new Date(dateString);
         const today = new Date();
-        
-        // Reset time to start of day for accurate calculation
+
         requestDate.setHours(0, 0, 0, 0);
         today.setHours(0, 0, 0, 0);
-        
+
         const timeDiff = today.getTime() - requestDate.getTime();
         const daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
-        
+
         return daysDiff;
     };
-// Use existing request data
     const mergedRequestData = request;
 
-    // Helper function to get items by category
     const getItemsByCategory = (category) => {
         return mergedRequestData.items?.filter(item => item.category === category) || [];
     };
 
-    // Helper function to render sample images
     return (
         <>
             <Dialog
@@ -353,7 +342,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                     }
                 }}
             >
-                {/* Header */}
+                {}
                 <Box sx={{
                     background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
                     color: 'white',
@@ -383,13 +372,13 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                     <StatusChip status={mergedRequestData.status}/>
                 </Box>
 
-                {/* Content */}
+                {}
                 <DialogContent sx={{p: 0, overflow: 'auto'}}>
                     <Container maxWidth={false} sx={{p: 3}}>
                         <Grid container spacing={3} sx={{display: 'flex'}}>
-                            {/* Main Information */}
+                            {}
                             <Grid sx={{flex: 2}}>
-                                {/* Request Information Card */}
+                                {}
                                 <Card sx={{
                                     mb: 3,
                                     background: 'rgba(255, 255, 255, 0.9)',
@@ -565,7 +554,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                     </CardContent>
                                 </Card>
 
-                                {/* Project Details Card */}
+                                {}
                                 <Card sx={{
                                     background: 'rgba(255, 255, 255, 0.9)',
                                     border: '1px solid rgba(255, 255, 255, 0.3)',
@@ -599,9 +588,9 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                         </Typography>
                                     </Box>
                                     <CardContent sx={{p: 3}}>
-                                        {/* Design Name moved to Request Information; Number of Items removed */}
+                                        {}
                                         <Grid container spacing={2}>
-                                            {/* Clothing Items Details */}
+                                            {}
                                             <Grid sx={{flex: 1}}>
                                                 <Box sx={{
                                                     p: 2,
@@ -627,7 +616,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                                         Design Items:
                                                     </Typography>
 
-                                                    {/* Uniform Type Buttons */}
+                                                    {}
                                                     <Box sx={{display: 'flex', gap: 2, mb: 3}}>
                                                         <Button
                                                             variant="contained"
@@ -686,7 +675,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                 </Card>
                             </Grid>
 
-                            {/* Enhanced Sidebar */}
+                            {}
                             <Grid sx={{flex: 1}}>
                                 <Card sx={{
                                     background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
@@ -755,7 +744,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                             </Box>
                                         ) : (
                                             <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
-                                                {/* Price Input */}
+                                                {}
                                                 <Box>
                                                     <Typography variant="body2" sx={{
                                                         fontWeight: 600,
@@ -800,7 +789,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                                     />
                                                 </Box>
 
-                                                {/* Delivery Time Input */}
+                                                {}
                                                 <Box>
                                                     <Typography variant="body2" sx={{
                                                         fontWeight: 600,
@@ -840,7 +829,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                                     />
                                                 </Box>
 
-                                                {/* Revision Time Input */}
+                                                {}
                                                 <Box>
                                                     <Typography variant="body2" sx={{
                                                         fontWeight: 600,
@@ -887,7 +876,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                                     />
                                                 </Box>
 
-                                                {/* Extra Revision Price Input */}
+                                                {}
                                                 <Box>
                                                     <Typography variant="body2" sx={{
                                                         fontWeight: 600,
@@ -931,7 +920,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                                     />
                                                 </Box>
 
-                                                {/* Acceptance Deadline Input */}
+                                                {}
                                                 <Box>
                                                     <Typography variant="body2" sx={{
                                                         fontWeight: 600,
@@ -977,7 +966,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                                     />
                                                 </Box>
 
-                                                {/* Note Input */}
+                                                {}
                                                 <Box>
                                                     <Typography variant="body2" sx={{
                                                         fontWeight: 600,
@@ -1018,7 +1007,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                                     />
                                                 </Box>
 
-                                                {/* Quotation Summary */}
+                                                {}
                                                 <Box sx={{
                                                     p: 2.5,
                                                     background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.03) 0%, rgba(91, 33, 182, 0.03) 100%)',
@@ -1028,7 +1017,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                                     position: 'relative',
                                                     overflow: 'hidden'
                                                 }}>
-                                                    {/* Decorative background */}
+                                                    {}
                                                     <Box sx={{
                                                         position: 'absolute',
                                                         top: -20,
@@ -1269,7 +1258,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                     </Container>
                 </DialogContent>
 
-                {/* Footer */}
+                {}
                 <DialogActions sx={{p: 3, justifyContent: 'flex-end', gap: 2}}>
                     <Button
                         variant="outlined"
@@ -1296,7 +1285,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                 </DialogActions>
             </Dialog>
 
-            {/* Regular Uniform Detail Dialog */}
+            {}
             <Dialog
                 open={regularDialogOpen}
                 onClose={() => setRegularDialogOpen(false)}
@@ -1314,7 +1303,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                     }
                 }}
             >
-                {/* Header */}
+                {}
                 <Box sx={{
                     background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
                     color: 'white',
@@ -1352,14 +1341,14 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                     </Box>
                 </Box>
 
-                {/* Content */}
+                {}
                 <DialogContent sx={{p: 0}}>
                     <Box sx={{p: 4}}>
 
-                        {/* Regular Uniforms Section */}
+                        {}
                         {getItemsByCategory('regular').length > 0 && (
                             <Box sx={{mb: 4}}>
-                                {/* Boy group */}
+                                {}
                                 <Box sx={{ mb: 2, p: 2, border: '1px solid #e2e8f0', borderRadius: 2, background: 'rgba(59,130,246,0.05)' }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                                         <Box sx={{ width: 10, height: 10, borderRadius: '50%', background: '#3b82f6' }} />
@@ -1381,7 +1370,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                                 '&::before': { content: '""', position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)' }
                                             }}>
                                                 <CardContent sx={{p: 2}}>
-                                                    {/* reuse existing compact content */}
+                                                    {}
                                                     <Box sx={{display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5}}>
                                                         <Box sx={{ p: 1, borderRadius: 3, background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)', color: 'white', boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)' }}>
                                                             {getItemIcon(item.type)}
@@ -1429,7 +1418,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                     </Box>
                                 </Box>
 
-                                {/* Girl group */}
+                                {}
                                 <Box sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: 2, background: 'rgba(236,72,153,0.05)' }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                                         <Box sx={{ width: 10, height: 10, borderRadius: '50%', background: '#ec4899' }} />
@@ -1497,7 +1486,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                         )}
 
 
-                        {/* No Data Message */}
+                        {}
                         {getItemsByCategory('regular').length === 0 && (
                             <Box sx={{
                                 textAlign: 'center',
@@ -1518,7 +1507,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                     </Box>
                 </DialogContent>
 
-                {/* Footer */}
+                {}
                 <DialogActions sx={{
                     p: 3,
                     background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
@@ -1547,7 +1536,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                 </DialogActions>
             </Dialog>
 
-            {/* Physical Education Uniform Detail Dialog */}
+            {}
             <Dialog
                 open={physicalDialogOpen}
                 onClose={() => setPhysicalDialogOpen(false)}
@@ -1565,7 +1554,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                     }
                 }}
             >
-                {/* Header */}
+                {}
                 <Box sx={{
                     background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
                     color: 'white',
@@ -1603,14 +1592,14 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                     </Box>
                 </Box>
 
-                {/* Content */}
+                {}
                 <DialogContent sx={{p: 0}}>
                     <Box sx={{p: 4}}>
 
-                        {/* Physical Education Uniforms Section */}
+                        {}
                         {getItemsByCategory('pe').length > 0 && (
                             <Box sx={{mb: 4}}>
-                                {/* Boy group */}
+                                {}
                                 <Box sx={{ mb: 2, p: 2, border: '1px solid #e2e8f0', borderRadius: 2, background: 'rgba(59,130,246,0.05)' }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                                         <Box sx={{ width: 10, height: 10, borderRadius: '50%', background: '#3b82f6' }} />
@@ -1675,7 +1664,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                     </Box>
                                 </Box>
 
-                                {/* Girl group */}
+                                {}
                                 <Box sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: 2, background: 'rgba(236,72,153,0.05)' }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                                         <Box sx={{ width: 10, height: 10, borderRadius: '50%', background: '#ec4899' }} />
@@ -1743,7 +1732,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                         )}
 
 
-                        {/* No Data Message */}
+                        {}
                         {getItemsByCategory('pe').length === 0 && (
                             <Box sx={{
                                 textAlign: 'center',
@@ -1764,7 +1753,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                     </Box>
                 </DialogContent>
 
-                {/* Footer */}
+                {}
                 <DialogActions sx={{
                     p: 3,
                     background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
@@ -1793,7 +1782,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                 </DialogActions>
             </Dialog>
 
-            {/* Image Viewer Dialog */}
+            {}
             <Dialog open={imageViewer.open} onClose={() => setImageViewer(prev => ({ ...prev, open: false }))} maxWidth="md" fullWidth>
                 <DialogContent sx={{ p: 3 }}>
                     <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>{imageViewer.title}</Typography>

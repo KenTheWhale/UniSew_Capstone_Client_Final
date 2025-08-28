@@ -20,10 +20,10 @@ import {
 } from '@mui/material';
 import { DatePicker } from 'antd';
 import { LineChart, PieChart, BarChart } from '@mui/x-charts';
-import { 
-    TrendingUpOutlined, 
-    PeopleOutlined, 
-    SchoolOutlined, 
+import {
+    TrendingUpOutlined,
+    PeopleOutlined,
+    SchoolOutlined,
     DesignServicesOutlined,
     FactoryOutlined,
     BlockOutlined,
@@ -37,7 +37,6 @@ import dayjs from 'dayjs';
 
 const { RangePicker } = DatePicker;
 
-// Utility function to format VND currency
 const formatVND = (amount) => {
     return new Intl.NumberFormat('vi-VN', {
         style: 'currency',
@@ -45,12 +44,10 @@ const formatVND = (amount) => {
     }).format(amount || 0);
 };
 
-// Utility function to format numbers
 const formatNumber = (number) => {
     return new Intl.NumberFormat('vi-VN').format(number || 0);
 };
 
-// StatCard Component
 const StatCard = ({ icon, value, label, color, change, changeType }) => (
     <Card
         sx={{
@@ -68,19 +65,19 @@ const StatCard = ({ icon, value, label, color, change, changeType }) => (
         <CardContent sx={{ p: 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box>
-                    <Typography 
-                        variant="h4" 
-                        sx={{ 
-                            fontWeight: 700, 
+                    <Typography
+                        variant="h4"
+                        sx={{
+                            fontWeight: 700,
                             color: color,
                             mb: 0.5
                         }}
                     >
                         {value}
                     </Typography>
-                    <Typography 
-                        variant="body2" 
-                        sx={{ 
+                    <Typography
+                        variant="body2"
+                        sx={{
                             color: '#64748b',
                             fontWeight: 500,
                             mb: 1
@@ -100,10 +97,10 @@ const StatCard = ({ icon, value, label, color, change, changeType }) => (
                         />
                     )}
                 </Box>
-                <Box 
-                    sx={{ 
-                        p: 2, 
-                        borderRadius: 2, 
+                <Box
+                    sx={{
+                        p: 2,
+                        borderRadius: 2,
                         backgroundColor: `${color}10`,
                         color: color
                     }}
@@ -129,7 +126,6 @@ export default function AdminDashboard() {
         dayjs()
     ]);
 
-    // Fallback data for demo/development
     const getFallbackData = () => ({
         data: {
             overview: {
@@ -153,97 +149,84 @@ export default function AdminDashboard() {
         }
     });
 
-    // Fetch account stats
     const fetchAccountStats = useCallback(async () => {
         console.log('fetchAccountStats called, loading:', loading);
         if (loading) {
             console.log('Already loading, skipping...');
-            return; // Prevent multiple simultaneous calls
+            return;
         }
-        
+
         setLoading(true);
-        
-        // Try API first, fallback to demo data if needed
-        
+
+
         try {
             const requestData = {
                 from: dateRange[0].format('YYYY-MM-DD'),
                 to: dateRange[1].format('YYYY-MM-DD'),
                 groupBy: groupBy
             };
-            
+
             console.log('Fetching account stats with request:', requestData);
             console.log('Base URL:', window.location.origin);
             console.log('API URL will be: http://localhost:8080/api/v1/admin/account/stats');
-            
-            // Call real API
+
             const response = await getAccountStats(requestData);
             console.log('Account stats response:', response);
 
             if (response && response.status === 200) {
                 console.log('Raw response data:', response.data);
-                // Handle different response structures
                 let processedData = response.data;
                 if (response.data.body) {
-                    // If response has { message: "...", body: { overview: ..., timeSeries: ... } }
                     processedData = { data: response.data.body };
                 } else if (response.data.data) {
-                    // If response has { data: { overview: ..., timeSeries: ... } }
                     processedData = response.data;
                 } else {
-                    // If response is direct { overview: ..., timeSeries: ... }
                     processedData = { data: response.data };
                 }
-                
+
                 console.log('Processed data structure:', processedData);
                 setStatsData(processedData);
-                // enqueueSnackbar('Statistics loaded successfully', { variant: 'success' }); // Removed enqueueSnackbar
             } else {
                 console.warn('API response not 200, using fallback data');
                 setStatsData(getFallbackData());
-                // enqueueSnackbar(`API response: ${response?.status} - Using demo data`, { variant: 'warning' }); // Removed enqueueSnackbar
             }
         } catch (error) {
             console.error('Error fetching account stats:', error);
             console.warn('Using fallback data due to API error');
             setStatsData(getFallbackData());
-            
+
             if (error.response?.status === 403) {
-                // enqueueSnackbar('Using demo data - API access restricted', { variant: 'warning' }); // Removed enqueueSnackbar
             } else if (error.response?.status === 401) {
-                // enqueueSnackbar('Authentication required - showing demo data', { variant: 'warning' }); // Removed enqueueSnackbar
             } else {
-                // enqueueSnackbar('API error - showing demo data', { variant: 'warning' }); // Removed enqueueSnackbar
             }
         } finally {
             setLoading(false);
         }
     }, [dateRange, groupBy, loading]);
 
-    // Fetch transaction stats
     const fetchTransactionStats = useCallback(async () => {
         console.log('fetchTransactionStats called, loading:', loading);
         if (loading) {
             console.log('Already loading, skipping...');
             return;
         }
-        
+
         setLoading(true);
-        
+
         try {
             const requestData = {
                 from: dateRange[0].format('YYYY-MM-DD'),
                 to: dateRange[1].format('YYYY-MM-DD')
             };
-            
+
             console.log('Fetching transaction stats with request:', requestData);
-            
+
             const response = await getTransactionsStats(requestData);
             console.log('Transaction stats response:', response);
 
             if (response && response.status === 200) {
                 console.log('Raw transaction response data:', response.data);
-                
+
                 let processedData = response.data;
                 if (response.data.body) {
                     processedData = { data: response.data.body };
@@ -252,13 +235,11 @@ export default function AdminDashboard() {
                 } else {
                     processedData = { data: response.data };
                 }
-                
+
                 console.log('Processed transaction data structure:', processedData);
                 setTransactionData(processedData);
-                // enqueueSnackbar('Transaction statistics loaded successfully', { variant: 'success' }); // Removed enqueueSnackbar
             } else {
                 console.warn('Transaction API response not 200, using fallback data');
-                // Fallback data structure for development
                 const fallbackData = {
                     data: {
                         overview: {
@@ -280,13 +261,11 @@ export default function AdminDashboard() {
                     }
                 };
                 setTransactionData(fallbackData);
-                // enqueueSnackbar(`Transaction API response: ${response?.status} - Using demo data`, { variant: 'warning' }); // Removed enqueueSnackbar
             }
         } catch (error) {
             console.error('Error fetching transaction stats:', error);
             console.warn('Using fallback transaction data due to API error');
-            
-            // Fallback data
+
             const fallbackData = {
                 data: {
                     overview: {
@@ -318,37 +297,30 @@ export default function AdminDashboard() {
                 }
             };
             setTransactionData(fallbackData);
-            
+
             if (error.response?.status === 403) {
-                // enqueueSnackbar('Using demo transaction data - API access restricted', { variant: 'warning' }); // Removed enqueueSnackbar
             } else if (error.response?.status === 401) {
-                // enqueueSnackbar('Authentication required - showing demo transaction data', { variant: 'warning' }); // Removed enqueueSnackbar
             } else {
-                // enqueueSnackbar('Transaction API error - showing demo data', { variant: 'warning' }); // Removed enqueueSnackbar
             }
         } finally {
             setLoading(false);
         }
     }, [dateRange, loading]);
 
-    // Initial load - only once when component mounts
     useEffect(() => {
         console.log('useEffect triggered, hasInitialLoad:', hasInitialLoad);
         if (!hasInitialLoad) {
             console.log('Setting initial load flag and calling fetchAccountStats');
             setHasInitialLoad(true);
             fetchAccountStats();
-            fetchTransactionStats(); // Also fetch transaction stats on initial load
+            fetchTransactionStats();
         }
     }, []);
 
-    // Calculate chart width based on container
     useEffect(() => {
         const calculateChartWidth = () => {
             if (chartContainerRef.current) {
                 const containerWidth = chartContainerRef.current.offsetWidth;
-                // Subtract padding, margin, and extra space for better fit
-                // Account for left(60) + right(60) margins = 120px total
                 const calculatedWidth = Math.max(containerWidth - 48, 400);
                 setChartWidth(calculatedWidth);
             }
@@ -362,25 +334,20 @@ export default function AdminDashboard() {
 
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, [statsData]); // Re-calculate when data changes
+    }, [statsData]);
 
-    // Prepare time series chart data
-    // timeSeries: Chuỗi thời gian tài khoản đăng ký mới trong khoảng [from, to]
-    // bucketStart: Ngày bắt đầu bucket (YYYY-MM-DD)
-    // count: Số tài khoản đăng ký mới trong bucket đó
     const timeSeriesData = useMemo(() => {
         console.log('Processing timeSeries data, statsData:', statsData);
-        // Handle multiple data structure possibilities
-        const timeSeries = statsData?.data?.timeSeries || 
-                          statsData?.body?.timeSeries || 
+        const timeSeries = statsData?.data?.timeSeries ||
+                          statsData?.body?.timeSeries ||
                           statsData?.timeSeries;
-        
+
         console.log('Found timeSeries:', timeSeries);
         if (!timeSeries || !Array.isArray(timeSeries)) {
             console.log('No valid timeSeries data found');
             return { xAxisData: [], seriesData: [] };
         }
-        
+
         const xAxisData = timeSeries.map(item => {
             const date = dayjs(item.bucketStart || item.bucket);
             switch (groupBy) {
@@ -394,28 +361,25 @@ export default function AdminDashboard() {
                     return date.format('MM/DD');
             }
         });
-        
+
         const seriesData = timeSeries.map(item => item.count);
-        
+
         console.log('Processed chart data:', { xAxisData, seriesData });
         return { xAxisData, seriesData };
     }, [statsData, groupBy]);
 
-    // Prepare role chart data
-    // overview.byRole: Phân bố tài khoản theo vai trò (toàn hệ thống, không giới hạn thời gian)
-    // Ví dụ: { "ADMIN": 1, "SCHOOL": 9, "DESIGNER": 3, "GARMENT": 2 }
     const roleChartData = useMemo(() => {
         console.log('Processing role data, statsData:', statsData);
-        const overview = statsData?.data?.overview || 
-                        statsData?.body?.overview || 
+        const overview = statsData?.data?.overview ||
+                        statsData?.body?.overview ||
                         statsData?.overview;
-        
+
         console.log('Found overview:', overview);
         if (!overview?.byRole) {
             console.log('No byRole data found');
             return [];
         }
-        
+
         const roleColors = {
             ADMIN: '#dc3545',
             SCHOOL: '#28a745',
@@ -436,26 +400,23 @@ export default function AdminDashboard() {
             label: roleLabels[role] || role,
             color: roleColors[role] || '#6c757d'
         }));
-        
+
         console.log('Processed role chart data:', result);
         return result;
     }, [statsData]);
 
-    // Prepare status chart data  
-    // overview.byStatus: Phân bố tài khoản theo trạng thái (toàn hệ thống, không giới hạn thời gian)
-    // Ví dụ: { "ACCOUNT_ACTIVE": 15, "ACCOUNT_INACTIVE": 0, "ACCOUNT_REQUEST_PENDING": 0, ... }
     const statusChartData = useMemo(() => {
         console.log('Processing status data, statsData:', statsData);
-        const overview = statsData?.data?.overview || 
-                        statsData?.body?.overview || 
+        const overview = statsData?.data?.overview ||
+                        statsData?.body?.overview ||
                         statsData?.overview;
-        
+
         console.log('Found overview for status:', overview);
         if (!overview?.byStatus) {
             console.log('No byStatus data found');
             return [];
         }
-        
+
         const statusColors = {
             ACCOUNT_ACTIVE: '#28a745',
             ACCOUNT_INACTIVE: '#dc3545',
@@ -472,7 +433,6 @@ export default function AdminDashboard() {
             ACCOUNT_REQUEST_COMPLETED: 'Request Completed'
         };
 
-        // Only show statuses with count > 0
         const result = Object.entries(overview.byStatus)
             .filter(([status, count]) => count > 0)
             .map(([status, count]) => ({
@@ -481,64 +441,61 @@ export default function AdminDashboard() {
                 label: statusLabels[status] || status,
                 color: statusColors[status] || '#6c757d'
             }));
-            
+
         console.log('Processed status chart data:', result);
         return result;
     }, [statsData]);
 
-    // Prepare daily revenue chart data
     const dailyRevenueData = useMemo(() => {
         console.log('Processing dailyRevenue data, transactionData:', transactionData);
-        const dailyRevenue = transactionData?.data?.dailyRevenue || 
-                           transactionData?.body?.dailyRevenue || 
+        const dailyRevenue = transactionData?.data?.dailyRevenue ||
+                           transactionData?.body?.dailyRevenue ||
                            transactionData?.dailyRevenue;
-        
+
         console.log('Found dailyRevenue:', dailyRevenue);
         if (!dailyRevenue || !Array.isArray(dailyRevenue)) {
             console.log('No valid dailyRevenue data found');
             return { xAxisData: [], seriesData: [] };
         }
-        
+
         const xAxisData = dailyRevenue.map(item => dayjs(item.date).format('MM/DD'));
         const seriesData = dailyRevenue.map(item => item.revenue);
-        
+
         console.log('Processed daily revenue chart data:', { xAxisData, seriesData });
         return { xAxisData, seriesData };
     }, [transactionData]);
 
-    // Prepare monthly revenue chart data
     const monthlyRevenueData = useMemo(() => {
         console.log('Processing monthlyRevenue data, transactionData:', transactionData);
-        const monthlyRevenue = transactionData?.data?.monthlyRevenue || 
-                             transactionData?.body?.monthlyRevenue || 
+        const monthlyRevenue = transactionData?.data?.monthlyRevenue ||
+                             transactionData?.body?.monthlyRevenue ||
                              transactionData?.monthlyRevenue;
-        
+
         console.log('Found monthlyRevenue:', monthlyRevenue);
         if (!monthlyRevenue || !Array.isArray(monthlyRevenue)) {
             console.log('No valid monthlyRevenue data found');
             return { xAxisData: [], seriesData: [] };
         }
-        
+
         const xAxisData = monthlyRevenue.map(item => item.yearMonth);
         const seriesData = monthlyRevenue.map(item => item.revenue);
-        
+
         console.log('Processed monthly revenue chart data:', { xAxisData, seriesData });
         return { xAxisData, seriesData };
     }, [transactionData]);
 
-    // Prepare transaction status chart data
     const transactionStatusData = useMemo(() => {
         console.log('Processing transaction status data, transactionData:', transactionData);
-        const overview = transactionData?.data?.overview || 
-                        transactionData?.body?.overview || 
+        const overview = transactionData?.data?.overview ||
+                        transactionData?.body?.overview ||
                         transactionData?.overview;
-        
+
         console.log('Found transaction overview:', overview);
         if (!overview?.byStatus) {
             console.log('No byStatus data found');
             return [];
         }
-        
+
         const statusColors = {
             TRANSACTION_SUCCESS: '#28a745',
             TRANSACTION_FAIL: '#dc3545',
@@ -561,24 +518,23 @@ export default function AdminDashboard() {
                 label: statusLabels[status] || status,
                 color: statusColors[status] || '#6c757d'
             }));
-            
+
         console.log('Processed transaction status chart data:', result);
         return result;
     }, [transactionData]);
 
-    // Prepare payment type chart data
     const paymentTypeData = useMemo(() => {
         console.log('Processing payment type data, transactionData:', transactionData);
-        const overview = transactionData?.data?.overview || 
-                        transactionData?.body?.overview || 
+        const overview = transactionData?.data?.overview ||
+                        transactionData?.body?.overview ||
                         transactionData?.overview;
-        
+
         console.log('Found payment type overview:', overview);
         if (!overview?.byPaymentType) {
             console.log('No byPaymentType data found');
             return [];
         }
-        
+
         const typeColors = {
             DESIGN: '#6f42c1',
             ORDER: '#fd7e14'
@@ -597,7 +553,7 @@ export default function AdminDashboard() {
                 label: typeLabels[type] || type,
                 color: typeColors[type] || '#6c757d'
             }));
-            
+
         console.log('Processed payment type chart data:', result);
         return result;
     }, [transactionData]);
@@ -623,10 +579,10 @@ export default function AdminDashboard() {
 
     if (loading && !statsData && !transactionData) {
         return (
-            <Box sx={{ 
-                height: '100%', 
-                display: 'flex', 
-                alignItems: 'center', 
+            <Box sx={{
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
                 justifyContent: 'center',
                 flexDirection: 'column'
             }}>
@@ -640,9 +596,9 @@ export default function AdminDashboard() {
 
     return (
         <Box sx={{ height: '100%', overflowY: 'auto', overflowX: 'hidden', width: '100%' }}>
-            {/* Header */}
-            <Box 
-                sx={{ 
+            {}
+            <Box
+                sx={{
                     mb: 4,
                     p: 4,
                     borderRadius: 3,
@@ -676,7 +632,7 @@ export default function AdminDashboard() {
                 </Box>
             </Box>
 
-            {/* Tabs */}
+            {}
             <Box sx={{ mb: 3 }}>
                 <Tabs
                     value={activeTab}
@@ -701,11 +657,11 @@ export default function AdminDashboard() {
                 </Tabs>
             </Box>
 
-            {/* Tab Content */}
+            {}
             {activeTab === 0 && (
                 <>
-                    {/* Statistics Cards */}
-                    {/* overview: Tổng quan toàn hệ thống (không giới hạn thời gian) */}
+                    {}
+                    {}
                     <Box sx={{ display: 'flex', gap: 3, width: '100%', mb: 4 }}>
                         <Box sx={{ flex: 1 }}>
                             {loading ? (
@@ -757,9 +713,9 @@ export default function AdminDashboard() {
                         </Box>
                     </Box>
 
-                    {/* Charts */}
+                    {}
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, width: '100%' }}>
-                        {/* New Account Registrations Chart - Full Width */}
+                        {}
                         <Box sx={{ width: '100%' }}>
                             <Paper
                                 elevation={0}
@@ -782,30 +738,30 @@ export default function AdminDashboard() {
                                     >
                                         New Account Registrations Over Time
                                     </Typography>
-                                    
-                                    <Box sx={{ 
-                                        display: 'flex', 
-                                        gap: 2, 
+
+                                    <Box sx={{
+                                        display: 'flex',
+                                        gap: 2,
                                         alignItems: 'center',
                                         p: 2,
                                         borderRadius: 2,
                                         backgroundColor: '#f8fafc',
                                         border: '1px solid #e2e8f0'
                                     }}>
-                                        <Typography 
-                                            variant="body2" 
-                                            sx={{ 
-                                                fontWeight: 600, 
+                                        <Typography
+                                            variant="body2"
+                                            sx={{
+                                                fontWeight: 600,
                                                 color: '#64748b',
                                                 minWidth: 'auto'
                                             }}
                                         >
                                             Configure View:
                                         </Typography>
-                                        
-                                        <FormControl 
-                                            size="small" 
-                                            sx={{ 
+
+                                        <FormControl
+                                            size="small"
+                                            sx={{
                                                 minWidth: 100,
                                                 '& .MuiOutlinedInput-root': {
                                                     backgroundColor: 'white',
@@ -840,8 +796,8 @@ export default function AdminDashboard() {
                                                 <MenuItem value="MONTH">Month</MenuItem>
                                             </Select>
                                         </FormControl>
-                                        
-                                        <Box sx={{ 
+
+                                        <Box sx={{
                                             '& .ant-picker': {
                                                 borderRadius: '6px',
                                                 border: '1px solid #e2e8f0',
@@ -880,7 +836,7 @@ export default function AdminDashboard() {
                                             sx={{
                                                 borderColor: '#dc3545',
                                                 color: '#dc3545',
-                                                '&:hover': { 
+                                                '&:hover': {
                                                     borderColor: '#c82333',
                                                     backgroundColor: '#dc354508'
                                                 }
@@ -890,7 +846,7 @@ export default function AdminDashboard() {
                                         </Button>
                                     </Box>
                                 </Box>
-                                
+
                                 <Box ref={chartContainerRef} sx={{ width: '100%', height: 350 }}>
                                     {loading ? (
                                         <Box sx={{ width: '100%', height: 350 }}>
@@ -898,9 +854,9 @@ export default function AdminDashboard() {
                                         </Box>
                                     ) : timeSeriesData.xAxisData.length > 0 ? (
                                         <LineChart
-                                            xAxis={[{ 
-                                                scaleType: 'point', 
-                                                data: timeSeriesData.xAxisData 
+                                            xAxis={[{
+                                                scaleType: 'point',
+                                                data: timeSeriesData.xAxisData
                                             }]}
                                             series={[{
                                                 data: timeSeriesData.seriesData,
@@ -925,11 +881,11 @@ export default function AdminDashboard() {
                                             }}
                                         />
                                     ) : (
-                                        <Box sx={{ 
-                                            height: 350, 
-                                            display: 'flex', 
-                                            alignItems: 'center', 
-                                            justifyContent: 'center' 
+                                        <Box sx={{
+                                            height: 350,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
                                         }}>
                                             <Typography variant="body1" sx={{ color: '#64748b' }}>
                                                 No data available for the selected period
@@ -940,9 +896,9 @@ export default function AdminDashboard() {
                             </Paper>
                         </Box>
 
-                        {/* Bottom Charts Section */}
+                        {}
                         <Box sx={{ display: 'flex', gap: 3, width: '100%' }}>
-                            {/* Role Distribution Chart */}
+                            {}
                             <Box sx={{ flex: 1 }}>
                                 <Paper
                                     elevation={0}
@@ -963,7 +919,7 @@ export default function AdminDashboard() {
                                     >
                                         All Accounts by Role (System Overview)
                                     </Typography>
-                                    
+
                                     {loading ? (
                                         <Skeleton variant="circular" width={300} height={300} sx={{ mx: 'auto' }} />
                                     ) : roleChartData.length > 0 ? (
@@ -977,11 +933,11 @@ export default function AdminDashboard() {
                                             height={350}
                                         />
                                     ) : (
-                                        <Box sx={{ 
-                                            height: 350, 
-                                            display: 'flex', 
-                                            alignItems: 'center', 
-                                            justifyContent: 'center' 
+                                        <Box sx={{
+                                            height: 350,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
                                         }}>
                                             <Typography variant="body1" sx={{ color: '#64748b' }}>
                                                 No role data available
@@ -991,7 +947,7 @@ export default function AdminDashboard() {
                                 </Paper>
                             </Box>
 
-                            {/* Status Distribution Chart */}
+                            {}
                             <Box sx={{ flex: 1 }}>
                                 <Paper
                                     elevation={0}
@@ -1012,7 +968,7 @@ export default function AdminDashboard() {
                                     >
                                         All Accounts by Status (System Overview)
                                     </Typography>
-                                    
+
                                     {loading ? (
                                         <Skeleton variant="circular" width={300} height={300} sx={{ mx: 'auto' }} />
                                     ) : statusChartData.length > 0 ? (
@@ -1026,11 +982,11 @@ export default function AdminDashboard() {
                                             height={350}
                                         />
                                     ) : (
-                                        <Box sx={{ 
-                                            height: 350, 
-                                            display: 'flex', 
-                                            alignItems: 'center', 
-                                            justifyContent: 'center' 
+                                        <Box sx={{
+                                            height: 350,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
                                         }}>
                                             <Typography variant="body1" sx={{ color: '#64748b' }}>
                                                 No status data available
@@ -1040,7 +996,7 @@ export default function AdminDashboard() {
                                 </Paper>
                             </Box>
 
-                            {/* Account Breakdown */}
+                            {}
                             <Box sx={{ flex: 1 }}>
                                 <Paper
                                     elevation={0}
@@ -1061,7 +1017,7 @@ export default function AdminDashboard() {
                                     >
                                         Account Breakdown
                                     </Typography>
-                                    
+
                                     {loading ? (
                                         <Grid container spacing={2}>
                                             {[1, 2, 3, 4].map((item) => (
@@ -1074,9 +1030,9 @@ export default function AdminDashboard() {
                                         <Grid container spacing={2}>
                                             {roleChartData.map((role) => (
                                                 <Grid item xs={6} key={role.id}>
-                                                    <Box sx={{ 
-                                                        p: 2, 
-                                                        borderRadius: 2, 
+                                                    <Box sx={{
+                                                        p: 2,
+                                                        borderRadius: 2,
                                                         background: `${role.color}08`,
                                                         border: `1px solid ${role.color}20`,
                                                         textAlign: 'center',
@@ -1106,10 +1062,10 @@ export default function AdminDashboard() {
                                             ))}
                                         </Grid>
                                     )}
-                                    
-                                    <Box sx={{ 
-                                        borderTop: '1px solid #e2e8f0', 
-                                        pt: 2, 
+
+                                    <Box sx={{
+                                        borderTop: '1px solid #e2e8f0',
+                                        pt: 2,
                                         mt: 3,
                                         textAlign: 'center'
                                     }}>
@@ -1124,10 +1080,10 @@ export default function AdminDashboard() {
                 </>
             )}
 
-            {/* Transaction & Revenue Tab */}
+            {}
             {activeTab === 1 && (
                 <>
-                    {/* Transaction KPI Cards */}
+                    {}
                     <Box sx={{ display: 'flex', gap: 3, width: '100%', mb: 4 }}>
                         <Box sx={{ flex: 1 }}>
                             {loading ? (
@@ -1179,11 +1135,11 @@ export default function AdminDashboard() {
                         </Box>
                     </Box>
 
-                    {/* Charts - Organized in 3 Flex Column Sections */}
+                    {}
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, width: '100%' }}>
-                        {/* Section 1: Revenue Charts */}
+                        {}
                         <Box sx={{ display: 'flex', gap: 3, width: '100%' }}>
-                            {/* Daily Revenue Chart */}
+                            {}
                             <Box sx={{ flex: 2, minWidth: 0 }}>
                                 <Paper
                                     elevation={0}
@@ -1206,28 +1162,28 @@ export default function AdminDashboard() {
                                         >
                                             Daily Revenue Trend
                                         </Typography>
-                                        
-                                        <Box sx={{ 
-                                            display: 'flex', 
-                                            gap: 2, 
+
+                                        <Box sx={{
+                                            display: 'flex',
+                                            gap: 2,
                                             alignItems: 'center',
                                             p: 2,
                                             borderRadius: 2,
                                             backgroundColor: '#f8fafc',
                                             border: '1px solid #e2e8f0'
                                         }}>
-                                            <Typography 
-                                                variant="body2" 
-                                                sx={{ 
-                                                    fontWeight: 600, 
+                                            <Typography
+                                                variant="body2"
+                                                sx={{
+                                                    fontWeight: 600,
                                                     color: '#64748b',
                                                     minWidth: 'auto'
                                                 }}
                                             >
                                                 Analysis Period:
                                             </Typography>
-                                            
-                                            <Box sx={{ 
+
+                                            <Box sx={{
                                                 '& .ant-picker': {
                                                     borderRadius: '6px',
                                                     border: '1px solid #e2e8f0',
@@ -1266,7 +1222,7 @@ export default function AdminDashboard() {
                                                 sx={{
                                                     borderColor: '#28a745',
                                                     color: '#28a745',
-                                                    '&:hover': { 
+                                                    '&:hover': {
                                                         borderColor: '#1e7e34',
                                                         backgroundColor: '#28a74508'
                                                     }
@@ -1276,15 +1232,15 @@ export default function AdminDashboard() {
                                             </Button>
                                         </Box>
                                     </Box>
-                                    
+
                                     <Box sx={{ width: '100%', height: 400 }}>
                                         {loading ? (
                                             <Skeleton variant="rectangular" width="100%" height={400} sx={{ borderRadius: 1 }} />
                                         ) : dailyRevenueData.xAxisData.length > 0 ? (
                                             <LineChart
-                                                xAxis={[{ 
-                                                    scaleType: 'point', 
-                                                    data: dailyRevenueData.xAxisData 
+                                                xAxis={[{
+                                                    scaleType: 'point',
+                                                    data: dailyRevenueData.xAxisData
                                                 }]}
                                                 series={[{
                                                     data: dailyRevenueData.seriesData,
@@ -1310,11 +1266,11 @@ export default function AdminDashboard() {
                                                 }}
                                             />
                                         ) : (
-                                            <Box sx={{ 
-                                                height: 400, 
-                                                display: 'flex', 
-                                                alignItems: 'center', 
-                                                justifyContent: 'center' 
+                                            <Box sx={{
+                                                height: 400,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
                                             }}>
                                                 <Typography variant="body1" sx={{ color: '#64748b' }}>
                                                     No revenue data available for the selected period
@@ -1325,7 +1281,7 @@ export default function AdminDashboard() {
                                 </Paper>
                             </Box>
 
-                            {/* Monthly Revenue Chart */}
+                            {}
                             <Box sx={{ flex: 1, minWidth: 0 }}>
                                 <Paper
                                     elevation={0}
@@ -1348,14 +1304,14 @@ export default function AdminDashboard() {
                                     >
                                         Monthly Revenue
                                     </Typography>
-                                    
+
                                     {loading ? (
                                         <Skeleton variant="rectangular" width="100%" height={400} sx={{ borderRadius: 1 }} />
                                     ) : monthlyRevenueData.xAxisData.length > 0 ? (
                                         <BarChart
-                                            xAxis={[{ 
-                                                scaleType: 'band', 
-                                                data: monthlyRevenueData.xAxisData 
+                                            xAxis={[{
+                                                scaleType: 'band',
+                                                data: monthlyRevenueData.xAxisData
                                             }]}
                                             series={[{
                                                 data: monthlyRevenueData.seriesData,
@@ -1367,11 +1323,11 @@ export default function AdminDashboard() {
                                             margin={{ left: 80, right: 20, top: 20, bottom: 60 }}
                                         />
                                     ) : (
-                                        <Box sx={{ 
-                                            height: 400, 
-                                            display: 'flex', 
-                                            alignItems: 'center', 
-                                            justifyContent: 'center' 
+                                        <Box sx={{
+                                            height: 400,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
                                         }}>
                                             <Typography variant="body1" sx={{ color: '#64748b' }}>
                                                 No monthly data available
@@ -1382,9 +1338,9 @@ export default function AdminDashboard() {
                             </Box>
                         </Box>
 
-                        {/* Section 2: Transaction Analysis Charts */}
+                        {}
                         <Box sx={{ display: 'flex', gap: 3, width: '100%' }}>
-                            {/* Transaction Status Chart */}
+                            {}
                             <Box sx={{ flex: 1, minWidth: 0 }}>
                                 <Paper
                                     elevation={0}
@@ -1406,7 +1362,7 @@ export default function AdminDashboard() {
                                     >
                                         Transaction Status
                                     </Typography>
-                                    
+
                                     {loading ? (
                                         <Skeleton variant="circular" width={250} height={250} sx={{ mx: 'auto' }} />
                                     ) : transactionStatusData.length > 0 ? (
@@ -1420,11 +1376,11 @@ export default function AdminDashboard() {
                                             height={300}
                                         />
                                     ) : (
-                                        <Box sx={{ 
-                                            height: 300, 
-                                            display: 'flex', 
-                                            alignItems: 'center', 
-                                            justifyContent: 'center' 
+                                        <Box sx={{
+                                            height: 300,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
                                         }}>
                                             <Typography variant="body1" sx={{ color: '#64748b' }}>
                                                 No status data available
@@ -1434,7 +1390,7 @@ export default function AdminDashboard() {
                                 </Paper>
                             </Box>
 
-                            {/* Payment Type Chart */}
+                            {}
                             <Box sx={{ flex: 1, minWidth: 0 }}>
                                 <Paper
                                     elevation={0}
@@ -1456,7 +1412,7 @@ export default function AdminDashboard() {
                                     >
                                         Payment Type
                                     </Typography>
-                                    
+
                                     {loading ? (
                                         <Skeleton variant="circular" width={250} height={250} sx={{ mx: 'auto' }} />
                                     ) : paymentTypeData.length > 0 ? (
@@ -1470,11 +1426,11 @@ export default function AdminDashboard() {
                                             height={300}
                                         />
                                     ) : (
-                                        <Box sx={{ 
-                                            height: 300, 
-                                            display: 'flex', 
-                                            alignItems: 'center', 
-                                            justifyContent: 'center' 
+                                        <Box sx={{
+                                            height: 300,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
                                         }}>
                                             <Typography variant="body1" sx={{ color: '#64748b' }}>
                                                 No payment type data available
@@ -1485,7 +1441,7 @@ export default function AdminDashboard() {
                             </Box>
                         </Box>
 
-                        {/* Section 3: Transaction Summary */}
+                        {}
                         <Box sx={{ width: '100%' }}>
                             <Paper
                                 elevation={0}
@@ -1506,16 +1462,16 @@ export default function AdminDashboard() {
                                 >
                                     Transaction Summary
                                 </Typography>
-                                
+
                                 <Grid container spacing={3} sx={{ width: '100%', mx: 0 }}>
-                                    {/* Success Transactions */}
+                                    {}
                                     <Grid item xs={12} sm={6} md={3}>
                                         {loading ? (
                                             <Skeleton variant="rectangular" height={140} sx={{ borderRadius: 2 }} />
                                         ) : (
-                                            <Box sx={{ 
-                                                p: 3, 
-                                                borderRadius: 2, 
+                                            <Box sx={{
+                                                p: 3,
+                                                borderRadius: 2,
                                                 background: 'linear-gradient(135deg, #28a74508 0%, #28a74512 100%)',
                                                 border: '1px solid #28a74520',
                                                 textAlign: 'center',
@@ -1538,15 +1494,15 @@ export default function AdminDashboard() {
                                             </Box>
                                         )}
                                     </Grid>
-                                    
-                                    {/* Failed Transactions */}
+
+                                    {}
                                     <Grid item xs={12} sm={6} md={3}>
                                         {loading ? (
                                             <Skeleton variant="rectangular" height={140} sx={{ borderRadius: 2 }} />
                                         ) : (
-                                            <Box sx={{ 
-                                                p: 3, 
-                                                borderRadius: 2, 
+                                            <Box sx={{
+                                                p: 3,
+                                                borderRadius: 2,
                                                 background: 'linear-gradient(135deg, #dc354508 0%, #dc354512 100%)',
                                                 border: '1px solid #dc354520',
                                                 textAlign: 'center',
@@ -1570,14 +1526,14 @@ export default function AdminDashboard() {
                                         )}
                                     </Grid>
 
-                                    {/* Design Payments */}
+                                    {}
                                     <Grid item xs={12} sm={6} md={3}>
                                         {loading ? (
                                             <Skeleton variant="rectangular" height={140} sx={{ borderRadius: 2 }} />
                                         ) : (
-                                            <Box sx={{ 
-                                                p: 3, 
-                                                borderRadius: 2, 
+                                            <Box sx={{
+                                                p: 3,
+                                                borderRadius: 2,
                                                 background: 'linear-gradient(135deg, #6f42c108 0%, #6f42c112 100%)',
                                                 border: '1px solid #6f42c120',
                                                 textAlign: 'center',
@@ -1601,14 +1557,14 @@ export default function AdminDashboard() {
                                         )}
                                     </Grid>
 
-                                    {/* Order Payments */}
+                                    {}
                                     <Grid item xs={12} sm={6} md={3}>
                                         {loading ? (
                                             <Skeleton variant="rectangular" height={140} sx={{ borderRadius: 2 }} />
                                         ) : (
-                                            <Box sx={{ 
-                                                p: 3, 
-                                                borderRadius: 2, 
+                                            <Box sx={{
+                                                p: 3,
+                                                borderRadius: 2,
                                                 background: 'linear-gradient(135deg, #fd7e1408 0%, #fd7e1412 100%)',
                                                 border: '1px solid #fd7e1420',
                                                 textAlign: 'center',

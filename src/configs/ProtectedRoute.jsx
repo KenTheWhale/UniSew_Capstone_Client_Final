@@ -39,7 +39,6 @@ export default function ProtectedRoute({ children, allowRoles = [] }) {
 
     useEffect(() => {
         const checkAuthentication = async () => {
-            // Nếu đã thử xác thực và thất bại, không thử lại
             if (hasAttemptedAuth) {
                 return;
             }
@@ -47,9 +46,9 @@ export default function ProtectedRoute({ children, allowRoles = [] }) {
             try {
                 setIsLoading(true);
                 setHasAttemptedAuth(true);
-                
+
                 const data = await GetAccessData();
-                
+
                 if (data != null) {
                     const isValidRole = await CheckIfRoleValid(allowRoles, data.role);
                     if (isValidRole) {
@@ -58,20 +57,17 @@ export default function ProtectedRoute({ children, allowRoles = [] }) {
                         setIsLoading(false);
                         return;
                     } else {
-                        // Role không hợp lệ
                         await Logout();
                         return;
                     }
                 }
 
-                // Nếu không có data, thử refresh token
                 const refreshResponse = await refreshToken();
                 if (refreshResponse.status === 401 || refreshResponse.status === 403) {
                     await Logout();
                     return;
                 }
 
-                // Thử lấy data lại sau khi refresh
                 const retryData = await GetAccessData();
                 if (retryData != null) {
                     const isValidRole = await CheckIfRoleValid(allowRoles, retryData.role);
@@ -88,7 +84,7 @@ export default function ProtectedRoute({ children, allowRoles = [] }) {
                     await Logout();
                     return;
                 }
-                
+
             } catch (error) {
                 console.error("Authentication error:", error);
                 await Logout();
@@ -100,13 +96,12 @@ export default function ProtectedRoute({ children, allowRoles = [] }) {
         checkAuthentication();
     }, [allowRoles]);
 
-    // Loading state
     if (isLoading) {
         return (
-            <div style={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                alignItems: 'center', 
+            <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
                 height: '100vh'
             }}>
                 <div style={{
@@ -127,11 +122,9 @@ export default function ProtectedRoute({ children, allowRoles = [] }) {
         );
     }
 
-    // Nếu đã xác thực và có role hợp lệ, render children
     if (isAuthenticated && hasValidRole) {
         return children;
     }
 
-    // Nếu không xác thực, không render gì (sẽ redirect)
     return null;
 }

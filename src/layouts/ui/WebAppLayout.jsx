@@ -59,10 +59,9 @@ function TopBar() {
             color: 'white',
             fontSize: 14,
             py: 1,
-            // Remove px here, move to Container
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center' // Center the Container horizontally
+            justifyContent: 'center'
         }}>
             <Container maxWidth={false} sx={{
                 px: {xs: 2, md: 8},
@@ -84,74 +83,74 @@ function TopBar() {
                         </Typography>
                     </Box>
                 </Box>
-                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
-                    <Button
-                        variant="outlined"
-                        size="small"
-                        sx={{
-                            color: 'white',
-                            borderColor: 'rgba(255,255,255,0.3)',
-                            fontSize: 12,
-                            px: 2,
-                            '&:hover': {borderColor: 'white', bgcolor: 'rgba(255,255,255,0.1)'}
-                        }}
-                        onClick={handleRegisterClick}
-                    >
-                        Register to Become a Partner
-                    </Button>
-                    <Menu
-                        anchorEl={anchorEl}
-                        open={Boolean(anchorEl)}
-                        onClose={handleClose}
-                        anchorOrigin={{vertical: 'bottom', horizontal: 'left'}}
-                        transformOrigin={{vertical: 'top', horizontal: 'left'}}
-                        PaperProps={{
-                            sx: {
-                                borderRadius: 2,
-                                boxShadow: '0 6px 24px rgba(25, 118, 210, 0.15)',
-                                minWidth: 200,
-                                mt: 1,
-                                p: 0.5,
-                                bgcolor: 'white',
-                            }
-                        }}
-                    >
-                        <MenuItem
-                            onClick={handleClose}
-                            sx={{
-                                fontSize: 17,
-                                fontWeight: 500,
-                                color: '#1976d2',
-                                borderRadius: 1,
-                                gap: 1.5,
-                                '&:hover': {
-                                    bgcolor: 'rgba(25,118,210,0.08)',
-                                    color: '#1565c0',
-                                },
-                                transition: 'background 0.2s, color 0.2s',
-                            }}
-                        >
-                            <FactoryIcon sx={{color: '#1976d2', mr: 1}}/> Garment Factory
-                        </MenuItem>
-                        <MenuItem
-                            onClick={() => handleRegister('designer')}
-                            sx={{
-                                fontSize: 17,
-                                fontWeight: 500,
-                                color: '#1976d2',
-                                borderRadius: 1,
-                                gap: 1.5,
-                                '&:hover': {
-                                    bgcolor: 'rgba(25,118,210,0.08)',
-                                    color: '#1565c0',
-                                },
-                                transition: 'background 0.2s, color 0.2s',
-                            }}
-                        >
-                            <DesignServicesIcon sx={{color: '#1976d2', mr: 1}}/> Designer
-                        </MenuItem>
-                    </Menu>
-                </Box>
+                {/*<Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>*/}
+                {/*    <Button*/}
+                {/*        variant="outlined"*/}
+                {/*        size="small"*/}
+                {/*        sx={{*/}
+                {/*            color: 'white',*/}
+                {/*            borderColor: 'rgba(255,255,255,0.3)',*/}
+                {/*            fontSize: 12,*/}
+                {/*            px: 2,*/}
+                {/*            '&:hover': {borderColor: 'white', bgcolor: 'rgba(255,255,255,0.1)'}*/}
+                {/*        }}*/}
+                {/*        onClick={handleRegisterClick}*/}
+                {/*    >*/}
+                {/*        Register to Become a Partner*/}
+                {/*    </Button>*/}
+                {/*    <Menu*/}
+                {/*        anchorEl={anchorEl}*/}
+                {/*        open={Boolean(anchorEl)}*/}
+                {/*        onClose={handleClose}*/}
+                {/*        anchorOrigin={{vertical: 'bottom', horizontal: 'left'}}*/}
+                {/*        transformOrigin={{vertical: 'top', horizontal: 'left'}}*/}
+                {/*        PaperProps={{*/}
+                {/*            sx: {*/}
+                {/*                borderRadius: 2,*/}
+                {/*                boxShadow: '0 6px 24px rgba(25, 118, 210, 0.15)',*/}
+                {/*                minWidth: 200,*/}
+                {/*                mt: 1,*/}
+                {/*                p: 0.5,*/}
+                {/*                bgcolor: 'white',*/}
+                {/*            }*/}
+                {/*        }}*/}
+                {/*    >*/}
+                {/*        <MenuItem*/}
+                {/*            onClick={handleClose}*/}
+                {/*            sx={{*/}
+                {/*                fontSize: 17,*/}
+                {/*                fontWeight: 500,*/}
+                {/*                color: '#1976d2',*/}
+                {/*                borderRadius: 1,*/}
+                {/*                gap: 1.5,*/}
+                {/*                '&:hover': {*/}
+                {/*                    bgcolor: 'rgba(25,118,210,0.08)',*/}
+                {/*                    color: '#1565c0',*/}
+                {/*                },*/}
+                {/*                transition: 'background 0.2s, color 0.2s',*/}
+                {/*            }}*/}
+                {/*        >*/}
+                {/*            <FactoryIcon sx={{color: '#1976d2', mr: 1}}/> Garment Factory*/}
+                {/*        </MenuItem>*/}
+                {/*        <MenuItem*/}
+                {/*            onClick={() => handleRegister('designer')}*/}
+                {/*            sx={{*/}
+                {/*                fontSize: 17,*/}
+                {/*                fontWeight: 500,*/}
+                {/*                color: '#1976d2',*/}
+                {/*                borderRadius: 1,*/}
+                {/*                gap: 1.5,*/}
+                {/*                '&:hover': {*/}
+                {/*                    bgcolor: 'rgba(25,118,210,0.08)',*/}
+                {/*                    color: '#1565c0',*/}
+                {/*                },*/}
+                {/*                transition: 'background 0.2s, color 0.2s',*/}
+                {/*            }}*/}
+                {/*        >*/}
+                {/*            <DesignServicesIcon sx={{color: '#1976d2', mr: 1}}/> Designer*/}
+                {/*        </MenuItem>*/}
+                {/*    </Menu>*/}
+                {/*</Box>*/}
             </Container>
         </Box>
     );
@@ -189,7 +188,6 @@ function MainHeader() {
         }
     };
 
-    // Button text and action logic
     const isSignedIn = typeof window !== 'undefined' && localStorage.getItem('user');
     const buttonText = isSignedIn ? 'Explore UniSew' : 'Sign In';
 
@@ -210,7 +208,6 @@ function MainHeader() {
                     alignItems: 'center',
                     justifyContent: 'space-between'
                 }}>
-                    {/* Logo */}
                     <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                         <Box component="img"
                              src="/logo.png"
@@ -229,7 +226,6 @@ function MainHeader() {
                             UniSew
                         </Typography>
                     </Box>
-                    {/* Desktop Navigation */}
                     <Box sx={{display: {xs: 'none', md: 'flex'}, gap: 1}}>
                         <Button
                             color="inherit"
@@ -284,7 +280,6 @@ function MainHeader() {
                             Contact
                         </Button>
                     </Box>
-                    {/* User Menu Button */}
                     <Box sx={{position: 'relative'}}>
                         <Button
                             variant="contained"
@@ -309,7 +304,6 @@ function MainHeader() {
                             {buttonText}
                         </Button>
 
-                        {/* User Menu Dropdown */}
                         {isSignedIn && (
                             <Menu
                                 anchorEl={anchorEl}
@@ -393,7 +387,6 @@ function MainHeader() {
                             </Menu>
                         )}
                     </Box>
-                    {/* Mobile Menu Icon */}
                     <IconButton
                         color="inherit"
                         sx={{display: {md: 'none'}, color: '#1976d2'}}
@@ -402,7 +395,6 @@ function MainHeader() {
                         <MenuIcon/>
                     </IconButton>
                 </Box>
-                {/* Mobile Menu */}
                 <Collapse in={mobileMenuOpen}>
                     <Box sx={{
                         bgcolor: 'white',
@@ -452,7 +444,6 @@ function Footer() {
         }}>
             <Container maxWidth={false} sx={{px: {xs: 2, md: 8}}}>
                 <Grid container spacing={4} alignItems="flex-start" justifyContent="space-between">
-                    {/* Location */}
                     <Grid>
                         <Typography variant="h6" sx={{fontWeight: 700, mb: 2, color: 'white'}}>
                             LOCATION
@@ -471,7 +462,6 @@ function Footer() {
                         </Box>
                     </Grid>
 
-                    {/* Contact Us */}
                     <Grid>
                         <Typography variant="h6" sx={{fontWeight: 700, mb: 2, color: 'white'}}>
                             CONTACT US
@@ -493,7 +483,6 @@ function Footer() {
                         </Box>
                     </Grid>
 
-                    {/* Opening Hours */}
                     <Grid>
                         <Typography variant="h6" sx={{fontWeight: 700, mb: 2, color: 'white'}}>
                             OUR POLICIES
@@ -516,7 +505,6 @@ function Footer() {
                         </Box>
                     </Grid>
 
-                    {/* Payment Acceptance */}
                     <Grid>
                         <Typography variant="h6" sx={{fontWeight: 700, mb: 2, color: 'white'}}>
                             PAYMENT ACCEPTANCE

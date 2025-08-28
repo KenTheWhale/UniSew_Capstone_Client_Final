@@ -24,12 +24,12 @@ import { giveFeedback } from '../../../../services/FeedbackService.jsx';
 import { uploadCloudinary } from '../../../../services/UploadImageService.jsx';
 import DisplayImage from '../../../ui/DisplayImage.jsx';
 
-export default function FeedbackReportPopup({ 
-    visible, 
-    onCancel, 
-    type = 'feedback', // 'feedback' or 'report'
+export default function FeedbackReportPopup({
+    visible,
+    onCancel,
+    type = 'feedback',
     requestData,
-    onSuccess 
+    onSuccess
 }) {
     const [rating, setRating] = useState(0);
     const [content, setContent] = useState('');
@@ -79,17 +79,17 @@ export default function FeedbackReportPopup({
 
     const handleImageChange = useCallback(async (event) => {
         const files = Array.from(event.target.files);
-        
+
         console.log('handleImageChange - files selected:', files.length);
         console.log('handleImageChange - current images:', images.length);
-        
+
         if (images.length + files.length > maxImages) {
             enqueueSnackbar(`Maximum ${maxImages} images allowed`, { variant: 'warning' });
             return;
         }
 
         const newImages = [...images];
-        
+
         for (const file of files) {
             try {
                 console.log('Uploading file:', file.name);
@@ -102,14 +102,13 @@ export default function FeedbackReportPopup({
                 });
             } catch (err) {
                 console.error('Upload failed for file:', file.name, err);
-                // Error already handled in handleImageUpload
                 continue;
             }
         }
-        
+
         console.log('Final images array:', newImages);
         setImages(newImages);
-        event.target.value = ''; // Reset file input
+        event.target.value = '';
     }, [images, handleImageUpload]);
 
     const handleRemoveImage = useCallback((imageId) => {
@@ -133,31 +132,34 @@ export default function FeedbackReportPopup({
                 imageUrls: images.map(img => img.url)
             };
 
+            if (requestData.orderId) {
+                payload.orderId = requestData.orderId;
+            } else {
+                payload.requestId = requestData.id;
+            }
+
             console.log('requestData:', requestData);
             console.log('images array:', images);
             console.log('imageUrls:', images.map(img => img.url));
             console.log('Submitting feedback/report with payload:', payload);
 
             const response = await giveFeedback(payload);
-            
+
             if (response && response.status === 200) {
                 const actionText = isReport ? 'report' : 'feedback';
-                enqueueSnackbar(`${actionText.charAt(0).toUpperCase() + actionText.slice(1)} submitted successfully`, { 
-                    variant: 'success' 
+                enqueueSnackbar(`${actionText.charAt(0).toUpperCase() + actionText.slice(1)} submitted successfully`, {
+                    variant: 'success'
                 });
-                
-                // Reset form
+
                 setRating(0);
                 setContent('');
                 setImages([]);
                 setErrors({});
-                
-                // Call success callback
+
                 if (onSuccess) {
                     onSuccess();
                 }
-                
-                // Close modal
+
                 onCancel();
             } else {
                 throw new Error('Failed to submit');
@@ -172,7 +174,6 @@ export default function FeedbackReportPopup({
     }, [rating, content, images, isReport, requestData, onSuccess, onCancel, validateForm]);
 
     const handleClose = useCallback(() => {
-        // Reset form when closing
         setRating(0);
         setContent('');
         setImages([]);
@@ -201,9 +202,9 @@ export default function FeedbackReportPopup({
                 boxShadow: 24,
                 p: 0
             }}>
-                {/* Header */}
+                {}
                 <Box sx={{
-                    background: isReport 
+                    background: isReport
                         ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
                         : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                     color: 'white',
@@ -215,9 +216,9 @@ export default function FeedbackReportPopup({
                         <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
                             {isReport ? 'Report Issue' : 'Give Feedback'}
                         </Typography>
-                        <Chip 
-                            label={isReport ? 'Report' : 'Feedback'} 
-                            sx={{ 
+                        <Chip
+                            label={isReport ? 'Report' : 'Feedback'}
+                            sx={{
                                 backgroundColor: 'rgba(255, 255, 255, 0.2)',
                                 color: 'white',
                                 fontWeight: 'bold'
@@ -237,11 +238,11 @@ export default function FeedbackReportPopup({
                     </IconButton>
                 </Box>
 
-                {/* Content */}
+                {}
                 <Box sx={{ p: 4 }}>
-                    {/* Request Info */}
-                    <Paper elevation={0} sx={{ 
-                        p: 3, 
+                    {}
+                    <Paper elevation={0} sx={{
+                        p: 3,
                         mb: 3,
                         backgroundColor: '#f8fafc',
                         borderRadius: 2,
@@ -281,7 +282,7 @@ export default function FeedbackReportPopup({
                                 <Typography variant="body2" sx={{ color: '#64748b' }}>
                                     Status
                                 </Typography>
-                                <Chip 
+                                <Chip
                                     label={requestData?.status || 'N/A'}
                                     sx={{
                                         backgroundColor: requestData?.status === 'completed' ? '#d1fae5' : '#fef3c7',
@@ -290,12 +291,25 @@ export default function FeedbackReportPopup({
                                     }}
                                 />
                             </Grid>
+                            {requestData?.orderId && (
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                        Total Uniforms
+                                    </Typography>
+                                    <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                        {requestData?.orderDetails
+                                            ? Math.ceil(requestData.orderDetails.reduce((sum, item) => sum + item.quantity, 0) / 2)
+                                            : 'N/A'
+                                        }
+                                    </Typography>
+                                </Grid>
+                            )}
                         </Grid>
                     </Paper>
 
-                    {/* Rating */}
-                    <Paper elevation={0} sx={{ 
-                        p: 3, 
+                    {}
+                    <Paper elevation={0} sx={{
+                        p: 3,
                         mb: 3,
                         backgroundColor: '#f8fafc',
                         borderRadius: 2,
@@ -329,9 +343,9 @@ export default function FeedbackReportPopup({
                         )}
                     </Paper>
 
-                    {/* Content */}
-                    <Paper elevation={0} sx={{ 
-                        p: 3, 
+
+                    <Paper elevation={0} sx={{
+                        p: 3,
                         mb: 3,
                         backgroundColor: '#f8fafc',
                         borderRadius: 2,
@@ -346,8 +360,8 @@ export default function FeedbackReportPopup({
                             rows={4}
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
-                            placeholder={isReport 
-                                ? 'Please describe the issue you encountered...' 
+                            placeholder={isReport
+                                ? 'Please describe the issue you encountered...'
                                 : 'Please share your experience and feedback...'
                             }
                             error={!!errors.content}
@@ -368,21 +382,20 @@ export default function FeedbackReportPopup({
                         />
                     </Paper>
 
-                    {/* Image Upload */}
-                    <Paper elevation={0} sx={{ 
-                        p: 3, 
+                    <Paper elevation={0} sx={{
+                        p: 3,
                         mb: 3,
                         backgroundColor: '#f8fafc',
                         borderRadius: 2,
                         border: '1px solid #e2e8f0'
                     }}>
                         <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1e293b' }}>
-                            {isReport ? 'Evidence Images' : 'Attached Images'} 
+                            {isReport ? 'Evidence Images' : 'Attached Images'}
                             <Typography component="span" sx={{ color: '#64748b', fontWeight: 'normal' }}>
                                 {' '}({images.length}/{maxImages})
                             </Typography>
                         </Typography>
-                        
+
                         {images.length > 0 && (
                             <Grid container spacing={2} sx={{ mb: 3 }}>
                                 {images.map((image) => (
@@ -452,7 +465,7 @@ export default function FeedbackReportPopup({
                                             {uploadingImages ? 'Uploading...' : 'Upload Images'}
                                         </Typography>
                                         <Typography variant="body2" sx={{ color: '#64748b' }}>
-                                            {isReport 
+                                            {isReport
                                                 ? 'Upload evidence images (JPG, PNG, GIF)'
                                                 : 'Upload images to support your feedback (JPG, PNG, GIF)'
                                             }
@@ -472,7 +485,6 @@ export default function FeedbackReportPopup({
                         )}
                     </Paper>
 
-                    {/* Actions */}
                     <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
                         <Button
                             onClick={handleClose}
@@ -494,7 +506,7 @@ export default function FeedbackReportPopup({
                             variant="contained"
                             disabled={submitting}
                             sx={{
-                                background: isReport 
+                                background: isReport
                                     ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
                                     : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                                 color: 'white',
@@ -523,4 +535,4 @@ export default function FeedbackReportPopup({
             </Box>
         </Modal>
     );
-} 
+}

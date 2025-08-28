@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { 
-    Box, 
-    Typography, 
-    Button, 
-    IconButton, 
-    Tooltip, 
+import {
+    Box,
+    Typography,
+    Button,
+    IconButton,
+    Tooltip,
     Paper,
     Card,
     CardContent,
@@ -35,7 +35,6 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 
-// Constants
 const STATUS_COLORS = {
     completed: '#2e7d32',
     processing: '#7c3aed',
@@ -44,7 +43,6 @@ const STATUS_COLORS = {
 
 const TABLE_PAGE_SIZE_OPTIONS = ['5', '10'];
 
-// StatCard Component
 const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
     <Card
         elevation={0}
@@ -86,7 +84,6 @@ const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
     </Card>
 ));
 
-// Loading State Component
 const LoadingState = React.memo(() => (
     <Box sx={{
         display: 'flex',
@@ -103,7 +100,6 @@ const LoadingState = React.memo(() => (
     </Box>
 ));
 
-// Error State Component
 const ErrorState = React.memo(({error, onRetry, isRetrying}) => (
     <Box sx={{
         display: 'flex',
@@ -145,7 +141,6 @@ const ErrorState = React.memo(({error, onRetry, isRetrying}) => (
     </Box>
 ));
 
-// Empty State Component
 const EmptyState = React.memo(() => (
     <Box sx={{
         textAlign: 'center',
@@ -199,7 +194,6 @@ export default function SchoolDesign() {
         FetchSchoolDesign();
     }, [FetchSchoolDesign]);
 
-    // Refresh data when user returns from other pages
     useEffect(() => {
         const handleFocus = () => {
             FetchSchoolDesign(false);
@@ -227,20 +221,18 @@ export default function SchoolDesign() {
     const [menuAnchorEl, setMenuAnchorEl] = useState(null);
     const [menuRowId, setMenuRowId] = useState(null);
 
-    // Memoized filtered data - now includes all requests
-    const filteredDesignRequests = useMemo(() => 
-        designRequests, // Show all requests including pending
+    const filteredDesignRequests = useMemo(() =>
+        designRequests,
         [designRequests]
     );
 
-    // Memoized statistics
     const stats = useMemo(() => {
         const total = filteredDesignRequests.length;
         const pending = filteredDesignRequests.filter(req => req.status === 'pending').length;
         const completed = filteredDesignRequests.filter(req => req.status === 'completed').length;
         const processing = filteredDesignRequests.filter(req => req.status === 'processing').length;
         const canceled = filteredDesignRequests.filter(req => req.status === 'canceled').length;
-        
+
         return { total, pending, completed, processing, canceled };
     }, [filteredDesignRequests]);
 
@@ -248,13 +240,11 @@ export default function SchoolDesign() {
         const request = designRequests.find(req => req.id === id);
         setSelectedRequest(request);
 
-        // Only open FindingDesignerPopup for 'pending' status
         if (request.status === 'pending') {
             setPaymentRequestDetails(null);
             setIsPaymentModalVisible(false);
             setIsModalVisible(true);
         } else {
-            // For non-pending requests, open RequestDetailPopup
             setIsModalVisible(true);
         }
     }, [designRequests]);
@@ -279,12 +269,10 @@ export default function SchoolDesign() {
     }, []);
 
     const handleOpenFeedback = useCallback((request) => {
-        // Only allow feedback for completed requests
         if (request.status !== 'completed') {
             enqueueSnackbar('Feedback is only available for completed requests', { variant: 'warning' });
             return;
         }
-        // Only allow feedback once per request
         if (request.feedback) {
             enqueueSnackbar('Feedback has already been submitted for this request', { variant: 'warning' });
             return;
@@ -294,12 +282,10 @@ export default function SchoolDesign() {
     }, []);
 
     const handleOpenReport = useCallback((request) => {
-        // Don't allow report for pending requests
         if (request.status === 'pending') {
             enqueueSnackbar('Report is not available for pending requests', { variant: 'warning' });
             return;
         }
-        // Don't allow report for requests that already have feedback
         if (request.feedback) {
             enqueueSnackbar('Report is not available for requests that already have feedback', { variant: 'warning' });
             return;
@@ -319,50 +305,50 @@ export default function SchoolDesign() {
     }, []);
 
     const handleFeedbackSuccess = useCallback(() => {
-        FetchSchoolDesign(); // Refresh data after successful feedback
+        FetchSchoolDesign();
     }, [FetchSchoolDesign]);
 
     const handleCancelRequest = useCallback(async (requestId) => {
-        // Allow cancel for all statuses except completed
-        const request = designRequests.find(req => req.id === requestId);
-        if (!request) {
-            enqueueSnackbar('Request not found', { variant: 'error' });
-            return;
-        }
-
-        if (request.status === 'completed') {
-            enqueueSnackbar('Cannot cancel completed requests', { variant: 'error' });
-            return;
-        }
-
         try {
             setCancellingRequestId(requestId);
-            const response = await cancelDesignRequest({ requestId });
-            
+
+            const request = designRequests.find(req => req.id === requestId);
+            if (!request) {
+                enqueueSnackbar('Request not found', { variant: 'error' });
+                return;
+            }
+
+            if (request.status !== 'pending' && request.status !== 'processing') {
+                enqueueSnackbar('Can only cancel pending or processing requests', { variant: 'warning' });
+                return;
+            }
+
+            const response = await cancelDesignRequest({ requestId: requestId });
+
             if (response && response.status === 200) {
-                enqueueSnackbar('Request cancelled successfully', { variant: 'success' });
-                FetchSchoolDesign(); // Refresh data after successful cancellation
+                enqueueSnackbar('Design request cancelled successfully!', {
+                    variant: 'success',
+                    autoHideDuration: 3000
+                });
+
+                await FetchSchoolDesign(false);
             } else {
-                enqueueSnackbar('Failed to cancel request', { variant: 'error' });
+                enqueueSnackbar('Failed to cancel design request. Please try again.', {
+                    variant: 'error',
+                    autoHideDuration: 4000
+                });
             }
         } catch (error) {
-            console.error('Error cancelling request:', error);
-            enqueueSnackbar('Error cancelling request', { variant: 'error' });
+            console.error('Error cancelling design request:', error);
+            enqueueSnackbar('An error occurred while cancelling the design request. Please try again.', {
+                variant: 'error',
+                autoHideDuration: 4000
+            });
         } finally {
             setCancellingRequestId(null);
         }
     }, [designRequests, FetchSchoolDesign]);
 
-    const handleOpenMenu = (event, rowId) => {
-        setMenuAnchorEl(event.currentTarget);
-        setMenuRowId(rowId);
-    };
-    const handleCloseMenu = () => {
-        setMenuAnchorEl(null);
-        setMenuRowId(null);
-    };
-
-    // Memoized table columns
     const columns = useMemo(() => [
         {
             title: 'Request ID',
@@ -438,75 +424,117 @@ export default function SchoolDesign() {
             title: 'Detail',
             key: 'details',
             align: 'center',
-            width: 160,
-            render: (_, record) => (
-                <Tooltip title="View Details">
-                    <IconButton 
-                        onClick={() => handleViewDetail(record.id)}
-                        sx={{
-                            color: '#1976d2',
-                            '&:hover': {
-                                backgroundColor: '#e3f2fd',
-                                transform: 'scale(1.1)'
-                            },
-                            transition: 'all 0.2s ease'
-                        }}
-                        size="small"
-                    >
-                        <InfoIcon />
-                    </IconButton>
-                </Tooltip>
-            ),
-        },
-        {
-            title: 'Actions',
-            key: 'actions',
-            align: 'center',
-            width: 120,
+            width: 280,
             fixed: 'right',
             render: (_, record) => (
-                <>
-                    <IconButton
-                        onClick={e => handleOpenMenu(e, record.id)}
-                        size="small"
-                    >
-                        <MoreVertIcon />
-                    </IconButton>
-                    {menuRowId === record.id && (
-                        <Menu
-                            anchorEl={menuAnchorEl}
-                            open={Boolean(menuAnchorEl) && menuRowId === record.id}
-                            onClose={handleCloseMenu}
-                            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                <Space size="middle">
+                    <Tooltip title="View Details">
+                        <IconButton
+                            onClick={() => handleViewDetail(record.id)}
+                            sx={{
+                                color: '#1976d2',
+                                '&:hover': {
+                                    backgroundColor: '#e3f2fd',
+                                    transform: 'scale(1.1)'
+                                },
+                                transition: 'all 0.2s ease'
+                            }}
+                            size="small"
                         >
-                            <MenuItem
-                                onClick={() => { handleOpenFeedback(record); handleCloseMenu(); }}
-                                disabled={record.status !== 'completed' || !!record.feedback}
-                            >
-                                <FeedbackIcon fontSize="small" sx={{ mr: 1, color: (record.status === 'completed' && !record.feedback) ? '#10b981' : '#9ca3af' }} />
-                                Feedback
-                            </MenuItem>
-                            <MenuItem
-                                onClick={() => { handleOpenReport(record); handleCloseMenu(); }}
-                                disabled={record.status === 'pending' || !!record.feedback}
-                            >
-                                <ReportIcon fontSize="small" sx={{ mr: 1, color: (record.status !== 'pending' && !record.feedback) ? '#ef4444' : '#9ca3af' }} />
-                                Report
-                            </MenuItem>
-                            <MenuItem
-                                onClick={async () => { await handleCancelRequest(record.id); handleCloseMenu(); }}
-                                disabled={record.status === 'completed' || cancellingRequestId === record.id}
-                            >
-                                {cancellingRequestId === record.id ?
-                                    <CircularProgress size={16} sx={{ color: '#9ca3af', mr: 1 }} /> :
-                                    <CancelIcon fontSize="small" sx={{ mr: 1, color: record.status !== 'completed' ? '#f59e0b' : '#9ca3af' }} />
+                            <InfoIcon />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title={
+                        record.status !== 'completed' ? "Feedback only available for completed requests" :
+                        record.feedback ? "Feedback already submitted" :
+                        "Give Feedback"
+                    }>
+                        <IconButton
+                            onClick={() => handleOpenFeedback(record)}
+                            disabled={record.status !== 'completed' || !!record.feedback}
+                            sx={{
+                                color: (record.status === 'completed' && !record.feedback) ? '#10b981' : '#9ca3af',
+                                '&:hover': {
+                                    backgroundColor: (record.status === 'completed' && !record.feedback) ? '#d1fae5' : 'transparent',
+                                    transform: (record.status === 'completed' && !record.feedback) ? 'scale(1.1)' : 'none'
+                                },
+                                transition: 'all 0.2s ease',
+                                '&:disabled': {
+                                    color: '#9ca3af',
+                                    cursor: 'not-allowed'
                                 }
-                                Cancel
-                            </MenuItem>
-                        </Menu>
+                            }}
+                            size="small"
+                        >
+                            <FeedbackIcon />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title={
+                        record.status === 'pending' ? "Report not available for pending requests" :
+                        record.feedback ? "Report not available for feedbacked requests" :
+                        "Report Issue"
+                    }>
+                        <IconButton
+                            onClick={() => handleOpenReport(record)}
+                            disabled={record.status === 'pending' || !!record.feedback}
+                            sx={{
+                                color: (record.status !== 'pending' && !record.feedback) ? '#ef4444' : '#9ca3af',
+                                '&:hover': {
+                                    backgroundColor: (record.status !== 'pending' && !record.feedback) ? '#fee2e2' : 'transparent',
+                                    transform: (record.status !== 'pending' && !record.feedback) ? 'scale(1.1)' : 'none'
+                                },
+                                transition: 'all 0.2s ease',
+                                '&:disabled': {
+                                    color: '#9ca3af',
+                                    cursor: 'not-allowed'
+                                }
+                            }}
+                            size="small"
+                        >
+                            <ReportIcon />
+                        </IconButton>
+                    </Tooltip>
+                    {(record.status === 'pending' || record.status === 'processing') && (
+                        <Tooltip title="Cancel Request">
+                            <IconButton
+                                onClick={() => handleCancelRequest(record.id)}
+                                disabled={cancellingRequestId === record.id}
+                                sx={{
+                                    color: cancellingRequestId === record.id ? '#bdbdbd' : '#d32f2f',
+                                    '&:hover': {
+                                        backgroundColor: cancellingRequestId === record.id ? 'transparent' : '#ffebee',
+                                        transform: cancellingRequestId === record.id ? 'none' : 'scale(1.1)'
+                                    },
+                                    transition: 'all 0.2s ease',
+                                    '&:disabled': {
+                                        cursor: 'not-allowed'
+                                    }
+                                }}
+                                size="small"
+                            >
+                                {cancellingRequestId === record.id ? (
+                                    <Box
+                                        component="span"
+                                        sx={{
+                                            width: 16,
+                                            height: 16,
+                                            border: '2px solid #bdbdbd',
+                                            borderTop: '2px solid transparent',
+                                            borderRadius: '50%',
+                                            animation: 'spin 1s linear infinite',
+                                            '@keyframes spin': {
+                                                '0%': {transform: 'rotate(0deg)'},
+                                                '100%': {transform: 'rotate(360deg)'}
+                                            }
+                                        }}
+                                    />
+                                ) : (
+                                    <CancelIcon/>
+                                )}
+                            </IconButton>
+                        </Tooltip>
                     )}
-                </>
+                </Space>
             ),
         },
     ], [filteredDesignRequests, handleViewDetail, handleOpenFeedback, handleOpenReport, handleCancelRequest, cancellingRequestId, menuAnchorEl, menuRowId]);
@@ -521,9 +549,8 @@ export default function SchoolDesign() {
 
     return (
         <Box sx={{ height: '100%', overflowY: 'auto' }}>
-            {/* Header Section */}
-            <Box 
-                sx={{ 
+            <Box
+                sx={{
                     mb: 4,
                     position: "relative",
                     p: 4,
@@ -594,7 +621,6 @@ export default function SchoolDesign() {
                 </Button>
             </Box>
 
-            {/* Statistics Section */}
             <Box sx={{ mb: 4 }}>
                 <Box sx={{ display: 'flex', gap: 3 }}>
                     <StatCard
@@ -635,7 +661,6 @@ export default function SchoolDesign() {
                 </Box>
             </Box>
 
-            {/* Table Section */}
             <Paper
                 elevation={0}
                 sx={{
@@ -691,16 +716,14 @@ export default function SchoolDesign() {
                 </Box>
             </Paper>
 
-            {/* RequestDetailPopup for non-pending requests */}
             {selectedRequest && selectedRequest.status !== 'pending' && (
-                <RequestDetailPopup 
+                <RequestDetailPopup
                     visible={isModalVisible}
                     onCancel={handleCancel}
                     request={selectedRequest}
                 />
             )}
 
-            {/* FindingDesignerPopup for pending requests */}
             {selectedRequest && selectedRequest.status === 'pending' && (
                 <FindingDesignerPopup
                     visible={isModalVisible}
@@ -709,7 +732,6 @@ export default function SchoolDesign() {
                 />
             )}
 
-            {/* DesignPaymentPopup */}
             {isPaymentModalVisible && (
                 <DesignPaymentPopup
                     visible={isPaymentModalVisible}
@@ -718,7 +740,6 @@ export default function SchoolDesign() {
                 />
             )}
 
-            {/* FeedbackReportPopup for Feedback */}
             {isFeedbackModalVisible && selectedRequestForFeedback && (
                 <FeedbackReportPopup
                     visible={isFeedbackModalVisible}
@@ -729,7 +750,6 @@ export default function SchoolDesign() {
                 />
             )}
 
-            {/* FeedbackReportPopup for Report */}
             {isReportModalVisible && selectedRequestForFeedback && (
                 <FeedbackReportPopup
                     visible={isReportModalVisible}

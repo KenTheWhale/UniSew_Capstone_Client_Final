@@ -27,10 +27,8 @@ import {parseID} from "../../utils/ParseIDUtil.jsx";
 import {getAppliedDesignerDesignRequests} from "../../services/DesignService.jsx";
 import { useLocation, useNavigate } from 'react-router-dom';
 
-// Constants
 const TABLE_PAGE_SIZE_OPTIONS = ['5', '10'];
 
-// Utility functions
 const formatDate = (dateString) => {
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, '0');
@@ -48,7 +46,6 @@ const calculateDaysDiff = (dateString) => {
     return Math.floor(timeDiff / (1000 * 3600 * 24));
 };
 
-// Extracted Components
 const StatCard = React.memo(({icon, value, label, color, bgColor}) => (
     <Card
         elevation={0}
@@ -310,7 +307,6 @@ export default function AppliedRequestList() {
         }
     }, [loading, openIdParam, designRequests, navigate]);
 
-    // Fetch applied design requests from API
     const fetchDesignRequests = async (showLoading = true) => {
         try {
             if (showLoading) setLoading(true);
@@ -335,7 +331,6 @@ export default function AppliedRequestList() {
         fetchDesignRequests();
     }, []);
 
-    // Refresh data when user returns from other pages
     useEffect(() => {
         const handleFocus = () => {
             fetchDesignRequests(false);
@@ -347,7 +342,6 @@ export default function AppliedRequestList() {
         };
     }, []);
 
-    // No need to filter since the API already returns applied requests
     const filteredDesignRequests = designRequests;
 
 
@@ -385,8 +379,8 @@ export default function AppliedRequestList() {
             defaultSortOrder: 'descend',
             width: 120,
             render: (text) => (
-                <Typography variant="body2" sx={{ 
-                    color: '#667eea', 
+                <Typography variant="body2" sx={{
+                    color: '#667eea',
                     fontWeight: 600,
                     fontFamily: 'monospace'
                 }}>
