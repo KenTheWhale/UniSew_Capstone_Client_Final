@@ -12,13 +12,13 @@ export default function HowItWork() {
             number: '02',
             title: 'Await Designer Bids',
             description: 'Once your request is live, designers will review it and submit their proposals to work on your project.',
-            icon: '�?
+            icon: '⏳'
         },
         {
             number: '03',
             title: 'Select a Designer and Quotation',
             description: 'Review the proposals, choose the designer that best fits your needs, and select their preferred design quotation.',
-            icon: '👨‍�?
+            icon: '👨‍🎨'
         },
         {
             number: '04',
@@ -30,7 +30,7 @@ export default function HowItWork() {
             number: '05',
             title: 'Request Revisions or Finalize',
             description: 'Collaborate with your designer, provide feedback, request revisions, and finalize the design until you are satisfied.',
-            icon: '�?
+            icon: '✅'
         },
         {
             number: '06',
