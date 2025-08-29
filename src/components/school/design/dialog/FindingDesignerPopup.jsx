@@ -134,7 +134,7 @@ const DesignerCard = React.memo(({ designer, isSelected, onSelect, onViewProfile
                             {formatPrice(designer.price).replace(' VND','')} <span style={{fontSize: 12, fontWeight: 700}}>VND</span>
                         </Typography>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mt: 0.5 }}>
-                            <Chip size="small" variant="outlined" label={`�?${designer.designer.rating}`} sx={{ height: 22 }} />
+                            <Chip size="small" variant="outlined" label={`⭐ ${designer.designer.rating}`} sx={{ height: 22 }} />
                             <Chip size="small" variant="outlined" icon={<ClockCircleOutlined/>} label={`Valid until ${formatDate(designer.acceptanceDeadline)}`} sx={{ height: 22 }} />
                         </Box>
                     </Box>
@@ -143,7 +143,6 @@ const DesignerCard = React.memo(({ designer, isSelected, onSelect, onViewProfile
 
             <Divider sx={{ my: 1.5 }} />
 
-            {}
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mb: 1 }}>
                 <Chip size="small" variant="outlined" icon={<CalendarIcon style={{ fontSize: 14 }} />} label={`${designer.deliveryWithIn} days`} sx={{ height: 26 }} />
                 <Chip size="small" variant="outlined" icon={<EditOutlined style={{ fontSize: 14 }} />} label={`${designer.revisionTime === UNLIMITED_REVISION_CODE ? 'Unlimited' : designer.revisionTime} revisions`} sx={{ height: 26 }} />
@@ -152,7 +151,6 @@ const DesignerCard = React.memo(({ designer, isSelected, onSelect, onViewProfile
                 )}
             </Box>
 
-            {}
             <Box sx={{
                 display: 'flex',
                 alignItems: 'center',
@@ -309,8 +307,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
     const [isProcessing, setIsProcessing] = useState(false);
     const [appliedDesigners, setAppliedDesigners] = useState([]);
     const [showRequestDetail, setShowRequestDetail] = useState(false);
-    const [sortCriteria, setSortCriteria] = useState([]); // [{ key: 'rating'|'acceptanceDeadline'|'deliveryWithIn'|'revisionTime'|'price', order: 'asc'|'desc' }]
-    // Thêm state quản lý modal profile
+    const [sortCriteria, setSortCriteria] = useState([]);
     const [profileModalOpen, setProfileModalOpen] = useState(false);
     const [profileDesigner, setProfileDesigner] = useState(null);
 
@@ -654,7 +651,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                 <Select
                                     mode="multiple"
                                     allowClear
-                                    placeholder="Sort by (priority left �?right)"
+                                    placeholder="Sort by (priority left → right)"
                                     style={{ minWidth: 360 }}
                                     value={sortCriteria.map(c => c.key)}
                                     onChange={handleSortChange}

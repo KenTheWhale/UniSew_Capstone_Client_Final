@@ -27,30 +27,16 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import Fade from '@mui/material/Fade';
 import {Outlet} from "react-router-dom";
-import FactoryIcon from '@mui/icons-material/Factory';
-import DesignServicesIcon from '@mui/icons-material/DesignServices';
+
 import {signout} from "../../services/AccountService.jsx";
 import {enqueueSnackbar} from "notistack";
 
 
 function TopBar() {
     const [anchorEl, setAnchorEl] = React.useState(null);
-    const handleRegisterClick = (event) => {
-        setAnchorEl(event.currentTarget);
+    const handleRegisterClick = () => {
+        window.location.href = '/register/partner';
     };
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
-
-    const handleRegister = (role) => {
-        if (role === 'designer') {
-            setAnchorEl(null);
-            window.location.href = '/register/designer'
-        } else {
-            setAnchorEl(null);
-            window.location.href = '/register/garment'
-        }
-    }
 
     return (
         <Box sx={{
@@ -83,74 +69,22 @@ function TopBar() {
                         </Typography>
                     </Box>
                 </Box>
-                {/*<Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>*/}
-                {/*    <Button*/}
-                {/*        variant="outlined"*/}
-                {/*        size="small"*/}
-                {/*        sx={{*/}
-                {/*            color: 'white',*/}
-                {/*            borderColor: 'rgba(255,255,255,0.3)',*/}
-                {/*            fontSize: 12,*/}
-                {/*            px: 2,*/}
-                {/*            '&:hover': {borderColor: 'white', bgcolor: 'rgba(255,255,255,0.1)'}*/}
-                {/*        }}*/}
-                {/*        onClick={handleRegisterClick}*/}
-                {/*    >*/}
-                {/*        Register to Become a Partner*/}
-                {/*    </Button>*/}
-                {/*    <Menu*/}
-                {/*        anchorEl={anchorEl}*/}
-                {/*        open={Boolean(anchorEl)}*/}
-                {/*        onClose={handleClose}*/}
-                {/*        anchorOrigin={{vertical: 'bottom', horizontal: 'left'}}*/}
-                {/*        transformOrigin={{vertical: 'top', horizontal: 'left'}}*/}
-                {/*        PaperProps={{*/}
-                {/*            sx: {*/}
-                {/*                borderRadius: 2,*/}
-                {/*                boxShadow: '0 6px 24px rgba(25, 118, 210, 0.15)',*/}
-                {/*                minWidth: 200,*/}
-                {/*                mt: 1,*/}
-                {/*                p: 0.5,*/}
-                {/*                bgcolor: 'white',*/}
-                {/*            }*/}
-                {/*        }}*/}
-                {/*    >*/}
-                {/*        <MenuItem*/}
-                {/*            onClick={handleClose}*/}
-                {/*            sx={{*/}
-                {/*                fontSize: 17,*/}
-                {/*                fontWeight: 500,*/}
-                {/*                color: '#1976d2',*/}
-                {/*                borderRadius: 1,*/}
-                {/*                gap: 1.5,*/}
-                {/*                '&:hover': {*/}
-                {/*                    bgcolor: 'rgba(25,118,210,0.08)',*/}
-                {/*                    color: '#1565c0',*/}
-                {/*                },*/}
-                {/*                transition: 'background 0.2s, color 0.2s',*/}
-                {/*            }}*/}
-                {/*        >*/}
-                {/*            <FactoryIcon sx={{color: '#1976d2', mr: 1}}/> Garment Factory*/}
-                {/*        </MenuItem>*/}
-                {/*        <MenuItem*/}
-                {/*            onClick={() => handleRegister('designer')}*/}
-                {/*            sx={{*/}
-                {/*                fontSize: 17,*/}
-                {/*                fontWeight: 500,*/}
-                {/*                color: '#1976d2',*/}
-                {/*                borderRadius: 1,*/}
-                {/*                gap: 1.5,*/}
-                {/*                '&:hover': {*/}
-                {/*                    bgcolor: 'rgba(25,118,210,0.08)',*/}
-                {/*                    color: '#1565c0',*/}
-                {/*                },*/}
-                {/*                transition: 'background 0.2s, color 0.2s',*/}
-                {/*            }}*/}
-                {/*        >*/}
-                {/*            <DesignServicesIcon sx={{color: '#1976d2', mr: 1}}/> Designer*/}
-                {/*        </MenuItem>*/}
-                {/*    </Menu>*/}
-                {/*</Box>*/}
+                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                    <Button
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                            color: 'white',
+                            borderColor: 'rgba(255,255,255,0.3)',
+                            fontSize: 12,
+                            px: 2,
+                            '&:hover': {borderColor: 'white', bgcolor: 'rgba(255,255,255,0.1)'}
+                        }}
+                        onClick={handleRegisterClick}
+                    >
+                        Register to Become a Partner
+                    </Button>
+                </Box>
             </Container>
         </Box>
     );
@@ -498,9 +432,6 @@ function Footer() {
                                 Policy</a></div>
                             <div><a href="/tos" style={{color: 'inherit', textDecoration: 'none'}}>Terms of Service</a>
                             </div>
-                            {/*<div><a href="#" style={{color: 'inherit', textDecoration: 'none'}}>Return Policy</a></div>*/}
-                            {/*<div><a href="#" style={{color: 'inherit', textDecoration: 'none'}}>Shipping Information</a>*/}
-                            {/*</div>*/}
                             <div><a href="/faq" style={{color: 'inherit', textDecoration: 'none'}}>FAQ</a></div>
                         </Box>
                     </Grid>

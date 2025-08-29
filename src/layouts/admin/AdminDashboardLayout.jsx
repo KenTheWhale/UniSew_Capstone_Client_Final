@@ -326,7 +326,7 @@ export default function AdminDashboardLayout() {
                     </Box>
 
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                        <Bell />
+                        {/*<Bell />*/}
                         <Box
                             sx={{
                                 display: "flex",

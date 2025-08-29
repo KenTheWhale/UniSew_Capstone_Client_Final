@@ -436,7 +436,7 @@ export default function SchoolDesign() {
             width: 80,
             render: (_, record) => (
                 <Tooltip title="View Details">
-                    <IconButton 
+                    <IconButton
                         onClick={() => handleViewDetail(record.id)}
                         sx={{
                             color: '#1976d2',
