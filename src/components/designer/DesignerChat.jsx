@@ -69,52 +69,6 @@ const formatCategory = (category) => {
     return v === 'pe' ? 'physical education' : (category || '');
 };
 
-export function statusTag(status) {
-    let color;
-    let icon = null;
-    switch (status) {
-        case 'created':
-            color = 'blue';
-            icon = <FileTextOutlined/>;
-            break;
-        case 'paid':
-            color = 'green';
-            icon = <CheckCircleOutlined/>;
-            break;
-        case 'unpaid':
-            color = 'orange';
-            icon = <CloseCircleOutlined/>;
-            break;
-        case 'progressing':
-            color = 'purple';
-            icon = <SyncOutlined/>;
-            break;
-        case 'processing':
-            color = 'orange';
-            icon = <SyncOutlined/>;
-            break;
-        case 'completed':
-            color = 'cyan';
-            icon = <CheckCircleOutlined/>;
-            break;
-        case 'rejected':
-            color = 'red';
-            icon = <CloseCircleOutlined/>;
-            break;
-        case 'pending':
-            color = 'orange';
-            icon = <ClockCircleOutlined/>;
-            break;
-        case 'selected':
-            color = 'green';
-            icon = <CheckCircleOutlined/>;
-            break;
-        default:
-            color = 'default';
-            break;
-    }
-    return <Tag style={{margin: 0}} color={color}>{icon} {status}</Tag>;
-}
 
 const getItemIcon = (itemType) => {
     const type = itemType?.toLowerCase() || '';
@@ -174,7 +128,7 @@ export function UseDesignerChatMessages(roomId) {
         const email = auth.currentUser?.email || "designer@unknown";
         const displayName = auth.currentUser?.displayName || "Designer";
 
-        let cookie = getAccessCookie()
+        let cookie = await getAccessCookie()
         if (!cookie) {
             return false;
         }
@@ -190,7 +144,7 @@ export function UseDesignerChatMessages(roomId) {
             createdAt: serverTimestamp(),
             user: displayName,
             senderEmail: email,
-            accountId: accountId,
+            accountId: accountId ? accountId : 0,
             room: roomId,
             read: false,
         });
@@ -1284,6 +1238,7 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
 
             setRevisionRequests(revisions);
         } catch (err) {
+            console.log(err)
             setRevisionRequests([]);
             enqueueSnackbar('Failed to load revision requests. Please try again.', {
                 variant: 'error',
@@ -1314,6 +1269,7 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
         try {
             await form.validateFields();
         } catch (e) {
+            console.log(e)
             enqueueSnackbar('Some fields are invalid. Please fix highlighted errors.', {
                 variant: 'error',
                 autoHideDuration: 4000,
@@ -1889,6 +1845,7 @@ export default function DesignerChat() {
                 setDesignDeliveries([]);
             }
         } catch (err) {
+            console.log(err)
             setDesignDeliveries([]);
         } finally {
             setLoadingDeliveries(false);
@@ -1905,6 +1862,7 @@ export default function DesignerChat() {
                 setRevisionRequests([]);
             }
         } catch (err) {
+            console.log(err)
             setRevisionRequests([]);
         } finally {
             setLoadingRevisionRequests(false);
@@ -1932,6 +1890,7 @@ export default function DesignerChat() {
                 window.location.href = '/designer/requests';
             }
         } catch (error) {
+            console.log(error)
             window.location.href = '/designer/requests';
         }
     };
@@ -1979,30 +1938,7 @@ export default function DesignerChat() {
         }
     };
 
-    const handleImageUpload = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            if (!file.type.startsWith('image/')) {
-                enqueueSnackbar('Invalid file type. Only images are accepted.', {variant: 'error'});
-                return;
-            }
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const now = new Date();
-                const formattedTime = now.toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: true
-                });
-                const formattedDay = now.toLocaleDateString('en-US', {weekday: 'short'});
-                setChatMessages(prevMessages => [
-                    ...prevMessages,
-                    {imageUrl: reader.result, sender: 'designer', timestamp: `${formattedDay}, ${formattedTime}`}
-                ]);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
+
 
     const onEmojiClick = (emojiData) => {
         setNewMessage(prevMsg => prevMsg + emojiData.emoji);
@@ -2089,12 +2025,14 @@ export default function DesignerChat() {
                             }
                         }
                     } catch (error) {
+                        console.log(error)
                     }
                 }
             } else {
                 enqueueSnackbar('Failed to submit delivery. Please try again.', {variant: 'error'});
             }
         } catch (error) {
+            console.log(error)
             enqueueSnackbar('Error submitting delivery. Please try again.', {variant: 'error'});
         }
     };
@@ -2968,17 +2906,8 @@ export default function DesignerChat() {
                                         </Box>
                                     )}
                                 </Box>
-                                <input type="file" accept=".jpg, .jpeg, .png, .gif" style={{display: 'none'}}
-                                       id="image-upload-input-designer-bubble" onChange={handleImageUpload}/>
-                                <Button disabled={isViewOnly} shape="circle" size="large" icon={<UploadOutlined/>}
-                                        onClick={() => document.getElementById('image-upload-input-designer-bubble').click()}
-                                        style={{
-                                            width: 48,
-                                            height: 48,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center'
-                                        }}/>
+
+
                                 <Button disabled={isViewOnly} shape="circle" size="large" icon={<SmileOutlined/>}
                                         onClick={() => setShowEmojiPicker(prev => !prev)} style={{
                                     width: 48,

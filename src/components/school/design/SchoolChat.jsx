@@ -57,32 +57,6 @@ import {getAccessCookie} from "../../../utils/CookieUtil.jsx";
 
 const {TextArea} = Input;
 
-export function statusTag(status) {
-    let color;
-    let icon = null;
-    switch (status) {
-        case 'pending':
-            color = 'blue';
-            icon = <ClockCircleOutlined/>;
-            break;
-        case 'processing':
-            color = 'green';
-            icon = <SyncOutlined/>;
-            break;
-        case 'completed':
-            color = 'success';
-            icon = <CheckCircleOutlinedIcon/>;
-            break;
-        case 'canceled':
-            color = 'red';
-            icon = <CloseCircleOutlined/>;
-            break;
-        default:
-            color = 'default';
-            break;
-    }
-    return <Tag style={{margin: 0}} color={color}>{icon} {status}</Tag>;
-}
 
 const formatCategory = (category) => {
     const v = (category || '').toLowerCase();
@@ -609,11 +583,12 @@ export function UseDesignChatMessages(roomId) {
         if (!roomId) return;
         const email = auth.currentUser?.email || "designer@unknown";
         const displayName = auth.currentUser?.displayName || "Designer";
-        let cookie = getAccessCookie("access")
+        let cookie = await getAccessCookie()
         if (!cookie) {
             return false;
         }
         const accountId = cookie.id;
+        console.log("accountId", accountId);
 
         const payload =
             typeof textOrPayload === "string"
@@ -625,7 +600,7 @@ export function UseDesignChatMessages(roomId) {
             createdAt: serverTimestamp(),
             user: displayName,
             senderEmail: email,
-            accountId: accountId,
+            accountId: accountId ? accountId : 0,
             room: roomId,
             read: false,
         });
@@ -2024,30 +1999,6 @@ export default function SchoolChat() {
         }
     };
 
-    const handleImageUpload = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            if (!file.type.startsWith('image/')) {
-                enqueueSnackbar('Invalid file type. Only images are accepted.', {variant: 'error'});
-                return;
-            }
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const now = new Date();
-                const formattedTime = now.toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: true
-                });
-                const formattedDay = now.toLocaleDateString('en-US', {weekday: 'short'});
-                setChatMessages(prevMessages => [
-                    ...prevMessages,
-                    {imageUrl: reader.result, sender: 'user', timestamp: `${formattedDay}, ${formattedTime}`}
-                ]);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
 
     const onEmojiClick = (emojiData) => {
         setNewMessage(prevMsg => prevMsg + emojiData.emoji);
@@ -3165,22 +3116,6 @@ export default function SchoolChat() {
                                         </Box>
                                     )}
                                 </Box>
-                                <input
-                                    type="file"
-                                    accept=".jpg, .jpeg, .png, .gif"
-                                    style={{display: 'none'}}
-                                    id="image-upload-input-bubble"
-                                    onChange={handleImageUpload}
-                                />
-                                <Button disabled={isViewOnly} shape="circle" size="large" icon={<UploadOutlined/>}
-                                        onClick={() => document.getElementById('image-upload-input-bubble').click()}
-                                        style={{
-                                            width: 48,
-                                            height: 48,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center'
-                                        }}/>
                                 <Button disabled={isViewOnly} shape="circle" size="large" icon={<SmileOutlined/>}
                                         onClick={() => setShowEmojiPicker(prev => !prev)} style={{
                                     width: 48,
