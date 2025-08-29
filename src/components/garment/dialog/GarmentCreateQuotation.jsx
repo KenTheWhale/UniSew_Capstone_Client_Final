@@ -60,7 +60,6 @@ import DisplayImage from "../../ui/DisplayImage.jsx";
 import { createQuotation, getSizes } from "../../../services/OrderService.jsx";
 import { enqueueSnackbar } from "notistack";
 
-// Status chip component
 const StatusChip = ({ status }) => {
     const getStatusConfig = (status) => {
         switch (status?.toLowerCase()) {
@@ -129,7 +128,6 @@ const StatusChip = ({ status }) => {
     );
 };
 
-// Function to get appropriate icon based on item type
 const getItemIcon = (itemType) => {
     const type = itemType?.toLowerCase() || '';
 
@@ -159,7 +157,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
     const [deliveryTimeError, setDeliveryTimeError] = useState('');
     const [imagesDialogOpen, setImagesDialogOpen] = useState(false);
     const [selectedItemImages, setSelectedItemImages] = useState(null);
-    const [deliveryOption, setDeliveryOption] = useState('date'); // 'date' or 'days'
+    const [deliveryOption, setDeliveryOption] = useState('date');
     const [selectedDeliveryDate, setSelectedDeliveryDate] = useState('');
     const [priceError, setPriceError] = useState('');
     const [validUntilError, setValidUntilError] = useState('');
@@ -168,7 +166,6 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
     const [selectedSizeSpecs, setSelectedSizeSpecs] = useState(null);
     const [showLogoPositionDialog, setShowLogoPositionDialog] = useState(false);
 
-    // New state for quantity details dialog
     const [showQuantityDetailsDialog, setShowQuantityDetailsDialog] = useState(false);
     const [selectedQuantityDetails, setSelectedQuantityDetails] = useState(null);
 
@@ -209,7 +206,6 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
     };
 
     const handleStatusUpdate = () => {
-        // TODO: Implement status update API call
         console.log('Updating status to:', newStatus, 'with note:', statusNote);
         setUpdateStatusDialogOpen(false);
         setNewStatus('');
@@ -226,7 +222,6 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
         setSelectedItemImages(null);
     };
 
-    // Fetch sizes from API
     const fetchSizes = async () => {
         try {
             console.log('Fetching sizes from API...');
@@ -249,7 +244,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
 
     const handleOpenSizeSpecsForItem = (designItem) => {
         console.log('handleOpenSizeSpecsForItem called with:', designItem);
-        
+
         if (!designItem) {
             console.log('No design item provided, using default values');
             setSelectedSizeSpecs({
@@ -263,7 +258,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                 gender: designItem.deliveryItem?.designItem?.gender === 'boy' ? 'male' : 'female'
             });
         }
-        
+
         console.log('Opening size specs dialog');
         setShowSizeSpecsDialog(true);
     };
@@ -284,15 +279,14 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
     const handleSubmitQuotation = async () => {
         try {
             setSubmittingQuotation(true);
-            
-            // Validation
+
             const price = parseInt(quotationData.totalPrice);
             if (price < 10000) {
                 enqueueSnackbar('Total price must be at least 10,000 VND', { variant: 'error' });
                 setSubmittingQuotation(false);
                 return;
             }
-            
+
             if (price > 200000000) {
                 enqueueSnackbar('Total price cannot exceed 200,000,000 VND', { variant: 'error' });
                 setSubmittingQuotation(false);
@@ -305,24 +299,23 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                 setSubmittingQuotation(false);
                 return;
             }
-            
+
             const validUntilDate = new Date(quotationData.validUntil);
             const orderDeadline = new Date(mergedOrderData.deadline);
             const dayBeforeDeadline = new Date(orderDeadline);
             dayBeforeDeadline.setDate(orderDeadline.getDate() - 1);
             dayBeforeDeadline.setHours(23, 59, 59, 999);
-            
+
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             tomorrow.setHours(0, 0, 0, 0);
-            
+
             if (validUntilDate < tomorrow) {
                 enqueueSnackbar('Valid until date must be from tomorrow onwards', { variant: 'error' });
                 setSubmittingQuotation(false);
                 return;
             }
-            
-            // Calculate delivery date based on current option
+
             let deliveryDate;
             if (deliveryOption === 'date' && selectedDeliveryDate) {
                 deliveryDate = new Date(selectedDeliveryDate);
@@ -332,7 +325,6 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                 deliveryDate.setDate(orderDate.getDate() + parseInt(quotationData.deliveryTime));
             }
 
-            // Check if delivery date is set and Valid Until is after delivery date - 2 days
             if (deliveryDate) {
                 const twoDaysBeforeDelivery = new Date(deliveryDate);
                 twoDaysBeforeDelivery.setDate(deliveryDate.getDate() - 2);
@@ -345,14 +337,12 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                 }
             }
 
-            // Also check order deadline constraint
             if (validUntilDate > dayBeforeDeadline) {
                 enqueueSnackbar(`Valid until date must be before order deadline (${formatDate(mergedOrderData.deadline)})`, { variant: 'error' });
                 setSubmittingQuotation(false);
                 return;
             }
-            
-            // Calculate early delivery date based on selected option
+
             let earlyDeliveryDate;
             if (deliveryOption === 'date') {
                 earlyDeliveryDate = new Date(selectedDeliveryDate);
@@ -361,35 +351,32 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                 earlyDeliveryDate = new Date(orderDate);
                 earlyDeliveryDate.setDate(orderDate.getDate() + deliveryDays);
             }
-            
-            // Check if delivery time exceeds the order deadline (only for days option)
+
             if (deliveryOption === 'days') {
             const orderDeadline = new Date(mergedOrderData.deadline);
-            orderDeadline.setHours(23, 59, 59, 999); // Set to end of day
-            
+            orderDeadline.setHours(23, 59, 59, 999);
+
             if (earlyDeliveryDate > orderDeadline) {
                 enqueueSnackbar(`Delivery time cannot exceed the order deadline (${formatDate(mergedOrderData.deadline)})`, { variant: 'error' });
                 setSubmittingQuotation(false);
                 return;
                 }
             }
-            
-            // Prepare data according to API structure
+
             const quotationPayload = {
                 orderId: parseInt(mergedOrderData.id),
-                earlyDeliveryDate: earlyDeliveryDate.toISOString().split('T')[0], // Format: YYYY-MM-DD
+                earlyDeliveryDate: earlyDeliveryDate.toISOString().split('T')[0],
                 acceptanceDeadline: quotationData.validUntil,
                 price: parseInt(quotationData.totalPrice) || 0,
                 note: quotationData.note || ''
             };
-            
+
             console.log('Submitting quotation:', quotationPayload);
-            
+
             const response = await createQuotation(quotationPayload);
-            
+
             if (response && response.status === 200) {
                 enqueueSnackbar('Quotation sent successfully!', { variant: 'success' });
-                // Reset form and close
                 setShowQuotationForm(false);
                 setQuotationData({
                     totalPrice: '',
@@ -415,21 +402,18 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
             totalPrice: numericValue
         }));
 
-        // Clear error if empty
         if (!numericValue) {
             setPriceError('');
             return;
         }
 
         const price = parseInt(numericValue);
-        
-        // Validate minimum price
+
         if (price < 10000) {
             setPriceError('Total price must be at least 10,000 VND');
             return;
         }
-        
-        // Validate maximum price
+
         if (price > 200000000) {
             setPriceError('Total price cannot exceed 200,000,000 VND');
             return;
@@ -445,26 +429,23 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
             deliveryTime: value
         }));
 
-        // Clear error if empty
         if (!value) {
             setDeliveryTimeError('');
             return;
         }
 
-        // Validate delivery time
         if (deliveryDays < 1) {
             setDeliveryTimeError('Delivery time must be at least 1 day');
             return;
         }
 
-        // Check if delivery time exceeds the order deadline
         const orderDate = new Date(mergedOrderData.orderDate);
         const earlyDeliveryDate = new Date(orderDate);
         earlyDeliveryDate.setDate(orderDate.getDate() + deliveryDays);
-        
+
         const orderDeadline = new Date(mergedOrderData.deadline);
-        orderDeadline.setHours(23, 59, 59, 999); // Set to end of day
-        
+        orderDeadline.setHours(23, 59, 59, 999);
+
         if (earlyDeliveryDate > orderDeadline) {
             setDeliveryTimeError(`Cannot exceed order deadline (${formatDate(mergedOrderData.deadline)})`);
             return;
@@ -472,7 +453,6 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
 
         setDeliveryTimeError('');
 
-        // Re-validate Valid Until if it's already set
         if (quotationData.validUntil) {
             const validUntilDate = new Date(quotationData.validUntil);
             const twoDaysBeforeDelivery = new Date(earlyDeliveryDate);
@@ -489,7 +469,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
 
     const handleDeliveryDateChange = (date) => {
         setSelectedDeliveryDate(date);
-        
+
         if (!date) {
             setDeliveryTimeError('');
             return;
@@ -498,11 +478,11 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
         const selectedDate = new Date(date);
         const orderDeadline = new Date(mergedOrderData.deadline);
         orderDeadline.setHours(23, 59, 59, 999);
-        
+
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         tomorrow.setHours(0, 0, 0, 0);
-        
+
         const dayBeforeDeadline = new Date(orderDeadline);
         dayBeforeDeadline.setDate(orderDeadline.getDate() - 1);
         dayBeforeDeadline.setHours(23, 59, 59, 999);
@@ -519,7 +499,6 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
 
         setDeliveryTimeError('');
 
-        // Re-validate Valid Until if it's already set
         if (quotationData.validUntil) {
             const validUntilDate = new Date(quotationData.validUntil);
             const twoDaysBeforeDelivery = new Date(selectedDate);
@@ -536,16 +515,15 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
 
     const getCalculatedDeliveryDate = () => {
         if (!quotationData.deliveryTime) return '';
-        
+
         const deliveryDays = parseInt(quotationData.deliveryTime);
         const orderDate = new Date(mergedOrderData.orderDate);
         const calculatedDate = new Date(orderDate);
         calculatedDate.setDate(orderDate.getDate() + deliveryDays);
-        
+
         return calculatedDate.toISOString().split('T')[0];
     };
 
-    // Fetch sizes when component mounts
     useEffect(() => {
         if (visible) {
             console.log('Component visible, fetching sizes...');
@@ -553,7 +531,6 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
         }
     }, [visible]);
 
-    // Function to sort sizes in correct order
     const sortSizes = (sizes) => {
         const sizeOrder = ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
         return sizes.sort((a, b) => {
@@ -563,31 +540,28 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
         });
     };
 
-    // Function to group items by category with rowspan support
     const groupItemsByCategory = (orderDetails) => {
         if (!orderDetails || orderDetails.length === 0) return [];
-        
-        // First, group by category
+
         const categoryGroups = {};
-        
+
         orderDetails.forEach((item) => {
             const category = item.deliveryItem?.designItem?.category || 'regular';
             const gender = item.deliveryItem?.designItem?.gender || 'unknown';
             const type = item.deliveryItem?.designItem?.type || 'item';
-            
+
             if (!categoryGroups[category]) {
                 categoryGroups[category] = {};
             }
-            
+
             if (!categoryGroups[category][gender]) {
                 categoryGroups[category][gender] = [];
             }
-            
-            // Find existing group for this type
-            let existingGroup = categoryGroups[category][gender].find(group => 
+
+            let existingGroup = categoryGroups[category][gender].find(group =>
                 group.type === type
             );
-            
+
             if (!existingGroup) {
                 existingGroup = {
                     category,
@@ -597,7 +571,6 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                     quantities: {},
                     items: [],
                     totalQuantity: 0,
-                    // Common properties from first item
                     color: item.deliveryItem?.designItem?.color,
                     logoPosition: item.deliveryItem?.designItem?.logoPosition,
                     baseLogoHeight: item.deliveryItem?.baseLogoHeight,
@@ -608,31 +581,30 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                 };
                 categoryGroups[category][gender].push(existingGroup);
             }
-            
+
             const size = item.size || 'M';
             const quantity = item.quantity || 0;
-            
+
             if (!existingGroup.sizes.includes(size)) {
                 existingGroup.sizes.push(size);
             }
-            
+
             existingGroup.quantities[size] = quantity;
             existingGroup.items.push(item);
             existingGroup.totalQuantity += quantity;
         });
-        
-        // Convert to array with category and gender info for rowspan
+
         const result = [];
         Object.entries(categoryGroups).forEach(([category, genderGroups]) => {
-            const totalCategoryRows = Object.values(genderGroups).reduce((sum, groups) => 
+            const totalCategoryRows = Object.values(genderGroups).reduce((sum, groups) =>
                 sum + groups.length, 0
             );
-            
+
             Object.entries(genderGroups).forEach(([gender, groups]) => {
                 groups.forEach((group, index) => {
                     const isFirstInCategory = Object.keys(genderGroups).indexOf(gender) === 0 && index === 0;
                     const isFirstInGender = index === 0;
-                    
+
                     result.push({
                         ...group,
                         isFirstInCategory,
@@ -643,7 +615,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                 });
             });
         });
-        
+
         return result;
     };
 
@@ -675,7 +647,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                 }
             }}
         >
-            {/* Header */}
+            {}
             <Box sx={{
                 background: 'linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)',
                 color: 'white',
@@ -708,13 +680,13 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                 </Box>
             </Box>
 
-            {/* Content */}
+            {}
             <DialogContent sx={{ p: 0, overflow: 'auto' }}>
                 <Container maxWidth={false} sx={{ p: 3 }}>
                     <Box sx={{ display: 'flex', gap: 3, flexDirection: { xs: 'column', lg: 'row' } }}>
-                        {/* Left Column - Order Information, School Information, Order Items */}
+                        {}
                         <Box sx={{ flex: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                            {/* Order Information Card */}
+                            {}
                             <Card sx={{
                                 mb: 3,
                                 background: 'rgba(255, 255, 255, 0.95)',
@@ -769,15 +741,15 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                     </Typography>
                                 </Box>
                                 <CardContent sx={{ p: 4 }}>
-                                    {/* Main Information Grid */}
-                                    <Box sx={{ 
-                                        display: 'flex', 
-                                        gap: 3, 
+                                    {}
+                                    <Box sx={{
+                                        display: 'flex',
+                                        gap: 3,
                                         height: '100%',
                                         flexWrap: { xs: 'wrap', sm: 'nowrap' }
                                     }}>
-                                        {/* Order Date */}
-                                        <Box sx={{ 
+                                        {}
+                                        <Box sx={{
                                             flex: 1,
                                             height: '100%',
                                             minWidth: { xs: '100%', sm: 'auto' }
@@ -839,8 +811,8 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                             </Box>
                                         </Box>
 
-                                        {/* Delivery Deadline */}
-                                        <Box sx={{ 
+                                        {}
+                                        <Box sx={{
                                             flex: 1,
                                             height: '100%',
                                             minWidth: { xs: '100%', sm: 'auto' }
@@ -896,14 +868,14 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                     fontWeight: 600,
                                                     color: (() => {
                                                         const daysLeft = getDaysUntilDeadline(mergedOrderData.deadline);
-                                                        if (daysLeft > 30) return '#2e7d32'; // xanh
-                                                        if (daysLeft > 14) return '#ff9800'; // cam
-                                                        return '#d32f2f'; // đỏ
+                                                        if (daysLeft > 30) return '#2e7d32';
+                                                        if (daysLeft > 14) return '#ff9800';
+                                                        return '#d32f2f';
                                                     })(),
                                                     fontSize: '0.8rem',
                                                     lineHeight: 1.2
                                                 }}>
-                                                    {getDaysUntilDeadline(mergedOrderData.deadline) > 0 
+                                                    {getDaysUntilDeadline(mergedOrderData.deadline) > 0
                                                         ? `${getDaysUntilDeadline(mergedOrderData.deadline)} days left`
                                                         : 'overdue'
                                                     }
@@ -913,8 +885,8 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
 
 
 
-                                        {/* Total Uniforms */}
-                                        <Box sx={{ 
+                                        {}
+                                        <Box sx={{
                                             flex: 1,
                                             height: '100%',
                                             minWidth: { xs: '100%', sm: 'auto' }
@@ -976,8 +948,8 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                             </Box>
                                         </Box>
 
-                                        {/* Status */}
-                                        <Box sx={{ 
+                                        {}
+                                        <Box sx={{
                                             flex: 1,
                                             height: '100%',
                                             minWidth: { xs: '100%', sm: 'auto' }
@@ -1055,8 +1027,8 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                             </Box>
                                         </Box>
                                     </Box>
-                                    
-                                    {/* Order Notes Section */}
+
+                                    {}
                                     {mergedOrderData.note && (
                                         <Box sx={{
                                             mt: 4,
@@ -1097,7 +1069,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                 </CardContent>
                             </Card>
 
-                            {/* School Information */}
+                            {}
                             <Card sx={{
                                 background: 'rgba(255, 255, 255, 0.95)',
                                 border: '1px solid rgba(63, 81, 181, 0.1)',
@@ -1151,7 +1123,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                 </Box>
                                 <CardContent sx={{ p: 3 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 3 }}>
-                                        {/* Avatar */}
+                                        {}
                                         <Avatar sx={{
                                             width: 80,
                                             height: 80,
@@ -1159,8 +1131,8 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                             border: '2px solid rgba(63, 81, 181, 0.2)'
                                         }}>
                                             {mergedOrderData.school?.avatar ? (
-                                                <img 
-                                                    src={mergedOrderData.school.avatar} 
+                                                <img
+                                                    src={mergedOrderData.school.avatar}
                                                     alt="School Logo"
                                                     referrerPolicy="no-referrer"
                                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -1170,12 +1142,12 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                             )}
                                         </Avatar>
 
-                                        {/* Information Grid */}
-                                        <Box sx={{ 
+                                        {}
+                                        <Box sx={{
                                             flex: 1,
-                                            display: 'grid', 
+                                            display: 'grid',
                                             gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
-                                            gap: 2 
+                                            gap: 2
                                         }}>
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                                 <BusinessIcon sx={{ color: '#3f51b5', fontSize: 20 }} />
@@ -1226,9 +1198,9 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                             </Box>
 
                                             {mergedOrderData.school?.address && (
-                                                <Box sx={{ 
-                                                    display: 'flex', 
-                                                    alignItems: 'flex-start', 
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'flex-start',
                                                     gap: 2,
                                                     gridColumn: { xs: '1', sm: '1 / -1' }
                                                 }}>
@@ -1248,7 +1220,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                 </CardContent>
                             </Card>
 
-                            {/* Order Items Section */}
+                            {}
                             <Card sx={{
                                 background: 'rgba(255, 255, 255, 0.95)',
                                 border: '1px solid rgba(63, 81, 181, 0.1)',
@@ -1303,7 +1275,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                             <CheckroomIcon sx={{ fontSize: 20 }} />
                                         </Box>
                                         Order Items
-                                        <Chip 
+                                        <Chip
                                             label={`${groupItemsByCategory(mergedOrderData.orderDetails).length} items`}
                                             size="small"
                                             sx={{
@@ -1377,7 +1349,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                         </Box>
                                     </Box>
                                 </Box>
-                                
+
                                 <Box sx={{ p: 3 }}>
                                     {mergedOrderData.orderDetails?.length === 0 ? (
                                         <Box sx={{
@@ -1399,7 +1371,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                             overflow: 'hidden',
                                             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
                                         }}>
-                                            {/* Excel-Style Table */}
+                                            {}
                                             <Box sx={{
                                                 display: 'grid',
                                                 gridTemplateColumns: '120px 100px 100px 100px 100px 100px 120px 120px 120px',
@@ -1407,7 +1379,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                 borderRadius: '8px',
                                                 overflow: 'hidden'
                                             }}>
-                                                {/* Header Row */}
+                                                {}
                                                 <Box sx={{
                                                     p: 2,
                                                     borderRight: '1px solid #000000',
@@ -1425,7 +1397,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                         Category
                                                     </Typography>
                                                 </Box>
-                                                
+
                                                 <Box sx={{
                                                     p: 2,
                                                     borderRight: '1px solid #000000',
@@ -1443,7 +1415,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                         Gender
                                                     </Typography>
                                                 </Box>
-                                                
+
                                                 <Box sx={{
                                                     p: 2,
                                                     borderRight: '1px solid #000000',
@@ -1461,7 +1433,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                         Type
                                                     </Typography>
                                                 </Box>
-                                                
+
                                                 <Box sx={{
                                                     p: 2,
                                                     borderRight: '1px solid #000000',
@@ -1479,7 +1451,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                         Size
                                                     </Typography>
                                                 </Box>
-                                                
+
                                                 <Box sx={{
                                                     p: 2,
                                                     borderRight: '1px solid #000000',
@@ -1497,7 +1469,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                         Quantity
                                                     </Typography>
                                                 </Box>
-                                                
+
                                                 <Box sx={{
                                                     p: 2,
                                                     borderRight: '1px solid #000000',
@@ -1515,7 +1487,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                         Color
                                                     </Typography>
                                                 </Box>
-                                                
+
                                                 <Box sx={{
                                                     p: 2,
                                                     borderRight: '1px solid #000000',
@@ -1533,7 +1505,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                         Logo Position
                                                     </Typography>
                                                 </Box>
-                                                
+
                                                 <Box sx={{
                                                     p: 2,
                                                     borderRight: '1px solid #000000',
@@ -1559,7 +1531,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                         (height × width)
                                                     </Typography>
                                                 </Box>
-                                                
+
                                                 <Box sx={{
                                                     p: 2,
                                                     borderBottom: '1px solid #000000',
@@ -1576,8 +1548,8 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                         Images
                                                     </Typography>
                                                 </Box>
-                                                
-                                                {/* Data Rows */}
+
+                                                {}
                                                 {(() => {
                                                     const groupedItems = groupItemsByCategory(mergedOrderData.orderDetails);
                                                     const rows = [];
@@ -1585,7 +1557,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                     groupedItems.forEach((groupedItem, index) => {
                                                                 rows.push(
                                                             <React.Fragment key={`${groupedItem.category}-${groupedItem.gender}-${groupedItem.type}-${index}`}>
-                                                                {/* Category - with rowspan */}
+                                                                {}
                                                                 {groupedItem.isFirstInCategory && (
                                                                             <Box sx={{
                                                                                 p: 2,
@@ -1611,8 +1583,8 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                                 />
                                                                             </Box>
                                                                         )}
-                                                                        
-                                                                {/* Gender - with rowspan */}
+
+                                                                {}
                                                                 {groupedItem.isFirstInGender && (
                                                                             <Box sx={{
                                                                                 p: 2,
@@ -1631,14 +1603,14 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                                     fontSize: '13px',
                                                                                     textTransform: 'capitalize'
                                                                                 }}>
-                                                                            {groupedItem.gender === 'boy' ? 'Boy' : 
-                                                                             groupedItem.gender === 'girl' ? 'Girl' : 
+                                                                            {groupedItem.gender === 'boy' ? 'Boy' :
+                                                                             groupedItem.gender === 'girl' ? 'Girl' :
                                                                              groupedItem.gender || 'Unknown'}
                                                                                 </Typography>
                                                                             </Box>
                                                                         )}
-                                                        
-                                                                    {/* Type */}
+
+                                                                    {}
                                                                     <Box sx={{
                                                                         p: 2,
                                                                         borderRight: '1px solid #000000',
@@ -1657,8 +1629,8 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                         {groupedItem.type || 'Item'}
                                                                         </Typography>
                                                                     </Box>
-                                                                    
-                                                                {/* Size - Show all sizes */}
+
+                                                                {}
                                                                     <Box sx={{
                                                                         p: 2,
                                                                         borderRight: '1px solid #000000',
@@ -1676,8 +1648,8 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                         {sortSizes([...groupedItem.sizes]).join(', ')}
                                                                         </Typography>
                                                                     </Box>
-                                                                    
-                                                                {/* Quantity - Show View button */}
+
+                                                                {}
                                                                     <Box sx={{
                                                                         p: 2,
                                                                         borderRight: '1px solid #000000',
@@ -1708,8 +1680,8 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                         View
                                                                     </Button>
                                                                     </Box>
-                                                                    
-                                                                    {/* Color */}
+
+                                                                    {}
                                                                     <Box sx={{
                                                                         p: 2,
                                                                         borderRight: '1px solid #000000',
@@ -1735,8 +1707,8 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                         {groupedItem.color || '#000'}
                                                                         </Typography>
                                                                     </Box>
-                                                                    
-                                                                    {/* Logo Position */}
+
+                                                                    {}
                                                                     <Box sx={{
                                                                         p: 2,
                                                                         borderRight: '1px solid #000000',
@@ -1750,7 +1722,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                         const logoPosition = groupedItem.logoPosition;
                                                                         const logoHeight = groupedItem.baseLogoHeight || 0;
                                                                         const logoWidth = groupedItem.baseLogoWidth || 0;
-                                                                        
+
                                                                         if (logoPosition && logoHeight > 0 && logoWidth > 0) {
                                                                             return (
                                                                         <Typography variant="body2" sx={{
@@ -1774,8 +1746,8 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                         }
                                                                     })()}
                                                                     </Box>
-                                                                    
-                                                                {/* Logo Size */}
+
+                                                                {}
                                                                     <Box sx={{
                                                                         p: 2,
                                                                     borderRight: '1px solid #000000',
@@ -1788,7 +1760,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                     {(() => {
                                                                         const logoHeight = groupedItem.baseLogoHeight || 0;
                                                                         const logoWidth = groupedItem.baseLogoWidth || 0;
-                                                                        
+
                                                                         if (logoHeight > 0 && logoWidth > 0) {
                                                                             return (
                                                                                 <Typography variant="body2" sx={{
@@ -1816,8 +1788,8 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                         }
                                                                     })()}
                                                                                 </Box>
-                                                                
-                                                                {/* Images */}
+
+                                                                {}
                                                                                 <Box sx={{
                                                                     p: 2,
                                                                     borderBottom: '1px solid #000000',
@@ -1850,7 +1822,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                 </React.Fragment>
                                                             );
                                                 });
-                                                
+
                                                 return rows;
                                             })()}
                                             </Box>
@@ -1860,10 +1832,10 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                             </Card>
                         </Box>
 
-                        {/* Right Column - Quotation Panel */}
+                        {}
                         <Box sx={{ flex: 1 }}>
 
-                            {/* Quotation Panel */}
+                            {}
                             <Card sx={{
                                 background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
                                 borderRadius: 2,
@@ -1919,7 +1891,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                         </Box>
                                     ) : (
                                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                                            {/* Total Price */}
+                                            {}
                                             <Box>
                                                 <Typography variant="body2" sx={{
                                                     fontWeight: 600,
@@ -1961,7 +1933,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
 
 
 
-                                            {/* Delivery Time */}
+                                            {}
                                             <Box>
                                                 <Typography variant="body2" sx={{
                                                     fontWeight: 600,
@@ -1970,8 +1942,8 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                 }}>
                                                     Delivery Time *
                                                 </Typography>
-                                                
-                                                {/* Delivery Option Toggle */}
+
+                                                {}
                                                 <Box sx={{ mb: 2 }}>
                                                     <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
                                                         <Button
@@ -2011,7 +1983,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                     </Box>
                                                 </Box>
 
-                                                {/* Option 1: Select Date */}
+                                                {}
                                                 {deliveryOption === 'date' && (
                                                     <TextField
                                                         type="date"
@@ -2056,7 +2028,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                     />
                                                 )}
 
-                                                {/* Option 2: Enter Days */}
+                                                {}
                                                 {deliveryOption === 'days' && (
                                                     <Box>
                                                 <TextField
@@ -2110,7 +2082,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                 )}
                                             </Box>
 
-                                            {/* Valid Until */}
+                                            {}
                                             <Box>
                                                 <Typography variant="body2" sx={{
                                                     fontWeight: 600,
@@ -2129,7 +2101,6 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                             validUntil: selectedDate
                                                         });
 
-                                                        // Clear error if empty
                                                         if (!selectedDate) {
                                                             setValidUntilError('');
                                                             return;
@@ -2145,7 +2116,6 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                             return;
                                                         }
 
-                                                        // Calculate delivery date based on current option
                                                         let deliveryDate;
                                                         if (deliveryOption === 'date' && selectedDeliveryDate) {
                                                             deliveryDate = new Date(selectedDeliveryDate);
@@ -2155,7 +2125,6 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                             deliveryDate.setDate(orderDate.getDate() + parseInt(quotationData.deliveryTime));
                                                         }
 
-                                                        // Check if delivery date is set and Valid Until is after delivery date - 2 days
                                                         if (deliveryDate) {
                                                             const twoDaysBeforeDelivery = new Date(deliveryDate);
                                                             twoDaysBeforeDelivery.setDate(deliveryDate.getDate() - 2);
@@ -2167,7 +2136,6 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                             }
                                                         }
 
-                                                        // Also check order deadline constraint
                                                         const orderDeadline = new Date(mergedOrderData.deadline);
                                                         const dayBeforeDeadline = new Date(orderDeadline);
                                                         dayBeforeDeadline.setDate(orderDeadline.getDate() - 1);
@@ -2192,12 +2160,10 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                             return tomorrow.toISOString().split('T')[0];
                                                         })(),
                                                         max: (() => {
-                                                            // Calculate the most restrictive max date
                                                             const orderDeadline = new Date(mergedOrderData.deadline);
                                                             const dayBeforeDeadline = new Date(orderDeadline);
                                                             dayBeforeDeadline.setDate(orderDeadline.getDate() - 1);
-                                                            
-                                                            // Calculate delivery date based on current option
+
                                                             let twoDaysBeforeDelivery = null;
                                                             if (deliveryOption === 'date' && selectedDeliveryDate) {
                                                                 const deliveryDate = new Date(selectedDeliveryDate);
@@ -2210,8 +2176,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                 twoDaysBeforeDelivery = new Date(deliveryDate);
                                                                 twoDaysBeforeDelivery.setDate(deliveryDate.getDate() - 2);
                                                             }
-                                                            
-                                                            // Return the earlier of the two dates
+
                                                             if (twoDaysBeforeDelivery && twoDaysBeforeDelivery < dayBeforeDeadline) {
                                                                 return twoDaysBeforeDelivery.toISOString().split('T')[0];
                                                             } else {
@@ -2241,7 +2206,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                 />
                                             </Box>
 
-                                            {/* Notes */}
+                                            {}
                                             <Box>
                                                 <Typography variant="body2" sx={{
                                                     fontWeight: 600,
@@ -2278,7 +2243,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                 />
                                             </Box>
 
-                                            {/* Action Buttons */}
+                                            {}
                                             <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
                                                 <Button
                                                     variant="outlined"
@@ -2300,12 +2265,12 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                     fullWidth
                                                     startIcon={submittingQuotation ? <CircularProgress size={16} sx={{ color: 'white' }} /> : <SendIcon />}
                                                     onClick={handleSubmitQuotation}
-                                                    disabled={!quotationData.totalPrice || 
+                                                    disabled={!quotationData.totalPrice ||
                                                              !!priceError ||
-                                                             (deliveryOption === 'date' ? !selectedDeliveryDate : !quotationData.deliveryTime) || 
-                                                             !quotationData.validUntil || 
+                                                             (deliveryOption === 'date' ? !selectedDeliveryDate : !quotationData.deliveryTime) ||
+                                                             !quotationData.validUntil ||
                                                              !!validUntilError ||
-                                                             !!deliveryTimeError || 
+                                                             !!deliveryTimeError ||
                                                              submittingQuotation}
                                                     sx={{
                                                         background: 'linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)',
@@ -2332,7 +2297,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                 </Container>
             </DialogContent>
 
-            {/* Update Status Dialog */}
+            {}
             <Dialog
                 open={updateStatusDialogOpen}
                 onClose={() => setUpdateStatusDialogOpen(false)}
@@ -2349,7 +2314,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                         <Typography variant="body2" sx={{ mb: 2 }}>
                             Select new status for order {parseID(mergedOrderData.id, 'ord')}:
                         </Typography>
-                        
+
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 3 }}>
                             {['pending', 'processing', 'completed'].map((status) => (
                                 <Button
@@ -2400,7 +2365,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                 </DialogActions>
             </Dialog>
 
-            {/* Images Dialog */}
+            {}
             <Dialog
                 open={imagesDialogOpen}
                 onClose={handleCloseImagesDialog}
@@ -2429,7 +2394,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                     {selectedItemImages && (
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
 
-                            {/* Logo Image - Only for Shirt */}
+                            {}
                             {selectedItemImages.type === 'shirt' && (
                                 <Box sx={{
                                     p: 3,
@@ -2475,7 +2440,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                 </Box>
                             )}
 
-                            {/* Design Images */}
+                            {}
                             <Box sx={{
                                 p: 3,
                                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -2486,7 +2451,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                     Design Images
                                 </Typography>
                                 <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                                    {/* Front Design */}
+                                    {}
                                     <Box sx={{ flex: 1, minWidth: 250 }}>
                                         <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: '#10b981' }}>
                                             Front Design
@@ -2527,7 +2492,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                         )}
                                     </Box>
 
-                                    {/* Back Design */}
+                                    {}
                                     <Box sx={{ flex: 1, minWidth: 250 }}>
                                         <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: '#8b5cf6' }}>
                                             Back Design
@@ -2588,7 +2553,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                 </DialogActions>
             </Dialog>
 
-            {/* Logo Position Dialog */}
+            {}
             <Dialog
                 open={showLogoPositionDialog}
                 onClose={handleCloseLogoPositionDialog}
@@ -2637,7 +2602,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                 }}
                             />
                         </Box>
-                        
+
 
                     </Box>
                 </DialogContent>
@@ -2657,7 +2622,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                 </DialogActions>
             </Dialog>
 
-            {/* Size Specifications Dialog */}
+            {}
             <Dialog
                 open={showSizeSpecsDialog}
                 onClose={handleCloseSizeSpecs}
@@ -2688,7 +2653,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                 </DialogTitle>
                 <DialogContent sx={{ p: 3 }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                        {/* Selection Controls */}
+                        {}
                         <Box sx={{
                             p: 3,
                             borderRadius: 3,
@@ -2706,9 +2671,9 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                 <TableChartIcon sx={{ fontSize: 20 }} />
                                 Select Specifications to View
                             </Typography>
-                            
+
                             <Box sx={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-                                {/* Gender Selection */}
+                                {}
                                 <Box sx={{ minWidth: 200 }}>
                                     <Typography variant="body2" sx={{
                                         fontWeight: 600,
@@ -2736,8 +2701,8 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                         </Select>
                                     </FormControl>
                                 </Box>
-                                
-                                {/* Uniform Type Selection */}
+
+                                {}
                                 <Box sx={{ minWidth: 200 }}>
                                     <Typography variant="body2" sx={{
                                         fontWeight: 600,
@@ -2817,7 +2782,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                             </Box>
                         </Box>
 
-                        {/* Size Specifications Table */}
+                        {}
                         {selectedSizeSpecs && (
                             <Card sx={{
                                 background: 'rgba(255, 255, 255, 0.95)',
@@ -2950,14 +2915,13 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                             </thead>
                                             <tbody>
                                                 {(() => {
-                                                    // Get all shirt sizes for the selected gender
                                                     const shirtSizes = sizes.filter(size =>
                                                         size.gender === selectedSizeSpecs.gender &&
                                                         size.type === 'shirt'
                                                     );
-                                                    
+
                                                     console.log('Shirt sizes:', shirtSizes);
-                                                    
+
                                                     if (shirtSizes.length === 0) {
                                                         return (
                                                             <tr>
@@ -2972,16 +2936,14 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                             </tr>
                                                         );
                                                     }
-                                                    
+
                                                     return shirtSizes.map((shirtSize) => {
-                                                        // Find corresponding pants size for the same size label
                                                         const pantsSize = sizes.find(s =>
                                                             s.gender === selectedSizeSpecs.gender &&
                                                             s.type === 'pants' &&
                                                             s.size === shirtSize.size
                                                         );
-                                                        
-                                                        // Find corresponding skirt size for females (only for regular uniform)
+
                                                         const skirtSize = selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' ? sizes.find(s =>
                                                             s.gender === selectedSizeSpecs.gender &&
                                                             s.type === 'skirt' &&
@@ -3084,7 +3046,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                 </DialogActions>
             </Dialog>
 
-            {/* Quantity Details Dialog */}
+            {}
             <Dialog
                 open={showQuantityDetailsDialog}
                 onClose={handleCloseQuantityDetails}
@@ -3118,11 +3080,11 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                     </Box>
                     Quantity Details
                 </DialogTitle>
-                
+
                 <DialogContent sx={{ p: 3 }}>
                     {selectedQuantityDetails && (
                         <Box>
-                            {/* Item Info Header */}
+                            {}
                             <Card sx={{
                                 background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
                                 border: '1px solid #cbd5e1',
@@ -3160,14 +3122,14 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                             }}
                                         />
                                     </Box>
-                                    
+
                                     <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b' }}>
                                         Total Quantity: {selectedQuantityDetails.totalQuantity}
                                     </Typography>
                                 </CardContent>
                             </Card>
 
-                            {/* Size Breakdown Table */}
+                            {}
                             <Card sx={{
                                 border: '1px solid #e2e8f0',
                                 borderRadius: 2,
@@ -3185,7 +3147,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                         Size Breakdown
                                     </Typography>
                                 </Box>
-                                
+
                                 <Box sx={{ p: 0 }}>
                                     <Box sx={{
                                         display: 'grid',
@@ -3216,7 +3178,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                             </Typography>
                                         </Box>
                                     </Box>
-                                    
+
                                     {sortSizes([...selectedQuantityDetails.sizes]).map((size) => (
                                         <Box key={size} sx={{
                                             display: 'grid',
@@ -3234,8 +3196,8 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                 justifyContent: 'center',
                                                 backgroundColor: '#ffffff'
                                             }}>
-                                                <Typography variant="body1" sx={{ 
-                                                    fontWeight: 600, 
+                                                <Typography variant="body1" sx={{
+                                                    fontWeight: 600,
                                                     color: '#3f51b5',
                                                     fontSize: '16px'
                                                 }}>
@@ -3249,8 +3211,8 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                 justifyContent: 'center',
                                                 backgroundColor: '#ffffff'
                                             }}>
-                                                <Typography variant="h6" sx={{ 
-                                                    fontWeight: 700, 
+                                                <Typography variant="h6" sx={{
+                                                    fontWeight: 700,
                                                     color: '#1976d2',
                                                     fontSize: '18px'
                                                 }}>
@@ -3264,7 +3226,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                         </Box>
                     )}
                 </DialogContent>
-                
+
                 <DialogActions sx={{ p: 3 }}>
                     <Button
                         onClick={handleCloseQuantityDetails}

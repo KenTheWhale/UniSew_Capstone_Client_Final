@@ -38,7 +38,7 @@ function Navbar({school, enqueueSnackbar}) {
                 },
             }}
         >
-            {/* Sidebar Header */}
+            {}
             <Box sx={{ p: 3, background: "linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)", color: "white", textAlign: "center" }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
                     School Dashboard
@@ -48,9 +48,9 @@ function Navbar({school, enqueueSnackbar}) {
                 </Typography>
             </Box>
 
-            {/* Navigation */}
+            {}
             <Box sx={{ p: 2 }}>
-                {/* Design Management */}
+                {}
                 <Typography variant="overline" sx={{ px: 2, pb: 1, color: "#6c757d", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "1px" }}>
                     DESIGN MANAGEMENT
                 </Typography>
@@ -83,7 +83,7 @@ function Navbar({school, enqueueSnackbar}) {
 
                 <Divider sx={{ my: 3, borderColor: "#e9ecef" }} />
 
-                {/* Order Management */}
+                {}
                 <Typography variant="overline" sx={{ px: 2, pb: 1, color: "#6c757d", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "1px" }}>
                     ORDER MANAGEMENT
                 </Typography>
@@ -113,35 +113,35 @@ function Navbar({school, enqueueSnackbar}) {
                         </Box>
                     </Box>
 
-                    {/*<Box*/}
-                    {/*    sx={{*/}
-                    {/*        borderRadius: 2,*/}
-                    {/*        mx: 1,*/}
-                    {/*        my: 0.5,*/}
-                    {/*        color: "#495057",*/}
-                    {/*        p: 2,*/}
-                    {/*        cursor: "pointer",*/}
-                    {/*        transition: "all 0.3s ease",*/}
-                    {/*        "&:hover": {*/}
-                    {/*            background: "linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)",*/}
-                    {/*            color: "#FFFFFF",*/}
-                    {/*            transform: "translateY(-1px)",*/}
-                    {/*        },*/}
-                    {/*    }}*/}
-                    {/*    onClick={() => window.location.href = "/school/order/quotation"}*/}
-                    {/*>*/}
-                    {/*    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>*/}
-                    {/*        <RequestQuote sx={{ color: "inherit", fontSize: 20 }} />*/}
-                    {/*        <Typography variant="body2" sx={{ fontWeight: 500 }}>*/}
-                    {/*            Quotation Order*/}
-                    {/*        </Typography>*/}
-                    {/*    </Box>*/}
-                    {/*</Box>*/}
+                    {}
+                    {}
+                    {}
+                    {}
+                    {}
+                    {}
+                    {}
+                    {}
+                    {}
+                    {}
+                    {}
+                    {}
+                    {}
+                    {}
+                    {}
+                    {}
+                    {}
+                    {}
+                    {}
+                    {}
+                    {}
+                    {}
+                    {}
+                    {}
                 </Box>
 
                 <Divider sx={{ my: 3, borderColor: "#e9ecef" }} />
 
-                {/* Account Management */}
+                {}
                 <Typography variant="overline" sx={{ px: 2, pb: 1, color: "#6c757d", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "1px" }}>
                     ACCOUNT MANAGEMENT
                 </Typography>
@@ -237,7 +237,6 @@ export default function SchoolDashboardLayout() {
 
     const open = Boolean(anchorEl);
 
-    // Kiểm tra thông tin trường học
     useEffect(() => {
         const checkSchoolInfo = () => {
             const customer = user?.customer;
@@ -256,7 +255,7 @@ export default function SchoolDashboardLayout() {
                 setSchoolData(customer);
                 setShowUpdateDialog(true);
             }
-            
+
             setIsChecking(false);
         };
 
@@ -279,7 +278,7 @@ export default function SchoolDashboardLayout() {
                     }
                 };
                 localStorage.setItem('user', JSON.stringify(updatedUser));
-                
+
                 enqueueSnackbar("Update school information successfully!", { variant: "success" });
                 setShowUpdateDialog(false);
 
@@ -300,8 +299,8 @@ export default function SchoolDashboardLayout() {
     return (
         <Box sx={{display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#fafafa', overflow: 'hidden'}}>
             <CssBaseline />
-            
-            {/* Header */}
+
+            {}
             <AppBar
                 position="static"
                 sx={{
@@ -345,7 +344,7 @@ export default function SchoolDashboardLayout() {
                     </Box>
 
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                        <Bell />
+                        {/*<Bell />*/}
                         <Box
                             sx={{
                                 display: "flex",
@@ -371,7 +370,7 @@ export default function SchoolDashboardLayout() {
                                     <School sx={{ fontSize: 16, color: '#2e7d32' }} />
                                 }
                             >
-                                <Avatar 
+                                <Avatar
                                     sx={{ width: 32, height: 32, bgcolor: "rgba(255, 255, 255, 0.2)" }}
                                     src={user.customer.avatar}
                                     slotProps={{
@@ -411,11 +410,11 @@ export default function SchoolDashboardLayout() {
                             }}
                         >
                             <Box sx={{ p: 2 }}>
-                                <Box sx={{ 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    gap: 2, 
-                                    p: 1.5, 
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    p: 1.5,
                                     borderRadius: 1,
                                     mb: 1,
                                     background: 'rgba(46, 125, 50, 0.05)'
@@ -439,9 +438,9 @@ export default function SchoolDashboardLayout() {
                                         </Typography>
                                     </Box>
                                 </Box>
-                                
+
                                 <Divider sx={{ my: 1 }} />
-                                
+
                                 <Box
                                     sx={{
                                         display: 'flex',
@@ -472,7 +471,7 @@ export default function SchoolDashboardLayout() {
                 </Toolbar>
             </AppBar>
 
-            {/* Main Content */}
+            {}
             <Box sx={{display: 'flex', flex: 1, overflow: 'hidden'}}>
                 <Box sx={{width: 280, flexShrink: 0}}>
                     <Navbar school={user} enqueueSnackbar={enqueueSnackbar}/>
@@ -481,7 +480,7 @@ export default function SchoolDashboardLayout() {
                     <Content/>
                 </Box>
             </Box>
-            
+
             <UpdateSchoolInfoDialog
                 open={showUpdateDialog}
                 onClose={handleCloseDialog}

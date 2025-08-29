@@ -38,8 +38,7 @@ export default function OrderPaymentPopup({ visible, onCancel, selectedQuotation
             const totalAmount = Math.round(subtotal + fee);
             const isDeposit = order?.status === 'pending';
             const paymentAmount = isDeposit ? Math.round(totalAmount * 0.5) : totalAmount;
-            
-            // Store quotation details in sessionStorage for VNPay callback
+
             const quotationDetailsToStore = {
                 quotation: quotation,
                 order: order,
@@ -49,19 +48,18 @@ export default function OrderPaymentPopup({ visible, onCancel, selectedQuotation
                 paymentAmount: paymentAmount
             };
             sessionStorage.setItem('paymentQuotationDetails', JSON.stringify(quotationDetailsToStore));
-            
-            // Store payment type in sessionStorage for PaymentResult component
+
             sessionStorage.setItem('currentPaymentType', isDeposit ? 'deposit' : 'order');
-            
+
             const response = await getPaymentUrl(
                 paymentAmount,
-                isDeposit 
+                isDeposit
                     ? `Payment deposit for garment quotation - Order ${parseID(order.id, 'ord')}`
                     : `Payment for garment quotation - Order ${parseID(order.id, 'ord')}`,
                 'order',
                 `/school/payment/result?quotationId=${quotation.id}`
             );
-            
+
             if (response && response.status === 200) {
                 window.location.href = response.data.body.url;
             } else {
@@ -80,9 +78,9 @@ export default function OrderPaymentPopup({ visible, onCancel, selectedQuotation
                     <Typography.Title level={4} style={{ margin: 0, color: '#1e293b' }}>
                         Payment Details
                     </Typography.Title>
-                    <Chip 
+                    <Chip
                         label={`${parseID(order.id, 'ord')}`}
-                        color="success" 
+                        color="success"
                         size="small"
                         style={{ backgroundColor: '#2e7d32' }}
                     />
@@ -95,12 +93,12 @@ export default function OrderPaymentPopup({ visible, onCancel, selectedQuotation
                 <Button key="back" onClick={onCancel} style={{ marginRight: 8 }}>
                     Cancel
                 </Button>,
-                <Button 
-                    key="submit" 
-                    type="primary" 
+                <Button
+                    key="submit"
+                    type="primary"
                     onClick={handleProceedToPayment}
                     icon={<CreditCardOutlined />}
-                    style={{ 
+                    style={{
                         backgroundColor: '#2e7d32',
                         borderColor: '#2e7d32'
                     }}
@@ -109,9 +107,9 @@ export default function OrderPaymentPopup({ visible, onCancel, selectedQuotation
                 </Button>,
             ]}
             width={800}
-            styles={{ 
-                body: { 
-                    maxHeight: '70vh', 
+            styles={{
+                body: {
+                    maxHeight: '70vh',
                     overflowY: 'auto',
                     padding: '24px'
                 },
@@ -122,10 +120,10 @@ export default function OrderPaymentPopup({ visible, onCancel, selectedQuotation
             }}
         >
             <Box sx={{ width: '100%' }}>
-                {/* Header Section */}
-                <Box sx={{ 
-                    mb: 4, 
-                    p: 3, 
+                {}
+                <Box sx={{
+                    mb: 4,
+                    p: 3,
                     background: "linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(27, 94, 32, 0.08) 100%)",
                     borderRadius: 2,
                     border: '1px solid rgba(46, 125, 50, 0.1)'
@@ -141,12 +139,12 @@ export default function OrderPaymentPopup({ visible, onCancel, selectedQuotation
                     </Typography.Text>
                 </Box>
 
-                {/* Garment Factory Information */}
-                <Paper 
+                {}
+                <Paper
                     elevation={0}
-                    sx={{ 
-                        p: 3, 
-                        mb: 3, 
+                    sx={{
+                        p: 3,
+                        mb: 3,
                         border: '1px solid #e2e8f0',
                         borderRadius: 3,
                         backgroundColor: 'white',
@@ -201,12 +199,12 @@ export default function OrderPaymentPopup({ visible, onCancel, selectedQuotation
                     </Box>
                 </Paper>
 
-                {/* Quotation Details */}
-                <Paper 
+                {}
+                <Paper
                     elevation={0}
-                    sx={{ 
-                        p: 3, 
-                        mb: 3, 
+                    sx={{
+                        p: 3,
+                        mb: 3,
                         border: '1px solid #e2e8f0',
                         borderRadius: 3,
                         backgroundColor: 'white',
@@ -241,9 +239,9 @@ export default function OrderPaymentPopup({ visible, onCancel, selectedQuotation
                     </Box>
 
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                        <Box sx={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
+                        <Box sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
                             alignItems: 'center',
                             p: 2,
                             background: "linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(27, 94, 32, 0.08) 100%)",
@@ -259,10 +257,10 @@ export default function OrderPaymentPopup({ visible, onCancel, selectedQuotation
                         </Box>
 
                         <Box sx={{ display: 'flex', gap: 3 }}>
-                            <Box sx={{ 
-                                flex: 1, 
-                                p: 2, 
-                                background: "linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(27, 94, 32, 0.08) 100%)", 
+                            <Box sx={{
+                                flex: 1,
+                                p: 2,
+                                background: "linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(27, 94, 32, 0.08) 100%)",
                                 borderRadius: 2,
                                 textAlign: 'center',
                                 border: '1px solid rgba(46, 125, 50, 0.1)',
@@ -281,10 +279,10 @@ export default function OrderPaymentPopup({ visible, onCancel, selectedQuotation
                                 </Typography.Text>
                             </Box>
 
-                            <Box sx={{ 
-                                flex: 1, 
-                                p: 2, 
-                                background: "linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(27, 94, 32, 0.08) 100%)", 
+                            <Box sx={{
+                                flex: 1,
+                                p: 2,
+                                background: "linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(27, 94, 32, 0.08) 100%)",
                                 borderRadius: 2,
                                 textAlign: 'center',
                                 border: '1px solid rgba(46, 125, 50, 0.1)',
@@ -306,12 +304,12 @@ export default function OrderPaymentPopup({ visible, onCancel, selectedQuotation
                     </Box>
                 </Paper>
 
-                {/* Service Fee */}
-                <Paper 
+                {}
+                <Paper
                     elevation={0}
-                    sx={{ 
-                        p: 3, 
-                        mb: 3, 
+                    sx={{
+                        p: 3,
+                        mb: 3,
                         border: '1px solid #e2e8f0',
                         borderRadius: 3,
                         backgroundColor: 'white',
@@ -345,9 +343,9 @@ export default function OrderPaymentPopup({ visible, onCancel, selectedQuotation
                         </Box>
                     </Box>
 
-                    <Box sx={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
+                    <Box sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
                         alignItems: 'center',
                         p: 2,
                         background: "linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(245, 124, 0, 0.15) 100%)",
@@ -367,12 +365,12 @@ export default function OrderPaymentPopup({ visible, onCancel, selectedQuotation
                     </Box>
                 </Paper>
 
-                {/* Security & Payment Info */}
-                <Paper 
+                {}
+                <Paper
                     elevation={0}
-                    sx={{ 
-                        p: 3, 
-                        mb: 3, 
+                    sx={{
+                        p: 3,
+                        mb: 3,
                         background: "linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(27, 94, 32, 0.08) 100%)",
                         borderRadius: 3,
                         border: '1px solid rgba(46, 125, 50, 0.1)'
@@ -389,11 +387,11 @@ export default function OrderPaymentPopup({ visible, onCancel, selectedQuotation
                     </Typography.Text>
                 </Paper>
 
-                {/* Total Amount */}
-                <Paper 
+                {}
+                <Paper
                     elevation={0}
-                    sx={{ 
-                        p: 3, 
+                    sx={{
+                        p: 3,
                         border: '2px solid #2e7d32',
                         borderRadius: 3,
                         background: "linear-gradient(135deg, rgba(46, 125, 50, 0.1) 0%, rgba(27, 94, 32, 0.15) 100%)",

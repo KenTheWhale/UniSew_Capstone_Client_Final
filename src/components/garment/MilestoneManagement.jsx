@@ -41,7 +41,7 @@ import {
     Info as InfoIcon
 } from '@mui/icons-material';
 import {enqueueSnackbar} from 'notistack';
-import {assignMilestone, createPhase, deletePhase, getGarmentOrders, updateMilestoneStatus, viewPhase} from '../../services/OrderService';
+import {assignMilestone, createPhase, getGarmentOrders, updateMilestoneStatus, viewPhase} from '../../services/OrderService';
 import {uploadCloudinary} from '../../services/UploadImageService';
 import {DatePicker} from '@mui/x-date-pickers/DatePicker';
 import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
@@ -49,97 +49,43 @@ import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 
 export default function MilestoneManagement() {
-    // Helper function to get display status and styling
-    const getOrderDisplayStatus = (order, orderMilestone) => {
-        let displayStatus = order.status || 'Unknown';
-        let backgroundColor = '#f3f4f6';
-        let textColor = '#6b7280';
-        
-        // Check if order is processing and all phases are completed
-        if (order.status === 'processing' && orderMilestone.length > 0) {
-            const allPhasesCompleted = orderMilestone.every(phase => phase.status === 'completed');
-            if (allPhasesCompleted) {
-                displayStatus = 'waiting for delivery';
-                backgroundColor = '#fef3c7';
-                textColor = '#d97706';
-                return { displayStatus, backgroundColor, textColor };
-            }
-        }
-        
-        // Default status styling
-        switch (order.status?.toLowerCase()) {
-            case 'pending':
-                backgroundColor = '#fef3c7';
-                textColor = '#d97706';
-                break;
-            case 'processing':
-                backgroundColor = '#dbeafe';
-                textColor = '#1d4ed8';
-                break;
-            case 'completed':
-                backgroundColor = '#d1fae5';
-                textColor = '#059669';
-                break;
-            case 'cancelled':
-            case 'canceled':
-                backgroundColor = '#fee2e2';
-                textColor = '#dc2626';
-                break;
-            default:
-                backgroundColor = '#f3f4f6';
-                textColor = '#6b7280';
-        }
-        
-        return { displayStatus, backgroundColor, textColor };
-    };
-
-    // States for phases
     const [phases, setPhases] = useState([]);
     const [phasesLoading, setPhasesLoading] = useState(true);
 
-    // States for orders
     const [orders, setOrders] = useState([]);
     const [ordersLoading, setOrdersLoading] = useState(true);
     const [orderMilestones, setOrderMilestones] = useState({});
     const [milestonesLoading, setMilestonesLoading] = useState({});
 
-    // States for phase creation
     const [createPhaseDialogOpen, setCreatePhaseDialogOpen] = useState(false);
     const [newPhase, setNewPhase] = useState({name: '', description: ''});
     const [creatingPhase, setCreatingPhase] = useState(false);
-    
-    // States for phase deletion
-    const [deletingPhase, setDeletingPhase] = useState(false);
 
-    // States for milestone assignment
     const [assignMilestoneDialogOpen, setAssignMilestoneDialogOpen] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [selectedPhases, setSelectedPhases] = useState([]);
     const [assigningMilestone, setAssigningMilestone] = useState(false);
     const [showDateSettings, setShowDateSettings] = useState(false);
     const [durationDialogOpen, setDurationDialogOpen] = useState(false);
-    const [stageDurations, setStageDurations] = useState({}); // Lưu duration cho từng stage
+    const [stageDurations, setStageDurations] = useState({});
     const [viewMilestoneDialogOpen, setViewMilestoneDialogOpen] = useState(false);
     const [viewingOrder, setViewingOrder] = useState(null);
-    const [milestoneViewMode, setMilestoneViewMode] = useState('stepper'); // 'stepper' or 'box'
-    const [currentPhase, setCurrentPhase] = useState(1); // Track current phase
-    const [phaseStatuses, setPhaseStatuses] = useState({}); // Track phase statuses
+    const [milestoneViewMode, setMilestoneViewMode] = useState('stepper');
+    const [currentPhase, setCurrentPhase] = useState(1);
+    const [phaseStatuses, setPhaseStatuses] = useState({});
     const [uploadImageDialogOpen, setUploadImageDialogOpen] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
     const [uploadingImage, setUploadingImage] = useState(false);
     const [updatingData, setUpdatingData] = useState(false);
 
-    // States for order detail dialog
     const [orderDetailDialogOpen, setOrderDetailDialogOpen] = useState(false);
     const [selectedOrderDetail, setSelectedOrderDetail] = useState(null);
     const [showQuantityDetailsDialog, setShowQuantityDetailsDialog] = useState(false);
     const [selectedQuantityDetails, setSelectedQuantityDetails] = useState(null);
-    
-    // States for images dialog
+
     const [imagesDialogOpen, setImagesDialogOpen] = useState(false);
     const [selectedItemImages, setSelectedItemImages] = useState(null);
 
-    // Drag and drop states
     const [draggedPhase, setDraggedPhase] = useState(null);
     const [isDragOver, setIsDragOver] = useState(false);
     const [draggedSelectedPhase, setDraggedSelectedPhase] = useState(null);
@@ -147,23 +93,13 @@ export default function MilestoneManagement() {
     const [isDragOverAvailable, setIsDragOverAvailable] = useState(false);
 
 
-    // Active tab
-    const [activeTab, setActiveTab] = useState('manage'); // 'manage', 'assignments', or 'phases'
+    const [activeTab, setActiveTab] = useState('manage');
 
-    // Fetch data on component mount
     useEffect(() => {
         fetchPhases();
         fetchOrders();
     }, []);
 
-    // No need to fetch milestones separately as they come with orders now
-    // useEffect(() => {
-    //     if (orders.length > 0) {
-    //         orders.forEach(order => {
-    //             fetchOrderMilestones(order.id);
-    //         });
-    //     }
-    // }, [orders]);
 
     const fetchPhases = async () => {
         try {
@@ -185,11 +121,9 @@ export default function MilestoneManagement() {
             setOrdersLoading(true);
             const response = await getGarmentOrders();
             if (response && response.data) {
-                // Filter only processing orders and handle new data structure
                 const processingOrders = (response.data.body || []).filter(order => order.status === 'processing');
                 setOrders(processingOrders);
 
-                // Pre-populate milestones from the new API structure
                 const milestonesData = {};
                 processingOrders.forEach(order => {
                     if (order.milestone && Array.isArray(order.milestone)) {
@@ -218,7 +152,6 @@ export default function MilestoneManagement() {
             }
         } catch (error) {
             console.error('Error fetching milestones for order:', orderId, error);
-            // Set empty array if no milestones found
             setOrderMilestones(prev => ({...prev, [orderId]: []}));
         } finally {
             setMilestonesLoading(prev => ({...prev, [orderId]: false}));
@@ -238,7 +171,7 @@ export default function MilestoneManagement() {
                 enqueueSnackbar('Phase created successfully', {variant: 'success'});
                 setCreatePhaseDialogOpen(false);
                 setNewPhase({name: '', description: ''});
-                fetchPhases(); // Refresh phases list
+                fetchPhases();
             } else {
                 enqueueSnackbar('Failed to create phase', {variant: 'error'});
             }
@@ -247,29 +180,6 @@ export default function MilestoneManagement() {
             enqueueSnackbar('Failed to create phase', {variant: 'error'});
         } finally {
             setCreatingPhase(false);
-        }
-    };
-
-    const handleDeletePhase = async (phaseId) => {
-        if (!phaseId) {
-            enqueueSnackbar('Invalid phase ID', {variant: 'error'});
-            return;
-        }
-
-        try {
-            setDeletingPhase(true);
-            const response = await deletePhase(phaseId);
-            if (response && response.status === 200) {
-                enqueueSnackbar('Phase deleted successfully', {variant: 'success'});
-                fetchPhases(); // Refresh phases list
-            } else {
-                enqueueSnackbar('Failed to delete phase', {variant: 'error'});
-            }
-        } catch (error) {
-            console.error('Error deleting phase:', error);
-            enqueueSnackbar('Failed to delete phase', {variant: 'error'});
-        } finally {
-            setDeletingPhase(false);
         }
     };
 
@@ -282,19 +192,17 @@ export default function MilestoneManagement() {
     const openViewMilestoneDialog = (order) => {
         setViewingOrder(order);
         setViewMilestoneDialogOpen(true);
-        // Initialize phase statuses based on API status
         const statuses = {};
-        let activePhase = 1; // Default to first phase
-        
+        let activePhase = 1;
+
         if (order.milestone && order.milestone.length > 0) {
             order.milestone.forEach((phase) => {
                 const stage = phase.stage;
-                // Map API status to UI status
                 if (phase.status === 'completed') {
                     statuses[stage] = 'done';
                 } else if (phase.status === 'processing') {
                     statuses[stage] = 'active';
-                    activePhase = stage; // Set current active phase
+                    activePhase = stage;
                 } else if (phase.status === 'assigned') {
                     statuses[stage] = 'not_started';
                 } else if (phase.status === 'late') {
@@ -302,9 +210,9 @@ export default function MilestoneManagement() {
                 }
             });
         }
-        
+
         setPhaseStatuses(statuses);
-        setCurrentPhase(activePhase); // Update current phase to the active one
+        setCurrentPhase(activePhase);
     };
 
     const handlePhaseSelection = (phase) => {
@@ -312,7 +220,6 @@ export default function MilestoneManagement() {
         if (isSelected) {
             setSelectedPhases(selectedPhases.filter(p => p.id !== phase.id));
         } else {
-            // Check if any existing stage is at maximum limit
             const hasStageAtMaximum = selectedPhases.some((_, index) => {
                 const stage = index + 1;
                 const stageDuration = stageDurations[stage];
@@ -340,7 +247,6 @@ export default function MilestoneManagement() {
         }
     };
 
-    // Drag and drop functions
     const handleDragStart = (e, phase) => {
         setDraggedPhase(phase);
         e.dataTransfer.effectAllowed = 'move';
@@ -371,7 +277,6 @@ export default function MilestoneManagement() {
         setIsDragOverAvailable(false);
 
         if (draggedSelectedPhase) {
-            // Remove the phase from selected phases
             setSelectedPhases(selectedPhases.filter((_, index) => index !== draggedSelectedPhase.index));
             setDraggedSelectedPhase(null);
         }
@@ -384,7 +289,6 @@ export default function MilestoneManagement() {
         if (draggedPhase) {
             const isAlreadySelected = selectedPhases.find(p => p.id === draggedPhase.id);
             if (!isAlreadySelected) {
-                // Check if any existing stage is at maximum limit
                 const hasStageAtMaximum = selectedPhases.some((_, index) => {
                     const stage = index + 1;
                     const stageDuration = stageDurations[stage];
@@ -416,7 +320,6 @@ export default function MilestoneManagement() {
         setDraggedPhase(null);
     };
 
-    // Drag and drop functions for reordering selected phases
     const handleSelectedPhaseDragStart = (e, phase, index) => {
         setDraggedSelectedPhase({phase, index});
         e.dataTransfer.effectAllowed = 'move';
@@ -441,7 +344,6 @@ export default function MilestoneManagement() {
             const [movedPhase] = reorderedPhases.splice(draggedSelectedPhase.index, 1);
             reorderedPhases.splice(dropIndex, 0, movedPhase);
 
-            // Update stage numbers and apply duration from stageDurations
             const updatedPhases = reorderedPhases.map((phase, index) => {
                 const newStage = index + 1;
                 const stageDuration = stageDurations[newStage];
@@ -464,7 +366,6 @@ export default function MilestoneManagement() {
         const [movedPhase] = reorderedPhases.splice(fromIndex, 1);
         reorderedPhases.splice(toIndex, 0, movedPhase);
 
-        // Update stage numbers
         const updatedPhases = reorderedPhases.map((phase, index) => ({
             ...phase,
             stage: index + 1
@@ -478,7 +379,6 @@ export default function MilestoneManagement() {
     };
 
     const handleSaveDurations = () => {
-        // Check if all stages have dates set
         const stagesWithoutDates = selectedPhases.filter((_, index) => {
             const stage = index + 1;
             const stageDuration = stageDurations[stage];
@@ -490,7 +390,6 @@ export default function MilestoneManagement() {
             return;
         }
 
-        // Check if any start date exceeds order deadline - 2 days
         const stagesStartExceedingDeadline = selectedPhases.filter((_, index) => {
             const stage = index + 1;
             const stageDuration = stageDurations[stage];
@@ -505,7 +404,6 @@ export default function MilestoneManagement() {
             return;
         }
 
-        // Check if any end date exceeds order deadline - 1 day
         const stagesEndExceedingDeadline = selectedPhases.filter((_, index) => {
             const stage = index + 1;
             const stageDuration = stageDurations[stage];
@@ -520,7 +418,6 @@ export default function MilestoneManagement() {
             return;
         }
 
-        // Apply stage durations to phases
         const updatedPhases = selectedPhases.map((phase, index) => {
             const stage = index + 1;
             const stageDuration = stageDurations[stage];
@@ -542,7 +439,6 @@ export default function MilestoneManagement() {
             return;
         }
 
-        // Check if all phases have dates set
         const phasesWithoutDates = selectedPhases.filter(phase => !phase.startDate || !phase.endDate);
         if (phasesWithoutDates.length > 0) {
             enqueueSnackbar('Please set dates for all phases before assigning milestone', {variant: 'warning'});
@@ -568,7 +464,6 @@ export default function MilestoneManagement() {
                 setSelectedOrder(null);
                 setSelectedPhases([]);
                 setShowDateSettings(false);
-                // Refresh all orders to get updated milestone data
                 fetchOrders();
             } else {
                 enqueueSnackbar('Failed to assign milestone', {variant: 'error'});
@@ -586,7 +481,6 @@ export default function MilestoneManagement() {
         return dayjs(dateString).format('DD/MM/YYYY');
     };
 
-    // Helper functions for order detail dialog
     const getTotalItems = (orderDetails) => {
         if (!orderDetails) return 0;
         return orderDetails.reduce((sum, item) => sum + item.quantity, 0);
@@ -608,11 +502,9 @@ export default function MilestoneManagement() {
         setSelectedOrderDetail(null);
     };
 
-    // Function to group items by category with rowspan support (similar to GarmentCreateQuotation)
     const groupItemsByCategory = (orderDetails) => {
         if (!orderDetails || orderDetails.length === 0) return [];
 
-        // First, group by category
         const categoryGroups = {};
 
         orderDetails.forEach((item) => {
@@ -628,7 +520,6 @@ export default function MilestoneManagement() {
                 categoryGroups[category][gender] = [];
             }
 
-            // Find existing group for this type
             let existingGroup = categoryGroups[category][gender].find(group =>
                 group.type === type
             );
@@ -642,7 +533,6 @@ export default function MilestoneManagement() {
                     quantities: {},
                     items: [],
                     totalQuantity: 0,
-                    // Common properties from first item
                     color: item.deliveryItem?.designItem?.color,
                     logoPosition: item.deliveryItem?.designItem?.logoPosition,
                     baseLogoHeight: item.deliveryItem?.baseLogoHeight,
@@ -666,7 +556,6 @@ export default function MilestoneManagement() {
             existingGroup.totalQuantity += quantity;
         });
 
-        // Convert to array with category and gender info for rowspan
         const result = [];
         Object.entries(categoryGroups).forEach(([category, genderGroups]) => {
             const totalCategoryRows = Object.values(genderGroups).reduce((sum, groups) =>
@@ -702,7 +591,6 @@ export default function MilestoneManagement() {
         setSelectedQuantityDetails(null);
     };
 
-    // Handle images dialog
     const handleOpenImagesDialog = (groupedItem) => {
         setSelectedItemImages(groupedItem);
         setImagesDialogOpen(true);
@@ -713,23 +601,19 @@ export default function MilestoneManagement() {
         setSelectedItemImages(null);
     };
 
-    // Helper function to sort sizes properly
     const sortSizes = (sizes) => {
         const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
         return sizes.sort((a, b) => {
             const indexA = sizeOrder.indexOf(a);
             const indexB = sizeOrder.indexOf(b);
-            
-            // If both sizes are in the standard order, sort by index
+
             if (indexA !== -1 && indexB !== -1) {
                 return indexA - indexB;
             }
-            
-            // If only one size is in standard order, prioritize it
+
             if (indexA !== -1) return -1;
             if (indexB !== -1) return 1;
-            
-            // If neither size is in standard order, sort alphabetically
+
             return a.localeCompare(b);
         });
     };
@@ -750,7 +634,7 @@ export default function MilestoneManagement() {
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
             <Box sx={{height: '100%', overflowY: 'auto'}}>
-                {/* Header Section */}
+                {}
                 <Box
                     sx={{
                         mb: 4,
@@ -799,7 +683,7 @@ export default function MilestoneManagement() {
                     </Typography>
                 </Box>
 
-                {/* Tab Navigation */}
+                {}
                 <Box sx={{mb: 4}}>
                     <Paper elevation={0} sx={{
                         borderRadius: 2,
@@ -865,11 +749,10 @@ export default function MilestoneManagement() {
                     </Paper>
                 </Box>
 
-                {/* Content based on active tab */}
+                {}
                 {activeTab === 'manage' ? (
-                    /* Manage Milestones */
                     <Box>
-                        {/* Header */}
+                        {}
                         <Box sx={{mb: 3}}>
                             <Typography variant="h5" sx={{fontWeight: 700, color: '#1e293b', mb: 1}}>
                                 Manage Milestones
@@ -880,7 +763,7 @@ export default function MilestoneManagement() {
 
                         </Box>
 
-                        {/* Orders with Milestones List */}
+                        {}
                         <Box sx={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))',
@@ -889,7 +772,6 @@ export default function MilestoneManagement() {
                             {orders.filter(order => {
                                 const orderMilestone = order.milestone || [];
                                 const hasMilestone = orderMilestone.length > 0;
-                                // Only show orders with milestones in Manage Milestones tab
                                 return hasMilestone;
                             }).map((order) => {
                                 const orderMilestone = order.milestone || [];
@@ -924,8 +806,8 @@ export default function MilestoneManagement() {
                                                                     sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                                             Order #{order.id}
                                                         </Typography>
-                                                        <Typography 
-                                                            variant="body2" 
+                                                        <Typography
+                                                            variant="body2"
                                                             sx={{
                                                                 color: '#64748b',
                                                                 overflow: 'hidden',
@@ -944,21 +826,11 @@ export default function MilestoneManagement() {
                                                         alignItems: 'flex-end'
                                                     }}>
                                                         <Chip
-                                                            label={(() => {
-                                                                const { displayStatus } = getOrderDisplayStatus(order, orderMilestone);
-                                                                return displayStatus;
-                                                            })()}
+                                                            label="Processing"
                                                             sx={{
-                                                                backgroundColor: (() => {
-                                                                    const { backgroundColor } = getOrderDisplayStatus(order, orderMilestone);
-                                                                    return backgroundColor;
-                                                                })(),
-                                                                color: (() => {
-                                                                    const { textColor } = getOrderDisplayStatus(order, orderMilestone);
-                                                                    return textColor;
-                                                                })(),
-                                                                fontWeight: 'bold',
-                                                                textTransform: 'capitalize'
+                                                                backgroundColor: '#fef3c7',
+                                                                color: '#d97706',
+                                                                fontWeight: 'bold'
                                                             }}
                                                         />
                                                         <Chip
@@ -1029,7 +901,7 @@ export default function MilestoneManagement() {
                             })}
                         </Box>
 
-                        {/* No Orders with Milestones Message */}
+                        {}
                         {orders.filter(order => {
                             const orderMilestone = order.milestone || [];
                             const hasMilestone = orderMilestone.length > 0;
@@ -1054,9 +926,8 @@ export default function MilestoneManagement() {
                         )}
                     </Box>
                 ) : activeTab === 'assignments' ? (
-                    /* Milestone Assignments */
                     <Box>
-                        {/* Header */}
+                        {}
                         <Box sx={{mb: 3}}>
                             <Typography variant="h5" sx={{fontWeight: 700, color: '#1e293b', mb: 1}}>
                                 Assign Milestones to Orders
@@ -1068,7 +939,7 @@ export default function MilestoneManagement() {
 
                         </Box>
 
-                        {/* Orders List */}
+                        {}
                         <Box sx={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))',
@@ -1077,12 +948,11 @@ export default function MilestoneManagement() {
                             {orders.filter(order => {
                                 const orderMilestone = order.milestone || [];
                                 const hasMilestone = orderMilestone.length > 0;
-                                // Only show orders without milestones in Assign Milestones tab
                                 return !hasMilestone;
                             }).map((order) => {
                                 const orderMilestone = order.milestone || [];
                                 const hasMilestone = orderMilestone.length > 0;
-                                const isLoading = false; // No longer loading as data comes with orders
+                                const isLoading = false;
 
                                 return (
                                     <Box key={order.id}>
@@ -1121,21 +991,11 @@ export default function MilestoneManagement() {
                                                         alignItems: 'flex-end'
                                                     }}>
                                                         <Chip
-                                                            label={(() => {
-                                                                const { displayStatus } = getOrderDisplayStatus(order, orderMilestone);
-                                                                return displayStatus;
-                                                            })()}
+                                                            label="Processing"
                                                             sx={{
-                                                                backgroundColor: (() => {
-                                                                    const { backgroundColor } = getOrderDisplayStatus(order, orderMilestone);
-                                                                    return backgroundColor;
-                                                                })(),
-                                                                color: (() => {
-                                                                    const { textColor } = getOrderDisplayStatus(order, orderMilestone);
-                                                                    return textColor;
-                                                                })(),
-                                                                fontWeight: 'bold',
-                                                                textTransform: 'capitalize'
+                                                                backgroundColor: '#fef3c7',
+                                                                color: '#d97706',
+                                                                fontWeight: 'bold'
                                                             }}
                                                         />
                                                         {isLoading ? (
@@ -1201,7 +1061,7 @@ export default function MilestoneManagement() {
                                                     >
                                                         {hasMilestone ? 'View Milestone' : 'Assign Milestone'}
                                                     </Button>
-                                                    
+
                                                     <Button
                                                         variant="outlined"
                                                         startIcon={<AssignmentIcon/>}
@@ -1226,7 +1086,7 @@ export default function MilestoneManagement() {
                             })}
                         </Box>
 
-                        {/* No Orders Message */}
+                        {}
                         {orders.filter(order => {
                             const orderMilestone = order.milestone || [];
                             const hasMilestone = orderMilestone.length > 0;
@@ -1251,9 +1111,8 @@ export default function MilestoneManagement() {
                         )}
                     </Box>
                 ) : (
-                    /* Production Phases */
                     <Box>
-                        {/* Header with Create Button */}
+                        {}
                         <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3}}>
                             <Box>
                                 <Typography variant="h5" sx={{fontWeight: 700, color: '#1e293b', mb: 1}}>
@@ -1297,7 +1156,7 @@ export default function MilestoneManagement() {
                             </Button>
                         </Box>
 
-                        {/* Phases Grid */}
+                        {}
                         <Box sx={{
                             display: 'flex',
                             flexWrap: 'wrap',
@@ -1361,24 +1220,17 @@ export default function MilestoneManagement() {
                                             <Button
                                                 size="small"
                                                 startIcon={<DeleteIcon/>}
-                                                onClick={() => handleDeletePhase(phase.id)}
-                                                disabled={deletingPhase}
                                                 sx={{
                                                     color: '#d32f2f',
                                                     borderColor: '#d32f2f',
                                                     '&:hover': {
                                                         borderColor: '#c62828',
                                                         backgroundColor: '#ffebee'
-                                                    },
-                                                    '&:disabled': {
-                                                        color: '#9ca3af',
-                                                        borderColor: '#9ca3af',
-                                                        backgroundColor: '#f3f4f6'
                                                     }
                                                 }}
                                                 variant="outlined"
                                             >
-                                                {deletingPhase ? 'Deleting...' : 'Delete'}
+                                                Delete
                                             </Button>
                                         </Box>
                                     </CardContent>
@@ -1386,7 +1238,7 @@ export default function MilestoneManagement() {
                             ))}
                         </Box>
 
-                        {/* No Phases Message */}
+                        {}
                         {phases.length === 0 && (
                             <Box sx={{
                                 textAlign: 'center',
@@ -1429,7 +1281,7 @@ export default function MilestoneManagement() {
                     </Box>
                 )}
 
-                {/* Refresh FAB */}
+                {}
                 <Fab
                     color="primary"
                     aria-label="refresh"
@@ -1450,7 +1302,7 @@ export default function MilestoneManagement() {
                     <RefreshIcon/>
                 </Fab>
 
-                {/* Create Phase Dialog */}
+                {}
                 <Dialog
                     open={createPhaseDialogOpen}
                     onClose={() => setCreatePhaseDialogOpen(false)}
@@ -1562,7 +1414,7 @@ export default function MilestoneManagement() {
                     </DialogActions>
                 </Dialog>
 
-                {/* Assign Milestone Dialog */}
+                {}
                 <Dialog
                     open={assignMilestoneDialogOpen}
                     onClose={() => setAssignMilestoneDialogOpen(false)}
@@ -1605,7 +1457,7 @@ export default function MilestoneManagement() {
                     <DialogContent sx={{p: 4, pb: 2, pt: 6}}>
                         {selectedOrder && (
                             <Box sx={{display: 'flex', gap: 3}}>
-                                {/* Available Phases */}
+                                {}
                                 <Box sx={{flex: 1}}>
                                     <Typography variant="h6" sx={{fontWeight: 600, mb: 2, color: '#1e293b'}}>
                                         Available Phases (Drag to add / Drop here to remove)
@@ -1676,7 +1528,7 @@ export default function MilestoneManagement() {
                                     </Paper>
                                 </Box>
 
-                                {/* Selected Phases */}
+                                {}
                                 <Box sx={{flex: 1}}>
                                     <Box sx={{
                                         display: 'flex',
@@ -1753,7 +1605,7 @@ export default function MilestoneManagement() {
                                                             }
                                                         }}
                                                     >
-                                                        {/* Delete Button - Top Right */}
+                                                        {}
                                                         <IconButton
                                                             size="small"
                                                             onClick={() => {
@@ -1778,10 +1630,10 @@ export default function MilestoneManagement() {
                                                             X
                                                         </IconButton>
 
-                                                        {/* Phase Content */}
+                                                        {}
                                                         <Box
                                                             sx={{display: 'flex', alignItems: 'center', gap: 3, pr: 4}}>
-                                                            {/* Left Side - Phase Info */}
+                                                            {}
                                                             <Box sx={{
                                                                 display: 'flex',
                                                                 alignItems: 'center',
@@ -1833,7 +1685,7 @@ export default function MilestoneManagement() {
                                                                 </Box>
                                                             </Box>
 
-                                                            {/* Right Side - Status Only */}
+                                                            {}
                                                             <Box sx={{
                                                                 display: 'flex',
                                                                 flexDirection: 'column',
@@ -1881,7 +1733,7 @@ export default function MilestoneManagement() {
                                             </List>
 
 
-                                            {/* Drop Zone for Additional Phases */}
+                                            {}
                                             <Box
                                                 sx={{
                                                     mt: 2,
@@ -1980,7 +1832,7 @@ export default function MilestoneManagement() {
                     </DialogActions>
                 </Dialog>
 
-                {/* Duration Settings Dialog */}
+                {}
                 <Dialog
                     open={durationDialogOpen}
                     onClose={() => setDurationDialogOpen(false)}
@@ -2033,11 +1885,11 @@ export default function MilestoneManagement() {
                                     Order Deadline: {dayjs(selectedOrder.deadline).format('DD/MM/YYYY')}
                                 </Typography>
                                 <Typography variant="body2" sx={{color: '#d32f2f', mb: 0.5}}>
-                                    • Start date
+                                    �?Start date
                                     maximum: {dayjs(selectedOrder.deadline).subtract(2, 'day').format('DD/MM/YYYY')}
                                 </Typography>
                                 <Typography variant="body2" sx={{color: '#d32f2f'}}>
-                                    • End date
+                                    �?End date
                                     maximum: {dayjs(selectedOrder.deadline).subtract(1, 'day').format('DD/MM/YYYY')}
                                 </Typography>
                             </Box>
@@ -2181,7 +2033,7 @@ export default function MilestoneManagement() {
                     </DialogActions>
                 </Dialog>
 
-                {/* View Milestone Dialog */}
+                {}
                 <Dialog
                     open={viewMilestoneDialogOpen}
                     onClose={() => setViewMilestoneDialogOpen(false)}
@@ -2227,9 +2079,9 @@ export default function MilestoneManagement() {
                     <DialogContent sx={{p: 4, pb: 2, pt: 6, position: 'relative'}}>
                         {viewingOrder && (
                             <Box>
-                                
 
-                                {/* Order Information */}
+
+                                {}
                                 <Box sx={{
                                     mb: 4,
                                     p: 3,
@@ -2320,8 +2172,8 @@ export default function MilestoneManagement() {
                                             </Typography>
                                         </Box>
                                     </Box>
-                                    
-                                    {/* View More Button */}
+
+                                    {}
                                     <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
                                         <Button
                                             variant="outlined"
@@ -2349,7 +2201,7 @@ export default function MilestoneManagement() {
                                     </Box>
                                 </Box>
 
-                                {/* Milestone Phases Header */}
+                                {}
                                 <Box sx={{
                                     display: 'flex',
                                     alignItems: 'center',
@@ -2375,7 +2227,7 @@ export default function MilestoneManagement() {
                                         </Box>
                                     </Box>
 
-                                    {/* View Mode Toggle */}
+                                    {}
                                     <Box sx={{display: 'flex', gap: 1}}>
                                         <Button
                                             variant={milestoneViewMode === 'stepper' ? 'contained' : 'outlined'}
@@ -2419,7 +2271,6 @@ export default function MilestoneManagement() {
                                 </Box>
 
                                 {milestoneViewMode === 'stepper' ? (
-                                    /* Stepper View */
                                     <Box sx={{mt: 2}}>
                                         <Stepper orientation="vertical"
                                                  sx={{'& .MuiStepConnector-line': {minHeight: '40px'}}}>
@@ -2443,7 +2294,7 @@ export default function MilestoneManagement() {
                                                                 color: '#1e293b',
                                                                 fontWeight: 600,
                                                                 fontSize: '1.1rem',
-                                                                marginTop: '-20px' // Đẩy label xuống nhiều hơn để ngang với stage
+                                                                marginTop: '-20px'
                                                             }
                                                         }}
                                                     >
@@ -2577,7 +2428,6 @@ export default function MilestoneManagement() {
                                         </Stepper>
                                     </Box>
                                 ) : (
-                                    /* Box View */
                                     <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 2}}>
                                         {viewingOrder.milestone?.sort((a, b) => a.stage - b.stage).map((phase, index) => (
                                             <Card
@@ -2808,38 +2658,38 @@ export default function MilestoneManagement() {
                         >
                             Close
                         </Button>
-                        {(() => {
-                            // Check if all phases are completed using phaseStatuses
-                            const allPhasesCompleted = viewingOrder?.milestone && 
-                                viewingOrder.milestone.length > 0 && 
-                                viewingOrder.milestone.every(phase => phaseStatuses[phase.stage] === 'done');
-                            
-                            // Only show "Process to Next Phase" button if not all phases are completed
-                            if (!allPhasesCompleted) {
-                                return (
-                                    <Button
-                                        variant="contained"
-                                        onClick={() => {
-                                            setUploadImageDialogOpen(true);
-                                        }}
-                                        sx={{
-                                            backgroundColor: '#3f51b5',
-                                            color: 'white',
-                                            fontWeight: 600,
-                                            '&:hover': {
-                                                backgroundColor: '#303f9f'
-                                            }
-                                        }}
-                                    >
-                                        Process to Next Phase
-                                    </Button>
-                                );
+                        <Button
+                            variant="contained"
+                            onClick={() => {
+                                const isLastPhaseCompleted = viewingOrder?.milestone && viewingOrder.milestone.length > 0 &&
+                                   viewingOrder.milestone.find(phase => phase.stage === viewingOrder.milestone.length)?.status === 'completed';
+
+                                if (isLastPhaseCompleted) {
+                                    setViewMilestoneDialogOpen(false);
+                                    enqueueSnackbar('Order confirmed for delivery!', {variant: 'success'});
+                                } else {
+                                    setUploadImageDialogOpen(true);
+                                }
+                            }}
+                            sx={{
+                                backgroundColor: '#3f51b5',
+                                color: 'white',
+                                fontWeight: 600,
+                                '&:hover': {
+                                    backgroundColor: '#303f9f'
+                                }
+                            }}
+                        >
+                            {viewingOrder?.milestone && viewingOrder.milestone.length > 0 &&
+                             viewingOrder.milestone.find(phase => phase.stage === viewingOrder.milestone.length)?.status === 'completed'
+                                ? 'Confirm out of delivery'
+                                : 'Process to Next Phase'
                             }
-                        })()}
+                        </Button>
                     </DialogActions>
                 </Dialog>
 
-                {/* Upload Image Dialog */}
+                {}
                 <Dialog
                     open={uploadImageDialogOpen}
                     onClose={() => setUploadImageDialogOpen(false)}
@@ -2898,7 +2748,7 @@ export default function MilestoneManagement() {
                             </Typography>
                         </Box>
 
-                        {/* Current Phase Info */}
+                        {}
                         <Box sx={{
                             p: 3,
                             background: 'linear-gradient(135deg, rgba(63, 81, 181, 0.05) 0%, rgba(48, 63, 159, 0.08) 100%)',
@@ -2927,7 +2777,7 @@ export default function MilestoneManagement() {
                             </Box>
                         </Box>
 
-                        {/* Image Upload Area */}
+                        {}
                         <Box sx={{
                             border: '2px dashed rgba(63, 81, 181, 0.3)',
                             borderRadius: 2,
@@ -2945,9 +2795,9 @@ export default function MilestoneManagement() {
                         >
                             {selectedImage ? (
                                 <Box>
-                                    <img 
-                                        src={URL.createObjectURL(selectedImage)} 
-                                        alt="Selected" 
+                                    <img
+                                        src={URL.createObjectURL(selectedImage)}
+                                        alt="Selected"
                                         style={{
                                             maxWidth: '100%',
                                             maxHeight: '200px',
@@ -3017,16 +2867,14 @@ export default function MilestoneManagement() {
                             variant="contained"
                             disabled={!selectedImage || uploadingImage}
                             onClick={async () => {
-                                // Check file size before processing
                                 if (selectedImage && selectedImage.size > 10 * 1024 * 1024) {
                                     enqueueSnackbar('Please select an image file under 10MB', {variant: 'warning'});
                                     return;
                                 }
-                                
+
                                 try {
                                     setUploadingImage(true);
-                                    
-                                    // Upload image to Cloudinary first
+
                                     let imageUrl = '';
                                     if (selectedImage) {
                                         const uploadResponse = await uploadCloudinary(selectedImage);
@@ -3034,38 +2882,33 @@ export default function MilestoneManagement() {
                                             imageUrl = uploadResponse;
                                         }
                                     }
-                                    
-                                    // Call API to update milestone status
+
                                     const updateData = {
                                         orderId: viewingOrder.id,
                                         imageUrl: imageUrl
                                     };
-                                    
+
                                     const response = await updateMilestoneStatus(updateData);
-                                    
+
                                     if (response && response.status === 200) {
                                         enqueueSnackbar('Phase completed successfully!', {variant: 'success'});
                                         setUploadImageDialogOpen(false);
                                         setSelectedImage(null);
-                                        
-                                        // Show loading while updating data
+
                                         setUpdatingData(true);
-                                        
-                                        // Refresh orders and update viewingOrder with new data
+
                                         const updatedOrdersResponse = await getGarmentOrders();
                                         if (updatedOrdersResponse && updatedOrdersResponse.data) {
                                             const processingOrders = (updatedOrdersResponse.data.body || []).filter(order => order.status === 'processing');
                                             setOrders(processingOrders);
-                                            
-                                            // Update viewingOrder with fresh data
+
                                             const updatedOrder = processingOrders.find(order => order.id === viewingOrder.id);
                                             if (updatedOrder) {
                                                 setViewingOrder(updatedOrder);
-                                                
-                                                                                        // Update phase statuses for the updated order
+
                                         const statuses = {};
-                                        let activePhase = 1; // Default to first phase
-                                        
+                                        let activePhase = 1;
+
                                         if (updatedOrder.milestone && updatedOrder.milestone.length > 0) {
                                             updatedOrder.milestone.forEach((phase) => {
                                                 const stage = phase.stage;
@@ -3073,7 +2916,7 @@ export default function MilestoneManagement() {
                                                     statuses[stage] = 'done';
                                                 } else if (phase.status === 'processing') {
                                                     statuses[stage] = 'active';
-                                                    activePhase = stage; // Set current active phase
+                                                    activePhase = stage;
                                                 } else if (phase.status === 'assigned') {
                                                     statuses[stage] = 'not_started';
                                                 } else if (phase.status === 'late') {
@@ -3081,9 +2924,9 @@ export default function MilestoneManagement() {
                                                 }
                                             });
                                         }
-                                        
+
                                         setPhaseStatuses(statuses);
-                                        setCurrentPhase(activePhase); // Update current phase to the active one
+                                        setCurrentPhase(activePhase);
                                             }
                                         }
                                     } else {
@@ -3121,7 +2964,7 @@ export default function MilestoneManagement() {
                     </DialogActions>
                 </Dialog>
 
-                {/* Order Detail Dialog */}
+                {}
                 <Dialog
                     open={orderDetailDialogOpen}
                     onClose={closeOrderDetailDialog}
@@ -3137,7 +2980,7 @@ export default function MilestoneManagement() {
                         }
                     }}
                 >
-                    {/* Header */}
+                    {}
                     <Box sx={{
                         background: 'linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)',
                         color: 'white',
@@ -3168,11 +3011,11 @@ export default function MilestoneManagement() {
                         </IconButton>
                     </Box>
 
-                    {/* Content */}
+                    {}
                     <DialogContent sx={{ p: 0, overflow: 'auto' }}>
                         {selectedOrderDetail && (
                             <Box sx={{ p: 4, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                {/* Order Information Card */}
+                                {}
                                 <Card sx={{
                                     background: 'rgba(255, 255, 255, 0.95)',
                                     border: '1px solid rgba(63, 81, 181, 0.1)',
@@ -3210,8 +3053,8 @@ export default function MilestoneManagement() {
                                             gap: 2,
                                             mb: 3
                                         }}>
-                                            {/* Order Date */}
-                                            <Box sx={{ 
+                                            {}
+                                            <Box sx={{
                                                 flex: 1,
                                                 minWidth: { xs: '100%', sm: 'auto' }
                                             }}>
@@ -3265,8 +3108,8 @@ export default function MilestoneManagement() {
                                                 </Box>
                                             </Box>
 
-                                            {/* Delivery Deadline */}
-                                            <Box sx={{ 
+                                            {}
+                                            <Box sx={{
                                                 flex: 1,
                                                 minWidth: { xs: '100%', sm: 'auto' }
                                             }}>
@@ -3328,7 +3171,7 @@ export default function MilestoneManagement() {
                                                         fontSize: '0.8rem',
                                                         lineHeight: 1.2
                                                     }}>
-                                                        {getDaysUntilDeadline(selectedOrderDetail.deadline) > 0 
+                                                        {getDaysUntilDeadline(selectedOrderDetail.deadline) > 0
                                                             ? `${getDaysUntilDeadline(selectedOrderDetail.deadline)} days left`
                                                             : 'overdue'
                                                         }
@@ -3336,8 +3179,8 @@ export default function MilestoneManagement() {
                                                 </Box>
                                             </Box>
 
-                                            {/* Total Uniforms */}
-                                            <Box sx={{ 
+                                            {}
+                                            <Box sx={{
                                                 flex: 1,
                                                 minWidth: { xs: '100%', sm: 'auto' }
                                             }}>
@@ -3391,93 +3234,79 @@ export default function MilestoneManagement() {
                                                 </Box>
                                             </Box>
 
-                                            {/* Status */}
-                                            {(() => {
-                                                const { displayStatus, backgroundColor, textColor } = getOrderDisplayStatus(selectedOrderDetail, selectedOrderDetail.milestone || []);
-                                                
-                                                // Helper function to convert hex to rgba
-                                                const hexToRgba = (hex, alpha) => {
-                                                    const r = parseInt(hex.slice(1, 3), 16);
-                                                    const g = parseInt(hex.slice(3, 5), 16);
-                                                    const b = parseInt(hex.slice(5, 7), 16);
-                                                    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-                                                };
-                                                
-                                                // Helper function to get icon based on status
-                                                const getStatusIcon = () => {
-                                                    if (displayStatus === 'waiting for delivery') {
-                                                        return <TimelineIcon sx={{ color: '#d97706', fontSize: 24 }} />;
-                                                    } else if (displayStatus === 'completed') {
-                                                        return <CheckCircleIcon sx={{ color: '#10b981', fontSize: 24 }} />;
-                                                    } else if (displayStatus === 'processing') {
-                                                        return <TimelineIcon sx={{ color: '#1d4ed8', fontSize: 24 }} />;
-                                                    } else if (displayStatus === 'pending') {
-                                                        return <TimelineIcon sx={{ color: '#d97706', fontSize: 24 }} />;
-                                                    } else {
-                                                        return <CheckCircleIcon sx={{ color: '#6b7280', fontSize: 24 }} />;
+                                            {}
+                                            <Box sx={{
+                                                flex: 1,
+                                                minWidth: { xs: '100%', sm: 'auto' }
+                                            }}>
+                                                <Box sx={{
+                                                    p: 3,
+                                                    borderRadius: 2,
+                                                    backgroundColor: 'rgba(16, 185, 129, 0.05)',
+                                                    border: '1px solid rgba(16, 185, 129, 0.1)',
+                                                    textAlign: 'center',
+                                                    transition: 'all 0.3s ease',
+                                                    height: '100%',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    justifyContent: 'center',
+                                                    '&:hover': {
+                                                        backgroundColor: 'rgba(16, 185, 129, 0.08)',
+                                                        transform: 'translateY(-2px)'
                                                     }
-                                                };
-                                                
-                                                return (
-                                                    <Box sx={{ 
-                                                        flex: 1,
-                                                        minWidth: { xs: '100%', sm: 'auto' }
+                                                }}>
+                                                    <Box sx={{
+                                                        width: 48,
+                                                        height: 48,
+                                                        borderRadius: '50%',
+                                                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        mx: 'auto',
+                                                        mb: 2
                                                     }}>
-                                                        <Box sx={{
-                                                            p: 3,
-                                                            borderRadius: 2,
-                                                            backgroundColor: hexToRgba(backgroundColor, 0.15),
-                                                            border: `1px solid ${hexToRgba(backgroundColor, 0.2)}`,
-                                                            textAlign: 'center',
-                                                            transition: 'all 0.3s ease',
-                                                            height: '100%',
-                                                            display: 'flex',
-                                                            flexDirection: 'column',
-                                                            justifyContent: 'center',
-                                                            '&:hover': {
-                                                                backgroundColor: hexToRgba(backgroundColor, 0.25),
-                                                                transform: 'translateY(-2px)'
-                                                            }
-                                                        }}>
-                                                            <Box sx={{
-                                                                width: 48,
-                                                                height: 48,
-                                                                borderRadius: '50%',
-                                                                backgroundColor: hexToRgba(backgroundColor, 0.2),
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                mx: 'auto',
-                                                                mb: 2
-                                                            }}>
-                                                                {getStatusIcon()}
-                                                            </Box>
-                                                            <Typography variant="body2" sx={{
-                                                                color: '#64748b',
-                                                                fontWeight: 500,
-                                                                mb: 1,
-                                                                textTransform: 'uppercase',
-                                                                letterSpacing: '0.5px',
-                                                                fontSize: '0.75rem'
-                                                            }}>
-                                                                Status
-                                                            </Typography>
-                                                            <Typography variant="h6" sx={{
-                                                                fontWeight: 700,
-                                                                fontSize: '1rem',
-                                                                textTransform: 'capitalize',
-                                                                color: textColor,
-                                                                mb: 0.5
-                                                            }}>
-                                                                {displayStatus}
-                                                            </Typography>
-                                                        </Box>
+                                                        <CheckCircleIcon sx={{ color: '#10b981', fontSize: 24 }} />
                                                     </Box>
-                                                );
-                                            })()}
+                                                    <Typography variant="body2" sx={{
+                                                        color: '#64748b',
+                                                        fontWeight: 500,
+                                                        mb: 1,
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.5px',
+                                                        fontSize: '0.75rem'
+                                                    }}>
+                                                        Status
+                                                    </Typography>
+                                                    <Typography variant="h6" sx={{
+                                                        fontWeight: 700,
+                                                        fontSize: '1rem',
+                                                        textTransform: 'capitalize',
+                                                        color: (() => {
+                                                            const status = selectedOrderDetail.status?.toLowerCase();
+                                                            switch (status) {
+                                                                case 'pending':
+                                                                    return '#f59e0b';
+                                                                case 'processing':
+                                                                    return '#3b82f6';
+                                                                case 'completed':
+                                                                    return '#10b981';
+                                                                case 'cancelled':
+                                                                case 'canceled':
+                                                                    return '#ef4444';
+                                                                default:
+                                                                    return '#6b7280';
+                                                            }
+                                                        })(),
+                                                        mb: 0.5
+                                                    }}>
+                                                        {selectedOrderDetail.status || 'Unknown'}
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
                                         </Box>
-                                        
-                                        {/* Order Notes Section */}
+
+                                        {}
                                         {selectedOrderDetail.note && (
                                             <Box sx={{
                                                 mt: 4,
@@ -3518,7 +3347,7 @@ export default function MilestoneManagement() {
                                     </CardContent>
                                 </Card>
 
-                                {/* School Information */}
+                                {}
                                 <Card sx={{
                                     background: 'rgba(255, 255, 255, 0.95)',
                                     border: '1px solid rgba(63, 81, 181, 0.1)',
@@ -3551,7 +3380,7 @@ export default function MilestoneManagement() {
                                     </Box>
                                     <CardContent sx={{ p: 3 }}>
                                         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 3 }}>
-                                            {/* Avatar */}
+                                            {}
                                             <Avatar sx={{
                                                 width: 80,
                                                 height: 80,
@@ -3559,8 +3388,8 @@ export default function MilestoneManagement() {
                                                 border: '2px solid rgba(63, 81, 181, 0.2)'
                                             }}>
                                                 {selectedOrderDetail.school?.avatar ? (
-                                                    <img 
-                                                        src={selectedOrderDetail.school.avatar} 
+                                                    <img
+                                                        src={selectedOrderDetail.school.avatar}
                                                         alt="School Logo"
                                                         referrerPolicy="no-referrer"
                                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -3570,12 +3399,12 @@ export default function MilestoneManagement() {
                                                 )}
                                             </Avatar>
 
-                                            {/* Information Grid */}
-                                            <Box sx={{ 
+                                            {}
+                                            <Box sx={{
                                                 flex: 1,
-                                                display: 'grid', 
+                                                display: 'grid',
                                                 gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
-                                                gap: 2 
+                                                gap: 2
                                             }}>
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                                     <BusinessIcon sx={{ color: '#3f51b5', fontSize: 20 }} />
@@ -3641,7 +3470,7 @@ export default function MilestoneManagement() {
                                     </CardContent>
                                 </Card>
 
-                                {/* Order Items */}
+                                {}
                                 <Card sx={{
                                     background: 'rgba(255, 255, 255, 0.95)',
                                     border: '1px solid rgba(63, 81, 181, 0.1)',
@@ -3679,7 +3508,7 @@ export default function MilestoneManagement() {
                                                 overflow: 'hidden',
                                                 boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
                                             }}>
-                                                {/* Excel-Style Table */}
+                                                {}
                                                 <Box sx={{
                                                     display: 'grid',
                                                     gridTemplateColumns: 'repeat(9, 1fr)',
@@ -3689,7 +3518,7 @@ export default function MilestoneManagement() {
                                                     width: '100%',
                                                     minWidth: '1200px'
                                                 }}>
-                                                    {/* Header Row */}
+                                                    {}
                                                     <Box sx={{
                                                         p: 2,
                                                         borderRight: '1px solid #000000',
@@ -3707,7 +3536,7 @@ export default function MilestoneManagement() {
                                                             Category
                                                         </Typography>
                                                     </Box>
-                                                    
+
                                                     <Box sx={{
                                                         p: 2,
                                                         borderRight: '1px solid #000000',
@@ -3725,7 +3554,7 @@ export default function MilestoneManagement() {
                                                             Gender
                                                         </Typography>
                                                     </Box>
-                                                    
+
                                                     <Box sx={{
                                                         p: 2,
                                                         borderRight: '1px solid #000000',
@@ -3743,7 +3572,7 @@ export default function MilestoneManagement() {
                                                             Type
                                                         </Typography>
                                                     </Box>
-                                                    
+
                                                     <Box sx={{
                                                         p: 2,
                                                         borderRight: '1px solid #000000',
@@ -3761,7 +3590,7 @@ export default function MilestoneManagement() {
                                                             Size
                                                         </Typography>
                                                     </Box>
-                                                    
+
                                                     <Box sx={{
                                                         p: 2,
                                                         borderRight: '1px solid #000000',
@@ -3779,7 +3608,7 @@ export default function MilestoneManagement() {
                                                             Quantity
                                                         </Typography>
                                                     </Box>
-                                                    
+
                                                     <Box sx={{
                                                         p: 2,
                                                         borderRight: '1px solid #000000',
@@ -3797,7 +3626,7 @@ export default function MilestoneManagement() {
                                                             Color
                                                         </Typography>
                                                     </Box>
-                                                    
+
                                                     <Box sx={{
                                                         p: 2,
                                                         borderRight: '1px solid #000000',
@@ -3815,7 +3644,7 @@ export default function MilestoneManagement() {
                                                             Logo Position
                                                         </Typography>
                                                     </Box>
-                                                    
+
                                                     <Box sx={{
                                                         p: 2,
                                                         borderRight: '1px solid #000000',
@@ -3841,7 +3670,7 @@ export default function MilestoneManagement() {
                                                             (height × width)
                                                         </Typography>
                                                     </Box>
-                                                    
+
                                                     <Box sx={{
                                                         p: 2,
                                                         borderBottom: '1px solid #000000',
@@ -3858,8 +3687,8 @@ export default function MilestoneManagement() {
                                                             Images
                                                         </Typography>
                                                     </Box>
-                                                    
-                                                    {/* Data Rows */}
+
+                                                    {}
                                                     {(() => {
                                                         const groupedItems = groupItemsByCategory(selectedOrderDetail.orderDetails);
                                                         const rows = [];
@@ -3867,7 +3696,7 @@ export default function MilestoneManagement() {
                                                         groupedItems.forEach((groupedItem, index) => {
                                                             rows.push(
                                                                 <React.Fragment key={`${groupedItem.category}-${groupedItem.gender}-${groupedItem.type}-${index}`}>
-                                                                    {/* Category - with rowspan */}
+                                                                    {}
                                                                     {groupedItem.isFirstInCategory && (
                                                                         <Box sx={{
                                                                             p: 2,
@@ -3893,8 +3722,8 @@ export default function MilestoneManagement() {
                                                                             />
                                                                         </Box>
                                                                     )}
-                                                                    
-                                                                    {/* Gender - with rowspan */}
+
+                                                                    {}
                                                                     {groupedItem.isFirstInGender && (
                                                                         <Box sx={{
                                                                             p: 2,
@@ -3913,14 +3742,14 @@ export default function MilestoneManagement() {
                                                                                 fontSize: '13px',
                                                                                 textTransform: 'capitalize'
                                                                             }}>
-                                                                                {groupedItem.gender === 'boy' ? 'Boy' : 
-                                                                                 groupedItem.gender === 'girl' ? 'Girl' : 
+                                                                                {groupedItem.gender === 'boy' ? 'Boy' :
+                                                                                 groupedItem.gender === 'girl' ? 'Girl' :
                                                                                  groupedItem.gender || 'Unknown'}
                                                                             </Typography>
                                                                         </Box>
                                                                     )}
-                                                    
-                                                                    {/* Type */}
+
+                                                                    {}
                                                                     <Box sx={{
                                                                         p: 2,
                                                                         borderRight: '1px solid #000000',
@@ -3939,8 +3768,8 @@ export default function MilestoneManagement() {
                                                                             {groupedItem.type || 'Item'}
                                                                         </Typography>
                                                                     </Box>
-                                                                    
-                                                                    {/* Size - Show all sizes */}
+
+                                                                    {}
                                                                     <Box sx={{
                                                                         p: 2,
                                                                         borderRight: '1px solid #000000',
@@ -3958,8 +3787,8 @@ export default function MilestoneManagement() {
                                                                             {groupedItem.sizes.sort().join(', ')}
                                                                         </Typography>
                                                                     </Box>
-                                                                    
-                                                                    {/* Quantity - Show View button */}
+
+                                                                    {}
                                                                     <Box sx={{
                                                                         p: 2,
                                                                         borderRight: '1px solid #000000',
@@ -4001,7 +3830,7 @@ export default function MilestoneManagement() {
                                                                         </Button>
                                                                     </Box>
 
-                                                                    {/* Color */}
+                                                                    {}
                                                                     <Box sx={{
                                                                         p: 2,
                                                                         borderRight: '1px solid #000000',
@@ -4030,7 +3859,7 @@ export default function MilestoneManagement() {
                                                                         </Typography>
                                                                     </Box>
 
-                                                                    {/* Logo Position */}
+                                                                    {}
                                                                     <Box sx={{
                                                                         p: 2,
                                                                         borderRight: '1px solid #000000',
@@ -4050,7 +3879,7 @@ export default function MilestoneManagement() {
                                                                         </Typography>
                                                                     </Box>
 
-                                                                    {/* Logo Size */}
+                                                                    {}
                                                                     <Box sx={{
                                                                         p: 2,
                                                                         borderRight: '1px solid #000000',
@@ -4066,14 +3895,14 @@ export default function MilestoneManagement() {
                                                                             fontSize: '12px',
                                                                             textAlign: 'center'
                                                                         }}>
-                                                                            {groupedItem.baseLogoHeight && groupedItem.baseLogoWidth 
+                                                                            {groupedItem.baseLogoHeight && groupedItem.baseLogoWidth
                                                                                 ? `${groupedItem.baseLogoHeight} × ${groupedItem.baseLogoWidth}`
                                                                                 : 'N/A'
                                                                             }
                                                                         </Typography>
                                                                     </Box>
 
-                                                                                                                        {/* Images */}
+                                                                                                                        {}
                                                     <Box sx={{
                                                         p: 2,
                                                         borderBottom: '1px solid #000000',
@@ -4138,7 +3967,7 @@ export default function MilestoneManagement() {
                     </DialogContent>
                 </Dialog>
 
-                {/* Quantity Details Dialog */}
+                {}
                 <Dialog
                     open={showQuantityDetailsDialog}
                     onClose={handleCloseQuantityDetails}
@@ -4180,7 +4009,7 @@ export default function MilestoneManagement() {
                     <DialogContent sx={{ p: 4, pb: 2, pt: 6 }}>
                         {selectedQuantityDetails && (
                             <Box>
-                                {/* Item Info */}
+                                {}
                                 <Card sx={{
                                     mb: 3,
                                     border: '1px solid #e2e8f0',
@@ -4219,14 +4048,14 @@ export default function MilestoneManagement() {
                                                 }}
                                             />
                                         </Box>
-                                        
+
                                         <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b' }}>
                                             Total Quantity: {selectedQuantityDetails.totalQuantity}
                                         </Typography>
                                     </CardContent>
                                 </Card>
 
-                                {/* Size Breakdown Table */}
+                                {}
                                 <Card sx={{
                                     border: '1px solid #e2e8f0',
                                     borderRadius: 2,
@@ -4244,7 +4073,7 @@ export default function MilestoneManagement() {
                                             Size Breakdown
                                         </Typography>
                                     </Box>
-                                    
+
                                     <Box sx={{ p: 0 }}>
                                         <Box sx={{
                                             display: 'grid',
@@ -4275,7 +4104,7 @@ export default function MilestoneManagement() {
                                                 </Typography>
                                             </Box>
                                         </Box>
-                                        
+
                                         {selectedQuantityDetails.sizes.sort().map((size) => (
                                             <Box key={size} sx={{
                                                 display: 'grid',
@@ -4332,7 +4161,7 @@ export default function MilestoneManagement() {
                     </DialogActions>
                 </Dialog>
 
-                {/* Images Dialog */}
+                {}
                 <Dialog
                     open={imagesDialogOpen}
                     onClose={handleCloseImagesDialog}
@@ -4374,7 +4203,7 @@ export default function MilestoneManagement() {
                     <DialogContent sx={{ p: 4, pb: 2, pt: 6 }}>
                         {selectedItemImages && (
                             <Box>
-                                {/* Item Info Header */}
+                                {}
                                 <Card sx={{
                                     background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
                                     border: '1px solid #cbd5e1',
@@ -4412,20 +4241,20 @@ export default function MilestoneManagement() {
                                                 }}
                                             />
                                         </Box>
-                                        
+
                                         <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b' }}>
                                             {selectedItemImages.gender === 'boy' ? 'Boy' : 'Girl'} {selectedItemImages.type} - {selectedItemImages.category === 'pe' ? 'Physical Education' : 'Regular'}
                                         </Typography>
                                     </CardContent>
                                 </Card>
 
-                                {/* Images Grid */}
-                                <Box sx={{ 
-                                    display: 'grid', 
+                                {}
+                                <Box sx={{
+                                    display: 'grid',
                                     gridTemplateColumns: { xs: '1fr', md: selectedItemImages.logoImageUrl ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)' },
-                                    gap: 3 
+                                    gap: 3
                                 }}>
-                                    {/* Logo Image */}
+                                    {}
                                     {selectedItemImages.logoImageUrl && (
                                         <Card sx={{
                                             border: '1px solid #e2e8f0',
@@ -4442,8 +4271,8 @@ export default function MilestoneManagement() {
                                                 p: 2,
                                                 textAlign: 'center'
                                             }}>
-                                                <Typography variant="subtitle1" sx={{ 
-                                                    color: 'white', 
+                                                <Typography variant="subtitle1" sx={{
+                                                    color: 'white',
                                                     fontWeight: 600,
                                                     fontSize: '14px'
                                                 }}>
@@ -4458,8 +4287,8 @@ export default function MilestoneManagement() {
                                                 backgroundColor: '#f8fafc',
                                                 minHeight: 200
                                             }}>
-                                                <img 
-                                                    src={selectedItemImages.logoImageUrl} 
+                                                <img
+                                                    src={selectedItemImages.logoImageUrl}
                                                     alt="Logo"
                                                     style={{
                                                         maxWidth: '100%',
@@ -4473,7 +4302,7 @@ export default function MilestoneManagement() {
                                         </Card>
                                     )}
 
-                                    {/* Front Image */}
+                                    {}
                                     {selectedItemImages.frontImageUrl && (
                                         <Card sx={{
                                             border: '1px solid #e2e8f0',
@@ -4490,8 +4319,8 @@ export default function MilestoneManagement() {
                                                 p: 2,
                                                 textAlign: 'center'
                                             }}>
-                                                <Typography variant="subtitle1" sx={{ 
-                                                    color: 'white', 
+                                                <Typography variant="subtitle1" sx={{
+                                                    color: 'white',
                                                     fontWeight: 600,
                                                     fontSize: '14px'
                                                 }}>
@@ -4506,8 +4335,8 @@ export default function MilestoneManagement() {
                                                 backgroundColor: '#f8fafc',
                                                 minHeight: 200
                                             }}>
-                                                <img 
-                                                    src={selectedItemImages.frontImageUrl} 
+                                                <img
+                                                    src={selectedItemImages.frontImageUrl}
                                                     alt="Front Design"
                                                     style={{
                                                         maxWidth: '100%',
@@ -4521,7 +4350,7 @@ export default function MilestoneManagement() {
                                         </Card>
                                     )}
 
-                                    {/* Back Image */}
+                                    {}
                                     {selectedItemImages.backImageUrl && (
                                         <Card sx={{
                                             border: '1px solid #e2e8f0',
@@ -4538,8 +4367,8 @@ export default function MilestoneManagement() {
                                                 p: 2,
                                                 textAlign: 'center'
                                             }}>
-                                                <Typography variant="subtitle1" sx={{ 
-                                                    color: 'white', 
+                                                <Typography variant="subtitle1" sx={{
+                                                    color: 'white',
                                                     fontWeight: 600,
                                                     fontSize: '14px'
                                                 }}>
@@ -4554,8 +4383,8 @@ export default function MilestoneManagement() {
                                                 backgroundColor: '#f8fafc',
                                                 minHeight: 200
                                             }}>
-                                                <img 
-                                                    src={selectedItemImages.backImageUrl} 
+                                                <img
+                                                    src={selectedItemImages.backImageUrl}
                                                     alt="Back Design"
                                                     style={{
                                                         maxWidth: '100%',
@@ -4570,7 +4399,7 @@ export default function MilestoneManagement() {
                                     )}
                                 </Box>
 
-                                {/* No Images Message */}
+                                {}
                                 {!selectedItemImages.logoImageUrl && !selectedItemImages.frontImageUrl && !selectedItemImages.backImageUrl && (
                                     <Box sx={{
                                         textAlign: 'center',

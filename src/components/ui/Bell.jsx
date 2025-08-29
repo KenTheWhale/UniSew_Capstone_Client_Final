@@ -137,8 +137,8 @@ export default function Bell() {
 
     return (
         <>
-            <Button 
-                aria-describedby={id} 
+            <Button
+                aria-describedby={id}
                 onClick={handleClick}
                 sx={{
                     color: '#ff9800',
@@ -149,7 +149,7 @@ export default function Bell() {
                 }}
             >
                 <NotificationsIcon sx={{ color: 'inherit' }}/>
-                {/* Badge for unread notifications */}
+                {}
                 {notifications.filter(n => !n.read).length > 0 && (
                     <span style={{
                         position: 'absolute',
@@ -262,7 +262,7 @@ export default function Bell() {
                                                 {notification.content}
                                             </Typography>
 
-                                            {/* Date info */}
+                                            {}
                                             <div style={{
                                                 display: 'flex',
                                                 justifyContent: 'space-between',
@@ -303,7 +303,7 @@ export default function Bell() {
                                                         fontSize: '0.7rem'
                                                     }}
                                                 >
-                                                    {notification.read ? '‚úì read' : '‚óè unread'}
+                                                    {notification.read ? '‚ú?read' : '‚ó?unread'}
                                                 </Typography>
                                             </div>
                                         </div>

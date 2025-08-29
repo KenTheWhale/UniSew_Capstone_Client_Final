@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { 
-    Box, 
-    Typography, 
-    Button, 
-    IconButton, 
-    Tooltip, 
+import {
+    Box,
+    Typography,
+    Button,
+    IconButton,
+    Tooltip,
     Paper,
     Card,
     CardContent,
@@ -21,10 +21,9 @@ import dayjs from 'dayjs';
 const { Search, TextArea } = Input;
 const { Option } = Select;
 
-// Constants
 const ROLE_COLORS = {
     ADMIN: '#1890ff',
-    SCHOOL: '#52c41a', 
+    SCHOOL: '#52c41a',
     DESIGNER: '#722ed1',
     GARMENT: '#fa8c16'
 };
@@ -34,7 +33,6 @@ const STATUS_COLORS = {
     ACCOUNT_INACTIVE: '#ff4d4f'
 };
 
-// StatCard Component
 const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
     <Card
         sx={{
@@ -52,19 +50,19 @@ const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
         <CardContent sx={{ p: 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box>
-                    <Typography 
-                        variant="h4" 
-                        sx={{ 
-                            fontWeight: 700, 
+                    <Typography
+                        variant="h4"
+                        sx={{
+                            fontWeight: 700,
                             color: color,
                             mb: 0.5
                         }}
                     >
                         {value}
                     </Typography>
-                    <Typography 
-                        variant="body2" 
-                        sx={{ 
+                    <Typography
+                        variant="body2"
+                        sx={{
                             color: '#64748b',
                             fontWeight: 500
                         }}
@@ -72,10 +70,10 @@ const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
                         {label}
                     </Typography>
                 </Box>
-                <Box 
-                    sx={{ 
-                        p: 2, 
-                        borderRadius: 2, 
+                <Box
+                    sx={{
+                        p: 2,
+                        borderRadius: 2,
                         backgroundColor: `${color}10`,
                         color: color
                     }}
@@ -87,12 +85,11 @@ const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
     </Card>
 ));
 
-// EmptyState Component
 const EmptyState = () => (
-    <Box sx={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
+    <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
         justifyContent: 'center',
         py: 8
     }}>
@@ -119,26 +116,20 @@ export default function AdminAccount() {
     const [actionLoading, setActionLoading] = useState(false);
     const [restrictForm] = Form.useForm();
 
-    // Fetch accounts from API
     const fetchAccounts = useCallback(async () => {
         setLoading(true);
         try {
             const response = await getAccountList();
-            
+
             if (response && response.status === 200) {
                 let accountsData = response.data;
-                
-                // Handle different response structures
+
                 if (accountsData && typeof accountsData === 'object') {
-                    // If data is wrapped in a property like { accounts: [...] }
                     if (accountsData.accounts && Array.isArray(accountsData.accounts)) {
                         accountsData = accountsData.accounts;
                     }
-                    // If data is directly an array
                     else if (Array.isArray(accountsData)) {
-                        // Data is already an array, use it directly
                     }
-                    // If data has other structure, try to find the array
                     else {
                         const keys = Object.keys(accountsData);
                         const arrayKey = keys.find(key => Array.isArray(accountsData[key]));
@@ -151,7 +142,7 @@ export default function AdminAccount() {
                 } else {
                     accountsData = [];
                 }
-                
+
                 setAccounts(accountsData);
                 enqueueSnackbar(`Loaded ${accountsData.length} accounts successfully`, { variant: 'success' });
             } else {
@@ -171,7 +162,6 @@ export default function AdminAccount() {
         fetchAccounts();
     }, [fetchAccounts]);
 
-    // Helper functions
     const getRoleIcon = (role) => {
         switch (role) {
             case 'ADMIN':
@@ -239,7 +229,6 @@ export default function AdminAccount() {
         }
     };
 
-    // Event handlers
     const handleViewDetail = (record) => {
         setSelectedAccount(record);
         setDetailModalVisible(true);
@@ -280,7 +269,7 @@ export default function AdminAccount() {
             if (response && response.status === 200) {
                 enqueueSnackbar('Account restricted successfully', { variant: 'success' });
                 setRestrictModalVisible(false);
-                fetchAccounts(); // Refresh data
+                fetchAccounts();
             } else {
                 enqueueSnackbar('Failed to restrict account', { variant: 'error' });
             }
@@ -292,7 +281,6 @@ export default function AdminAccount() {
         }
     };
 
-    // Filtered accounts
     const filteredAccounts = useMemo(() => {
         if (!Array.isArray(accounts)) {
             return [];
@@ -302,12 +290,11 @@ export default function AdminAccount() {
                             account.id.toString().includes(searchText);
         const matchesRole = roleFilter === 'all' || account.role === roleFilter;
         const matchesStatus = statusFilter === 'all' || account.status === statusFilter;
-        
+
         return matchesSearch && matchesRole && matchesStatus;
     });
     }, [accounts, searchText, roleFilter, statusFilter]);
 
-    // Statistics
     const stats = useMemo(() => {
         if (!Array.isArray(accounts)) {
             return { total: 0, active: 0, inactive: 0, schools: 0, designers: 0, garments: 0 };
@@ -322,7 +309,6 @@ export default function AdminAccount() {
         return { total, active, inactive, schools, designers, garments };
     }, [accounts]);
 
-    // Table columns
     const columns = useMemo(() => [
         {
             title: 'Account ID',
@@ -381,8 +367,8 @@ export default function AdminAccount() {
             ],
             onFilter: (value, record) => record.status === value,
             render: (status) => (
-                <Badge 
-                    status={getStatusColor(status)} 
+                <Badge
+                    status={getStatusColor(status)}
                     text={getStatusText(status)}
                 />
             )
@@ -440,8 +426,8 @@ export default function AdminAccount() {
     ], []);
 
     return (
-        <Box sx={{ 
-            height: '100%', 
+        <Box sx={{
+            height: '100%',
             overflowY: 'auto',
             '& @keyframes pulse': {
                 '0%': { opacity: 1 },
@@ -449,9 +435,9 @@ export default function AdminAccount() {
                 '100%': { opacity: 1 }
             }
         }}>
-            {/* Header Section */}
-            <Box 
-                sx={{ 
+            {}
+            <Box
+                sx={{
                     mb: 4,
                     position: "relative",
                     p: 4,
@@ -487,7 +473,7 @@ export default function AdminAccount() {
 
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <Box sx={{ display: "flex", gap: 2 }}>
-                {/* Filters */}
+                {}
                     <Search
                             placeholder="Search by email or ID..."
                         allowClear
@@ -518,7 +504,7 @@ export default function AdminAccount() {
                             <Option value="ACCOUNT_ACTIVE">Active ({loading ? '...' : Array.isArray(accounts) ? accounts.filter(a => a.status === 'ACCOUNT_ACTIVE').length : 0})</Option>
                             <Option value="ACCOUNT_INACTIVE">Inactive ({loading ? '...' : Array.isArray(accounts) ? accounts.filter(a => a.status === 'ACCOUNT_INACTIVE').length : 0})</Option>
                     </Select>
-                    <Button 
+                    <Button
                         onClick={() => {
                             setSearchText('');
                             setRoleFilter('all');
@@ -550,43 +536,42 @@ export default function AdminAccount() {
                 </Box>
             </Box>
 
-            {/* Statistics Cards */}
+            {}
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 3, mb: 4 }}>
                 {loading ? (
-                    // Skeleton loading for stats cards
                     Array.from({ length: 6 }).map((_, index) => (
                         <Card key={index} sx={{ height: '100%', borderRadius: 2 }}>
                             <CardContent sx={{ p: 3 }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <Box>
-                                        <Box 
-                                            sx={{ 
-                                                width: 60, 
-                                                height: 40, 
-                                                backgroundColor: '#f0f0f0', 
-                                                borderRadius: 1, 
+                                        <Box
+                                            sx={{
+                                                width: 60,
+                                                height: 40,
+                                                backgroundColor: '#f0f0f0',
+                                                borderRadius: 1,
                                                 mb: 1,
                                                 animation: 'pulse 1.5s ease-in-out infinite'
-                                            }} 
+                                            }}
                                         />
-                                        <Box 
-                                            sx={{ 
-                                                width: 100, 
-                                                height: 16, 
-                                                backgroundColor: '#f0f0f0', 
+                                        <Box
+                                            sx={{
+                                                width: 100,
+                                                height: 16,
+                                                backgroundColor: '#f0f0f0',
                                                 borderRadius: 1,
                                                 animation: 'pulse 1.5s ease-in-out infinite'
-                                            }} 
+                                            }}
                                         />
                                     </Box>
-                                    <Box 
-                                        sx={{ 
-                                            width: 48, 
-                                            height: 48, 
-                                            backgroundColor: '#f0f0f0', 
+                                    <Box
+                                        sx={{
+                                            width: 48,
+                                            height: 48,
+                                            backgroundColor: '#f0f0f0',
                                             borderRadius: 2,
                                             animation: 'pulse 1.5s ease-in-out infinite'
-                                        }} 
+                                        }}
                                     />
                                 </Box>
                             </CardContent>
@@ -634,7 +619,7 @@ export default function AdminAccount() {
                 )}
             </Box>
 
-            {/* Table Section */}
+            {}
             <Paper
                 elevation={0}
                 sx={{
@@ -665,10 +650,10 @@ export default function AdminAccount() {
                     </Box>
 
                     {loading ? (
-                        <Box sx={{ 
-                            display: 'flex', 
-                            flexDirection: 'column', 
-                            alignItems: 'center', 
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
                             justifyContent: 'center',
                             py: 8
                         }}>
@@ -690,7 +675,7 @@ export default function AdminAccount() {
                                 pageSizeOptions: ['5', '10', '20'],
                         showSizeChanger: true,
                         showQuickJumper: true,
-                        showTotal: (total, range) => 
+                        showTotal: (total, range) =>
                                     `Showing ${range[0]}-${range[1]} of ${total} accounts`,
                                 style: { marginTop: 16 }
                     }}
@@ -704,7 +689,7 @@ export default function AdminAccount() {
                 </Box>
             </Paper>
 
-            {/* Detail Modal */}
+            {}
             <Modal
                 title="Account Details"
                 open={detailModalVisible}
@@ -735,8 +720,8 @@ export default function AdminAccount() {
                             </Space>
                         </Descriptions.Item>
                         <Descriptions.Item label="Status">
-                            <Badge 
-                                status={getStatusColor(selectedAccount.status)} 
+                            <Badge
+                                status={getStatusColor(selectedAccount.status)}
                                 text={getStatusText(selectedAccount.status)}
                             />
                         </Descriptions.Item>
@@ -747,7 +732,7 @@ export default function AdminAccount() {
                 )}
             </Modal>
 
-            {/* Restrict Account Modal */}
+            {}
             <Modal
                 title="Restrict Account"
                 open={restrictModalVisible}
@@ -756,9 +741,9 @@ export default function AdminAccount() {
                     <Button key="cancel" onClick={() => setRestrictModalVisible(false)}>
                         Cancel
                     </Button>,
-                    <Button 
-                        key="restrict" 
-                        danger 
+                    <Button
+                        key="restrict"
+                        danger
                         loading={actionLoading}
                         onClick={() => restrictForm.submit()}
                     >
@@ -774,7 +759,7 @@ export default function AdminAccount() {
                                 ⚠️ You are about to restrict account: <strong>{selectedAccount.email}</strong>
                             </Typography>
                         </Box>
-                        
+
                         <Form
                             form={restrictForm}
                             layout="vertical"
@@ -793,7 +778,7 @@ export default function AdminAccount() {
                                     placeholder="Enter the reason why this account should be restricted..."
                                 />
                             </Form.Item>
-                            
+
                             <Form.Item
                                 label="Restriction End Date"
                                 name="endDate"

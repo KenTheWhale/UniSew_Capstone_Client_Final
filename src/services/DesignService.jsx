@@ -94,3 +94,8 @@ export const buyExtraRevision = async (requestId, revisionTime, receiverId, tota
     })
     return response || null
 }
+
+export const cancelDesignRequest = async (data) => {
+    const response = await axiosClient.put("/design/request/cancel", data)
+    return response || null
+}

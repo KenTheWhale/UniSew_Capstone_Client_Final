@@ -31,7 +31,7 @@ import {enqueueSnackbar} from "notistack";
 export default function EmailConfirmation() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
-    const [status, setStatus] = useState('processing'); // 'processing', 'success', 'error'
+    const [status, setStatus] = useState('processing');
     const [message, setMessage] = useState('');
     const [errorDetails, setErrorDetails] = useState('');
 
@@ -47,7 +47,6 @@ export default function EmailConfirmation() {
             return;
         }
 
-        // Call API to confirm email
         createPartnerRequest({
             encryptedData: data
         })

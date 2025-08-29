@@ -115,7 +115,6 @@ export default function DesignerDashboardLayout() {
         setOpenHistory(false);
     };
 
-    // Render Header Function
     const renderHeader = () => (
         <AppBar
             position="fixed"
@@ -162,7 +161,7 @@ export default function DesignerDashboardLayout() {
                 </Box>
 
                 <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
-                    <Bell />
+                    {/*<Bell />*/}
                     <Box
                         sx={{
                             display: "flex",
@@ -296,9 +295,9 @@ export default function DesignerDashboardLayout() {
             <CssBaseline/>
             {renderHeader()}
 
-            {/* Main */}
+            {}
             <Box sx={{display: "flex", flexDirection: "row", flexGrow: 1, mt: "8vh", overflowY: "hidden"}}>
-                {/* Sidebar */}
+                {}
                 <Drawer
                     sx={{
                         width: drawerWidth,
@@ -319,7 +318,7 @@ export default function DesignerDashboardLayout() {
                     variant="permanent"
                     anchor="left"
                 >
-                    {/* Sidebar Header */}
+                    {}
                     <Box sx={{
                         p: 3,
                         background: "linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)",
@@ -334,9 +333,9 @@ export default function DesignerDashboardLayout() {
                         </Typography>
                     </Box>
 
-                    {/* Navigation */}
+                    {}
                     <Box sx={{p: 2}}>
-                        {/* Design Projects */}
+                        {}
                         <Typography variant="overline" sx={{
                             px: 2,
                             pb: 1,
@@ -397,7 +396,7 @@ export default function DesignerDashboardLayout() {
 
                         <Divider sx={{my: 3, borderColor: "#e9ecef"}}/>
 
-                        {/* Communication */}
+                        {}
                         <Typography variant="overline" sx={{
                             px: 2,
                             pb: 1,
@@ -435,7 +434,7 @@ export default function DesignerDashboardLayout() {
 
                         <Divider sx={{my: 3, borderColor: "#e9ecef"}}/>
 
-                        {/* Account Management */}
+                        {}
                         <Typography variant="overline" sx={{
                             px: 2,
                             pb: 1,
@@ -473,7 +472,7 @@ export default function DesignerDashboardLayout() {
                     </Box>
                 </Drawer>
 
-                {/* Main Content */}
+                {}
                 <Box
                     component="main"
                     sx={{
@@ -488,7 +487,7 @@ export default function DesignerDashboardLayout() {
                 </Box>
             </Box>
 
-            {/* Dialog: Message History */}
+            {}
             <Dialog
                 open={openHistory}
                 onClose={() => setOpenHistory(false)}
@@ -520,7 +519,7 @@ export default function DesignerDashboardLayout() {
                 </DialogTitle>
 
                 <DialogContent dividers sx={{p: 0}}>
-                    {/* Search Section */}
+                    {}
                     <Box sx={{p: 3, borderBottom: '1px solid', borderColor: 'divider'}}>
                         <TextField
                             fullWidth
@@ -561,7 +560,7 @@ export default function DesignerDashboardLayout() {
                         />
                     </Box>
 
-                    {/* Results Section */}
+                    {}
                     <Box sx={{maxHeight: '60vh', overflow: 'auto'}}>
                         {filteredRooms.length === 0 ? (
                             <Box sx={{
@@ -601,7 +600,7 @@ export default function DesignerDashboardLayout() {
                                                 gap: 2
                                             }}
                                         >
-                                            {/* Avatar/Icon */}
+                                            {}
                                             <Box sx={{
                                                 width: 40,
                                                 height: 40,
@@ -618,7 +617,7 @@ export default function DesignerDashboardLayout() {
                                                 #{r.requestId?.toString().slice(-2) || 'NA'}
                                             </Box>
 
-                                            {/* Content */}
+                                            {}
                                             <Box sx={{flex: 1, minWidth: 0}}>
                                                 <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mb: 0.5}}>
                                                     <Typography
@@ -653,7 +652,7 @@ export default function DesignerDashboardLayout() {
                                                     {r.lastMessage ? r.lastMessage : "No messages yet"}
                                                 </Typography>
 
-                                                {/* Metadata */}
+                                                {}
                                                 <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mt: 1}}>
                                                     <Typography variant="caption" sx={{color: 'text.disabled'}}>
                                                         <AccessTime
@@ -671,7 +670,7 @@ export default function DesignerDashboardLayout() {
                                                 </Box>
                                             </Box>
 
-                                            {/* Action Button */}
+                                            {}
                                             <IconButton
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -694,7 +693,7 @@ export default function DesignerDashboardLayout() {
                     </Box>
                 </DialogContent>
 
-                {/* Footer Actions */}
+                {}
                 <DialogActions sx={{p: 2, borderTop: '1px solid', borderColor: 'divider'}}>
                     <Button onClick={() => setOpenHistory(false)} color="inherit">
                         Close

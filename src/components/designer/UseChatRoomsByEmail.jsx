@@ -1,4 +1,3 @@
-// hooks/useChatRoomsByEmail.ts
 import { useEffect, useState } from "react";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "../../configs/FirebaseConfig.jsx";
@@ -28,7 +27,6 @@ export function useChatRoomsByEmail(accountId) {
                 }
             });
 
-            // sort desc theo updatedAt
             const list = Array.from(byRoom.values()).sort(
                 (a, b) => (b.updatedAt?.seconds || 0) - (a.updatedAt?.seconds || 0)
             );

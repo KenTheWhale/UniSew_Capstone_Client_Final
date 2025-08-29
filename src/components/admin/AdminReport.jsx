@@ -41,7 +41,7 @@ export default function AdminReport() {
     const [detailDialogOpen, setDetailDialogOpen] = useState(false);
     const [approving, setApproving] = useState(false);
     const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
-    const [approvalAction, setApprovalAction] = useState(null); // 'approve' or 'reject'
+    const [approvalAction, setApprovalAction] = useState(null);
     const [messageForSchool, setMessageForSchool] = useState('');
     const [messageForPartner, setMessageForPartner] = useState('');
 
@@ -111,7 +111,7 @@ export default function AdminReport() {
                 enqueueSnackbar(`Report ${actionText} successfully`, { variant: 'success' });
                 handleCloseApprovalDialog();
                 handleCloseDetail();
-                fetchReports(); // Refresh data
+                fetchReports();
             } else {
                 enqueueSnackbar(`Failed to ${approvalAction} report`, { variant: 'error' });
             }
@@ -168,11 +168,11 @@ export default function AdminReport() {
 
     if (loading) {
         return (
-            <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                alignItems: 'center', 
-                minHeight: '60vh' 
+            <Box sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                minHeight: '60vh'
             }}>
                 <Typography variant="h6" sx={{ color: '#64748b' }}>
                     Loading reports...
@@ -183,9 +183,9 @@ export default function AdminReport() {
 
     return (
         <Box sx={{ height: '100%', overflowY: 'auto' }}>
-            {/* Header Section */}
-            <Box 
-                sx={{ 
+            {}
+            <Box
+                sx={{
                     mb: 4,
                     position: "relative",
                     p: 4,
@@ -232,12 +232,12 @@ export default function AdminReport() {
                 </Typography>
             </Box>
 
-            {/* Statistics Cards */}
+            {}
             <Grid container spacing={3} sx={{ mb: 4 }}>
                 <Grid item xs={12} sm={6} md={3}>
-                    <Paper elevation={0} sx={{ 
-                        p: 3, 
-                        borderRadius: 3, 
+                    <Paper elevation={0} sx={{
+                        p: 3,
+                        borderRadius: 3,
                         background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
                         color: 'white'
                     }}>
@@ -266,9 +266,9 @@ export default function AdminReport() {
                 </Grid>
 
                 <Grid item xs={12} sm={6} md={3}>
-                    <Paper elevation={0} sx={{ 
-                        p: 3, 
-                        borderRadius: 3, 
+                    <Paper elevation={0} sx={{
+                        p: 3,
+                        borderRadius: 3,
                         background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
                         color: 'white'
                     }}>
@@ -297,9 +297,9 @@ export default function AdminReport() {
                 </Grid>
 
                 <Grid item xs={12} sm={6} md={3}>
-                    <Paper elevation={0} sx={{ 
-                        p: 3, 
-                        borderRadius: 3, 
+                    <Paper elevation={0} sx={{
+                        p: 3,
+                        borderRadius: 3,
                         background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                         color: 'white'
                     }}>
@@ -328,9 +328,9 @@ export default function AdminReport() {
                 </Grid>
 
                 <Grid item xs={12} sm={6} md={3}>
-                    <Paper elevation={0} sx={{ 
-                        p: 3, 
-                        borderRadius: 3, 
+                    <Paper elevation={0} sx={{
+                        p: 3,
+                        borderRadius: 3,
                         background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
                         color: 'white'
                     }}>
@@ -359,9 +359,9 @@ export default function AdminReport() {
                 </Grid>
             </Grid>
 
-            {/* Reports List */}
-            <Paper elevation={0} sx={{ 
-                borderRadius: 3, 
+            {}
+            <Paper elevation={0} sx={{
+                borderRadius: 3,
                 border: '1px solid #e2e8f0',
                 overflow: 'hidden'
             }}>
@@ -381,8 +381,8 @@ export default function AdminReport() {
                     </Box>
 
                     {reports.length === 0 ? (
-                        <Box sx={{ 
-                            textAlign: 'center', 
+                        <Box sx={{
+                            textAlign: 'center',
                             py: 8,
                             backgroundColor: '#f8fafc',
                             borderRadius: 2,
@@ -400,8 +400,8 @@ export default function AdminReport() {
                         <Grid container spacing={2}>
                             {reports.map((report) => (
                                 <Grid item xs={12} key={report.id}>
-                                    <Card elevation={0} sx={{ 
-                                        borderRadius: 2, 
+                                    <Card elevation={0} sx={{
+                                        borderRadius: 2,
                                         border: '1px solid #e2e8f0',
                                         transition: 'all 0.3s ease',
                                         '&:hover': {
@@ -412,7 +412,7 @@ export default function AdminReport() {
                                         <CardContent sx={{ p: 3 }}>
                                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                    <Avatar sx={{ 
+                                                    <Avatar sx={{
                                                         bgcolor: report.isReport ? '#ef4444' : '#10b981',
                                                         width: 40,
                                                         height: 40
@@ -424,7 +424,7 @@ export default function AdminReport() {
                                                             {report.isReport ? 'Report' : 'Feedback'} #{report.id}
                                                         </Typography>
                                                         <Typography variant="body2" sx={{ color: '#64748b' }}>
-                                                            {report.requestId ? `Design Request #${report.requestId}` : 
+                                                            {report.requestId ? `Design Request #${report.requestId}` :
                                                              report.orderId ? `Order #${report.orderId}` : 'Unknown Item'}
                                                         </Typography>
                                                         {report.sender && (
@@ -486,7 +486,7 @@ export default function AdminReport() {
                                                             <Typography variant="body2" sx={{ color: '#64748b' }}>
                                                                 Images:
                                                             </Typography>
-                                                            <Chip 
+                                                            <Chip
                                                                 label={`${report.images.length} image${report.images.length > 1 ? 's' : ''}`}
                                                                 size="small"
                                                                 sx={{
@@ -512,7 +512,7 @@ export default function AdminReport() {
                 </Box>
             </Paper>
 
-            {/* Report Detail Dialog */}
+            {}
             <Dialog
                 open={detailDialogOpen}
                 onClose={handleCloseDetail}
@@ -522,7 +522,7 @@ export default function AdminReport() {
                     sx: { borderRadius: 3 }
                 }}
             >
-                <DialogTitle sx={{ 
+                <DialogTitle sx={{
                     background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
                     color: 'white',
                     position: 'relative'
@@ -549,9 +549,9 @@ export default function AdminReport() {
                 <DialogContent sx={{ p: 4, pb: 2 }}>
                     {selectedReport && (
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                                                        {/* Report Info */}
-                            <Paper elevation={0} sx={{ 
-                                p: 3, 
+                                                        {}
+                            <Paper elevation={0} sx={{
+                                p: 3,
                                 backgroundColor: '#f8fafc',
                                 borderRadius: 2,
                                 border: '1px solid #e2e8f0'
@@ -591,7 +591,7 @@ export default function AdminReport() {
                                                 Item ID
                                             </Typography>
                                             <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
-                                                {selectedReport.requestId ? `Design Request #${selectedReport.requestId}` : 
+                                                {selectedReport.requestId ? `Design Request #${selectedReport.requestId}` :
                                                  selectedReport.orderId ? `Order #${selectedReport.orderId}` : 'Unknown'}
                                             </Typography>
                                         </Box>
@@ -621,10 +621,10 @@ export default function AdminReport() {
                                 </Grid>
                             </Paper>
 
-                            {/* User Information */}
+                            {}
                             {(selectedReport.sender || selectedReport.receiver) && (
-                                <Paper elevation={0} sx={{ 
-                                    p: 3, 
+                                <Paper elevation={0} sx={{
+                                    p: 3,
                                     backgroundColor: '#f8fafc',
                                     borderRadius: 2,
                                     border: '1px solid #e2e8f0'
@@ -640,8 +640,8 @@ export default function AdminReport() {
                                                         Sender
                                                     </Typography>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                        <Avatar 
-                                                            src={selectedReport.sender.avatar} 
+                                                        <Avatar
+                                                            src={selectedReport.sender.avatar}
                                                             sx={{ width: 40, height: 40 }}
                                                         >
                                                             {selectedReport.sender.name.charAt(0)}
@@ -653,7 +653,7 @@ export default function AdminReport() {
                                                             <Typography variant="body2" sx={{ color: '#64748b' }}>
                                                                 {selectedReport.sender.email}
                                                             </Typography>
-                                                            <Chip 
+                                                            <Chip
                                                                 label={selectedReport.sender.type}
                                                                 size="small"
                                                                 sx={{
@@ -676,8 +676,8 @@ export default function AdminReport() {
                                                         Receiver
                                                     </Typography>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                        <Avatar 
-                                                            src={selectedReport.receiver.avatar} 
+                                                        <Avatar
+                                                            src={selectedReport.receiver.avatar}
                                                             sx={{ width: 40, height: 40 }}
                                                         >
                                                             {selectedReport.receiver.name.charAt(0)}
@@ -689,7 +689,7 @@ export default function AdminReport() {
                                                             <Typography variant="body2" sx={{ color: '#64748b' }}>
                                                                 {selectedReport.receiver.email}
                                                             </Typography>
-                                                            <Chip 
+                                                            <Chip
                                                                 label={selectedReport.receiver.type}
                                                                 size="small"
                                                                 sx={{
@@ -709,9 +709,9 @@ export default function AdminReport() {
                                 </Paper>
                             )}
 
-                            {/* Content */}
-                            <Paper elevation={0} sx={{ 
-                                p: 3, 
+                            {}
+                            <Paper elevation={0} sx={{
+                                p: 3,
                                 backgroundColor: '#f8fafc',
                                 borderRadius: 2,
                                 border: '1px solid #e2e8f0'
@@ -724,10 +724,10 @@ export default function AdminReport() {
                                 </Typography>
                             </Paper>
 
-                            {/* Rating (for both feedback and report) */}
+                            {}
                             {selectedReport.rating && (
-                                <Paper elevation={0} sx={{ 
-                                    p: 3, 
+                                <Paper elevation={0} sx={{
+                                    p: 3,
                                     backgroundColor: '#f8fafc',
                                     borderRadius: 2,
                                     border: '1px solid #e2e8f0'
@@ -737,7 +737,7 @@ export default function AdminReport() {
                                     </Typography>
                                     <Rating value={selectedReport.rating} readOnly size="large" />
                                     <Typography variant="body2" sx={{ color: '#64748b', mt: 1 }}>
-                                        {selectedReport.isReport 
+                                        {selectedReport.isReport
                                             ? 'Severity rating of the reported issue'
                                             : 'User experience rating'
                                         }
@@ -745,10 +745,10 @@ export default function AdminReport() {
                                 </Paper>
                             )}
 
-                            {/* Images (for both reports and feedback) */}
+                            {}
                             {selectedReport.images && selectedReport.images.length > 0 && (
-                                <Paper elevation={0} sx={{ 
-                                    p: 3, 
+                                <Paper elevation={0} sx={{
+                                    p: 3,
                                     backgroundColor: '#f8fafc',
                                     borderRadius: 2,
                                     border: '1px solid #e2e8f0'
@@ -797,10 +797,10 @@ export default function AdminReport() {
                                 </Paper>
                             )}
 
-                            {/* Legacy imageUrl support (for backward compatibility) */}
+                            {}
                             {selectedReport.isReport && !selectedReport.images && selectedReport.imageUrl && (
-                                <Paper elevation={0} sx={{ 
-                                    p: 3, 
+                                <Paper elevation={0} sx={{
+                                    p: 3,
                                     backgroundColor: '#f8fafc',
                                     borderRadius: 2,
                                     border: '1px solid #e2e8f0'
@@ -882,7 +882,7 @@ export default function AdminReport() {
                 </DialogActions>
             </Dialog>
 
-            {/* Approval Dialog */}
+            {}
             <Dialog
                 open={approvalDialogOpen}
                 onClose={handleCloseApprovalDialog}
@@ -892,8 +892,8 @@ export default function AdminReport() {
                     sx: { borderRadius: 3 }
                 }}
             >
-                <DialogTitle sx={{ 
-                    background: approvalAction === 'approve' 
+                <DialogTitle sx={{
+                    background: approvalAction === 'approve'
                         ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
                         : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
                     color: 'white',
@@ -920,9 +920,9 @@ export default function AdminReport() {
 
                 <DialogContent sx={{ p: 4, pb: 2 }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                        {/* Report Summary */}
-                        <Paper elevation={0} sx={{ 
-                            p: 3, 
+                        {}
+                        <Paper elevation={0} sx={{
+                            p: 3,
                             backgroundColor: '#f8fafc',
                             borderRadius: 2,
                             border: '1px solid #e2e8f0'
@@ -958,9 +958,9 @@ export default function AdminReport() {
                             </Grid>
                         </Paper>
 
-                        {/* Messages */}
-                        <Paper elevation={0} sx={{ 
-                            p: 3, 
+                        {}
+                        <Paper elevation={0} sx={{
+                            p: 3,
                             backgroundColor: '#f8fafc',
                             borderRadius: 2,
                             border: '1px solid #e2e8f0'
@@ -1044,7 +1044,7 @@ export default function AdminReport() {
                         disabled={approving}
                         variant="contained"
                         sx={{
-                            background: approvalAction === 'approve' 
+                            background: approvalAction === 'approve'
                                 ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
                                 : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
                             color: 'white',

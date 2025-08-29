@@ -5,13 +5,11 @@ import {GoogleOAuthProvider} from "@react-oauth/google";
 import {SnackbarProvider} from 'notistack';
 import {createTheme, CssBaseline, Slide, ThemeProvider} from '@mui/material';
 
-// Lazy imports for layouts and frequently used components
 const WebAppLayout = lazy(() => import("./layouts/ui/WebAppLayout.jsx"));
 const Homepage = lazy(() => import("./components/auth/Homepage.jsx"));
 const Login = lazy(() => import("./components/auth/Login.jsx"));
 const ProtectedRoute = lazy(() => import("./configs/ProtectedRoute.jsx"));
 
-// Lazy imports for components
 const About = lazy(() => import("./components/auth/About.jsx"));
 const SchoolDesign = lazy(() => import("./components/school/design/SchoolDesign.jsx"));
 const SchoolDashboardLayout = lazy(() => import("./layouts/school/SchoolDashboardLayout.jsx"));
@@ -45,13 +43,12 @@ const MilestoneManagement = lazy(() => import("./components/garment/MilestoneMan
 const GarmentPendingOrders = lazy(() => import("./components/garment/GarmentPendingOrders.jsx"));
 const AdminReport = lazy(() => import("./components/admin/AdminReport.jsx"));
 
-// Enhanced Loading component for Suspense fallback
 const LoadingFallback = () => (
-  <div style={{ 
-    display: 'flex', 
+  <div style={{
+    display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'center', 
-    alignItems: 'center', 
+    justifyContent: 'center',
+    alignItems: 'center',
     height: '100vh',
     backgroundColor: '#f5f5f5',
     fontFamily: '"Open Sans", sans-serif'

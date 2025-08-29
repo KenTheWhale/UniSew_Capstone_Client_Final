@@ -22,7 +22,6 @@ import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
 import {GiSkirt} from "react-icons/gi";
 import DisplayImage from '../../../ui/DisplayImage.jsx';
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function statusTag(status) {
     let color;
     let icon = null;
@@ -50,7 +49,6 @@ export function statusTag(status) {
     return <Tag style={{margin: 0}} color={color}>{icon} {status}</Tag>;
 }
 
-// Function to get appropriate icon based on item type
 const getItemIcon = (itemType) => {
     const type = itemType?.toLowerCase() || '';
 
@@ -65,7 +63,6 @@ const getItemIcon = (itemType) => {
     }
 };
 
-// Result Delivery Modal Component
 function ResultDeliveryModal({visible, onCancel, resultDelivery}) {
     if (!resultDelivery) return null;
 
@@ -113,7 +110,7 @@ function ResultDeliveryModal({visible, onCancel, resultDelivery}) {
             <DialogContent sx={{padding: '20px', overflowY: 'auto'}}>
                 <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
 
-                    {/* Header Info */}
+                    {}
                     <Card
                         size="small"
                         style={{
@@ -156,7 +153,7 @@ function ResultDeliveryModal({visible, onCancel, resultDelivery}) {
                         </Row>
                     </Card>
 
-                    {/* Note Section */}
+                    {}
                     {resultDelivery.note && (
                         <Card
                             title={
@@ -185,7 +182,7 @@ function ResultDeliveryModal({visible, onCancel, resultDelivery}) {
                         </Card>
                     )}
 
-                    {/* Design Items */}
+                    {}
                     <Card
                         title={
                             <Space>
@@ -219,7 +216,7 @@ function ResultDeliveryModal({visible, onCancel, resultDelivery}) {
                                             boxShadow: '0 4px 15px rgba(46, 125, 50, 0.1)'
                                         }
                                     }}>
-                                        {/* Item Header */}
+                                        {}
                                         <Box sx={{
                                             display: 'flex',
                                             alignItems: 'center',
@@ -250,7 +247,7 @@ function ResultDeliveryModal({visible, onCancel, resultDelivery}) {
                                             </Box>
                                         </Box>
 
-                                        {/* Item Details */}
+                                        {}
                                         <Box sx={{flex: 1, display: 'flex', flexDirection: 'column', gap: 1, mb: 2}}>
                                             <Text style={{fontSize: '12px', color: '#64748b'}}>
                                                 Fabric: {item.designItem?.fabricName}
@@ -275,7 +272,7 @@ function ResultDeliveryModal({visible, onCancel, resultDelivery}) {
                                                 </Text>
                                             )}
 
-                                            {/* Logo Size for Shirt */}
+                                            {}
                                             {item.designItem?.type?.toLowerCase().includes('shirt') && (
                                                 <Box sx={{display: 'flex', gap: 2}}>
                                                     <Text style={{fontSize: '11px', color: '#64748b'}}>
@@ -292,7 +289,7 @@ function ResultDeliveryModal({visible, onCancel, resultDelivery}) {
                                             )}
                                         </Box>
 
-                                        {/* Design Images */}
+                                        {}
                                         <Box sx={{mt: 'auto'}}>
                                             <Row gutter={[8, 8]}>
                                                 <Col span={12}>
@@ -399,7 +396,6 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                 );
                 break;
             case 'completed':
-                // Add View Final Design button if resultDelivery exists
                 if (request.resultDelivery) {
                     buttons.push(
                         <Button
@@ -421,7 +417,6 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
             case 'processing':
                 buttons.push(
                     <Button key="chat" type="primary" onClick={() => {
-                        // Store only the request ID
                         localStorage.setItem('currentDesignRequestId', request.id);
                         onCancel();
                         window.location.href = '/school/chat';
@@ -488,7 +483,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                 <DialogContent sx={{padding: '20px', overflowY: 'auto'}}>
                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
 
-                        {/* Compact Header */}
+                        {}
                         <Card
                             size="small"
                             style={{
@@ -527,7 +522,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                             </Row>
                         </Card>
 
-                        {/* Designer & Service Summary - Full Width */}
+                        {}
                         <Box sx={{
                             display: 'flex',
                             flexDirection: 'row',
@@ -536,7 +531,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                             alignItems: 'stretch'
                         }}>
 
-                                    {/* Designer Info */}
+                                    {}
                                     {request.finalDesignQuotation && (
                                 <Box sx={{flex: 1}}>
                                         <Card
@@ -636,7 +631,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                 </Box>
                                     )}
 
-                                    {/* Service Summary */}
+                                    {}
                                     {request.finalDesignQuotation && (
                                 <Box sx={{flex: 1}}>
                                         <Card
@@ -764,7 +759,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                     )}
                         </Box>
 
-                        {/* Logo Design - Full Width */}
+                        {}
                                     {request.logoImage && (
                                         <Card
                                             title={
@@ -791,7 +786,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                         </Card>
                                     )}
 
-                        {/* Requested Design Items - Full Width */}
+                        {}
                                 <Card
                                     title={
                                         <Space>
@@ -817,7 +812,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                 alignItems: 'stretch',
                                 minHeight: '200px'
                             }}>
-                                {/* Boy Section */}
+                                {}
                                 {(() => {
                                     const boyItems = request.items?.filter(item => item.gender === 'boy') || [];
                                     if (boyItems.length > 0) {
@@ -861,7 +856,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                     </Text>
                                                 </Box>
 
-                                                {/* Regular Uniform Subsection */}
+                                                {}
                                                 {regularItems.length > 0 && (
                                                     <Box sx={{mb: 1.5}}>
                                                         <Box sx={{
@@ -874,7 +869,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                             gap: 1,
                                                             height: '100%'
                                                         }}>
-                                                            {/* Header inside the box */}
+                                                            {}
                                                             <Box sx={{
                                                                 display: 'flex',
                                                                 alignItems: 'center',
@@ -937,7 +932,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                     }
                                                                         }}
                                                                     >
-                                                                        {/* Compact Header */}
+                                                                        {}
                                                     <Box sx={{
                                                         display: 'flex',
                                                         alignItems: 'center',
@@ -982,14 +977,14 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                             </Tag>
                                                                         </Box>
 
-                                                                        {/* Compact Details Grid */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             display: 'grid',
                                                                             gridTemplateColumns: '1fr 1fr',
                                                                             gap: 1,
                                                                             mb: 1
                                                                         }}>
-                                                                            {/* Fabric */}
+                                                                            {}
                                                                             <Box sx={{
                                                                                 p: 1,
                                                                                 background: 'rgba(46, 125, 50, 0.08)',
@@ -1015,7 +1010,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                 </Text>
                                                                             </Box>
 
-                                                                            {/* Color */}
+                                                                            {}
                                                                             <Box sx={{
                                                                                 p: 1,
                                                                                 background: 'rgba(124, 58, 237, 0.08)',
@@ -1055,7 +1050,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                         </Box>
                                                     </Box>
 
-                                                                            {/* Logo Position */}
+                                                                            {}
                                                                             {item.logoPosition ? (
                                                     <Box sx={{
                                                                                     p: 1,
@@ -1109,7 +1104,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                 </Box>
                                                                             )}
 
-                                                                            {/* Note */}
+                                                                            {}
                                                                             {item.note ? (
                                                                                 <Box sx={{
                                                                                     p: 1,
@@ -1160,7 +1155,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                             )}
                                                                         </Box>
 
-                                                                        {/* Compact Sample Images */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             pt: 1,
                                                                             borderTop: '1px solid #f1f5f9',
@@ -1232,7 +1227,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                     </Box>
                                                 )}
 
-                                                {/* Physical Education Uniform Subsection */}
+                                                {}
                                                 {peItems.length > 0 && (
                                                     <Box sx={{mb: 1.5}}>
                                                         <Box sx={{
@@ -1244,7 +1239,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                             flexDirection: 'column',
                                                             gap: 1
                                                         }}>
-                                                            {/* Header inside the box */}
+                                                            {}
                                                         <Box sx={{
                                                             display: 'flex',
                                                             alignItems: 'center',
@@ -1267,7 +1262,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                     fontSize: '10px',
                                                                     fontWeight: 600
                                                                 }}>
-                                                                    âš½
+                                                                    âš?
                                                                 </Box>
                                                                 <Text style={{
                                                                     fontSize: '11px',
@@ -1302,7 +1297,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                             }
                                                                         }}
                                                                     >
-                                                                        {/* Compact Header */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             display: 'flex',
                                                                             alignItems: 'center',
@@ -1347,14 +1342,14 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                             </Tag>
                                                                         </Box>
 
-                                                                        {/* Compact Details Grid */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             display: 'grid',
                                                                             gridTemplateColumns: '1fr 1fr',
                                                                             gap: 1,
                                                                             mb: 1
                                                                         }}>
-                                                                            {/* Fabric */}
+                                                                            {}
                                                                             <Box sx={{
                                                                                 p: 1,
                                                                                 background: 'rgba(46, 125, 50, 0.08)',
@@ -1380,7 +1375,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                 </Text>
                                                                             </Box>
 
-                                                                            {/* Color */}
+                                                                            {}
                                                                             <Box sx={{
                                                                                 p: 1,
                                                                                 background: 'rgba(124, 58, 237, 0.08)',
@@ -1420,7 +1415,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                 </Box>
                                                         </Box>
 
-                                                                            {/* Logo Position */}
+                                                                            {}
                                                                             <Box sx={{
                                                                                 p: 1,
                                                                                 background: 'rgba(255, 152, 0, 0.08)',
@@ -1446,7 +1441,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                 </Text>
                                                                             </Box>
 
-                                                                            {/* Note */}
+                                                                            {}
                                                                             <Box sx={{
                                                                                 p: 1,
                                                                                 background: 'rgba(236, 72, 153, 0.08)',
@@ -1475,7 +1470,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                             </Box>
                                                                         </Box>
 
-                                                                        {/* Compact Sample Images */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             pt: 1,
                                                                             borderTop: '1px solid #f1f5f9'
@@ -1552,7 +1547,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                     return null;
                                 })()}
 
-                                {/* Girl Section */}
+                                {}
                                 {(() => {
                                     const girlItems = request.items?.filter(item => item.gender === 'girl') || [];
                                     if (girlItems.length > 0) {
@@ -1596,7 +1591,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                     </Text>
                                                 </Box>
 
-                                                {/* Regular Uniform Subsection */}
+                                                {}
                                                 {regularItems.length > 0 && (
                                                     <Box sx={{mb: 1.5}}>
                                                         <Box sx={{
@@ -1609,7 +1604,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                             gap: 1,
                                                             height: '100%'
                                                         }}>
-                                                            {/* Header inside the box */}
+                                                            {}
                                                             <Box sx={{
                                                                 display: 'flex',
                                                                 alignItems: 'center',
@@ -1670,7 +1665,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                             }
                                                                         }}
                                                                     >
-                                                                        {/* Compact Header */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             display: 'flex',
                                                                             alignItems: 'center',
@@ -1715,14 +1710,14 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                             </Tag>
                                                                         </Box>
 
-                                                                        {/* Compact Details Grid */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             display: 'grid',
                                                                             gridTemplateColumns: '1fr 1fr',
                                                                             gap: 1,
                                                                             mb: 1
                                                                         }}>
-                                                                            {/* Fabric */}
+                                                                            {}
                                                                             <Box sx={{
                                                                                 p: 1,
                                                                                 background: 'rgba(46, 125, 50, 0.08)',
@@ -1748,7 +1743,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                 </Text>
                                                                             </Box>
 
-                                                                            {/* Color */}
+                                                                            {}
                                                                             <Box sx={{
                                                                                 p: 1,
                                                                                 background: 'rgba(124, 58, 237, 0.08)',
@@ -1788,7 +1783,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                 </Box>
                                                                             </Box>
 
-                                                                            {/* Logo Position */}
+                                                                            {}
                                                                             {item.logoPosition ? (
                                                                                 <Box sx={{
                                                                                     p: 1,
@@ -1837,7 +1832,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                 </Box>
                                                                             )}
 
-                                                                            {/* Note */}
+                                                                            {}
                                                                             {item.note ? (
                                                                                 <Box sx={{
                                                                                     p: 1,
@@ -1896,7 +1891,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                             )}
                                                                         </Box>
 
-                                                                        {/* Compact Sample Images */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             pt: 1,
                                                                             borderTop: '1px solid #f1f5f9',
@@ -1969,7 +1964,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                             </Box>
                                                         )}
 
-                                                {/* Physical Education Uniform Subsection */}
+                                                {}
                                                 {peItems.length > 0 && (
                                                     <Box sx={{mb: 1.5}}>
                                                         <Box sx={{
@@ -1981,7 +1976,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                             flexDirection: 'column',
                                                             gap: 1
                                                         }}>
-                                                            {/* Header inside the box */}
+                                                            {}
                                                             <Box sx={{
                                                                 display: 'flex',
                                                                 alignItems: 'center',
@@ -2004,7 +1999,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                     fontSize: '10px',
                                                                     fontWeight: 600
                                                                 }}>
-                                                                    âš½
+                                                                    âš?
                                                                 </Box>
                                                                 <Text style={{
                                                                     fontSize: '11px',
@@ -2039,7 +2034,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                             }
                                                                         }}
                                                                     >
-                                                                        {/* Compact Header */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             display: 'flex',
                                                                             alignItems: 'center',
@@ -2084,14 +2079,14 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                             </Tag>
                                                                         </Box>
 
-                                                                        {/* Compact Details Grid */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             display: 'grid',
                                                                             gridTemplateColumns: '1fr 1fr',
                                                                             gap: 1,
                                                                             mb: 1
                                                                         }}>
-                                                                            {/* Fabric */}
+                                                                            {}
                                                                             <Box sx={{
                                                                                 p: 1,
                                                                                 background: 'rgba(46, 125, 50, 0.08)',
@@ -2117,7 +2112,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                 </Text>
                                                                             </Box>
 
-                                                                            {/* Color */}
+                                                                            {}
                                                                             <Box sx={{
                                                                                 p: 1,
                                                                                 background: 'rgba(124, 58, 237, 0.08)',
@@ -2157,7 +2152,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                 </Box>
                                                                             </Box>
 
-                                                                            {/* Logo Position */}
+                                                                            {}
                                                                             <Box sx={{
                                                                                 p: 1,
                                                                                 background: 'rgba(255, 152, 0, 0.08)',
@@ -2183,7 +2178,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                 </Text>
                                                                             </Box>
 
-                                                                                                                                                        {/* Note */}
+                                                                                                                                                        {}
                                                                             <Box sx={{
                                                                                 p: 1,
                                                                                 background: 'rgba(236, 72, 153, 0.08)',
@@ -2212,7 +2207,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                             </Box>
                                                     </Box>
 
-                                                                                                                                                {/* Compact Sample Images */}
+                                                                                                                                                {}
                                                                         <Box sx={{
                                                                             pt: 1,
                                                                             borderTop: '1px solid #f1f5f9'
@@ -2291,7 +2286,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                             </Box>
                                 </Card>
 
-                        {/* Feedback */}
+                        {}
                         {request.feedback && (
                             <Card
                                 title={
@@ -2324,9 +2319,9 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                     <Text style={{color: '#92400e', fontSize: '12px', fontWeight: 'bold'}}>
                                                         Rating:
                                                     </Text>
-                                                    <Rate 
-                                                        disabled 
-                                                        defaultValue={request.feedback.rating} 
+                                                    <Rate
+                                                        disabled
+                                                        defaultValue={request.feedback.rating}
                                                         size="small"
                                                         style={{ fontSize: '12px' }}
                                                     />
@@ -2364,7 +2359,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                 </DialogActions>
             </Dialog>
 
-            {/* Extra Revision Dialog */}
+            {}
             <Dialog
                 open={showExtraRevisionModal}
                 onClose={() => setShowExtraRevisionModal(false)}
@@ -2441,11 +2436,9 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                     <Button
                         type="primary"
                         onClick={() => {
-                            // Store extra revision in sessionStorage
                             sessionStorage.setItem('extraRevision', extraRevision.toString());
                             setShowExtraRevisionModal(false);
                             onCancel();
-                            // Redirect to payment or handle payment logic
                             window.location.href = '/school/payment';
                         }}
                         style={{
@@ -2458,7 +2451,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                 </DialogActions>
             </Dialog>
 
-            {/* Result Delivery Modal */}
+            {}
             {request.resultDelivery && (
                 <ResultDeliveryModal
                     visible={showResultDeliveryModal}

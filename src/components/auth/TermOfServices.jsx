@@ -37,7 +37,6 @@ import {
 const TermOfServices = () => {
     const [showScrollTop, setShowScrollTop] = useState(false);
 
-    // Scroll to top functionality
     useEffect(() => {
         const handleScroll = () => {
             setShowScrollTop(window.scrollY > 400);
@@ -211,9 +210,9 @@ const TermOfServices = () => {
         return (
             <Card key={sectionKey} sx={{ mb: 3, boxShadow: 2 }}>
                 <CardContent sx={{ p: 0 }}>
-                    <Box sx={{ 
-                        p: 3, 
-                        borderBottom: 1, 
+                    <Box sx={{
+                        p: 3,
+                        borderBottom: 1,
                         borderColor: 'divider',
                         display: 'flex',
                         alignItems: 'center'
@@ -225,7 +224,7 @@ const TermOfServices = () => {
                             {sectionData.title}
                         </Typography>
                     </Box>
-                    
+
                     <Box sx={{ p: 3 }}>
                         {sectionData.content.map((item, index) => (
                             <Box key={index} sx={{ mb: 3 }}>
@@ -266,8 +265,8 @@ const TermOfServices = () => {
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
 
-            {/* Hero Section */}
-            <Box sx={{ 
+            {}
+            <Box sx={{
                 background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
                 color: 'white',
                 py: 8,
@@ -286,12 +285,12 @@ const TermOfServices = () => {
                 </Container>
             </Box>
 
-            {/* Quick Navigation */}
+            {}
             <Paper elevation={1} sx={{ position: 'sticky', top: 0, zIndex: 10, bgcolor: 'white' }}>
                 <Container maxWidth="lg">
-                    <Box sx={{ 
-                        display: 'flex', 
-                        gap: 1, 
+                    <Box sx={{
+                        display: 'flex',
+                        gap: 1,
                         py: 2,
                         overflowX: 'auto',
                         '&::-webkit-scrollbar': { display: 'none' }
@@ -303,7 +302,7 @@ const TermOfServices = () => {
                                 size="small"
                                 startIcon={link.icon}
                                 onClick={() => scrollToSection(link.key)}
-                                sx={{ 
+                                sx={{
                                     whiteSpace: 'nowrap',
                                     borderRadius: 2,
                                     px: 2
@@ -316,33 +315,33 @@ const TermOfServices = () => {
                 </Container>
             </Paper>
 
-            {/* Main Content */}
+            {}
             <Container maxWidth="lg" sx={{ py: 6 }}>
-                {/* Introduction */}
+                {}
                 <Card sx={{ mb: 4, boxShadow: 2 }}>
                     <CardContent sx={{ p: 4 }}>
                         <Typography variant="h5" fontWeight="bold" gutterBottom color="primary">
                             Introduction
                         </Typography>
                         <Typography variant="body1" paragraph sx={{ lineHeight: 1.6 }}>
-                            Welcome to UniSew. These Terms of Service govern your use of our uniform design and manufacturing services. 
+                            Welcome to UniSew. These Terms of Service govern your use of our uniform design and manufacturing services.
                             By using our services, you agree to these terms and our Privacy Policy.
                         </Typography>
                         <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
-                            These terms are legally binding and outline the rights and responsibilities of both UniSew and our customers. 
+                            These terms are legally binding and outline the rights and responsibilities of both UniSew and our customers.
                             Please read them carefully and contact us if you have any questions.
                         </Typography>
                     </CardContent>
                 </Card>
 
-                {/* Terms Sections */}
+                {}
                 {Object.entries(termsData).map(([key, data]) => (
                     <Box key={key} id={`section-${key}`}>
                         {renderSection(key, data)}
                     </Box>
                 ))}
 
-                {/* Contact Information */}
+                {}
                 <Card sx={{ mt: 4, boxShadow: 2 }}>
                     <CardContent sx={{ p: 4 }}>
                         <Typography variant="h5" fontWeight="bold" gutterBottom color="primary">
@@ -356,8 +355,8 @@ const TermOfServices = () => {
                                 <ListItemIcon>
                                     <EmailIcon color="primary" />
                                 </ListItemIcon>
-                                <ListItemText 
-                                    primary="Email" 
+                                <ListItemText
+                                    primary="Email"
                                     secondary="unisewsu2025@gmail.com"
                                 />
                             </ListItem>
@@ -365,8 +364,8 @@ const TermOfServices = () => {
                                 <ListItemIcon>
                                     <SchoolIcon color="primary" />
                                 </ListItemIcon>
-                                <ListItemText 
-                                    primary="Phone" 
+                                <ListItemText
+                                    primary="Phone"
                                     secondary="0939-674-767"
                                 />
                             </ListItem>
@@ -374,24 +373,24 @@ const TermOfServices = () => {
                     </CardContent>
                 </Card>
 
-                {/* Acceptance Section */}
+                {}
                 <Box sx={{ mt: 4, textAlign: 'center' }}>
                     <Typography variant="h6" gutterBottom>
                         By using our services, you acknowledge that you have read, understood, and agree to these Terms of Service.
                     </Typography>
-                    <Chip 
-                        label="Terms of Service Accepted" 
-                        color="primary" 
+                    <Chip
+                        label="Terms of Service Accepted"
+                        color="primary"
                         variant="outlined"
                         sx={{ mt: 2 }}
                     />
                 </Box>
             </Container>
 
-            {/* Footer */}
+            {}
 
 
-            {/* Scroll to Top Button */}
+            {}
             <Zoom in={showScrollTop}>
                 <Fab
                     color="primary"

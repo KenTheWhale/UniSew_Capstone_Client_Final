@@ -36,7 +36,6 @@ import {parseID} from "../../utils/ParseIDUtil.jsx";
 import {getDesignRequests} from "../../services/DesignService.jsx";
 import {enqueueSnackbar} from "notistack";
 
-// Constants
 const STATUS_COLORS = {
     pending: '#7c3aed',
     processing: '#f57c00',
@@ -46,7 +45,6 @@ const STATUS_COLORS = {
 
 const TABLE_PAGE_SIZE_OPTIONS = ['5', '10', '20', '50'];
 
-// Custom hooks
 const useDebounce = (value, delay) => {
     const [debouncedValue, setDebouncedValue] = useState(value);
 
@@ -63,7 +61,6 @@ const useDebounce = (value, delay) => {
     return debouncedValue;
 };
 
-// Utility functions
 const formatDate = (dateString) => {
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, '0');
@@ -81,7 +78,6 @@ const calculateDaysDiff = (dateString) => {
     return Math.floor(timeDiff / (1000 * 3600 * 24));
 };
 
-// Extracted Components
 const StatCard = React.memo(({icon, value, label, color, bgColor}) => (
     <Card
         elevation={0}
@@ -314,7 +310,6 @@ const TableSection = React.memo(({
     </Paper>
 ));
 
-// Main Component
 export default function DesignerPendingDesign() {
     useEffect(() => {
         localStorage.removeItem('currentDesignRequest');
@@ -327,7 +322,6 @@ export default function DesignerPendingDesign() {
     const [sortOrder, setSortOrder] = useState('descend');
     const [isRetrying, setIsRetrying] = useState(false);
 
-    // Fetch design requests from API
     const fetchDesignRequests = useCallback(async (showLoading = true) => {
         try {
             if (showLoading) setLoading(true);
@@ -352,7 +346,6 @@ export default function DesignerPendingDesign() {
         fetchDesignRequests();
     }, [fetchDesignRequests]);
 
-    // Refresh data when user returns from other pages
     useEffect(() => {
         const handleFocus = () => {
             fetchDesignRequests(false);
@@ -364,11 +357,9 @@ export default function DesignerPendingDesign() {
         };
     }, [fetchDesignRequests]);
 
-    // Memoized filtered and sorted data
     const filteredDesignRequests = useMemo(() => {
         let filtered = designRequests.filter(request => request.status === 'pending');
 
-        // Apply sorting
         filtered.sort((a, b) => {
             let aValue, bValue;
 
@@ -400,7 +391,6 @@ export default function DesignerPendingDesign() {
         return filtered;
     }, [designRequests, sortBy, sortOrder]);
 
-    // Memoized statistics
     const stats = useMemo(() => {
         const total = filteredDesignRequests.length;
         const thisWeek = filteredDesignRequests.filter(req => {
@@ -448,7 +438,6 @@ export default function DesignerPendingDesign() {
         }
     }, []);
 
-    // Memoized table columns with stable references
     const columns = useMemo(() => [
         {
             title: 'ID',
