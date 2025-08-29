@@ -124,6 +124,8 @@ export default function FeedbackReportPopup({
             setSubmitting(true);
 
             const payload = {
+                requestId: requestData.orderId ? null : (requestData.id || null),
+                orderId: requestData.orderId || null,
                 rating: rating,
                 content: content.trim(),
                 report: isReport,
@@ -255,7 +257,7 @@ export default function FeedbackReportPopup({
                                     {requestData?.orderId ? 'Order ID' : 'Request ID'}
                                 </Typography>
                                 <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
-                                    {requestData?.id ? `#${requestData.id}` : 'N/A'}
+                                    {requestData?.orderId ? `#${requestData.orderId}` : (requestData?.id ? `#${requestData.id}` : 'N/A')}
                                 </Typography>
                             </Grid>
                             <Grid item xs={12} sm={6}>
@@ -263,12 +265,19 @@ export default function FeedbackReportPopup({
                                     {requestData?.orderId ? 'Order Date' : 'Request Name'}
                                 </Typography>
                                 <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
-                                    {requestData?.orderId
-                                        ? (requestData?.orderDate ? new Date(requestData.orderDate).toLocaleDateString() : 'N/A')
-                                        : (requestData?.name || 'N/A')
-                                    }
+                                    {requestData?.orderId ? (requestData?.orderDate || 'N/A') : (requestData?.name || 'N/A')}
                                 </Typography>
                             </Grid>
+                            {requestData?.orderId && (
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                        Total Uniforms
+                                    </Typography>
+                                    <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                        {requestData?.orderDetails ? Math.ceil(requestData.orderDetails.reduce((sum, detail) => sum + detail.quantity, 0) / 2) : 'N/A'}
+                                    </Typography>
+                                </Grid>
+                            )}
                             <Grid item xs={12} sm={6}>
                                 <Typography variant="body2" sx={{ color: '#64748b' }}>
                                     Status
@@ -334,7 +343,7 @@ export default function FeedbackReportPopup({
                         )}
                     </Paper>
 
-                    {}
+
                     <Paper elevation={0} sx={{
                         p: 3,
                         mb: 3,
@@ -373,7 +382,6 @@ export default function FeedbackReportPopup({
                         />
                     </Paper>
 
-                    {}
                     <Paper elevation={0} sx={{
                         p: 3,
                         mb: 3,
@@ -477,7 +485,6 @@ export default function FeedbackReportPopup({
                         )}
                     </Paper>
 
-                    {}
                     <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
                         <Button
                             onClick={handleClose}
