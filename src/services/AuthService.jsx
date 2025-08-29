@@ -30,8 +30,13 @@ export const getNumberAccount = async () => {
     return response || null;
 }
 
-export const validateEmail = async (email) => {
-    const response = await axiosClient.get(`/auth/email?email=${email}`)
+export const validatePartnerInfo = async (email, phone) => {
+    const response = await axiosClient.get(`/auth/partner/info?email=${email}&phone=${phone}`)
+    return response || null;
+}
+
+export const validatePartnerTaxCode = async (taxCode) => {
+    const response = await axiosClient.get(`/auth/partner/tax?taxCode=${taxCode}`)
     return response || null;
 }
 

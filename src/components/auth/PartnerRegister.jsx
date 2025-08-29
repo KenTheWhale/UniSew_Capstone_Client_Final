@@ -30,7 +30,7 @@ import {
     AccessTime as AccessTimeIcon,
     AccountBalance as AccountBalanceIcon
 } from '@mui/icons-material';
-import {encryptPartnerData, validateEmail} from "../../services/AuthService.jsx";
+import {encryptPartnerData, validatePartnerInfo, validatePartnerTaxCode} from "../../services/AuthService.jsx";
 import emailjs from '@emailjs/browser';
 import {getProvinces, getDistricts, getWards, getBanks} from "../../services/ShippingService.jsx";
 import {getTaxInfo} from "../../services/TaxService.jsx";
@@ -81,6 +81,7 @@ export default function PartnerRegister() {
     const [loadingBanks, setLoadingBanks] = useState(false);
     const [validatingTaxCode, setValidatingTaxCode] = useState(false);
     const [taxCodeValid, setTaxCodeValid] = useState(null);
+    const [taxCodeRegistered, setTaxCodeRegistered] = useState(null);
     const [uploadingImage, setUploadingImage] = useState(false);
 
 
@@ -201,12 +202,38 @@ export default function PartnerRegister() {
         
         setValidatingTaxCode(true);
         try {
-            const response = await getTaxInfo(taxCode);
-            if (response) {
-                const isValid = response.code === "00";
+            // First, validate tax code with tax authority
+            const taxResponse = await getTaxInfo(taxCode);
+            if (taxResponse) {
+                const isValid = taxResponse.code === "00";
                 console.log("Tax valid")
                 setTaxCodeValid(isValid);
-                return isValid;
+                
+                if (isValid) {
+                    // If tax code is valid, check if it's already registered
+                    try {
+                        const partnerResponse = await validatePartnerTaxCode(taxCode);
+                        if (partnerResponse && partnerResponse.status === 200) {
+                            if (partnerResponse.data.body.existed) {
+                                setTaxCodeRegistered(true);
+                                return false; // Tax code already registered
+                            } else {
+                                setTaxCodeRegistered(false);
+                                return true; // Tax code valid and not registered
+                            }
+                        } else {
+                            setTaxCodeRegistered(null);
+                            return false;
+                        }
+                    } catch (partnerError) {
+                        console.error('Error validating partner tax code:', partnerError);
+                        setTaxCodeRegistered(null);
+                        return false;
+                    }
+                } else {
+                    setTaxCodeValid(false);
+                    return false;
+                }
             }
             setTaxCodeValid(false);
             return false;
@@ -250,6 +277,8 @@ export default function PartnerRegister() {
                 if (!validateTaxCode(value)) return 'Tax code is not valid (10-13 digits)';
                 if (taxCodeValid === null) return 'Please click "Check Tax Code" to validate';
                 if (taxCodeValid === false) return 'Tax code is not valid according to tax authority';
+                if (taxCodeRegistered === true) return 'Tax code is already registered by another partner';
+                if (taxCodeRegistered === null) return 'Please click "Check Tax Code" to validate';
                 return '';
             case 'name':
                 if (!value) return 'Please enter representative name';
@@ -355,6 +384,7 @@ export default function PartnerRegister() {
         if (field === 'taxCode') {
             // Clear validation state when user types
             setTaxCodeValid(null);
+            setTaxCodeRegistered(null);
             // Clear any previous errors
             setErrors(prev => ({...prev, taxCode: ''}));
         }
@@ -400,7 +430,7 @@ export default function PartnerRegister() {
             case 2:
                 return !errors.partnerType && formData.partnerType;
             case 3:
-                return !errors.taxCode && formData.taxCode && taxCodeValid === true;
+                return !errors.taxCode && formData.taxCode && taxCodeValid === true && taxCodeRegistered === false;
             case 4:
                 return formData.name && formData.businessName && formData.avatar &&
                        formData.startTime && formData.endTime && formData.bank &&
@@ -415,13 +445,11 @@ export default function PartnerRegister() {
             // Validate email and phone format before proceeding
             if (formData.email && formData.phone && validateEmailFormat(formData.email) && validatePhone(formData.phone)) {
                 try {
-                    const response = await validateEmail(formData.email);
+                    const response = await validatePartnerInfo(formData.email, formData.phone);
                     if (response && response.status === 200) {
                         if (response.data.body.existed) {
-                            // Email đã tồn tại
-                            enqueueSnackbar('This email is already registered in the system', { variant: 'error' });
+                            enqueueSnackbar('This email or phone is already used', { variant: 'error' });
                         } else {
-                            // Email chưa tồn tại, cho phép tiếp tục
                             setActiveStep(prev => prev + 1);
                         }
                     }
@@ -453,14 +481,20 @@ export default function PartnerRegister() {
         if (formData.taxCode) {
             if (!validateTaxCode(formData.taxCode)) {
                 newErrors.taxCode = 'Tax code is not valid (10-13 digits)';
-            } else if (taxCodeValid === null) {
+            } else if (taxCodeValid === null || taxCodeRegistered === null) {
                 // Validate tax code with API during submit
                 const isValid = await validateTaxCodeWithAPI(formData.taxCode);
                 if (!isValid) {
-                    newErrors.taxCode = 'Tax code is not valid according to tax authority';
+                    if (taxCodeRegistered === true) {
+                        newErrors.taxCode = 'Tax code is already registered by another partner';
+                    } else {
+                        newErrors.taxCode = 'Tax code is not valid according to tax authority';
+                    }
                 }
             } else if (taxCodeValid === false) {
                 newErrors.taxCode = 'Tax code is not valid according to tax authority';
+            } else if (taxCodeRegistered === true) {
+                newErrors.taxCode = 'Tax code is already registered by another partner';
             }
         }
         
@@ -490,7 +524,10 @@ export default function PartnerRegister() {
                 role: formData.partnerType === 'designer' ? 'DESIGNER' : 'GARMENT',
             },
             customerData: {
-                address: formData.street + ', ' + selectedWard.WardName + ', ' + selectedDistrict.DistrictName + ', ' + selectedProvince.ProvinceName,
+                address: formData.street,
+                ward: selectedWard.WardName,
+                district: selectedDistrict.DistrictName,
+                province: selectedProvince.ProvinceName,
                 taxCode: formData.taxCode,
                 name: formData.name,
                 businessName: formData.businessName,
@@ -834,7 +871,8 @@ export default function PartnerRegister() {
                                 helperText={
                                     errors.taxCode || 
                                     (validatingTaxCode ? 'Validating tax code...' : 
-                                     taxCodeValid === true ? '✅ Tax code is valid' :
+                                     taxCodeValid === true && taxCodeRegistered === false ? '✅ Tax code is valid and available' :
+                                     taxCodeValid === true && taxCodeRegistered === true ? '❌ Tax code is already registered by another partner' :
                                      taxCodeValid === false ? '❌ Tax code is not valid' :
                                      'Enter business tax code (10-13 digits)')
                                 }
@@ -888,10 +926,18 @@ export default function PartnerRegister() {
                                 </Box>
                             )}
                             
-                            {taxCodeValid === true && (
+                            {taxCodeValid === true && taxCodeRegistered === false && (
                                 <Box sx={{mt: 1, p: 1.5, bgcolor: 'success.50', borderRadius: 1, border: '1px solid', borderColor: 'success.200'}}>
                                     <Typography variant="caption" sx={{color: 'success.700', display: 'flex', alignItems: 'center', gap: 1}}>
-                                        ✅ <strong>Verified:</strong> This tax code is valid and registered with the tax authority.
+                                        ✅ <strong>Verified:</strong> This tax code is valid and available for registration.
+                                    </Typography>
+                                </Box>
+                            )}
+                            
+                            {taxCodeValid === true && taxCodeRegistered === true && (
+                                <Box sx={{mt: 1, p: 1.5, bgcolor: 'error.50', borderRadius: 1, border: '1px solid', borderColor: 'error.200'}}>
+                                    <Typography variant="caption" sx={{color: 'error.700', display: 'flex', alignItems: 'center', gap: 1}}>
+                                        ❌ <strong>Already Registered:</strong> This tax code is already registered by another partner.
                                     </Typography>
                                 </Box>
                             )}
