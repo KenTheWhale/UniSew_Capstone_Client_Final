@@ -3,7 +3,6 @@ import {
     Box,
     Button,
     Checkbox,
-    CircularProgress,
     Dialog,
     DialogActions,
     DialogContent,
@@ -19,6 +18,7 @@ import {
     TextField,
     Typography
 } from '@mui/material';
+import { InlineLoading } from '../../ui/LoadingSpinner.jsx';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DesignServicesIcon from '@mui/icons-material/DesignServices';
 import {ColorPicker} from 'antd';
@@ -759,7 +759,7 @@ export default function SchoolCreateDesign() {
         return (
             <>
 
-                {}
+
                 <Box sx={{
                     mb: 3,
                     p: 3,
@@ -779,7 +779,7 @@ export default function SchoolCreateDesign() {
                     </Typography>
 
                     <Box sx={{display: 'grid', gap: 3}}>
-                        {}
+
                         <Box>
                             <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Design Type *
@@ -808,7 +808,7 @@ export default function SchoolCreateDesign() {
                             </FormControl>
                         </Box>
 
-                        {}
+
                         {shirtCreateType === 'upload' && (
                             <Box>
                                 <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
@@ -883,7 +883,7 @@ export default function SchoolCreateDesign() {
                             </Box>
                         )}
 
-                        {}
+
                         <Box>
                             <Typography variant="subtitle2" sx={{
                                 mb: 1,
@@ -947,7 +947,7 @@ export default function SchoolCreateDesign() {
                             </FormControl>
                         </Box>
 
-                        {}
+
                         <Box>
                             <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Color *
@@ -998,7 +998,7 @@ export default function SchoolCreateDesign() {
                         </Box>
                     </Box>
                 </Box>
-                {}
+
                 <Box sx={{
                     mb: 3,
                     p: 3,
@@ -1014,7 +1014,7 @@ export default function SchoolCreateDesign() {
                         alignItems: 'center',
                         gap: 1
                     }}>
-                        üè∑Ô∏?Logo Placement
+                        Logo Placement
                     </Typography>
 
                     <Box sx={{display: 'grid', gap: 2}}>
@@ -1145,7 +1145,7 @@ export default function SchoolCreateDesign() {
                         </Button>
                     </DialogActions>
                 </Dialog>
-                {}
+
                 <Box sx={{
                     mb: 3,
                     p: 3,
@@ -1197,7 +1197,7 @@ export default function SchoolCreateDesign() {
 
                 <Divider sx={{my: 4, borderColor: '#ddd'}}/>
 
-                {}
+
                 <Box sx={{
                     mb: 3,
                     p: 3,
@@ -1215,68 +1215,68 @@ export default function SchoolCreateDesign() {
                     }}>
                         üëñ Pants Configuration
                     </Typography>
-                    {}
-                    <Box>
-                        <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
-                            Design Type *
-                        </Typography>
-                        <FormControl fullWidth size="small">
-                            <Select
-                                value={pantsCreateType}
-                                onChange={e => setPantsCreateType(e.target.value)}
-                                displayEmpty
-                                renderValue={(selected) => {
-                                    if (selected === '') {
-                                        return 'Select design approach';
-                                    }
 
-                                    const options = {
-                                        'new': 'New Design - Create from scratch',
-                                        'upload': 'Upload Image - Provide reference images',
-                                    };
-
-                                    return options[selected];
-                                }}
-                                variant='outlined'>
-                                <MenuItem value="new">New Design - Create from scratch</MenuItem>
-                                <MenuItem value="upload">Upload Image - Provide reference images</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Box>
-
-                    {}
-                    {pantsCreateType === 'upload' && (
+                    <Box sx={{display: 'grid', gap: 3}}>
                         <Box>
                             <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
-                                Reference Images (Max 4)
+                                Design Type *
                             </Typography>
-                            <Box sx={{
-                                border: '2px dashed #ddd',
-                                borderRadius: '8px',
-                                p: 3,
-                                textAlign: 'center',
-                                backgroundColor: '#fafafa'
-                            }}>
-                                <Button
-                                    variant="outlined"
-                                    component="label"
-                                    sx={{mb: 2}}
-                                    startIcon={<CloudUploadIcon/>}
-                                >
-                                    Upload Pants Images
-                                    <input
-                                        type="file"
-                                        accept="image/jpeg,image/png,image/gif"
-                                        multiple
-                                        hidden
-                                        onChange={e => handleImageUpload(e, uniformType, 'boy', 'pants')}
-                                    />
-                                </Button>
-                                <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
-                                    JPG, PNG, GIF, WEBP up to 10MB each
-                                </Typography>
+                            <FormControl fullWidth size="small">
+                                <Select
+                                    value={pantsCreateType}
+                                    onChange={e => setPantsCreateType(e.target.value)}
+                                    displayEmpty
+                                    renderValue={(selected) => {
+                                        if (selected === '') {
+                                            return 'Select design approach';
+                                        }
 
-                                                                    {pantsImages.length > 0 && (
+                                        const options = {
+                                            'new': 'New Design - Create from scratch',
+                                            'upload': 'Upload Image - Provide reference images',
+                                        };
+
+                                        return options[selected];
+                                    }}
+                                    variant='outlined'>
+                                    <MenuItem value="new">New Design - Create from scratch</MenuItem>
+                                    <MenuItem value="upload">Upload Image - Provide reference images</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Box>
+
+                        {pantsCreateType === 'upload' && (
+                            <Box>
+                                <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
+                                    Reference Images (Max 4)
+                                </Typography>
+                                <Box sx={{
+                                    border: '2px dashed #ddd',
+                                    borderRadius: '8px',
+                                    p: 3,
+                                    textAlign: 'center',
+                                    backgroundColor: '#fafafa'
+                                }}>
+                                    <Button
+                                        variant="outlined"
+                                        component="label"
+                                        sx={{mb: 2}}
+                                        startIcon={<CloudUploadIcon/>}
+                                    >
+                                        Upload Pants Images
+                                        <input
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/gif"
+                                            multiple
+                                            hidden
+                                            onChange={e => handleImageUpload(e, uniformType, 'boy', 'pants')}
+                                        />
+                                    </Button>
+                                    <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
+                                        JPG, PNG, GIF, WEBP up to 10MB each
+                                    </Typography>
+
+                                    {pantsImages.length > 0 && (
                                         <Box sx={{display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center'}}>
                                             {pantsImages.map((file, idx) => (
                                                 <Box key={idx} sx={{
@@ -1315,126 +1315,127 @@ export default function SchoolCreateDesign() {
                                             ))}
                                         </Box>
                                     )}
+                                </Box>
                             </Box>
-                        </Box>
-                    )}
-                    <Box sx={{display: 'grid', gap: 3}}>
-                        {}
-                        <Box>
-                            <Typography variant="subtitle2" sx={{
-                                mb: 1,
-                                fontWeight: '600',
-                                color: isFieldMissing(uniformType, 'boy', 'pantsFabric') ? '#d32f2f' : '#1e293b'
-                            }}>
-                                Fabric Type *
-                            </Typography>
-                            <FormControl fullWidth size="small">
-                                <Select
-                                    value={designRequest.uniformTypes[uniformType].details.boy.pants.fabric}
-                                    onChange={(e) => {
-                                        setDesignRequest(prev => ({
-                                            ...prev,
-                                            uniformTypes: {
-                                                ...prev.uniformTypes,
-                                                [uniformType]: {
-                                                    ...prev.uniformTypes[uniformType],
-                                                    details: {
-                                                        ...prev.uniformTypes[uniformType].details,
-                                                        boy: {
-                                                            ...prev.uniformTypes[uniformType].details.boy,
-                                                            pants: {
-                                                                ...prev.uniformTypes[uniformType].details.boy.pants,
-                                                                fabric: e.target.value
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }));
-                                    }}
-                                    displayEmpty
-                                    renderValue={(selected) => {
-                                        if (!selected) return <em>Select fabric type</em>;
-                                        const fabric = uniformFabrics.find(f => f.id === selected);
-                                        return fabric ? fabric.name : '';
-                                    }}
-                                    sx={{
-                                        '& .MuiOutlinedInput-root': {
-                                            '& fieldset': {
-                                                borderColor: isFieldMissing(uniformType, 'boy', 'pantsFabric') ? '#d32f2f' : '#c0c0c0',
-                                            },
-                                            '&:hover fieldset': {
-                                                borderColor: isFieldMissing(uniformType, 'boy', 'pantsFabric') ? '#d32f2f' : '#2e7d32',
-                                            },
-                                            '&.Mui-focused fieldset': {
-                                                borderColor: isFieldMissing(uniformType, 'boy', 'pantsFabric') ? '#d32f2f' : '#2e7d32',
-                                            },
-                                        },
-                                    }}
-                                    variant='outlined'>
-                                    {uniformFabrics
-                                        .filter(fabric => (fabric.type === 'pants' || fabric.type === 'skirt') && fabric.category === 'regular')
-                                        .map((fabric, index) => (
-                                            <MenuItem key={index} value={fabric.id}>
-                                                {fabric.name}
-                                            </MenuItem>
-                                        ))}
-                                </Select>
-                            </FormControl>
-                        </Box>
+                        )}
+                        <Box sx={{display: 'grid', gap: 3}}>
 
-                        {}
-                        <Box>
-                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
-                                Color *
-                            </Typography>
-                            <Box sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 2,
-                                p: 2,
-                                border: '1px solid #ddd',
-                                borderRadius: '4px',
-                                backgroundColor: 'white'
-                            }}>
-                                <ColorPicker
-                                    value={designRequest.uniformTypes[uniformType].details.boy.pants.color}
-                                    onChange={(color) => {
-                                        setDesignRequest(prev => ({
-                                            ...prev,
-                                            uniformTypes: {
-                                                ...prev.uniformTypes,
-                                                [uniformType]: {
-                                                    ...prev.uniformTypes[uniformType],
-                                                    details: {
-                                                        ...prev.uniformTypes[uniformType].details,
-                                                        boy: {
-                                                            ...prev.uniformTypes[uniformType].details.boy,
-                                                            pants: {
-                                                                ...prev.uniformTypes[uniformType].details.boy.pants,
-                                                                color: color.toHexString()
+                            <Box>
+                                <Typography variant="subtitle2" sx={{
+                                    mb: 1,
+                                    fontWeight: '600',
+                                    color: isFieldMissing(uniformType, 'boy', 'pantsFabric') ? '#d32f2f' : '#1e293b'
+                                }}>
+                                    Fabric Type *
+                                </Typography>
+                                <FormControl fullWidth size="small">
+                                    <Select
+                                        value={designRequest.uniformTypes[uniformType].details.boy.pants.fabric}
+                                        onChange={(e) => {
+                                            setDesignRequest(prev => ({
+                                                ...prev,
+                                                uniformTypes: {
+                                                    ...prev.uniformTypes,
+                                                    [uniformType]: {
+                                                        ...prev.uniformTypes[uniformType],
+                                                        details: {
+                                                            ...prev.uniformTypes[uniformType].details,
+                                                            boy: {
+                                                                ...prev.uniformTypes[uniformType].details.boy,
+                                                                pants: {
+                                                                    ...prev.uniformTypes[uniformType].details.boy.pants,
+                                                                    fabric: e.target.value
+                                                                }
                                                             }
                                                         }
                                                     }
                                                 }
-                                            }
-                                        }));
-                                    }}
-                                    getPopupContainer={(triggerNode) => triggerNode?.parentElement || document.body}
-                                    styles={{
-                                        popupOverlayInner: {
-                                            zIndex: 9999
-                                        }
-                                    }}
-                                />
-                                <Typography variant="body2" color="text.secondary">
-                                    Selected: {designRequest.uniformTypes[uniformType].details.boy.pants.color}
+                                            }));
+                                        }}
+                                        displayEmpty
+                                        renderValue={(selected) => {
+                                            if (!selected) return <em>Select fabric type</em>;
+                                            const fabric = uniformFabrics.find(f => f.id === selected);
+                                            return fabric ? fabric.name : '';
+                                        }}
+                                        sx={{
+                                            '& .MuiOutlinedInput-root': {
+                                                '& fieldset': {
+                                                    borderColor: isFieldMissing(uniformType, 'boy', 'pantsFabric') ? '#d32f2f' : '#c0c0c0',
+                                                },
+                                                '&:hover fieldset': {
+                                                    borderColor: isFieldMissing(uniformType, 'boy', 'pantsFabric') ? '#d32f2f' : '#2e7d32',
+                                                },
+                                                '&.Mui-focused fieldset': {
+                                                    borderColor: isFieldMissing(uniformType, 'boy', 'pantsFabric') ? '#d32f2f' : '#2e7d32',
+                                                },
+                                            },
+                                        }}
+                                        variant='outlined'>
+                                        {uniformFabrics
+                                            .filter(fabric => (fabric.type === 'pants' || fabric.type === 'skirt') && fabric.category === 'regular')
+                                            .map((fabric, index) => (
+                                                <MenuItem key={index} value={fabric.id}>
+                                                    {fabric.name}
+                                                </MenuItem>
+                                            ))}
+                                    </Select>
+                                </FormControl>
+                            </Box>
+
+
+                            <Box>
+                                <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
+                                    Color *
                                 </Typography>
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    p: 2,
+                                    border: '1px solid #ddd',
+                                    borderRadius: '4px',
+                                    backgroundColor: 'white'
+                                }}>
+                                    <ColorPicker
+                                        value={designRequest.uniformTypes[uniformType].details.boy.pants.color}
+                                        onChange={(color) => {
+                                            setDesignRequest(prev => ({
+                                                ...prev,
+                                                uniformTypes: {
+                                                    ...prev.uniformTypes,
+                                                    [uniformType]: {
+                                                        ...prev.uniformTypes[uniformType],
+                                                        details: {
+                                                            ...prev.uniformTypes[uniformType].details,
+                                                            boy: {
+                                                                ...prev.uniformTypes[uniformType].details.boy,
+                                                                pants: {
+                                                                    ...prev.uniformTypes[uniformType].details.boy.pants,
+                                                                    color: color.toHexString()
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }));
+                                        }}
+                                        getPopupContainer={(triggerNode) => triggerNode?.parentElement || document.body}
+                                        styles={{
+                                            popupOverlayInner: {
+                                                zIndex: 9999
+                                            }
+                                        }}
+                                    />
+                                    <Typography variant="body2" color="text.secondary">
+                                        Selected: {designRequest.uniformTypes[uniformType].details.boy.pants.color}
+                                    </Typography>
+                                </Box>
                             </Box>
                         </Box>
                     </Box>
                 </Box>
-                {}
+
                 <Box sx={{
                     mt: 3,
                     p: 3,
@@ -1537,7 +1538,7 @@ export default function SchoolCreateDesign() {
         const bottomImages = designRequest.uniformTypes[uniformType].details.girl[bottomType].images;
         return (
             <>
-                {}
+
                 <Box sx={{
                     mb: 3,
                     p: 3,
@@ -1557,7 +1558,7 @@ export default function SchoolCreateDesign() {
                     </Typography>
 
                     <Box sx={{display: 'grid', gap: 3}}>
-                        {}
+
                         <Box>
                             <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Design Type *
@@ -1586,7 +1587,7 @@ export default function SchoolCreateDesign() {
                             </FormControl>
                         </Box>
 
-                        {}
+
                         {shirtCreateType === 'upload' && (
                             <Box>
                                 <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
@@ -1661,7 +1662,7 @@ export default function SchoolCreateDesign() {
                             </Box>
                         )}
 
-                        {}
+
                         <Box>
                             <Typography variant="subtitle2" sx={{
                                 mb: 1,
@@ -1725,7 +1726,7 @@ export default function SchoolCreateDesign() {
                             </FormControl>
                         </Box>
 
-                        {}
+
                         <Box>
                             <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Color *
@@ -1777,7 +1778,7 @@ export default function SchoolCreateDesign() {
                     </Box>
                 </Box>
 
-                {}
+
                 <Box sx={{
                     mb: 3,
                     p: 3,
@@ -1793,7 +1794,7 @@ export default function SchoolCreateDesign() {
                         alignItems: 'center',
                         gap: 1
                     }}>
-                        üè∑Ô∏?Logo Placement
+                        Logo Placement
                     </Typography>
 
                     <Box sx={{display: 'grid', gap: 2}}>
@@ -1924,7 +1925,7 @@ export default function SchoolCreateDesign() {
                         </Button>
                     </DialogActions>
                 </Dialog>
-                {}
+
                 <Box sx={{
                     mb: 3,
                     p: 3,
@@ -1976,7 +1977,7 @@ export default function SchoolCreateDesign() {
 
                 <Divider sx={{my: 4, borderColor: '#ddd'}}/>
 
-                {}
+
                 {uniformType === "regular" && (
                     <Box sx={{
                         mb: 3,
@@ -2033,7 +2034,7 @@ export default function SchoolCreateDesign() {
                     </Box>
                 )}
 
-                {}
+
                 <Box sx={{
                     mb: 3,
                     p: 3,
@@ -2053,7 +2054,7 @@ export default function SchoolCreateDesign() {
                     </Typography>
 
                     <Box sx={{display: 'grid', gap: 3}}>
-                        {}
+
                         <Box>
                             <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Design Type *
@@ -2082,7 +2083,7 @@ export default function SchoolCreateDesign() {
                             </FormControl>
                         </Box>
 
-                        {}
+
                         {bottomCreateType === 'upload' && (
                             <Box>
                                 <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
@@ -2157,7 +2158,7 @@ export default function SchoolCreateDesign() {
                             </Box>
                         )}
 
-                        {}
+
                         <Box>
                             <Typography variant="subtitle2" sx={{
                                 mb: 1,
@@ -2233,7 +2234,7 @@ export default function SchoolCreateDesign() {
                             </FormControl>
                         </Box>
 
-                        {}
+
                         <Box>
                             <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                 Color *
@@ -2293,7 +2294,7 @@ export default function SchoolCreateDesign() {
                     </Box>
                 </Box>
 
-                {}
+
                 <Box sx={{
                     mt: 3,
                     p: 3,
@@ -2355,7 +2356,7 @@ export default function SchoolCreateDesign() {
 
     return (
         <Box sx={{height: '100%', overflowY: 'auto'}}>
-            {}
+
             <Box
                 sx={{
                     mb: 4,
@@ -2405,7 +2406,7 @@ export default function SchoolCreateDesign() {
                 </Typography>
             </Box>
 
-            {}
+
             <Box sx={{
                 backgroundColor: 'white',
                 borderRadius: 2,
@@ -2413,7 +2414,7 @@ export default function SchoolCreateDesign() {
                 boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                 border: '1px solid #e2e8f0'
             }}>
-                {}
+
                 <Box sx={{mb: 4}}>
                     <Typography variant="h6" sx={{
                         color: '#1e293b',
@@ -2466,7 +2467,7 @@ export default function SchoolCreateDesign() {
                     noValidate
                     autoComplete="off"
                 >
-                    {}
+
                     <Box sx={{mb: 4}}>
                         <Typography variant="h6" sx={{
                             color: '#1e293b',
@@ -2529,7 +2530,7 @@ export default function SchoolCreateDesign() {
                         </Box>
                     </Box>
 
-                    {}
+
                     <Box sx={{mb: 4}}>
                         <Typography variant="h6" sx={{
                             color: '#1e293b',
@@ -2632,7 +2633,7 @@ export default function SchoolCreateDesign() {
                                     opacity: designRequest.uniformTypes.physicalEducation.selected ? 1 : 0.3,
                                     pointerEvents: 'none'
                                 }}>
-                                    üèÉ‚Äç‚ôÇÔ∏?
+                                    üèÉ‚Äç
                                 </Box>
                             </Box>
                         </Box>
@@ -2702,7 +2703,7 @@ export default function SchoolCreateDesign() {
                                                             display: 'block'
                                                         }}
                                                     >
-                                                        {isBoyInfoComplete('regular') ? '‚ú?All information filled' : '‚ö?Information missing'}
+                                                        {isBoyInfoComplete('regular') ? 'All information filled' : 'Information missing'}
                                                     </Typography>
                                                 )}
                                             </Box>
@@ -2792,7 +2793,7 @@ export default function SchoolCreateDesign() {
                                                             display: 'block'
                                                         }}
                                                     >
-                                                        {isGirlInfoComplete('regular') ? '‚ú?All information filled' : '‚ö?Information missing'}
+                                                        {isGirlInfoComplete('regular') ? 'All information filled' : 'Information missing'}
                                                     </Typography>
                                                 )}
                                             </Box>
@@ -2976,7 +2977,7 @@ export default function SchoolCreateDesign() {
                                                             display: 'block'
                                                         }}
                                                     >
-                                                        {isBoyInfoComplete('physicalEducation') ? '‚ú?All information filled' : '‚ö?Information missing'}
+                                                        {isBoyInfoComplete('physicalEducation') ? 'All information filled' : 'Information missing'}
                                                     </Typography>
                                                 )}
                                             </Box>
@@ -2985,7 +2986,7 @@ export default function SchoolCreateDesign() {
                                                 opacity: designRequest.uniformTypes.physicalEducation.genders.boy ? 1 : 0.3,
                                                 pointerEvents: 'none'
                                             }}>
-                                                üèÉ‚Äç‚ôÇÔ∏?
+                                                üèÉ‚Äç
                                             </Box>
                                         </Box>
                                         {designRequest.uniformTypes.physicalEducation.genders.boy && (
@@ -3066,7 +3067,7 @@ export default function SchoolCreateDesign() {
                                                             display: 'block'
                                                         }}
                                                     >
-                                                        {isGirlInfoComplete('physicalEducation') ? '‚ú?All information filled' : '‚ö?Information missing'}
+                                                        {isGirlInfoComplete('physicalEducation') ? 'All information filled' : 'Information missing'}
                                                     </Typography>
                                                 )}
                                             </Box>
@@ -3075,7 +3076,7 @@ export default function SchoolCreateDesign() {
                                                 opacity: designRequest.uniformTypes.physicalEducation.genders.girl ? 1 : 0.3,
                                                 pointerEvents: 'none'
                                             }}>
-                                                üèÉ‚Äç‚ôÄÔ∏?
+                                                üèÉ
                                             </Box>
                                         </Box>
                                         {designRequest.uniformTypes.physicalEducation.genders.girl && (
@@ -3196,7 +3197,7 @@ export default function SchoolCreateDesign() {
                     )}
                 </Box>
             </Box>
-            {}
+
             <Box sx={{
                 mt: 4,
                 pt: 3,
@@ -3226,7 +3227,7 @@ export default function SchoolCreateDesign() {
                     variant="contained"
                     size="large"
                     disabled={isSubmitting}
-                    startIcon={isSubmitting ? <CircularProgress size={20} color="inherit"/> : null}
+                        startIcon={isSubmitting ? <InlineLoading size={20} color="inherit"/> : null}
                     sx={{
                         background: "linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)",
                         color: "white",

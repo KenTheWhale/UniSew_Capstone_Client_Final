@@ -1,11 +1,14 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Avatar, Badge, Button, Col, Form, Input, Modal, Row, Tag, Typography} from 'antd';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 import {
     CheckCircleOutlined,
     CheckCircleOutlined as CheckCircleOutlinedIcon,
     ClockCircleOutlined,
     CloseCircleOutlined,
     DollarOutlined,
+    DownloadOutlined,
     EditOutlined,
     EyeOutlined,
     FileTextOutlined,
@@ -84,6 +87,470 @@ export function statusTag(status) {
 const formatCategory = (category) => {
     const v = (category || '').toLowerCase();
     return v === 'pe' ? 'physical education' : (category || '');
+};
+
+// Function to download design as ZIP with organized folder structure
+const downloadDesignAsZip = async (delivery) => {
+    try {
+        const zip = new JSZip();
+        
+        // Helper function to fetch image and convert to blob
+        const fetchImageAsBlob = async (imageUrl) => {
+            try {
+                const response = await fetch(imageUrl);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const blob = await response.blob();
+                return blob;
+            } catch (error) {
+                console.error('Error fetching image:', error);
+                return null;
+            }
+        };
+        
+        // Group items by gender and category
+        const boyItems = delivery.deliveryItems?.filter(item =>
+            item.designItem?.gender?.toLowerCase() === 'boy'
+        ) || [];
+        const girlItems = delivery.deliveryItems?.filter(item =>
+            item.designItem?.gender?.toLowerCase() === 'girl'
+        ) || [];
+        
+        // Process Boy uniforms
+        if (boyItems.length > 0) {
+            const boyFolder = zip.folder("boy");
+            
+            // Group by category (regular, physical education)
+            const boyRegular = boyItems.filter(item => 
+                item.designItem?.category?.toLowerCase() === 'regular'
+            );
+            const boyPE = boyItems.filter(item => 
+                item.designItem?.category?.toLowerCase() === 'pe'
+            );
+            
+            // Add regular uniforms
+            if (boyRegular.length > 0) {
+                const regularFolder = boyFolder.folder("regular uniform");
+                
+                // Group by cloth type (shirt, pants, skirt, etc.)
+                const shirtItems = boyRegular.filter(item => 
+                    item.designItem?.type?.toLowerCase().includes('shirt')
+                );
+                const pantsItems = boyRegular.filter(item => 
+                    item.designItem?.type?.toLowerCase().includes('pant')
+                );
+                const skirtItems = boyRegular.filter(item => 
+                    item.designItem?.type?.toLowerCase().includes('skirt')
+                );
+                const otherItems = boyRegular.filter(item => {
+                    const type = item.designItem?.type?.toLowerCase();
+                    return !type.includes('shirt') && !type.includes('pant') && !type.includes('skirt');
+                });
+                
+                // Add shirt items
+                if (shirtItems.length > 0) {
+                    const shirtFolder = regularFolder.folder("shirt");
+                    for (let i = 0; i < shirtItems.length; i++) {
+                        const item = shirtItems[i];
+                        if (item.frontImageUrl) {
+                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
+                            if (frontBlob) {
+                                shirtFolder.file(`front_design.png`, frontBlob);
+                            }
+                        }
+                        if (item.backImageUrl) {
+                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
+                            if (backBlob) {
+                                shirtFolder.file(`back_design.png`, backBlob);
+                            }
+                        }
+                    }
+                }
+                
+                // Add pants items
+                if (pantsItems.length > 0) {
+                    const pantsFolder = regularFolder.folder("pants");
+                    for (let i = 0; i < pantsItems.length; i++) {
+                        const item = pantsItems[i];
+                        if (item.frontImageUrl) {
+                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
+                            if (frontBlob) {
+                                pantsFolder.file(`front_design.png`, frontBlob);
+                            }
+                        }
+                        if (item.backImageUrl) {
+                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
+                            if (backBlob) {
+                                pantsFolder.file(`back_design.png`, backBlob);
+                            }
+                        }
+                    }
+                }
+                
+                // Add skirt items
+                if (skirtItems.length > 0) {
+                    const skirtFolder = regularFolder.folder("skirt");
+                    for (let i = 0; i < skirtItems.length; i++) {
+                        const item = skirtItems[i];
+                        if (item.frontImageUrl) {
+                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
+                            if (frontBlob) {
+                                skirtFolder.file(`front_design.png`, frontBlob);
+                            }
+                        }
+                        if (item.backImageUrl) {
+                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
+                            if (backBlob) {
+                                skirtFolder.file(`back_design.png`, backBlob);
+                            }
+                        }
+                    }
+                }
+                
+                // Add other items
+                if (otherItems.length > 0) {
+                    const otherFolder = regularFolder.folder("other");
+                    for (let i = 0; i < otherItems.length; i++) {
+                        const item = otherItems[i];
+                        if (item.frontImageUrl) {
+                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
+                            if (frontBlob) {
+                                otherFolder.file(`front_design.png`, frontBlob);
+                            }
+                        }
+                        if (item.backImageUrl) {
+                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
+                            if (backBlob) {
+                                otherFolder.file(`back_design.png`, backBlob);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Add physical education uniforms
+            if (boyPE.length > 0) {
+                const peFolder = boyFolder.folder("physical education uniform");
+                
+                // Group by cloth type (shirt, pants, skirt, etc.)
+                const shirtItems = boyPE.filter(item => 
+                    item.designItem?.type?.toLowerCase().includes('shirt')
+                );
+                const pantsItems = boyPE.filter(item => 
+                    item.designItem?.type?.toLowerCase().includes('pant')
+                );
+                const skirtItems = boyPE.filter(item => 
+                    item.designItem?.type?.toLowerCase().includes('skirt')
+                );
+                const otherItems = boyPE.filter(item => {
+                    const type = item.designItem?.type?.toLowerCase();
+                    return !type.includes('shirt') && !type.includes('pant') && !type.includes('skirt');
+                });
+                
+                // Add shirt items
+                if (shirtItems.length > 0) {
+                    const shirtFolder = peFolder.folder("shirt");
+                    for (let i = 0; i < shirtItems.length; i++) {
+                        const item = shirtItems[i];
+                        if (item.frontImageUrl) {
+                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
+                            if (frontBlob) {
+                                shirtFolder.file(`front_design.png`, frontBlob);
+                            }
+                        }
+                        if (item.backImageUrl) {
+                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
+                            if (backBlob) {
+                                shirtFolder.file(`back_design.png`, backBlob);
+                            }
+                        }
+                    }
+                }
+                
+                // Add pants items
+                if (pantsItems.length > 0) {
+                    const pantsFolder = peFolder.folder("pants");
+                    for (let i = 0; i < pantsItems.length; i++) {
+                        const item = pantsItems[i];
+                        if (item.frontImageUrl) {
+                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
+                            if (frontBlob) {
+                                pantsFolder.file(`front_design.png`, frontBlob);
+                            }
+                        }
+                        if (item.backImageUrl) {
+                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
+                            if (backBlob) {
+                                pantsFolder.file(`back_design.png`, backBlob);
+                            }
+                        }
+                    }
+                }
+                
+                // Add skirt items
+                if (skirtItems.length > 0) {
+                    const skirtFolder = peFolder.folder("skirt");
+                    for (let i = 0; i < skirtItems.length; i++) {
+                        const item = skirtItems[i];
+                        if (item.frontImageUrl) {
+                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
+                            if (frontBlob) {
+                                skirtFolder.file(`front_design.png`, frontBlob);
+                            }
+                        }
+                        if (item.backImageUrl) {
+                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
+                            if (backBlob) {
+                                skirtFolder.file(`back_design.png`, backBlob);
+                            }
+                        }
+                    }
+                }
+                
+                // Add other items
+                if (otherItems.length > 0) {
+                    const otherFolder = peFolder.folder("other");
+                    for (let i = 0; i < otherItems.length; i++) {
+                        const item = otherItems[i];
+                        if (item.frontImageUrl) {
+                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
+                            if (frontBlob) {
+                                otherFolder.file(`front_design.png`, frontBlob);
+                            }
+                        }
+                        if (item.backImageUrl) {
+                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
+                            if (backBlob) {
+                                otherFolder.file(`back_design.png`, backBlob);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Process Girl uniforms
+        if (girlItems.length > 0) {
+            const girlFolder = zip.folder("girl");
+            
+            // Group by category (regular, physical education)
+            const girlRegular = girlItems.filter(item => 
+                item.designItem?.category?.toLowerCase() === 'regular'
+            );
+            const girlPE = girlItems.filter(item => 
+                item.designItem?.category?.toLowerCase() === 'pe'
+            );
+            
+            // Add regular uniforms
+            if (girlRegular.length > 0) {
+                const regularFolder = girlFolder.folder("regular uniform");
+                
+                // Group by cloth type (shirt, pants, skirt, etc.)
+                const shirtItems = girlRegular.filter(item => 
+                    item.designItem?.type?.toLowerCase().includes('shirt')
+                );
+                const pantsItems = girlRegular.filter(item => 
+                    item.designItem?.type?.toLowerCase().includes('pant')
+                );
+                const skirtItems = girlRegular.filter(item => 
+                    item.designItem?.type?.toLowerCase().includes('skirt')
+                );
+                const otherItems = girlRegular.filter(item => {
+                    const type = item.designItem?.type?.toLowerCase();
+                    return !type.includes('shirt') && !type.includes('pant') && !type.includes('skirt');
+                });
+                
+                // Add shirt items
+                if (shirtItems.length > 0) {
+                    const shirtFolder = regularFolder.folder("shirt");
+                    for (let i = 0; i < shirtItems.length; i++) {
+                        const item = shirtItems[i];
+                        if (item.frontImageUrl) {
+                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
+                            if (frontBlob) {
+                                shirtFolder.file(`front_design.png`, frontBlob);
+                            }
+                        }
+                        if (item.backImageUrl) {
+                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
+                            if (backBlob) {
+                                shirtFolder.file(`back_design.png`, backBlob);
+                            }
+                        }
+                    }
+                }
+                
+                // Add pants items
+                if (pantsItems.length > 0) {
+                    const pantsFolder = regularFolder.folder("pants");
+                    for (let i = 0; i < pantsItems.length; i++) {
+                        const item = pantsItems[i];
+                        if (item.frontImageUrl) {
+                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
+                            if (frontBlob) {
+                                pantsFolder.file(`front_design.png`, frontBlob);
+                            }
+                        }
+                        if (item.backImageUrl) {
+                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
+                            if (backBlob) {
+                                pantsFolder.file(`back_design.png`, backBlob);
+                            }
+                        }
+                    }
+                }
+                
+                // Add skirt items
+                if (skirtItems.length > 0) {
+                    const skirtFolder = regularFolder.folder("skirt");
+                    for (let i = 0; i < skirtItems.length; i++) {
+                        const item = skirtItems[i];
+                        if (item.frontImageUrl) {
+                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
+                            if (frontBlob) {
+                                skirtFolder.file(`front_design.png`, frontBlob);
+                            }
+                        }
+                        if (item.backImageUrl) {
+                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
+                            if (backBlob) {
+                                skirtFolder.file(`back_design.png`, backBlob);
+                            }
+                        }
+                    }
+                }
+                
+                // Add other items
+                if (otherItems.length > 0) {
+                    const otherFolder = regularFolder.folder("other");
+                    for (let i = 0; i < otherItems.length; i++) {
+                        const item = otherItems[i];
+                        if (item.frontImageUrl) {
+                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
+                            if (frontBlob) {
+                                otherFolder.file(`front_design.png`, frontBlob);
+                            }
+                        }
+                        if (item.backImageUrl) {
+                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
+                            if (backBlob) {
+                                otherFolder.file(`back_design.png`, backBlob);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Add physical education uniforms
+            if (girlPE.length > 0) {
+                const peFolder = girlFolder.folder("physical education uniform");
+                
+                // Group by cloth type (shirt, pants, skirt, etc.)
+                const shirtItems = girlPE.filter(item => 
+                    item.designItem?.type?.toLowerCase().includes('shirt')
+                );
+                const pantsItems = girlPE.filter(item => 
+                    item.designItem?.type?.toLowerCase().includes('pant')
+                );
+                const skirtItems = girlPE.filter(item => 
+                    item.designItem?.type?.toLowerCase().includes('skirt')
+                );
+                const otherItems = girlPE.filter(item => {
+                    const type = item.designItem?.type?.toLowerCase();
+                    return !type.includes('shirt') && !type.includes('pant') && !type.includes('skirt');
+                });
+                
+                // Add shirt items
+                if (shirtItems.length > 0) {
+                    const shirtFolder = peFolder.folder("shirt");
+                    for (let i = 0; i < shirtItems.length; i++) {
+                        const item = shirtItems[i];
+                        if (item.frontImageUrl) {
+                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
+                            if (frontBlob) {
+                                shirtFolder.file(`front_design_${i + 1}.png`, frontBlob);
+                            }
+                        }
+                        if (item.backImageUrl) {
+                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
+                            if (backBlob) {
+                                shirtFolder.file(`back_design_${i + 1}.png`, backBlob);
+                            }
+                        }
+                    }
+                }
+                
+                // Add pants items
+                if (pantsItems.length > 0) {
+                    const pantsFolder = peFolder.folder("pants");
+                    for (let i = 0; i < pantsItems.length; i++) {
+                        const item = pantsItems[i];
+                        if (item.frontImageUrl) {
+                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
+                            if (frontBlob) {
+                                pantsFolder.file(`front_design_${i + 1}.png`, frontBlob);
+                            }
+                        }
+                        if (item.backImageUrl) {
+                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
+                            if (backBlob) {
+                                pantsFolder.file(`back_design_${i + 1}.png`, backBlob);
+                            }
+                        }
+                    }
+                }
+                
+                // Add skirt items
+                if (skirtItems.length > 0) {
+                    const skirtFolder = peFolder.folder("skirt");
+                    for (let i = 0; i < skirtItems.length; i++) {
+                        const item = skirtItems[i];
+                        if (item.frontImageUrl) {
+                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
+                            if (frontBlob) {
+                                skirtFolder.file(`front_design_${i + 1}.png`, frontBlob);
+                            }
+                        }
+                        if (item.backImageUrl) {
+                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
+                            if (backBlob) {
+                                skirtFolder.file(`back_design_${i + 1}.png`, backBlob);
+                            }
+                        }
+                    }
+                }
+                
+                // Add other items
+                if (otherItems.length > 0) {
+                    const otherFolder = peFolder.folder("other");
+                    for (let i = 0; i < otherItems.length; i++) {
+                        const item = otherItems[i];
+                        if (item.frontImageUrl) {
+                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
+                            if (frontBlob) {
+                                otherFolder.file(`front_design_${i + 1}.png`, frontBlob);
+                            }
+                        }
+                        if (item.backImageUrl) {
+                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
+                            if (backBlob) {
+                                otherFolder.file(`back_design_${i + 1}.png`, backBlob);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Generate and download ZIP file
+        const content = await zip.generateAsync({type: "blob"});
+        const fileName = `${delivery.name}_UniSew.zip`;
+        saveAs(content, fileName);
+        
+        return true;
+    } catch (error) {
+        console.error('Error creating ZIP file:', error);
+        return false;
+    }
 };
 
 const getItemIcon = (itemType) => {
@@ -334,6 +801,45 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                                         {delivery.isRevision ? 'Revision' : 'Normal'}
                                     </Tag>
                                 </Box>
+                            </Box>
+                            
+                            {/* Download Design Button */}
+                            <Box sx={{
+                                mt: 3,
+                                pt: 2,
+                                borderTop: '1px solid #e2e8f0'
+                            }}>
+                                <Button
+                                    type="primary"
+                                    icon={<DownloadOutlined />}
+                                    onClick={async () => {
+                                        try {
+                                            await downloadDesignAsZip(delivery);
+                                        } catch (error) {
+                                            console.error('Download error:', error);
+                                        }
+                                    }}
+                                    style={{
+                                        width: '100%',
+                                        height: '36px',
+                                        borderRadius: '6px',
+                                        background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
+                                        border: 'none',
+                                        fontWeight: 600,
+                                        boxShadow: '0 2px 8px rgba(46, 125, 50, 0.2)',
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.target.style.transform = 'translateY(-1px)';
+                                        e.target.style.boxShadow = '0 4px 12px rgba(46, 125, 50, 0.3)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.target.style.transform = 'translateY(0)';
+                                        e.target.style.boxShadow = '0 2px 8px rgba(46, 125, 50, 0.2)';
+                                    }}
+                                >
+                                    Download Design
+                                </Button>
                             </Box>
                         </Box>
 
@@ -1577,7 +2083,8 @@ export default function SchoolChat() {
                 revisionQuantity: quantity,
                 extraRevisionPrice: extraRevisionPrice,
                 totalAmount: price,
-                designerId: requestData?.finalDesignQuotation?.designer?.customer?.id || requestData?.designer?.id
+                designerId: requestData?.finalDesignQuotation?.designer?.customer?.id || requestData?.designer?.id,
+                designerName: requestData?.finalDesignQuotation?.designer?.customer?.name || requestData?.designer?.customer?.name || 'Unknown Designer'
             };
             sessionStorage.setItem('revisionPurchaseDetails', JSON.stringify(revisionPurchaseDetails));
 

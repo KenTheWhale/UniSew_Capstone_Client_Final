@@ -34,3 +34,14 @@ export const getAccess = async () => {
     const response = await axiosClient.post("/account/access")
     return response || null;
 }
+
+export const checkSchoolInitData = async (schoolName, taxCode, phone, address, step) => {
+    const response = await axiosClient.post("/account/school/first/profile", {
+        step: step,
+        schoolName: schoolName,
+        taxCode: taxCode,
+        phone: phone,
+        address: address
+    })
+    return response || null;
+}
