@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { refreshToken } from "../services/AuthService.jsx";
 import { getAccess, signout } from "../services/AccountService.jsx";
+import { useLoading } from "../contexts/LoadingContext.jsx";
 
 async function GetAccessData() {
     const response = await getAccess()
@@ -36,6 +37,7 @@ export default function ProtectedRoute({ children, allowRoles = [] }) {
     const [isLoading, setIsLoading] = useState(true);
     const [hasValidRole, setHasValidRole] = useState(false);
     const [hasAttemptedAuth, setHasAttemptedAuth] = useState(false);
+    const { setAuthLoading } = useLoading();
 
     useEffect(() => {
         const checkAuthentication = async () => {
@@ -45,6 +47,7 @@ export default function ProtectedRoute({ children, allowRoles = [] }) {
 
             try {
                 setIsLoading(true);
+                setAuthLoading(true);
                 setHasAttemptedAuth(true);
 
                 const data = await GetAccessData();
@@ -90,6 +93,7 @@ export default function ProtectedRoute({ children, allowRoles = [] }) {
                 await Logout();
             } finally {
                 setIsLoading(false);
+                setAuthLoading(false);
             }
         };
 
@@ -97,29 +101,8 @@ export default function ProtectedRoute({ children, allowRoles = [] }) {
     }, [allowRoles]);
 
     if (isLoading) {
-        return (
-            <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                height: '100vh'
-            }}>
-                <div style={{
-                    width: '40px',
-                    height: '40px',
-                    border: '4px solid #f3f3f3',
-                    borderTop: '4px solid #3498db',
-                    borderRadius: '50%',
-                    animation: 'spin 1s linear infinite'
-                }}></div>
-                <style>{`
-                    @keyframes spin {
-                        0% { transform: rotate(0deg); }
-                        100% { transform: rotate(360deg); }
-                    }
-                `}</style>
-            </div>
-        );
+        // Không hiển thị loading UI ở đây nữa, sẽ dùng GlobalLoadingOverlay
+        return null;
     }
 
     if (isAuthenticated && hasValidRole) {

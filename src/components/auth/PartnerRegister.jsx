@@ -4,7 +4,6 @@ import {
     Alert,
     Box,
     Button,
-    CircularProgress,
     Container,
     FormControl,
     Grid,
@@ -19,6 +18,7 @@ import {
     Typography,
     Avatar
 } from '@mui/material';
+import { InlineLoading } from '../ui/LoadingSpinner.jsx';
 import {
     Business as BusinessIcon,
     CheckCircle as CheckCircleIcon,
@@ -31,7 +31,7 @@ import {
     AccountBalance as AccountBalanceIcon
 } from '@mui/icons-material';
 import {encryptPartnerData, validatePartnerInfo, validatePartnerTaxCode} from "../../services/AuthService.jsx";
-import emailjs from '@emailjs/browser';
+import {emailType, sendEmail} from '../../services/EmailService.jsx';
 import {getProvinces, getDistricts, getWards, getBanks} from "../../services/ShippingService.jsx";
 import {getTaxInfo} from "../../services/TaxService.jsx";
 import {uploadCloudinary} from "../../services/UploadImageService.jsx";
@@ -565,11 +565,13 @@ export default function PartnerRegister() {
                         receiver: formData.email
                     }
 
-                    emailjs.send('service_ipof5uq', 'template_ergky7m', emailParam, {
-                        publicKey: 'lw0xwIjxBp7P1BjuS'
-                    }).then(() => {
+                    sendEmail(emailType.CONFIRMATION, emailParam).then(() => {
                         setSuccess(true)
                         setLoading(false)
+                    }).catch((error) => {
+                        console.error('Error sending email:', error);
+                        setError("Failed to send confirmation email. Please try again.");
+                        setLoading(false);
                     })
 
                 }
@@ -909,7 +911,7 @@ export default function PartnerRegister() {
                                         }
                                     }}
                                     disabled={!formData.taxCode || validatingTaxCode}
-                                    startIcon={validatingTaxCode ? <CircularProgress size={16} /> : <BusinessIcon />}
+                                    startIcon={validatingTaxCode ? <InlineLoading size={16} /> : <BusinessIcon />}
                                     sx={{minWidth: 150}}
                                 >
                                     {validatingTaxCode ? 'Checking...' : 'Check Tax Code'}
@@ -1267,7 +1269,7 @@ export default function PartnerRegister() {
                                     variant="contained"
                                     onClick={handleSubmit}
                                     disabled={loading || !isStepValid(activeStep)}
-                                    startIcon={loading ? <CircularProgress size={20}/> : <PersonAddIcon/>}
+                                    startIcon={loading ? <InlineLoading size={20}/> : <PersonAddIcon/>}
                                     sx={{borderRadius: 2, px: 4}}
                                 >
                                     {loading ? 'Sending...' : 

@@ -142,7 +142,6 @@ function MainHeader() {
                     alignItems: 'center',
                     justifyContent: 'space-between'
                 }}>
-                    {}
                     <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                         <Box component="img"
                              src="/logo.png"
@@ -161,7 +160,6 @@ function MainHeader() {
                             UniSew
                         </Typography>
                     </Box>
-                    {}
                     <Box sx={{display: {xs: 'none', md: 'flex'}, gap: 1}}>
                         <Button
                             color="inherit"
@@ -216,7 +214,6 @@ function MainHeader() {
                             Contact
                         </Button>
                     </Box>
-                    {}
                     <Box sx={{position: 'relative'}}>
                         <Button
                             variant="contained"
@@ -241,7 +238,6 @@ function MainHeader() {
                             {buttonText}
                         </Button>
 
-                        {}
                         {isSignedIn && (
                             <Menu
                                 anchorEl={anchorEl}
@@ -325,7 +321,6 @@ function MainHeader() {
                             </Menu>
                         )}
                     </Box>
-                    {}
                     <IconButton
                         color="inherit"
                         sx={{display: {md: 'none'}, color: '#1976d2'}}
@@ -334,7 +329,6 @@ function MainHeader() {
                         <MenuIcon/>
                     </IconButton>
                 </Box>
-                {}
                 <Collapse in={mobileMenuOpen}>
                     <Box sx={{
                         bgcolor: 'white',
@@ -384,7 +378,6 @@ function Footer() {
         }}>
             <Container maxWidth={false} sx={{px: {xs: 2, md: 8}}}>
                 <Grid container spacing={4} alignItems="flex-start" justifyContent="space-between">
-                    {}
                     <Grid>
                         <Typography variant="h6" sx={{fontWeight: 700, mb: 2, color: 'white'}}>
                             LOCATION
@@ -403,13 +396,12 @@ function Footer() {
                         </Box>
                     </Grid>
 
-                    {}
                     <Grid>
                         <Typography variant="h6" sx={{fontWeight: 700, mb: 2, color: 'white'}}>
                             CONTACT US
                         </Typography>
                         <Typography variant="body2" sx={{mb: 1, color: 'rgba(255,255,255,0.9)'}}>
-                            7 Đ. D1, Long Thạnh M�? Th�?Đức, H�?Chí Minh<br/>VietNam
+                            7 Đ. D1, Long Thạnh Mỹ Thủ Đức, Hồ Chí Minh<br/>VietNam
                         </Typography>
                         <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mb: 0.5}}>
                             <PhoneIcon sx={{fontSize: 18, color: 'rgba(255,255,255,0.8)'}}/>
@@ -425,7 +417,6 @@ function Footer() {
                         </Box>
                     </Grid>
 
-                    {}
                     <Grid>
                         <Typography variant="h6" sx={{fontWeight: 700, mb: 2, color: 'white'}}>
                             OUR POLICIES
@@ -441,14 +432,10 @@ function Footer() {
                                 Policy</a></div>
                             <div><a href="/tos" style={{color: 'inherit', textDecoration: 'none'}}>Terms of Service</a>
                             </div>
-                            {}
-                            {}
-                            {}
                             <div><a href="/faq" style={{color: 'inherit', textDecoration: 'none'}}>FAQ</a></div>
                         </Box>
                     </Grid>
 
-                    {}
                     <Grid>
                         <Typography variant="h6" sx={{fontWeight: 700, mb: 2, color: 'white'}}>
                             PAYMENT ACCEPTANCE
