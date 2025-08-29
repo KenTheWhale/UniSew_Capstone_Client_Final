@@ -401,7 +401,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                 <Select
                                     mode="multiple"
                                     allowClear
-                                    placeholder="Sort by (priority left â†?right)"
+                                    placeholder="Sort by (priority left â†’ right)"
                                     style={{ minWidth: 360 }}
                                     value={sortCriteria}
                                     onChange={handleSortChange}
@@ -421,7 +421,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                 validUntil: 'Valid until',
                                                 rating: 'Rating',
                                                 estDelivery: 'Est. Delivery'
-                                            }[key]} ${sortOrder[key] === 'asc' ? 'â†? : 'â†?}`}
+                                            }[key]} ${sortOrder[key] === 'asc' ? 'â†‘' : 'â†“'}`}
                                             size="small"
                                             variant="outlined"
                                             onClick={() => handleToggleSortOrder(key)}
@@ -577,7 +577,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                             {quotation.price.toLocaleString('vi-VN')} <span style={{fontSize: 12, fontWeight: 700}}>VND</span>
                                                         </Typography>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mt: 0.5 }}>
-                                                        <Chip size="small" variant="outlined" label={`â­?${quotation.garment?.rating || 0}`} sx={{ height: 22 }} />
+                                                        <Chip size="small" variant="outlined" label={`ï¿½?${quotation.garment?.rating || 0}`} sx={{ height: 22 }} />
                                                         <Chip size="small" variant="outlined" icon={<TimeIcon/>} label={`Valid until ${formatDate(quotation.acceptanceDeadline)}`} sx={{ height: 22 }} />
                                                     </Box>
                                                 </Box>

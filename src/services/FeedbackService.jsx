@@ -15,6 +15,16 @@ export const getFeedbacksByOrder = async (orderId) => {
     return response || null
 }
 
+export const getFeedbacksByDesigner = async () => {
+    const response = await axiosClient.post(`/feedback/designer`)
+    return response || null
+}
+
+export const getFeedbacksByGarment = async () => {
+    const response = await axiosClient.post(`/feedback/garment`)
+    return response || null
+}
+
 export const getAllReport = async () => {
     const response = await axiosClient.get(`/feedback/report`)
     return response || null

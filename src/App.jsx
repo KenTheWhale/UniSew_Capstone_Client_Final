@@ -4,6 +4,8 @@ import { lazy, Suspense } from "react";
 import {GoogleOAuthProvider} from "@react-oauth/google";
 import {SnackbarProvider} from 'notistack';
 import {createTheme, CssBaseline, Slide, ThemeProvider} from '@mui/material';
+import DesignerFeedback from "./components/designer/DesignerFeedback.jsx";
+import GarmentFeedback from "./components/garment/GarmentFeedback.jsx";
 
 const WebAppLayout = lazy(() => import("./layouts/ui/WebAppLayout.jsx"));
 const Homepage = lazy(() => import("./components/auth/Homepage.jsx"));
@@ -408,6 +410,14 @@ const router = createBrowserRouter([
                         <DesignerProfile/>
                     </Suspense>
                 )
+            },
+            {
+                path: 'feedbacks',
+                element: (
+                    <Suspense fallback={<LoadingFallback />}>
+                        <DesignerFeedback/>
+                    </Suspense>
+                )
             }
         ]
     },
@@ -448,6 +458,14 @@ const router = createBrowserRouter([
                 element: (
                     <Suspense fallback={<LoadingFallback />}>
                         <MilestoneManagement />
+                    </Suspense>
+                )
+            },
+            {
+                path: 'feedbacks',
+                element: (
+                    <Suspense fallback={<LoadingFallback />}>
+                        <GarmentFeedback />
                     </Suspense>
                 )
             }
