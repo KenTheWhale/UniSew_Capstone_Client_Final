@@ -3,7 +3,6 @@ import {
     Box,
     Button,
     Chip,
-    CircularProgress,
     Container,
     Divider,
     IconButton,
@@ -17,6 +16,7 @@ import {
     Skeleton,
     Snackbar
 } from "@mui/material";
+import { DataLoadingState, ErrorState, EmptyState } from '../ui/LoadingSpinner.jsx';
 import {
     Info as InfoIcon,
     Search as SearchIcon,
@@ -120,77 +120,29 @@ const StatCard = React.memo(({icon, value, label, color, bgColor}) => (
 ));
 
 const LoadingState = React.memo(() => (
-    <Box sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '60vh',
-        flexDirection: 'column',
-        gap: 3
-    }}>
-        <CircularProgress size={60} sx={{color: '#7c3aed'}}/>
-        <Typography variant="h6" sx={{color: '#1e293b', fontWeight: 600}}>
-            Loading Design Requests...
-        </Typography>
-    </Box>
+    <DataLoadingState 
+        text="Loading Design Requests..." 
+        size={60} 
+        color="#7c3aed"
+    />
 ));
 
-const ErrorState = React.memo(({error, onRetry, isRetrying}) => (
-    <Box sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '60vh',
-        flexDirection: 'column',
-        gap: 3
-    }}>
-        <Box sx={{
-            textAlign: 'center',
-            p: 4,
-            borderRadius: 2,
-            border: '1px solid #fecaca',
-            backgroundColor: '#fef2f2',
-            maxWidth: 500
-        }}>
-            <Typography variant="h6" sx={{color: '#dc2626', fontWeight: 600, mb: 2}}>
-                Error Loading Data
-            </Typography>
-            <Typography variant="body1" sx={{color: '#7f1d1d', mb: 3}}>
-                {error}
-            </Typography>
-            <Button
-                variant="contained"
-                onClick={onRetry}
-                disabled={isRetrying}
-                startIcon={isRetrying ? <CircularProgress size={16}/> : <RefreshIcon/>}
-                sx={{
-                    backgroundColor: '#dc2626',
-                    '&:hover': {
-                        backgroundColor: '#b91c1c'
-                    }
-                }}
-            >
-                {isRetrying ? 'Retrying...' : 'Retry'}
-            </Button>
-        </Box>
-    </Box>
+const ErrorStateComponent = React.memo(({error, onRetry, isRetrying}) => (
+    <ErrorState 
+        error={error}
+        onRetry={onRetry}
+        isRetrying={isRetrying}
+        retryText="Retry"
+        errorTitle="Error Loading Data"
+    />
 ));
 
-const EmptyState = React.memo(() => (
-    <Box sx={{
-        textAlign: 'center',
-        py: 8,
-        px: 4
-    }}>
-        <Empty
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={
-                <Typography variant="body1" sx={{color: '#64748b', mt: 2}}>
-                    No pending design requests available
-                </Typography>
-            }
-        />
-    </Box>
+const EmptyStateComponent = React.memo(() => (
+    <EmptyState 
+        title="No pending design requests available"
+        description="There are no pending design requests to display"
+        icon="🎨"
+    />
 ));
 
 const HeaderSection = React.memo(({onRefresh}) => (
@@ -282,7 +234,7 @@ const TableSection = React.memo(({
             </Box>
 
             {filteredDesignRequests.length === 0 ? (
-                <EmptyState/>
+                <EmptyStateComponent/>
             ) : (
                 <Table
                     columns={columns}
@@ -551,7 +503,7 @@ export default function DesignerPendingDesign() {
     }
 
     if (error) {
-        return <ErrorState error={error} onRetry={handleRetry} isRetrying={isRetrying}/>;
+        return <ErrorStateComponent error={error} onRetry={handleRetry} isRetrying={isRetrying}/>;
     }
 
     return (

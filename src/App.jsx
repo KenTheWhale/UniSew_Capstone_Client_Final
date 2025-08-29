@@ -43,40 +43,12 @@ const MilestoneManagement = lazy(() => import("./components/garment/MilestoneMan
 const GarmentPendingOrders = lazy(() => import("./components/garment/GarmentPendingOrders.jsx"));
 const AdminReport = lazy(() => import("./components/admin/AdminReport.jsx"));
 
-const LoadingFallback = () => (
-  <div style={{
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '100vh',
-    backgroundColor: '#f5f5f5',
-    fontFamily: '"Open Sans", sans-serif'
-  }}>
-    <div style={{
-      width: '50px',
-      height: '50px',
-      border: '4px solid #e3e3e3',
-      borderTop: '4px solid #1976d2',
-      borderRadius: '50%',
-      animation: 'spin 1s linear infinite',
-      marginBottom: '20px'
-    }}></div>
-    <div style={{
-      fontSize: '18px',
-      color: '#666',
-      fontWeight: '500'
-    }}>
-      Loading...
-    </div>
-    <style>{`
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-    `}</style>
-  </div>
-);
+import { LoadingProvider, GlobalLoadingOverlay } from './contexts/LoadingContext.jsx';
+
+const LoadingFallback = () => {
+    // Không cần hiển thị loading ở đây nữa vì sẽ dùng GlobalLoadingOverlay
+    return null;
+};
 
 const theme = createTheme({
   typography: {
@@ -459,20 +431,23 @@ function App() {
     const clientID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
     return (
-        <SnackbarProvider
-            maxSnack={3}
-            autoHideDuration={3000}
-            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-            TransitionComponent={Slide}
-            preventDuplicate={true}
-        >
-            <ThemeProvider theme={theme}>
-                <CssBaseline />
-                <GoogleOAuthProvider clientId={clientID}>
-                    <RouterProvider router={router} />
-                </GoogleOAuthProvider>
-            </ThemeProvider>
-        </SnackbarProvider>
+        <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <LoadingProvider>
+                <SnackbarProvider
+                    maxSnack={3}
+                    autoHideDuration={3000}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                    TransitionComponent={Slide}
+                    preventDuplicate={true}
+                >
+                    <GoogleOAuthProvider clientId={clientID}>
+                        <RouterProvider router={router} />
+                        <GlobalLoadingOverlay />
+                    </GoogleOAuthProvider>
+                </SnackbarProvider>
+            </LoadingProvider>
+        </ThemeProvider>
     )
 }
 

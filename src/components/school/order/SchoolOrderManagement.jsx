@@ -5,12 +5,13 @@ import {
     Card,
     CardContent,
     Chip,
-    CircularProgress,
     IconButton,
     Paper,
     Tooltip,
     Typography
 } from '@mui/material';
+import { DataLoadingState, ErrorState, EmptyState } from '../../ui/LoadingSpinner.jsx';
+import { useLoading } from '../../../contexts/LoadingContext.jsx';
 import {
     Add as AddIcon,
     Cancel as CancelIcon,
@@ -67,82 +68,35 @@ const statusTag = (status) => {
 };
 
 const LoadingState = React.memo(() => (
-    <Box sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '60vh',
-        flexDirection: 'column',
-        gap: 3
-    }}>
-        <CircularProgress size={60} sx={{color: '#2e7d32'}}/>
-        <Typography variant="h6" sx={{color: '#1e293b', fontWeight: 600}}>
-            Loading Orders...
-        </Typography>
-    </Box>
+    <DataLoadingState 
+        text="Loading Orders..." 
+        size={60} 
+        color="#2e7d32"
+    />
 ));
 
-const ErrorState = React.memo(({error, onRetry, isRetrying}) => (
-    <Box sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '60vh',
-        flexDirection: 'column',
-        gap: 3
-    }}>
-        <Box sx={{
-            textAlign: 'center',
-            p: 4,
-            borderRadius: 2,
-            border: '1px solid #fecaca',
-            backgroundColor: '#fef2f2',
-            maxWidth: 500
-        }}>
-            <Typography variant="h6" sx={{color: '#dc2626', fontWeight: 600, mb: 2}}>
-                Error Loading Data
-            </Typography>
-            <Typography variant="body1" sx={{color: '#7f1d1d', mb: 3}}>
-                {error}
-            </Typography>
-            <Button
-                variant="contained"
-                onClick={onRetry}
-                disabled={isRetrying}
-                startIcon={isRetrying ? <CircularProgress size={16}/> : <RefreshIcon/>}
-                sx={{
-                    backgroundColor: '#dc2626',
-                    '&:hover': {
-                        backgroundColor: '#b91c1c'
-                    }
-                }}
-            >
-                {isRetrying ? 'Retrying...' : 'Retry'}
-            </Button>
-        </Box>
-    </Box>
+const ErrorStateComponent = React.memo(({error, onRetry, isRetrying}) => (
+    <ErrorState 
+        error={error}
+        onRetry={onRetry}
+        isRetrying={isRetrying}
+        retryText="Retry"
+        errorTitle="Error Loading Data"
+    />
 ));
 
-const EmptyState = React.memo(() => (
-    <Box sx={{
-        textAlign: 'center',
-        py: 8,
-        px: 4
-    }}>
-        <Empty
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={
-                <Typography variant="body1" sx={{color: '#64748b', mt: 2}}>
-                    No orders available
-                </Typography>
-            }
-        />
-    </Box>
+const EmptyStateComponent = React.memo(() => (
+    <EmptyState 
+        title="No orders available"
+        description="There are no orders to display"
+        icon="📦"
+    />
 ));
 
 export default function SchoolOrderList() {
     const navigate = useNavigate();
     const {enqueueSnackbar} = useSnackbar();
+    const { setDataLoading } = useLoading();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -156,7 +110,10 @@ export default function SchoolOrderList() {
 
     const fetchOrders = useCallback(async (showLoading = true) => {
         try {
-            if (showLoading) setLoading(true);
+            if (showLoading) {
+                setLoading(true);
+                setDataLoading(true);
+            }
             setError(null);
             const response = await getOrdersBySchool();
             if (response && response.data) {
@@ -170,6 +127,7 @@ export default function SchoolOrderList() {
             setError('An error occurred while fetching orders');
         } finally {
             setLoading(false);
+            setDataLoading(false);
             setIsRetrying(false);
         }
     }, []);
@@ -555,11 +513,12 @@ export default function SchoolOrderList() {
     ];
 
     if (loading) {
-        return <LoadingState/>;
+        // Không hiển thị loading UI ở đây nữa, sẽ dùng GlobalLoadingOverlay
+        return null;
     }
 
     if (error) {
-        return <ErrorState error={error} onRetry={handleRetry} isRetrying={isRetrying}/>;
+        return <ErrorStateComponent error={error} onRetry={handleRetry} isRetrying={isRetrying}/>;
     }
 
     return (
@@ -868,7 +827,7 @@ export default function SchoolOrderList() {
                     </Box>
 
                     {orders.length === 0 ? (
-                        <EmptyState/>
+                        <EmptyStateComponent/>
                     ) : (
                         <Table
                             columns={columns}

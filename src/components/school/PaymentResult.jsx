@@ -17,6 +17,7 @@ import {parseID} from "../../utils/ParseIDUtil.jsx";
 import {buyExtraRevision, pickQuotation} from "../../services/DesignService.jsx";
 import {approveQuotation, confirmDeliveryOrder} from "../../services/OrderService.jsx";
 import {createDesignTransaction, createDepositTransaction} from "../../services/PaymentService.jsx";
+import {emailType, sendEmail} from "../../services/EmailService.jsx";
 import {useEffect, useState} from 'react';
 
 export default function PaymentResult() {
@@ -119,29 +120,139 @@ export default function PaymentResult() {
     const {quotation, request, serviceFee: designServiceFee, subtotal, totalAmount} = quotationDetails || {};
     const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
 
+    // Helper function to build email data
+    const buildEmailData = (isSuccess, paymentType, amount) => {
+        const userData = localStorage.getItem('user');
+        let userEmail = 'N/A';
+        let userBusinessName = 'N/A';
+        
+        if (userData) {
+            try {
+                const user = JSON.parse(userData);
+                userEmail = user.email || 'N/A';
+                userBusinessName = user.customer.business || 'N/A';
+            } catch (error) {
+                console.error('Error parsing user data from localStorage:', error);
+            }
+        }
+        
+        // Get current date and time
+        const now = new Date();
+        const paymentDate = now.toLocaleDateString('vi-VN', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+        const paymentTime = now.toLocaleTimeString('vi-VN', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        // Determine partner type and name
+        let partnerType, partnerName, itemId;
+        
+        if (paymentType === 'design' || paymentType === 'revision') {
+            partnerType = 'designer';
+            if (paymentType === 'design' && quotationDetails?.quotation?.designer?.customer?.name) {
+                partnerName = quotationDetails.quotation.designer.customer.name;
+            } else if (paymentType === 'revision' && revisionPurchaseDetails?.designerId) {
+                partnerName = revisionPurchaseDetails.designerName || 'N/A';
+            } else {
+                partnerName = 'N/A';
+            }
+            itemId = paymentType === 'design' ? 
+                parseID(quotationDetails?.request?.id, "dr") :
+                parseID(revisionPurchaseDetails?.requestId, "dr");
+        } else if (paymentType === 'order' || paymentType === 'deposit') {
+            partnerType = 'garment factory';
+            if (orderDetails?.quotation?.garment?.customer?.business) {
+                partnerName = orderDetails.quotation.garment.customer.business;
+            } else {
+                partnerName = 'N/A';
+            }
+            itemId = parseID(orderDetails?.order?.id, "ord");
+        }
+        
+        // Format amount to VND format (e.g., 1,000,000)
+        const formatAmountToVND = (amount) => {
+            if (typeof amount === 'number' || !isNaN(amount)) {
+                return parseInt(amount).toLocaleString('vi-VN');
+            }
+            return '0';
+        };
+        
+        return {
+            result: isSuccess ? 'Successfully' : 'Failed',
+            receiverEmail: userEmail,
+            receiverName: userBusinessName,
+            amount: formatAmountToVND(amount),
+            paymentType: paymentType,
+            partnerType: partnerType,
+            partnerName: partnerName,
+            itemId: itemId,
+            paymentDate: paymentDate,
+            paymentTime: paymentTime,
+        };
+    };
+
     const handleSuccessfulPayment = async () => {
         console.log('Processing successful payment');
 
-        if (isDepositPayment && quotationId && orderDetails) {
-            await handleSuccessfulDeposit();
-        } else if (isOrderPayment && quotationId && orderDetails) {
-            await handleSuccessfulOrder();
-        } else if (isRevisionPurchase && revisionPurchaseDetails) {
-            await handleSuccessfulRevision();
-        } else if (quotationDetails) {
-            await handleSuccessfulDesign();
+        try {
+            const emailData = buildEmailData(true, paymentType, parseInt(vnpAmount) / 100);
+            console.log('Sending success email with data:', emailData);
+            const emailResponse = await sendEmail(emailType.PAYMENT, emailData);
+            
+            if (emailResponse && emailResponse.status === 200) {
+                console.log('Success email sent successfully');
+                
+                // Continue with payment logic
+                if (isDepositPayment && quotationId && orderDetails) {
+                    await handleSuccessfulDeposit();
+                } else if (isOrderPayment && quotationId && orderDetails) {
+                    await handleSuccessfulOrder();
+                } else if (isRevisionPurchase && revisionPurchaseDetails) {
+                    await handleSuccessfulRevision();
+                } else if (quotationDetails) {
+                    await handleSuccessfulDesign();
+                }
+            } else {
+                console.error('Email service returned non-200 status:', emailResponse?.status);
+                console.log('Payment logic skipped because email was not sent successfully');
+            }
+        } catch (error) {
+            console.error('Failed to send success email:', error);
+            console.log('Payment logic skipped because email failed');
         }
     };
 
     const handleFailedPayment = async () => {
         console.log('Processing failed payment');
 
-        if (isDepositPayment) {
-            await handleFailedDeposit();
-        } else if (isOrderPayment) {
-            await handleFailedOrder();
-        } else if (quotationDetails) {
-            await handleFailedDesign();
+        // Send failure email FIRST and continue with payment logic only if successful
+        try {
+            const emailData = buildEmailData(false, paymentType, parseInt(vnpAmount) / 100);
+            console.log('Sending failure email with data:', emailData);
+            const emailResponse = await sendEmail(emailType.PAYMENT, emailData);
+            
+            if (emailResponse && emailResponse.status === 200) {
+                console.log('Failure email sent successfully');
+                
+                // Continue with payment logic
+                if (isDepositPayment) {
+                    await handleFailedDeposit();
+                } else if (isOrderPayment) {
+                    await handleFailedOrder();
+                } else if (quotationDetails) {
+                    await handleFailedDesign();
+                }
+            } else {
+                console.error('Email service returned non-200 status:', emailResponse?.status);
+                console.log('Payment logic skipped because email was not sent successfully');
+            }
+        } catch (error) {
+            console.error('Failed to send failure email:', error);
+            console.log('Payment logic skipped because email failed');
         }
     };
 
@@ -479,7 +590,7 @@ export default function PaymentResult() {
                                                                     fontSize: '12px',
                                                                     fontWeight: 'bold'
                                                                 }}>
-                                                                    â‚?
+                                                                    ï¿½?
                                                                 </Typography.Text>
                                                             </Box>
                                                             <Typography.Text style={{
