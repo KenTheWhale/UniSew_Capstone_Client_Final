@@ -17,57 +17,66 @@ import {
     Typography
 } from '@mui/material';
 import {Business, LocationOn, Phone, Receipt} from '@mui/icons-material';
-import {vietnamProvinces} from '../../../../configs/FixedVariables.jsx';
+import {getProvinces, getDistricts} from '../../../../services/ShippingService.jsx';
 
 export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initialData}) {
-    // Parse address from initialData if available
-    const parseAddress = (address) => {
-        if (!address || address === 'N/A') return {province: '', district: '', street: ''};
-
-        // Try to parse address format: "street, district, province"
-        const parts = address.split(',').map(part => part.trim());
-        if (parts.length >= 3) {
-            const street = parts[0];
-            const district = parts[1];
-            const province = parts[2];
-
-            // Find province by name
-            const foundProvince = vietnamProvinces.find(p =>
-                p.name.toLowerCase() === province.toLowerCase()
-            );
-
-            if (foundProvince) {
-                // Find district by name
-                const foundDistrict = foundProvince.districts.find(d =>
-                    d.name.toLowerCase() === district.toLowerCase()
-                );
-
-                if (foundDistrict) {
-                    return {
-                        province: foundProvince.id,
-                        district: foundDistrict.id,
-                        street: street
-                    };
-                }
-            }
-        }
-
-        return {province: '', district: '', street: ''};
-    };
-
-    const parsedAddress = parseAddress(initialData?.address);
-
     const [formData, setFormData] = useState({
         business: initialData?.business || '',
-        province: parsedAddress.province,
-        district: parsedAddress.district,
-        street: parsedAddress.street,
+        province: '',
+        district: '',
+        street: '',
         taxCode: initialData?.taxCode || '',
         phone: initialData?.phone || ''
     });
 
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
+    const [provinces, setProvinces] = useState([]);
+    const [districts, setDistricts] = useState([]);
+    const [loadingProvinces, setLoadingProvinces] = useState(false);
+    const [loadingDistricts, setLoadingDistricts] = useState(false);
+
+    // Fetch provinces on component mount
+    useEffect(() => {
+        const fetchProvinces = async () => {
+            setLoadingProvinces(true);
+            try {
+                const response = await getProvinces();
+                if (response && response.status === 200) {
+                    setProvinces(response.data.data || []);
+                }
+            } catch (error) {
+                console.error('Error fetching provinces:', error);
+            } finally {
+                setLoadingProvinces(false);
+            }
+        };
+
+        fetchProvinces();
+    }, []);
+
+    // Fetch districts when province changes
+    useEffect(() => {
+        if (formData.province) {
+            const fetchDistricts = async () => {
+                setLoadingDistricts(true);
+                try {
+                    const response = await getDistricts(formData.province);
+                    if (response && response.status === 200) {
+                        setDistricts(response.data.data || []);
+                    }
+                } catch (error) {
+                    console.error('Error fetching districts:', error);
+                } finally {
+                    setLoadingDistricts(false);
+                }
+            };
+
+            fetchDistricts();
+        } else {
+            setDistricts([]);
+        }
+    }, [formData.province]);
 
     useEffect(() => {
         if (open) {
@@ -145,10 +154,10 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
             return;
         }
 
-        const selectedProvince = vietnamProvinces.find(p => p.id === formData.province);
-        const selectedDistrict = selectedProvince?.districts.find(d => d.id === formData.district);
+        const selectedProvince = provinces.find(p => p.ProvinceID === formData.province);
+        const selectedDistrict = districts.find(d => d.DistrictID === formData.district);
 
-        const fullAddress = `${formData.street}, ${selectedDistrict?.name}, ${selectedProvince?.name}`;
+        const fullAddress = `${formData.street}, ${selectedDistrict?.DistrictName}, ${selectedProvince?.ProvinceName}`;
 
         const updateData = {
             business: formData.business,
@@ -243,12 +252,20 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                                     value={formData.province}
                                     onChange={(e) => handleInputChange('province', e.target.value)}
                                     label="Province"
-                                    variant='outlined'>
-                                    {vietnamProvinces.map((province) => (
-                                        <MenuItem key={province.id} value={province.id}>
-                                            {province.name}
+                                    variant='outlined'
+                                    disabled={loadingProvinces}>
+                                    {loadingProvinces ? (
+                                        <MenuItem disabled>
+                                            <CircularProgress size={20} sx={{mr: 1}} />
+                                            Loading provinces...
                                         </MenuItem>
-                                    ))}
+                                    ) : (
+                                        provinces.map((province) => (
+                                            <MenuItem key={province.ProvinceID} value={province.ProvinceID}>
+                                                {province.ProvinceName}
+                                            </MenuItem>
+                                        ))
+                                    )}
                                 </Select>
                                 {errors.province && (
                                     <Typography variant="caption" color="error" sx={{mt: 0.5}}>
@@ -259,22 +276,25 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                         </Grid>
 
                         <Grid item xs={12} md={6}>
-                            <FormControl fullWidth error={!!errors.district} disabled={!formData.province}>
+                            <FormControl fullWidth error={!!errors.district} disabled={!formData.province || loadingDistricts}>
                                 <InputLabel>District</InputLabel>
                                 <Select
                                     value={formData.district}
                                     onChange={(e) => handleInputChange('district', e.target.value)}
                                     label="District"
                                     variant='outlined'>
-                                    {formData.province &&
-                                        vietnamProvinces
-                                            .find(p => p.id === formData.province)
-                                            ?.districts.map((district) => (
-                                            <MenuItem key={district.id} value={district.id}>
-                                                {district.name}
+                                    {loadingDistricts ? (
+                                        <MenuItem disabled>
+                                            <CircularProgress size={20} sx={{mr: 1}} />
+                                            Loading districts...
+                                        </MenuItem>
+                                    ) : (
+                                        districts.map((district) => (
+                                            <MenuItem key={district.DistrictID} value={district.DistrictID}>
+                                                {district.DistrictName}
                                             </MenuItem>
                                         ))
-                                    }
+                                    )}
                                 </Select>
                                 {errors.district && (
                                     <Typography variant="caption" color="error" sx={{mt: 0.5}}>
