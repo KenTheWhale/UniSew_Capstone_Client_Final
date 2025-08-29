@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Avatar, Badge, Button, Col, Form, Input, Modal, Row, Tag, Typography} from 'antd';
 import JSZip from 'jszip';
-import { saveAs } from 'file-saver';
+import {saveAs} from 'file-saver';
 import {
     CheckCircleOutlined,
     CheckCircleOutlined as CheckCircleOutlinedIcon,
@@ -93,7 +93,7 @@ const formatCategory = (category) => {
 const downloadDesignAsZip = async (delivery) => {
     try {
         const zip = new JSZip();
-        
+
         // Helper function to fetch image and convert to blob
         const fetchImageAsBlob = async (imageUrl) => {
             try {
@@ -106,7 +106,7 @@ const downloadDesignAsZip = async (delivery) => {
                 return null;
             }
         };
-        
+
         // Group items by gender and category
         const boyItems = delivery.deliveryItems?.filter(item =>
             item.designItem?.gender?.toLowerCase() === 'boy'
@@ -114,38 +114,38 @@ const downloadDesignAsZip = async (delivery) => {
         const girlItems = delivery.deliveryItems?.filter(item =>
             item.designItem?.gender?.toLowerCase() === 'girl'
         ) || [];
-        
+
         // Process Boy uniforms
         if (boyItems.length > 0) {
             const boyFolder = zip.folder("boy");
-            
+
             // Group by category (regular, physical education)
-            const boyRegular = boyItems.filter(item => 
+            const boyRegular = boyItems.filter(item =>
                 item.designItem?.category?.toLowerCase() === 'regular'
             );
-            const boyPE = boyItems.filter(item => 
+            const boyPE = boyItems.filter(item =>
                 item.designItem?.category?.toLowerCase() === 'pe'
             );
-            
+
             // Add regular uniforms
             if (boyRegular.length > 0) {
                 const regularFolder = boyFolder.folder("regular uniform");
-                
+
                 // Group by cloth type (shirt, pants, skirt, etc.)
-                const shirtItems = boyRegular.filter(item => 
+                const shirtItems = boyRegular.filter(item =>
                     item.designItem?.type?.toLowerCase().includes('shirt')
                 );
-                const pantsItems = boyRegular.filter(item => 
+                const pantsItems = boyRegular.filter(item =>
                     item.designItem?.type?.toLowerCase().includes('pant')
                 );
-                const skirtItems = boyRegular.filter(item => 
+                const skirtItems = boyRegular.filter(item =>
                     item.designItem?.type?.toLowerCase().includes('skirt')
                 );
                 const otherItems = boyRegular.filter(item => {
                     const type = item.designItem?.type?.toLowerCase();
                     return !type.includes('shirt') && !type.includes('pant') && !type.includes('skirt');
                 });
-                
+
                 // Add shirt items
                 if (shirtItems.length > 0) {
                     const shirtFolder = regularFolder.folder("shirt");
@@ -165,7 +165,7 @@ const downloadDesignAsZip = async (delivery) => {
                         }
                     }
                 }
-                
+
                 // Add pants items
                 if (pantsItems.length > 0) {
                     const pantsFolder = regularFolder.folder("pants");
@@ -185,7 +185,7 @@ const downloadDesignAsZip = async (delivery) => {
                         }
                     }
                 }
-                
+
                 // Add skirt items
                 if (skirtItems.length > 0) {
                     const skirtFolder = regularFolder.folder("skirt");
@@ -205,7 +205,7 @@ const downloadDesignAsZip = async (delivery) => {
                         }
                     }
                 }
-                
+
                 // Add other items
                 if (otherItems.length > 0) {
                     const otherFolder = regularFolder.folder("other");
@@ -226,26 +226,26 @@ const downloadDesignAsZip = async (delivery) => {
                     }
                 }
             }
-            
+
             // Add physical education uniforms
             if (boyPE.length > 0) {
                 const peFolder = boyFolder.folder("physical education uniform");
-                
+
                 // Group by cloth type (shirt, pants, skirt, etc.)
-                const shirtItems = boyPE.filter(item => 
+                const shirtItems = boyPE.filter(item =>
                     item.designItem?.type?.toLowerCase().includes('shirt')
                 );
-                const pantsItems = boyPE.filter(item => 
+                const pantsItems = boyPE.filter(item =>
                     item.designItem?.type?.toLowerCase().includes('pant')
                 );
-                const skirtItems = boyPE.filter(item => 
+                const skirtItems = boyPE.filter(item =>
                     item.designItem?.type?.toLowerCase().includes('skirt')
                 );
                 const otherItems = boyPE.filter(item => {
                     const type = item.designItem?.type?.toLowerCase();
                     return !type.includes('shirt') && !type.includes('pant') && !type.includes('skirt');
                 });
-                
+
                 // Add shirt items
                 if (shirtItems.length > 0) {
                     const shirtFolder = peFolder.folder("shirt");
@@ -265,7 +265,7 @@ const downloadDesignAsZip = async (delivery) => {
                         }
                     }
                 }
-                
+
                 // Add pants items
                 if (pantsItems.length > 0) {
                     const pantsFolder = peFolder.folder("pants");
@@ -285,7 +285,7 @@ const downloadDesignAsZip = async (delivery) => {
                         }
                     }
                 }
-                
+
                 // Add skirt items
                 if (skirtItems.length > 0) {
                     const skirtFolder = peFolder.folder("skirt");
@@ -305,7 +305,7 @@ const downloadDesignAsZip = async (delivery) => {
                         }
                     }
                 }
-                
+
                 // Add other items
                 if (otherItems.length > 0) {
                     const otherFolder = peFolder.folder("other");
@@ -327,38 +327,38 @@ const downloadDesignAsZip = async (delivery) => {
                 }
             }
         }
-        
+
         // Process Girl uniforms
         if (girlItems.length > 0) {
             const girlFolder = zip.folder("girl");
-            
+
             // Group by category (regular, physical education)
-            const girlRegular = girlItems.filter(item => 
+            const girlRegular = girlItems.filter(item =>
                 item.designItem?.category?.toLowerCase() === 'regular'
             );
-            const girlPE = girlItems.filter(item => 
+            const girlPE = girlItems.filter(item =>
                 item.designItem?.category?.toLowerCase() === 'pe'
             );
-            
+
             // Add regular uniforms
             if (girlRegular.length > 0) {
                 const regularFolder = girlFolder.folder("regular uniform");
-                
+
                 // Group by cloth type (shirt, pants, skirt, etc.)
-                const shirtItems = girlRegular.filter(item => 
+                const shirtItems = girlRegular.filter(item =>
                     item.designItem?.type?.toLowerCase().includes('shirt')
                 );
-                const pantsItems = girlRegular.filter(item => 
+                const pantsItems = girlRegular.filter(item =>
                     item.designItem?.type?.toLowerCase().includes('pant')
                 );
-                const skirtItems = girlRegular.filter(item => 
+                const skirtItems = girlRegular.filter(item =>
                     item.designItem?.type?.toLowerCase().includes('skirt')
                 );
                 const otherItems = girlRegular.filter(item => {
                     const type = item.designItem?.type?.toLowerCase();
                     return !type.includes('shirt') && !type.includes('pant') && !type.includes('skirt');
                 });
-                
+
                 // Add shirt items
                 if (shirtItems.length > 0) {
                     const shirtFolder = regularFolder.folder("shirt");
@@ -378,7 +378,7 @@ const downloadDesignAsZip = async (delivery) => {
                         }
                     }
                 }
-                
+
                 // Add pants items
                 if (pantsItems.length > 0) {
                     const pantsFolder = regularFolder.folder("pants");
@@ -398,7 +398,7 @@ const downloadDesignAsZip = async (delivery) => {
                         }
                     }
                 }
-                
+
                 // Add skirt items
                 if (skirtItems.length > 0) {
                     const skirtFolder = regularFolder.folder("skirt");
@@ -418,7 +418,7 @@ const downloadDesignAsZip = async (delivery) => {
                         }
                     }
                 }
-                
+
                 // Add other items
                 if (otherItems.length > 0) {
                     const otherFolder = regularFolder.folder("other");
@@ -439,26 +439,26 @@ const downloadDesignAsZip = async (delivery) => {
                     }
                 }
             }
-            
+
             // Add physical education uniforms
             if (girlPE.length > 0) {
                 const peFolder = girlFolder.folder("physical education uniform");
-                
+
                 // Group by cloth type (shirt, pants, skirt, etc.)
-                const shirtItems = girlPE.filter(item => 
+                const shirtItems = girlPE.filter(item =>
                     item.designItem?.type?.toLowerCase().includes('shirt')
                 );
-                const pantsItems = girlPE.filter(item => 
+                const pantsItems = girlPE.filter(item =>
                     item.designItem?.type?.toLowerCase().includes('pant')
                 );
-                const skirtItems = girlPE.filter(item => 
+                const skirtItems = girlPE.filter(item =>
                     item.designItem?.type?.toLowerCase().includes('skirt')
                 );
                 const otherItems = girlPE.filter(item => {
                     const type = item.designItem?.type?.toLowerCase();
                     return !type.includes('shirt') && !type.includes('pant') && !type.includes('skirt');
                 });
-                
+
                 // Add shirt items
                 if (shirtItems.length > 0) {
                     const shirtFolder = peFolder.folder("shirt");
@@ -478,7 +478,7 @@ const downloadDesignAsZip = async (delivery) => {
                         }
                     }
                 }
-                
+
                 // Add pants items
                 if (pantsItems.length > 0) {
                     const pantsFolder = peFolder.folder("pants");
@@ -498,7 +498,7 @@ const downloadDesignAsZip = async (delivery) => {
                         }
                     }
                 }
-                
+
                 // Add skirt items
                 if (skirtItems.length > 0) {
                     const skirtFolder = peFolder.folder("skirt");
@@ -518,7 +518,7 @@ const downloadDesignAsZip = async (delivery) => {
                         }
                     }
                 }
-                
+
                 // Add other items
                 if (otherItems.length > 0) {
                     const otherFolder = peFolder.folder("other");
@@ -540,12 +540,12 @@ const downloadDesignAsZip = async (delivery) => {
                 }
             }
         }
-        
+
         // Generate and download ZIP file
         const content = await zip.generateAsync({type: "blob"});
         const fileName = `${delivery.name}_UniSew.zip`;
         saveAs(content, fileName);
-        
+
         return true;
     } catch (error) {
         console.error('Error creating ZIP file:', error);
@@ -609,7 +609,7 @@ export function UseDesignChatMessages(roomId) {
         if (!roomId) return;
         const email = auth.currentUser?.email || "designer@unknown";
         const displayName = auth.currentUser?.displayName || "Designer";
-        let cookie = getAccessCookie("access")
+        let cookie = getAccessCookie()
         if (!cookie) {
             return false;
         }
@@ -664,7 +664,6 @@ export function UseDesignChatMessages(roomId) {
 
     return {chatMessages, unreadCount, sendMessage, markAsRead};
 }
-
 
 function DeliveryDetailModal({visible, onCancel, delivery}) {
     if (!delivery) return null;
@@ -802,7 +801,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                                     </Tag>
                                 </Box>
                             </Box>
-                            
+
                             {/* Download Design Button */}
                             <Box sx={{
                                 mt: 3,
@@ -811,7 +810,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                             }}>
                                 <Button
                                     type="primary"
-                                    icon={<DownloadOutlined />}
+                                    icon={<DownloadOutlined/>}
                                     onClick={async () => {
                                         try {
                                             await downloadDesignAsZip(delivery);
@@ -2382,22 +2381,22 @@ export default function SchoolChat() {
                                                 alignItems: 'center',
                                                 gap: 2
                                             }}>
-                                            <Box sx={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                minWidth: 32,
-                                                height: 32,
-                                                px: 2,
-                                                borderRadius: '16px',
-                                                background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
-                                                color: 'white',
-                                                fontSize: '14px',
-                                                fontWeight: 600,
-                                                boxShadow: '0 2px 8px rgba(46, 125, 50, 0.3)',
-                                                border: '2px solid rgba(255, 255, 255, 0.2)'
-                                            }}>
-                                                Amount: {designDeliveries.length}
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    minWidth: 32,
+                                                    height: 32,
+                                                    px: 2,
+                                                    borderRadius: '16px',
+                                                    background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
+                                                    color: 'white',
+                                                    fontSize: '14px',
+                                                    fontWeight: 600,
+                                                    boxShadow: '0 2px 8px rgba(46, 125, 50, 0.3)',
+                                                    border: '2px solid rgba(255, 255, 255, 0.2)'
+                                                }}>
+                                                    Amount: {designDeliveries.length}
                                                 </Box>
                                                 {requestData?.revisionTime === 0 && requestData?.status !== 'completed' && (
                                                     <Button
@@ -2451,21 +2450,21 @@ export default function SchoolChat() {
                                                 </Typography.Text>
                                             </Box>
                                         ) : designDeliveries.length === 0 ? (
-                                                    <Box sx={{
-                                                        display: 'flex',
-                                                        justifyContent: 'center',
-                                                        alignItems: 'center',
-                                                        height: '100%',
-                                                        flexDirection: 'column',
-                                                        gap: 2,
-                                                        color: '#64748b'
-                                                    }}>
-                                                        <FileTextOutlined style={{fontSize: '48px', opacity: 0.5}}/>
-                                                        <Typography.Text type="secondary" style={{fontSize: '14px'}}>
-                                                            No deliveries yet. Designer will add deliveries here.
-                                                        </Typography.Text>
-                                                    </Box>
-                                                ) : (
+                                            <Box sx={{
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                height: '100%',
+                                                flexDirection: 'column',
+                                                gap: 2,
+                                                color: '#64748b'
+                                            }}>
+                                                <FileTextOutlined style={{fontSize: '48px', opacity: 0.5}}/>
+                                                <Typography.Text type="secondary" style={{fontSize: '14px'}}>
+                                                    No deliveries yet. Designer will add deliveries here.
+                                                </Typography.Text>
+                                            </Box>
+                                        ) : (
                                             <Box sx={{
                                                 display: 'grid',
                                                 gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
@@ -2620,7 +2619,7 @@ export default function SchoolChat() {
                                         backgroundColor: 'linear-gradient(135deg, #fff5f0 0%, #ffe4d6 100%)',
                                         position: 'relative'
                                     }}>
-                                            <Box sx={{
+                                        <Box sx={{
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'space-between'
@@ -2629,17 +2628,17 @@ export default function SchoolChat() {
                                                 <Box sx={{
                                                     width: 40,
                                                     height: 40,
-                                                borderRadius: '50%',
-                                                background: 'linear-gradient(135deg, #ff6b35, #ff8c42)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                color: 'white',
+                                                    borderRadius: '50%',
+                                                    background: 'linear-gradient(135deg, #ff6b35, #ff8c42)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    color: 'white',
                                                     fontSize: '16px',
-                                                boxShadow: '0 4px 12px rgba(255, 107, 53, 0.3)'
-                                            }}>
-                                                <EditOutlined/>
-                                            </Box>
+                                                    boxShadow: '0 4px 12px rgba(255, 107, 53, 0.3)'
+                                                }}>
+                                                    <EditOutlined/>
+                                                </Box>
                                                 <Box>
                                                     <Typography.Title level={4}
                                                                       style={{
@@ -2647,17 +2646,17 @@ export default function SchoolChat() {
                                                                           color: '#ff6b35',
                                                                           fontWeight: 600
                                                                       }}>
-                                                Revision Requests
-                                            </Typography.Title>
+                                                        Revision Requests
+                                                    </Typography.Title>
                                                     <Typography.Text type="secondary"
                                                                      style={{fontSize: '12px', color: '#ff6b35'}}>
                                                         Track your revision requests
                                                     </Typography.Text>
-                                        </Box>
-                                    </Box>
-                                    <Box sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
+                                                </Box>
+                                            </Box>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
                                                 justifyContent: 'center',
                                                 minWidth: 32,
                                                 height: 32,
@@ -2727,54 +2726,54 @@ export default function SchoolChat() {
                                             }}>
                                                 {
                                                     revisionRequests.map((revision, index) => (
-                                                    <Paper
-                                                        key={revision.id}
-                                                        elevation={0}
-                                                        sx={{
+                                                        <Paper
+                                                            key={revision.id}
+                                                            elevation={0}
+                                                            sx={{
                                                                 p: 2.5,
-                                                            border: '1px solid #e2e8f0',
+                                                                border: '1px solid #e2e8f0',
                                                                 borderRadius: 3,
-                                                            backgroundColor: 'white',
-                                                            transition: 'all 0.3s ease',
+                                                                backgroundColor: 'white',
+                                                                transition: 'all 0.3s ease',
                                                                 height: 'fit-content',
                                                                 minHeight: '120px',
                                                                 display: 'flex',
                                                                 flexDirection: 'column',
-                                                            '&:hover': {
-                                                                borderColor: '#ff6b35',
+                                                                '&:hover': {
+                                                                    borderColor: '#ff6b35',
                                                                     boxShadow: '0 4px 12px rgba(255, 107, 53, 0.15)',
                                                                     transform: 'translateY(-2px)'
-                                                            }
-                                                        }}
-                                                    >
-                                                        <Box sx={{
-                                                            display: 'flex',
-                                                            justifyContent: 'space-between',
-                                                            alignItems: 'flex-start',
+                                                                }
+                                                            }}
+                                                        >
+                                                            <Box sx={{
+                                                                display: 'flex',
+                                                                justifyContent: 'space-between',
+                                                                alignItems: 'flex-start',
                                                                 mb: 2,
                                                                 flex: 1
-                                                        }}>
-                                                            <Box sx={{flex: 1}}>
-                                                                <Typography.Title level={5}
+                                                            }}>
+                                                                <Box sx={{flex: 1}}>
+                                                                    <Typography.Title level={5}
                                                                                       style={{
                                                                                           margin: 0,
                                                                                           color: '#1e293b'
                                                                                       }}>
-                                                                    Revision #{index + 1}
-                                                                </Typography.Title>
-                                                                <Typography.Text type="secondary"
-                                                                                 style={{fontSize: '12px'}}>
-                                                                    {new Date(revision.requestDate).toLocaleDateString('vi-VN', {
-                                                                        day: '2-digit',
-                                                                        month: '2-digit',
-                                                                        year: 'numeric'
-                                                                    })}
-                                                                </Typography.Text>
+                                                                        Revision #{index + 1}
+                                                                    </Typography.Title>
+                                                                    <Typography.Text type="secondary"
+                                                                                     style={{fontSize: '12px'}}>
+                                                                        {new Date(revision.requestDate).toLocaleDateString('vi-VN', {
+                                                                            day: '2-digit',
+                                                                            month: '2-digit',
+                                                                            year: 'numeric'
+                                                                        })}
+                                                                    </Typography.Text>
+                                                                </Box>
+                                                                <Tag color="orange" style={{margin: 0}}>
+                                                                    {parseID(revision.deliveryId, 'rr')}
+                                                                </Tag>
                                                             </Box>
-                                                            <Tag color="orange" style={{margin: 0}}>
-                                                                {parseID(revision.deliveryId, 'rr')}
-                                                            </Tag>
-                                                        </Box>
 
                                                             <Box sx={{
                                                                 display: 'flex',
@@ -2783,9 +2782,9 @@ export default function SchoolChat() {
                                                                 justifyContent: 'center',
                                                                 mt: 'auto'
                                                             }}>
-                                                        <Typography.Text style={{
-                                                            fontSize: '13px',
-                                                            color: '#475569',
+                                                                <Typography.Text style={{
+                                                                    fontSize: '13px',
+                                                                    color: '#475569',
                                                                     lineHeight: 1.5,
                                                                     display: '-webkit-box',
                                                                     WebkitLineClamp: 2,
@@ -2793,18 +2792,18 @@ export default function SchoolChat() {
                                                                     overflow: 'hidden',
                                                                     textOverflow: 'ellipsis',
                                                                     mb: 1
-                                                        }}>
-                                                            {revision.note}
-                                                        </Typography.Text>
-                                                            <Button
-                                                                size="small"
-                                                                icon={<EyeOutlined/>}
-                                                                onClick={() => {
-                                                                    const delivery = designDeliveries.find(d => d.id === revision.deliveryId);
-                                                                    if (delivery) {
-                                                                        handleOpenDeliveryDetailModal(delivery);
-                                                                    }
-                                                                }}
+                                                                }}>
+                                                                    {revision.note}
+                                                                </Typography.Text>
+                                                                <Button
+                                                                    size="small"
+                                                                    icon={<EyeOutlined/>}
+                                                                    onClick={() => {
+                                                                        const delivery = designDeliveries.find(d => d.id === revision.deliveryId);
+                                                                        if (delivery) {
+                                                                            handleOpenDeliveryDetailModal(delivery);
+                                                                        }
+                                                                    }}
                                                                     style={{
                                                                         borderRadius: '8px',
                                                                         width: '100%',
@@ -2815,11 +2814,11 @@ export default function SchoolChat() {
                                                                         fontWeight: 600,
                                                                         boxShadow: '0 2px 8px rgba(255, 107, 53, 0.2)'
                                                                     }}
-                                                            >
-                                                                View Delivery
-                                                            </Button>
-                                                        </Box>
-                                                    </Paper>
+                                                                >
+                                                                    View Delivery
+                                                                </Button>
+                                                            </Box>
+                                                        </Paper>
                                                     ))
                                                 }
                                             </Box>
@@ -3152,13 +3151,13 @@ export default function SchoolChat() {
                                         <Box
                                             ref={emojiPickerRef}
                                             sx={{
-                                            position: 'absolute',
-                                            bottom: '46px',
+                                                position: 'absolute',
+                                                bottom: '46px',
                                                 left: 0,
-                                            zIndex: 10,
-                                            borderRadius: '8px',
-                                            overflow: 'hidden',
-                                            boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+                                                zIndex: 10,
+                                                borderRadius: '8px',
+                                                overflow: 'hidden',
+                                                boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
                                             }}
                                         >
                                             <EmojiPicker onEmojiClick={onEmojiClick} height={300} width={280}/>

@@ -174,7 +174,7 @@ export function UseDesignerChatMessages(roomId) {
         const email = auth.currentUser?.email || "designer@unknown";
         const displayName = auth.currentUser?.displayName || "Designer";
 
-        let cookie = getAccessCookie()
+        let cookie = await getAccessCookie()
         if (!cookie) {
             return false;
         }
