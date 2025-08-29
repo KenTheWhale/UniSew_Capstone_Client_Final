@@ -16,7 +16,7 @@ import {
     Stepper,
     TextField,
     Typography,
-    Avatar
+    Avatar, CircularProgress
 } from '@mui/material';
 import { InlineLoading } from '../ui/LoadingSpinner.jsx';
 import {

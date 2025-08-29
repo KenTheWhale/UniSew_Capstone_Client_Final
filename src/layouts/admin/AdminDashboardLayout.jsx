@@ -1,28 +1,12 @@
 import React, {useEffect, useMemo, useState} from "react";
 import {Outlet, useLocation, useNavigate} from "react-router-dom";
-import {
-    AppBar, Avatar, Box, CssBaseline, Divider, List, ListItem, ListItemButton,
-    ListItemIcon, ListItemText, Toolbar, Typography, Badge, Chip, Popover
-} from "@mui/material";
-import {
-    AccountCircle,
-    Dashboard,
-    People,
-    Receipt,
-    Settings,
-    Logout,
-    AdminPanelSettings,
-    Assessment,
-    Business,
-    School,
-    DesignServices
-} from "@mui/icons-material";
+import {AppBar, Avatar, Badge, Box, CssBaseline, Divider, Popover, Toolbar, Typography} from "@mui/material";
+import {AccountCircle, AdminPanelSettings, Assessment, Logout, People, Receipt} from "@mui/icons-material";
 import {Tag} from "antd";
 import {signout} from "../../services/AccountService.jsx";
 import {enqueueSnackbar} from "notistack";
-import Bell from "../../components/ui/Bell.jsx";
 
-function Navbar({userObj, activeMenu, navigate}) {
+function Navbar({activeMenu, navigate}) {
     return (
         <Box
             sx={{
@@ -171,31 +155,7 @@ function Navbar({userObj, activeMenu, navigate}) {
                         </Box>
                     </Box>
 
-                    <Box
-                        sx={{
-                            borderRadius: 2,
-                            mx: 1,
-                            my: 0.5,
-                            color: activeMenu === 'requests' ? "#FFFFFF" : "#495057",
-                            p: 2,
-                            cursor: "pointer",
-                            transition: "all 0.3s ease",
-                            background: activeMenu === 'requests' ? "linear-gradient(135deg, #dc3545 0%, #c82333 100%)" : "transparent",
-                            "&:hover": {
-                                background: "linear-gradient(135deg, #dc3545 0%, #c82333 100%)",
-                                color: "#FFFFFF",
-                                transform: "translateY(-1px)",
-                            },
-                        }}
-                        onClick={() => navigate("/admin/requests")}
-                    >
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                            <AccountCircle sx={{ color: "inherit", fontSize: 20 }} />
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                Account Requests
-                            </Typography>
-                        </Box>
-                    </Box>
+
                 </Box>
             </Box>
         </Box>
