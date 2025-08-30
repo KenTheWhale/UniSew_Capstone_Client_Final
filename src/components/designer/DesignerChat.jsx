@@ -46,7 +46,7 @@ import {
     where,
     writeBatch
 } from 'firebase/firestore';
-import {db} from "../../configs/FirebaseConfig.jsx";
+import {auth, db} from "../../configs/FirebaseConfig.jsx";
 import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
 import {GiSkirt} from "react-icons/gi";
 import DisplayImage from '../ui/DisplayImage.jsx';
@@ -83,11 +83,9 @@ const getItemIcon = (itemType) => {
 };
 
 
-export function UseDesignerChatMessages(roomId, currentUserEmail) {
+export function UseDesignerChatMessages(roomId, userInfo) {
     const [chatMessages, setChatMessages] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
-
-    const me = currentUserEmail || "";
 
     useEffect(() => {
         if (!roomId) return;
@@ -109,7 +107,12 @@ export function UseDesignerChatMessages(roomId, currentUserEmail) {
             let count = 0;
             snap.forEach((d) => {
                 const data = d.data();
-                if (data.senderEmail !== me) count++;
+                if (userInfo && data.userId !== userInfo.id) {
+                    count++;
+                } else if (!userInfo) {
+                    // Fallback: count all unread messages if userInfo not available
+                    count++;
+                }
             });
             setUnreadCount(count);
         });
@@ -118,19 +121,19 @@ export function UseDesignerChatMessages(roomId, currentUserEmail) {
             unsubAll();
             unsubUnread();
         };
-    }, [roomId, me]);
+    }, [roomId, userInfo]);
 
     const sendMessage = async (textOrPayload) => {
         if (!roomId) return;
-
+        console.log("Auth: ", auth)
+        console.log("Auth user: ", auth.currentUser)
 
         let cookie = await getAccessCookie()
         if (!cookie) {
             return false;
         }
         const accountId = cookie.id;
-        const email = cookie.email || "designer@unknown";
-        const displayName = cookie.email || "Designer";
+        const userId = cookie.id; // Use id as userId
         const payload =
             typeof textOrPayload === "string"
                 ? {text: textOrPayload}
@@ -139,8 +142,7 @@ export function UseDesignerChatMessages(roomId, currentUserEmail) {
         await addDoc(collection(db, "messages"), {
             ...payload,
             createdAt: serverTimestamp(),
-            user: displayName,
-            senderEmail: email,
+            userId: userId, // Save userId instead of user and senderEmail
             accountId: accountId ? accountId : 0,
             room: roomId,
             read: false,
@@ -155,6 +157,12 @@ export function UseDesignerChatMessages(roomId, currentUserEmail) {
 
     const markAsRead = async () => {
         if (!roomId) return;
+        
+        // Get current user info for comparison
+        let cookie = await getAccessCookie();
+        if (!cookie) return;
+        const currentUserId = cookie.id;
+        
         const q = query(
             collection(db, "messages"),
             where("room", "==", roomId),
@@ -167,7 +175,7 @@ export function UseDesignerChatMessages(roomId, currentUserEmail) {
         let count = 0;
         snap.forEach((d) => {
             const data = d.data();
-            if (data.senderEmail !== me) {
+            if (data.userId !== currentUserId) {
                 batch.update(doc(db, "messages", d.id), {
                     read: true,
                     readAt: serverTimestamp(),
@@ -1785,7 +1793,9 @@ function DeliverySubmissionModal({
                                                                 sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
                                                                 <DisplayImage
                                                                     imageUrl={uploadedFiles[`front-${item.__index}`]}
-                                                                    alt="Front Design" width="120px" height="120px"/>
+                                                                    alt="Front Design"
+                                                                    width="120px"
+                                                                    height="120px"/>
                                                             </Box>
                                                         )}
                                                     </Box>
@@ -1847,7 +1857,9 @@ function DeliverySubmissionModal({
                                                                 sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
                                                                 <DisplayImage
                                                                     imageUrl={uploadedFiles[`back-${item.__index}`]}
-                                                                    alt="Back Design" width="120px" height="120px"/>
+                                                                    alt="Back Design"
+                                                                    width="120px"
+                                                                    height="120px"/>
                                                             </Box>
                                                         )}
                                                     </Box>
@@ -2005,7 +2017,9 @@ function DeliverySubmissionModal({
                                                                 sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
                                                                 <DisplayImage
                                                                     imageUrl={uploadedFiles[`front-${item.__index}`]}
-                                                                    alt="Front Design" width="120px" height="120px"/>
+                                                                    alt="Front Design"
+                                                                    width="120px"
+                                                                    height="120px"/>
                                                             </Box>
                                                         )}
                                                     </Box>
@@ -2067,7 +2081,9 @@ function DeliverySubmissionModal({
                                                                 sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
                                                                 <DisplayImage
                                                                     imageUrl={uploadedFiles[`back-${item.__index}`]}
-                                                                    alt="Back Design" width="120px" height="120px"/>
+                                                                    alt="Back Design"
+                                                                    width="120px"
+                                                                    height="120px"/>
                                                             </Box>
                                                         )}
                                                     </Box>
@@ -2207,7 +2223,9 @@ function DeliverySubmissionModal({
                                                                 sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
                                                                 <DisplayImage
                                                                     imageUrl={uploadedFiles[`front-${item.__index}`]}
-                                                                    alt="Front Design" width="120px" height="120px"/>
+                                                                    alt="Front Design"
+                                                                    width="120px"
+                                                                    height="120px"/>
                                                             </Box>
                                                         )}
                                                     </Box>
@@ -2269,7 +2287,9 @@ function DeliverySubmissionModal({
                                                                 sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
                                                                 <DisplayImage
                                                                     imageUrl={uploadedFiles[`back-${item.__index}`]}
-                                                                    alt="Back Design" width="120px" height="120px"/>
+                                                                    alt="Back Design"
+                                                                    width="120px"
+                                                                    height="120px"/>
                                                             </Box>
                                                         )}
                                                     </Box>
@@ -2324,6 +2344,7 @@ export default function DesignerChat() {
     const [loadingRevisionRequests, setLoadingRevisionRequests] = useState(false);
     const [finalDelivery, setFinalDelivery] = useState(null);
     const [isFinalDesignSet, setIsFinalDesignSet] = useState(false);
+    const [userInfo, setUserInfo] = useState(null);
     const roomId = requestData?.id;
     const [newMessage, setNewMessage] = useState('');
     const [isChatOpen, setIsChatOpen] = useState(false);
@@ -2331,9 +2352,31 @@ export default function DesignerChat() {
     const schoolName = requestData?.school?.business || 'School';
     const [isOpenButtonHover, setIsOpenButtonHover] = useState(false);
     const emojiPickerRef = useRef(null);
-    const [currentUserEmail, setCurrentUserEmail] = useState("");
 
-    const {chatMessages, unreadCount, sendMessage, markAsRead} = UseDesignerChatMessages(roomId, currentUserEmail);
+    const {chatMessages, unreadCount, sendMessage, markAsRead} = UseDesignerChatMessages(roomId, userInfo);
+    
+    // Get user info from cookie instead of Firebase auth
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+            try {
+                const userData = await getAccessCookie();
+                if (userData) {
+                    setUserInfo(userData);
+                } else {
+                    console.warn("No user data found in cookie");
+                }
+            } catch (error) {
+                console.error("Error fetching user info:", error);
+            }
+        };
+        
+        fetchUserInfo();
+        
+        // Set up interval to refresh user info periodically (every 5 minutes)
+        const interval = setInterval(fetchUserInfo, 5 * 60 * 1000);
+        
+        return () => clearInterval(interval);
+    }, []);
 
     useEffect(() => {
         if (isChatOpen) markAsRead();
@@ -2418,17 +2461,6 @@ export default function DesignerChat() {
         } else {
             window.location.href = '/designer/requests';
         }
-    }, []);
-
-    // Effect để lấy thông tin user từ API
-    useEffect(() => {
-        const getUserInfo = async () => {
-            const cookie = await getAccessCookie();
-            if (cookie) {
-                setCurrentUserEmail(cookie.email || "");
-            }
-        };
-        getUserInfo();
     }, []);
 
     useEffect(() => {
@@ -3327,7 +3359,7 @@ export default function DesignerChat() {
                                 }}>
                                     <MessageOutlined style={{fontSize: '36px', marginBottom: '12px'}}/>
                                     <Typography.Text type="secondary" style={{fontSize: '14px'}}>
-                                        No messages yet. Start the conversation!
+                                        {!userInfo ? 'Loading user info...' : 'No messages yet. Start the conversation!'}
                                     </Typography.Text>
                                 </Box>
                             ) : (
@@ -3335,7 +3367,7 @@ export default function DesignerChat() {
                                     {chatMessages.map((msg, index) => (
                                         <Box key={msg.id || index} sx={{
                                             display: 'flex',
-                                            justifyContent: msg.senderEmail === currentUserEmail ? 'flex-end' : 'flex-start'
+                                            justifyContent: msg.userId === userInfo?.id ? 'flex-end' : 'flex-start'
                                         }}>
                                             <Box sx={{
                                                 display: 'flex',
@@ -3343,22 +3375,22 @@ export default function DesignerChat() {
                                                 gap: 0.5,
                                                 maxWidth: '80%'
                                             }}>
-                                                {msg.senderEmail !== currentUserEmail && (
+                                                {msg.userId !== userInfo?.id && (
                                                     <Avatar size="small" style={{backgroundColor: '#1976d2'}}
                                                             icon={<BankOutlined/>}/>
                                                 )}
                                                 <Box sx={{
                                                     p: 1.5,
                                                     borderRadius: 3,
-                                                    backgroundColor: msg.senderEmail === currentUserEmail ? '#1976d2' : '#ffffff',
-                                                    background: msg.senderEmail === currentUserEmail ? 'linear-gradient(135deg, #1976d2, #42a5f5)' : 'linear-gradient(135deg, #ffffff, #f8fafc)',
-                                                    color: msg.senderEmail === currentUserEmail ? 'white' : '#1e293b',
-                                                    border: msg.senderEmail !== currentUserEmail ? '1px solid #e2e8f0' : 'none',
-                                                    boxShadow: msg.senderEmail === currentUserEmail ? '0 2px 8px rgba(25, 118, 210, 0.3)' : '0 1px 4px rgba(0,0,0,0.1)'
+                                                    backgroundColor: msg.userId === userInfo?.id ? '#1976d2' : '#ffffff',
+                                                    background: msg.userId === userInfo?.id ? 'linear-gradient(135deg, #1976d2, #42a5f5)' : 'linear-gradient(135deg, #ffffff, #f8fafc)',
+                                                    color: msg.userId === userInfo?.id ? 'white' : '#1e293b',
+                                                    border: msg.userId !== userInfo?.id ? '1px solid #e2e8f0' : 'none',
+                                                    boxShadow: msg.userId === userInfo?.id ? '0 2px 8px rgba(25, 118, 210, 0.3)' : '0 1px 4px rgba(0,0,0,0.1)'
                                                 }}>
                                                     <Typography.Text style={{
                                                         fontSize: '10px',
-                                                        color: msg.senderEmail === currentUserEmail ? 'rgba(255,255,255,0.8)' : '#94a3b8'
+                                                        color: msg.userId === userInfo?.id ? 'rgba(255,255,255,0.8)' : '#94a3b8'
                                                     }}>
                                                         {msg.createdAt?.seconds ? new Date(msg.createdAt.seconds * 1000).toLocaleString() : ''}
                                                     </Typography.Text>
@@ -3366,13 +3398,13 @@ export default function DesignerChat() {
                                                         <Typography.Text style={{
                                                             fontSize: '14px',
                                                             display: 'block',
-                                                            color: (msg.senderEmail === currentUserEmail) ? 'white' : '#1e293b'
+                                                            color: (msg.userId === userInfo?.id) ? 'white' : '#1e293b'
                                                         }}>
                                                             {msg.text}
                                                         </Typography.Text>
                                                     )}
                                                 </Box>
-                                                {msg.senderEmail === currentUserEmail && (
+                                                {msg.userId === userInfo?.id && (
                                                     <Avatar size="small" style={{backgroundColor: '#52c41a'}}
                                                             icon={<UserOutlined/>}/>
                                                 )}
@@ -3392,11 +3424,11 @@ export default function DesignerChat() {
                                 <Box sx={{flex: 1, position: 'relative'}}>
                                     <Input
                                         size="large"
-                                        placeholder="Type your message..."
+                                        placeholder={!userInfo ? 'Loading user info...' : 'Type your message...'}
                                         value={newMessage}
                                         onChange={(e) => setNewMessage(e.target.value)}
                                         onPressEnter={handleSendMessage}
-                                        disabled={isViewOnly}
+                                        disabled={isViewOnly || !userInfo}
                                         style={{
                                             borderRadius: '24px',
                                             padding: '14px 18px',
