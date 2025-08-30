@@ -71,33 +71,32 @@ const DesignerCard = React.memo(({ designer, isSelected, onSelect, onViewProfile
         <Paper
             elevation={0}
             sx={{
-                p: 2.5,
-                border: '1px solid #e2e8f0',
+                p: 3,
+                border: isSelected ? '2px solid #2e7d32' : '1px solid #e2e8f0',
                 borderRadius: 3,
-                background: 'linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.5) 100%)',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-                transition: 'transform .25s ease, box-shadow .25s ease, border-color .25s ease',
+                background: 'white',
+                transition: 'all 0.2s ease',
                 cursor: 'pointer',
-                minHeight: 240,
-                boxShadow: '0 10px 30px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.6)',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
                 position: 'relative',
                 overflow: 'hidden',
                 '&:hover': {
-                    borderColor: '#e2e8f0',
-                    boxShadow: '0 18px 40px rgba(0,0,0,0.18)',
-                    transform: 'translateY(-3px) scale(1.01)'
+                    borderColor: isSelected ? '#2e7d32' : '#1976d2',
+                    boxShadow: '0 8px 25px rgba(0,0,0,0.12)',
+                    transform: 'translateY(-2px)'
                 },
                 '& .profile-btn': {
                     position: 'absolute',
-                    top: 12,
-                    right: 12,
+                    top: 16,
+                    right: 16,
                     zIndex: 2
                 },
                 '& .selected-badge': {
                     position: 'absolute',
-                    top: 48,
-                    right: 12,
+                    top: 16,
+                    left: 16,
                     zIndex: 2
                 }
             }}
@@ -107,103 +106,259 @@ const DesignerCard = React.memo(({ designer, isSelected, onSelect, onViewProfile
             role="button"
             aria-label={`Select quotation from ${designer.designer.customer.name}`}
         >
+            {/* Header Section */}
+            <Box sx={{ mb: 2.5 }}>
+                {/* Action Buttons */}
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+                    <Tooltip title="View Profile">
+                        <IconButton 
+                            className="profile-btn" 
+                            onClick={e => { e.stopPropagation(); onViewProfile(designer.designer); }} 
+                            size="small" 
+                            sx={{ 
+                                bgcolor: '#f8fafc', 
+                                border: '1px solid #e2e8f0',
+                                '&:hover': { 
+                                    bgcolor: '#1976d2', 
+                                    color: 'white',
+                                    borderColor: '#1976d2'
+                                } 
+                            }}
+                        >
+                            <PersonSearchIcon fontSize="small" />
+                        </IconButton>
+                    </Tooltip>
+                </Box>
 
-            <Tooltip title="View Profile">
-                <IconButton className="profile-btn" onClick={e => { e.stopPropagation(); onViewProfile(designer.designer); }} size="small" sx={{ bgcolor: '#e3f2fd', '&:hover': { bgcolor: '#1976d2', color: 'white' } }}>
-                    <PersonSearchIcon />
-                </IconButton>
-            </Tooltip>
-            {isSelected && (
-                <Chip className="selected-badge" label="Selected" color="success" size="small" sx={{ fontWeight: 600, fontSize: 13, px: 1.5, borderRadius: 1, boxShadow: 1 }} />
-            )}
-
-            <Box sx={{ display: 'grid', gridTemplateColumns: 'auto 1fr', alignItems: 'center', columnGap: 1.5, mb: 1.5 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
+                {/* Designer Info & Price */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Avatar
-                        sx={{ width: 44, height: 44, bgcolor: '#2e7d32', border: isSelected ? '2px solid #2e7d32' : '2px solid transparent' }}
+                        sx={{ 
+                            width: 56, 
+                            height: 56, 
+                            bgcolor: '#2e7d32', 
+                            border: isSelected ? '3px solid #2e7d32' : '2px solid #e2e8f0',
+                            fontSize: '20px',
+                            fontWeight: 600
+                        }}
                         src={designer?.designer?.customer?.avatar}
                         slotProps={{ img: { referrerPolicy: 'no-referrer' } }}
                     >
                         {designer.designer.customer.name.charAt(0)}
                     </Avatar>
-                    <Box sx={{ minWidth: 0 }}>
-                        <Typography.Title level={5} style={{ margin: 0, color: '#1e293b' }}>
-                            {designer.designer.customer.name}
-                        </Typography.Title>
-                        <Typography style={{ marginTop: 2, color: '#2e7d32', fontWeight: 800, fontSize: 20 }}>
-                            {formatPrice(designer.price).replace(' VND','')} <span style={{fontSize: 12, fontWeight: 700}}>VND</span>
-                        </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mt: 0.5 }}>
-                            <Chip size="small" variant="outlined" label={`⭐ ${designer.designer.rating}`} sx={{ height: 22 }} />
-                            <Chip size="small" variant="outlined" icon={<ClockCircleOutlined/>} label={`Valid until ${formatDate(designer.acceptanceDeadline)}`} sx={{ height: 22 }} />
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
+                            <Typography.Title 
+                                level={5} 
+                                style={{ 
+                                    margin: 0, 
+                                    color: '#1e293b',
+                                    fontSize: '16px',
+                                    fontWeight: 600,
+                                    lineHeight: 1.3
+                                }}
+                            >
+                                {designer.designer.customer.name}
+                            </Typography.Title>
+                            {isSelected && (
+                                <Chip 
+                                    label="Selected" 
+                                    color="success" 
+                                    size="small" 
+                                    sx={{ 
+                                        fontWeight: 600, 
+                                        fontSize: 10, 
+                                        height: 20,
+                                        px: 1,
+                                        borderRadius: 1.5,
+                                        bgcolor: '#e8f5e8',
+                                        color: '#2e7d32',
+                                        border: '1px solid #2e7d32'
+                                    }} 
+                                />
+                            )}
                         </Box>
+                        <Typography 
+                            style={{ 
+                                marginTop: 1, 
+                                color: '#2e7d32', 
+                                fontWeight: 700, 
+                                fontSize: '18px',
+                                lineHeight: 1.2
+                            }}
+                        >
+                            {formatPrice(designer.price).replace(' VND','')} <span style={{fontSize: 11, fontWeight: 600}}>VND</span>
+                        </Typography>
                     </Box>
                 </Box>
             </Box>
 
-            <Divider sx={{ my: 1.5 }} />
+            {/* Rating & Validity */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>
+                <Chip 
+                    size="small" 
+                    variant="outlined" 
+                    label={`⭐ ${designer.designer.rating}`} 
+                    sx={{ 
+                        height: 24,
+                        bgcolor: '#fef3c7',
+                        borderColor: '#f59e0b',
+                        color: '#92400e',
+                        fontWeight: 600,
+                        fontSize: '12px'
+                    }} 
+                />
+                <Chip 
+                    size="small" 
+                    variant="outlined" 
+                    icon={<ClockCircleOutlined style={{ fontSize: 12 }} />} 
+                    label={`Valid until ${formatDate(designer.acceptanceDeadline)}`} 
+                    sx={{ 
+                        height: 24,
+                        bgcolor: '#f0f9ff',
+                        borderColor: '#0ea5e9',
+                        color: '#0c4a6e',
+                        fontWeight: 500,
+                        fontSize: '11px'
+                    }} 
+                />
+            </Box>
 
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mb: 1 }}>
-                <Chip size="small" variant="outlined" icon={<CalendarIcon style={{ fontSize: 14 }} />} label={`${designer.deliveryWithIn} days`} sx={{ height: 26 }} />
-                <Chip size="small" variant="outlined" icon={<EditOutlined style={{ fontSize: 14 }} />} label={`${designer.revisionTime === UNLIMITED_REVISION_CODE ? 'Unlimited' : designer.revisionTime} revisions`} sx={{ height: 26 }} />
+            {/* Service Details Grid */}
+            <Box sx={{ 
+                display: 'grid', 
+                gridTemplateColumns: '1fr 1fr', 
+                gap: 1.5, 
+                mb: 2.5,
+                p: 2,
+                bgcolor: '#f8fafc',
+                borderRadius: 2,
+                border: '1px solid #e2e8f0'
+            }}>
+                <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center', 
+                    textAlign: 'center',
+                    p: 1.5,
+                    bgcolor: 'white',
+                    borderRadius: 1.5,
+                    border: '1px solid #e2e8f0'
+                }}>
+                    <CalendarIcon style={{ fontSize: 16, color: '#0ea5e9', marginBottom: 4 }} />
+                    <Typography.Text style={{ fontSize: '11px', color: '#64748b', fontWeight: 500, mb: 0.5 }}>
+                        Delivery
+                    </Typography.Text>
+                    <Typography.Text style={{ fontSize: '13px', color: '#1e293b', fontWeight: 600 }}>
+                        {designer.deliveryWithIn} days
+                    </Typography.Text>
+                </Box>
+                
+                <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center', 
+                    textAlign: 'center',
+                    p: 1.5,
+                    bgcolor: 'white',
+                    borderRadius: 1.5,
+                    border: '1px solid #e2e8f0'
+                }}>
+                    <EditOutlined style={{ fontSize: 16, color: '#8b5cf6', marginBottom: 4 }} />
+                    <Typography.Text style={{ fontSize: '11px', color: '#64748b', fontWeight: 500, mb: 0.5 }}>
+                        Revisions
+                    </Typography.Text>
+                    <Typography.Text style={{ fontSize: '13px', color: '#1e293b', fontWeight: 600 }}>
+                        {designer.revisionTime === UNLIMITED_REVISION_CODE ? 'Unlimited' : designer.revisionTime}
+                    </Typography.Text>
+                </Box>
+
                 {designer.extraRevisionPrice > 0 && (
-                    <Chip size="small" variant="outlined" icon={<EditOutlined style={{ fontSize: 14 }} />} label={`Extra: ${formatPrice(designer.extraRevisionPrice)}`} sx={{ height: 26, gridColumn: 'span 2' }} />
+                    <Box sx={{ 
+                        gridColumn: 'span 2',
+                        p: 1.5,
+                        bgcolor: '#fef3c7',
+                        borderRadius: 1.5,
+                        border: '1px solid #f59e0b',
+                        textAlign: 'center'
+                    }}>
+                        <Typography.Text style={{ fontSize: '11px', color: '#92400e', fontWeight: 600 }}>
+                            Extra Revisions: {formatPrice(designer.extraRevisionPrice)}
+                        </Typography.Text>
+                    </Box>
                 )}
             </Box>
 
+            {/* Contact Information */}
             <Box sx={{
                 display: 'flex',
-                alignItems: 'center',
-                gap: 1.5,
-                p: 1,
-                border: '1px solid #e2e8f0',
+                flexDirection: 'column',
+                gap: 1,
+                p: 2,
+                backgroundColor: '#f1f5f9',
                 borderRadius: 2,
-                backgroundColor: '#f8fafc',
-                color: '#475569',
-                mb: 1
+                border: '1px solid #cbd5e1',
+                mb: 2
             }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0, flex: 1 }}>
-                    <MailOutlined style={{color: '#64748b'}}/>
-                    <Typography.Text style={{fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <MailOutlined style={{color: '#64748b', fontSize: 14}}/>
+                    <Typography.Text 
+                        style={{
+                            fontSize: '12px', 
+                            color: '#475569', 
+                            fontWeight: 500,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                        }}
+                    >
                         {designer.designer.customer.account.email}
                     </Typography.Text>
                 </Box>
-                <Divider orientation="vertical" flexItem sx={{ borderColor: '#e2e8f0' }} />
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <PhoneOutlined style={{color: '#64748b'}}/>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <PhoneOutlined style={{color: '#64748b', fontSize: 14}}/>
                     <Typography.Text
-                        style={{fontSize: '12px', cursor: 'pointer'}}
+                        style={{
+                            fontSize: '12px', 
+                            color: '#475569', 
+                            fontWeight: 500,
+                            cursor: 'pointer'
+                        }}
                         onClick={() => window.open(`https://zalo.me/${designer.designer.customer.phone}`, "_blank")}
-                        title="Click to contact"
+                        title="Click to contact on Zalo"
                     >
                         {designer.designer.customer.phone}
                     </Typography.Text>
                 </Box>
             </Box>
 
-
-
+            {/* Note Section */}
             {designer.note && (
                 <Box sx={{
-                    mt: 1,
-                    p: 1.5,
+                    mt: 'auto',
+                    p: 2,
                     backgroundColor: '#f8fafc',
                     border: '1px solid #e2e8f0',
-                    borderRadius: 1.5,
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: 1
+                    borderRadius: 2,
+                    borderLeft: '4px solid #1976d2'
                 }}>
-                    <FileTextOutlined style={{ color: '#64748b', fontSize: 16, marginTop: 2 }} />
-                    <Box>
-                        <Typography.Text style={{ fontSize: 12, color: '#1f2937', fontWeight: 600 }}>Note</Typography.Text>
-                        <Typography.Paragraph
-                            style={{ margin: 0, fontSize: 12, color: '#475569' }}
-                            ellipsis={{ rows: 3, tooltip: designer.note }}
-                        >
-                            {designer.note}
-                        </Typography.Paragraph>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1 }}>
+                        <FileTextOutlined style={{ color: '#1976d2', fontSize: 14, marginTop: 1 }} />
+                        <Typography.Text style={{ fontSize: '11px', color: '#1e293b', fontWeight: 600 }}>
+                            Designer Note
+                        </Typography.Text>
                     </Box>
+                    <Typography.Paragraph
+                        style={{ 
+                            margin: 0, 
+                            fontSize: '12px', 
+                            color: '#475569',
+                            lineHeight: 1.4
+                        }}
+                        ellipsis={{ rows: 2, tooltip: designer.note }}
+                    >
+                        {designer.note}
+                    </Typography.Paragraph>
                 </Box>
             )}
         </Paper>

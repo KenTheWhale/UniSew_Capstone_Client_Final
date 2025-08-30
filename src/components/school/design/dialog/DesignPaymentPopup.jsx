@@ -11,6 +11,7 @@ import {
 } from '@ant-design/icons';
 import {Box, Chip, Paper} from '@mui/material';
 import {parseID} from "../../../../utils/ParseIDUtil.jsx";
+import {getPhoneLink} from "../../../../utils/PhoneUtil.jsx";
 import {getPaymentUrl} from "../../../../services/PaymentService.jsx";
 import {enqueueSnackbar} from "notistack";
 import {serviceFee} from "../../../../configs/FixedVariables.jsx";
@@ -184,9 +185,20 @@ export default function DesignPaymentPopup({ visible, onCancel, selectedQuotatio
                                 <strong>Email:</strong> {quotation.designer.customer.account.email}
                             </Typography.Text>
                         </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
-                                <strong>Phone:</strong> {quotation.designer.customer.phone}
+                                <strong>Phone:</strong> 
+                            </Typography.Text>
+                            <Typography.Text 
+                                style={{  
+                                    color: '#475569',
+                                    fontSize: '14px',
+                                    cursor: 'pointer',
+                                    textDecoration: 'none',
+                                }}
+                                onClick={() => window.open(getPhoneLink(quotation.designer.customer.phone), '_blank')}
+                            >
+                                {quotation.designer.customer.phone}
                             </Typography.Text>
                         </Box>
                     </Box>

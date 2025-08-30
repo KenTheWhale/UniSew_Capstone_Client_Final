@@ -19,7 +19,6 @@ import '@ant-design/v5-patch-for-react-19';
 import {
     BankOutlined,
     CheckCircleOutlined,
-    ClockCircleOutlined,
     CloseCircleOutlined,
     EditOutlined,
     EyeOutlined,
@@ -28,7 +27,6 @@ import {
     MessageOutlined,
     SendOutlined,
     SmileOutlined,
-    SyncOutlined,
     UploadOutlined,
     UserOutlined
 } from '@ant-design/icons';
@@ -85,7 +83,6 @@ const getItemIcon = (itemType) => {
 };
 
 
-
 export function UseDesignerChatMessages(roomId) {
     const [chatMessages, setChatMessages] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -98,7 +95,7 @@ export function UseDesignerChatMessages(roomId) {
 
         const unsubAll = onSnapshot(qAll, (snap) => {
             const msgs = [];
-            snap.forEach((d) => msgs.push({ ...d.data(), id: d.id }));
+            snap.forEach((d) => msgs.push({...d.data(), id: d.id}));
             msgs.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
             setChatMessages(msgs);
         });
@@ -136,8 +133,8 @@ export function UseDesignerChatMessages(roomId) {
 
         const payload =
             typeof textOrPayload === "string"
-                ? { text: textOrPayload }
-                : { ...textOrPayload };
+                ? {text: textOrPayload}
+                : {...textOrPayload};
 
         await addDoc(collection(db, "messages"), {
             ...payload,
@@ -151,8 +148,8 @@ export function UseDesignerChatMessages(roomId) {
 
         await setDoc(
             doc(db, "chatRooms", roomId),
-            { lastMessage: payload.text || "[image]", updatedAt: serverTimestamp() },
-            { merge: true }
+            {lastMessage: payload.text || "[image]", updatedAt: serverTimestamp()},
+            {merge: true}
         );
     };
 
@@ -181,7 +178,7 @@ export function UseDesignerChatMessages(roomId) {
         if (count > 0) await batch.commit();
     };
 
-    return { chatMessages, unreadCount, sendMessage, markAsRead };
+    return {chatMessages, unreadCount, sendMessage, markAsRead};
 }
 
 function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton, onAddRevision}) {
@@ -241,20 +238,18 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                 {delivery.name}
                             </Typography.Title>
                             <Typography.Text style={{color: 'rgba(255,255,255,0.8)', fontSize: '14px'}}>
-                                Delivery Details
+                                Design Details
                             </Typography.Text>
                         </Box>
                     </Box>
                 </Box>
             </Box>
 
-            {}
             <Box sx={{
                 display: 'flex',
                 height: 'calc(90vh - 120px)',
                 overflow: 'hidden'
             }}>
-                {}
                 <Box sx={{
                     width: '35%',
                     p: 3,
@@ -288,7 +283,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                 }}>
                                     <FileTextOutlined/>
                                 </Box>
-                                <Typography.Text strong style={{fontSize: '16px'}}>Delivery Info</Typography.Text>
+                                <Typography.Text strong style={{fontSize: '16px'}}>Design Info</Typography.Text>
                             </Box>
 
                             <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
@@ -354,7 +349,6 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                     </Box>
                 </Box>
 
-                {}
                 <Box sx={{
                     width: '65%',
                     p: 3,
@@ -370,7 +364,6 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                     </Box>
 
                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
-                        {}
                         {(() => {
                             const items = delivery.deliveryItems || delivery.items || [];
                             const boyItems = items.filter(item =>
@@ -386,7 +379,6 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
 
                             return (
                                 <>
-                                    {}
                                     {boyItems.length > 0 && (
                                         <Box sx={{mb: 3}}>
                                             <Box sx={{
@@ -399,296 +391,59 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                 borderRadius: 2,
                                                 border: '1px solid #93c5fd'
                                             }}>
-                                                <Typography.Title level={4} style={{margin: 0, color: '#1e40af', fontWeight: 700}}>
+                                                <Typography.Title level={4} style={{
+                                                    margin: 0,
+                                                    color: '#1e40af',
+                                                    fontWeight: 700
+                                                }}>
                                                     BOY
                                                 </Typography.Title>
-                                                <Tag color="blue" style={{margin: 0, fontSize: '12px', fontWeight: 600}}>
+                                                <Tag color="blue"
+                                                     style={{margin: 0, fontSize: '12px', fontWeight: 600}}>
                                                     {boyItems.length} cloth{boyItems.length !== 1 ? 'es' : ''}
                                                 </Tag>
                                             </Box>
                                             <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
                                                 {boyItems.map((item, index) => (
-                            <Box key={index} sx={{
-                                p: 3,
-                                backgroundColor: 'white',
-                                borderRadius: 4,
-                                border: '1px solid #e2e8f0',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                                transition: 'all 0.3s ease',
-                                '&:hover': {
-                                    boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
-                                    transform: 'translateY(-2px)'
-                                }
-                            }}>
-                                {}
-                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
-                                    <Box sx={{
-                                        width: 40,
-                                        height: 40,
-                                        borderRadius: '50%',
-                                        background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        color: 'white',
-                                        fontSize: '16px'
-                                    }}>
-                                        {getItemIcon(item.designItem?.type)}
-                                    </Box>
-                                    <Box>
-                                        <Typography.Title level={5} style={{margin: 0, color: '#1e293b'}}>
-                                            {item.designItem?.type?.charAt(0).toUpperCase() + item.designItem?.type?.slice(1)} - {formatCategory(item.designItem?.category)}
-                                        </Typography.Title>
-                                        <Typography.Text style={{color: '#64748b', fontSize: '12px'}}>
-                                            Item #{index + 1}
-                                        </Typography.Text>
-                                    </Box>
-                                </Box>
-
-                                {}
-                                <Row gutter={[24, 16]}>
-                                    <Col span={item.designItem?.logoPosition ? 8 : 12}>
-                                        <Box sx={{
-                                            p: 2,
-                                            backgroundColor: '#f8fafc',
-                                            borderRadius: 3,
-                                            border: '1px solid #e2e8f0'
-                                        }}>
-                                            <Typography.Text strong style={{fontSize: '13px', color: '#475569'}}>
-                                                Color
-                                            </Typography.Text>
-                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1.5, mt: 1}}>
-                                                <Box sx={{
-                                                    width: 20,
-                                                    height: 20,
-                                                    borderRadius: '50%',
-                                                    backgroundColor: item.designItem?.color,
-                                                    border: '2px solid #e0e0e0',
-                                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                                                }}/>
-                                                <Typography.Text style={{fontSize: '13px'}}>
-                                                    {item.designItem?.color}
-                                                </Typography.Text>
-                                            </Box>
-                                        </Box>
-                                    </Col>
-                                    <Col span={item.designItem?.logoPosition ? 8 : 12}>
-                                        <Box sx={{
-                                            p: 2,
-                                            backgroundColor: '#f8fafc',
-                                            borderRadius: 3,
-                                            border: '1px solid #e2e8f0'
-                                        }}>
-                                            <Typography.Text strong style={{fontSize: '13px', color: '#475569'}}>
-                                                Fabric
-                                            </Typography.Text>
-                                            <Typography.Text style={{fontSize: '13px', display: 'block', mt: 1}}>
-                                                {item.designItem?.fabricName}
-                                            </Typography.Text>
-                                        </Box>
-                                    </Col>
-                                    {item.designItem?.logoPosition && (
-                                        <Col span={8}>
-                                            <Box sx={{
-                                                p: 2,
-                                                backgroundColor: '#f8fafc',
-                                                borderRadius: 3,
-                                                border: '1px solid #e2e8f0'
-                                            }}>
-                                                <Typography.Text strong style={{fontSize: '13px', color: '#475569'}}>
-                                                    Logo Position
-                                                </Typography.Text>
-                                                <Typography.Text style={{fontSize: '13px', display: 'block', mt: 1}}>
-                                                    {item.designItem.logoPosition}
-                                                </Typography.Text>
-                                            </Box>
-                                        </Col>
-                                    )}
-                                </Row>
-
-                                {}
-                                {item.designItem?.type?.toLowerCase().includes('shirt') && (
-                                    <Row gutter={[24, 16]} style={{marginTop: 16}}>
-                                        <Col span={12}>
-                                            <Box sx={{
-                                                p: 2,
-                                                backgroundColor: '#fef3c7',
-                                                borderRadius: 3,
-                                                border: '1px solid #fde68a'
-                                            }}>
-                                                <Typography.Text strong style={{fontSize: '13px', color: '#92400e'}}>
-                                                    Logo Height
-                                                </Typography.Text>
-                                                <Typography.Text style={{
-                                                    fontSize: '14px',
-                                                    display: 'block',
-                                                    mt: 1,
-                                                    fontWeight: 600,
-                                                    color: '#92400e'
-                                                }}>
-                                                    {item.baseLogoHeight || item.logoHeight || 0} cm
-                                                </Typography.Text>
-                                            </Box>
-                                        </Col>
-                                        <Col span={12}>
-                                            <Box sx={{
-                                                p: 2,
-                                                backgroundColor: '#fef3c7',
-                                                borderRadius: 3,
-                                                border: '1px solid #fde68a'
-                                            }}>
-                                                <Typography.Text strong style={{fontSize: '13px', color: '#92400e'}}>
-                                                    Logo Width
-                                                </Typography.Text>
-                                                <Typography.Text style={{
-                                                    fontSize: '14px',
-                                                    display: 'block',
-                                                    mt: 1,
-                                                    fontWeight: 600,
-                                                    color: '#92400e'
-                                                }}>
-                                                    {item.baseLogoWidth || item.logoWidth || 0} cm
-                                                </Typography.Text>
-                                            </Box>
-                                        </Col>
-                                    </Row>
-                                )}
-
-                                {}
-                                <Row gutter={[24, 16]} style={{marginTop: 16}}>
-                                    <Col span={12}>
-                                        <Box sx={{
-                                            p: 2,
-                                            backgroundColor: '#f0fdf4',
-                                            borderRadius: 3,
-                                            border: '1px solid #bbf7d0',
-                                            textAlign: 'center'
-                                        }}>
-                                            <Typography.Text strong style={{
-                                                fontSize: '13px',
-                                                color: '#166534',
-                                                display: 'block',
-                                                mb: 1
-                                            }}>
-                                                Front Design
-                                            </Typography.Text>
-                                            <DisplayImage
-                                                imageUrl={item.frontImageUrl}
-                                                alt="Front Design"
-                                                width="100%"
-                                                height="200px"
-                                                style={{borderRadius: 8, objectFit: 'cover'}}
-                                            />
-                                        </Box>
-                                    </Col>
-                                    <Col span={12}>
-                                        <Box sx={{
-                                            p: 2,
-                                            backgroundColor: '#fef2f2',
-                                            borderRadius: 3,
-                                            border: '1px solid #fca5a5',
-                                            textAlign: 'center'
-                                        }}>
-                                            <Typography.Text strong style={{
-                                                fontSize: '13px',
-                                                color: '#991b1b',
-                                                display: 'block',
-                                                mb: 1
-                                            }}>
-                                                Back Design
-                                            </Typography.Text>
-                                            <DisplayImage
-                                                imageUrl={item.backImageUrl}
-                                                alt="Back Design"
-                                                width="100%"
-                                                height="200px"
-                                                style={{borderRadius: 8, objectFit: 'cover'}}
-                                            />
-                                        </Box>
-                                    </Col>
-                                </Row>
-
-                                {}
-                                {item.designItem?.note && (
-                                    <Box sx={{
-                                        mt: 2,
-                                        p: 2,
-                                        backgroundColor: '#f8fafc',
-                                        borderRadius: 3,
-                                        border: '1px solid #e2e8f0'
-                                    }}>
-                                        <Typography.Text type="secondary"
-                                                         style={{fontSize: '12px', fontStyle: 'italic'}}>
-                                            <strong>Note:</strong> {item.designItem.note}
-                                        </Typography.Text>
-                                    </Box>
-                                )}
-                            </Box>
-                                                ))}
-                                            </Box>
-                                        </Box>
-                                    )}
-
-                                                                                                                                {}
-                                                        {girlItems.length > 0 && (
-                                                            <Box sx={{mb: 3}}>
-                                                                <Box sx={{
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'space-between',
-                                                                    mb: 2,
-                                                                    p: 2,
-                                                                    backgroundColor: '#fce7f3',
-                                                                    borderRadius: 2,
-                                                                    border: '1px solid #f9a8d4'
-                                                                }}>
-                                                                    <Typography.Title level={4} style={{margin: 0, color: '#be185d', fontWeight: 700}}>
-                                                                                                                        GIRL
-                                                                    </Typography.Title>
-                                                                    <Tag color="magenta" style={{margin: 0, fontSize: '12px', fontWeight: 600}}>
-                                                                        {girlItems.length} cloth{girlItems.length !== 1 ? 'es' : ''}
-                                                                    </Tag>
-                                                                </Box>
-                                                                <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
-                                                                    {girlItems.map((item, index) => (
-                                                                        <Box key={`girl-${index}`} sx={{
-                                                                            p: 3,
-                                                                            backgroundColor: 'white',
-                                                                            borderRadius: 4,
-                                                                            border: '1px solid #e2e8f0',
-                                                                            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                                                                            transition: 'all 0.3s ease',
-                                                                            '&:hover': {
-                                                                                boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
-                                                                                transform: 'translateY(-2px)'
-                                                                            }
-                                                                        }}>
-                                                                            {}
-                                                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
-                                                                                <Box sx={{
-                                                                                    width: 40,
-                                                                                    height: 40,
-                                                                                    borderRadius: '50%',
-                                                                                    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                                                                                    display: 'flex',
-                                                                                    alignItems: 'center',
-                                                                                    justifyContent: 'center',
-                                                                                    color: 'white',
-                                                                                    fontSize: '16px'
-                                                                                }}>
-                                                                                    {getItemIcon(item.designItem?.type)}
-                                                                                </Box>
-                                                                                <Box>
-                                                                                    <Typography.Title level={5} style={{margin: 0, color: '#1e293b'}}>
-                                                                                        {item.designItem?.type?.charAt(0).toUpperCase() + item.designItem?.type?.slice(1)} - {formatCategory(item.designItem?.category)}
-                                                                                    </Typography.Title>
-                                                                <Typography.Text style={{color: '#64748b', fontSize: '12px'}}>
+                                                    <Box key={index} sx={{
+                                                        p: 3,
+                                                        backgroundColor: 'white',
+                                                        borderRadius: 4,
+                                                        border: '1px solid #e2e8f0',
+                                                        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                                                        transition: 'all 0.3s ease',
+                                                        '&:hover': {
+                                                            boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+                                                            transform: 'translateY(-2px)'
+                                                        }
+                                                    }}>
+                                                        <Box
+                                                            sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
+                                                            <Box sx={{
+                                                                width: 40,
+                                                                height: 40,
+                                                                borderRadius: '50%',
+                                                                background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                color: 'white',
+                                                                fontSize: '16px'
+                                                            }}>
+                                                                {getItemIcon(item.designItem?.type)}
+                                                            </Box>
+                                                            <Box>
+                                                                <Typography.Title level={5}
+                                                                                  style={{margin: 0, color: '#1e293b'}}>
+                                                                    {item.designItem?.type?.charAt(0).toUpperCase() + item.designItem?.type?.slice(1)} - {formatCategory(item.designItem?.category)}
+                                                                </Typography.Title>
+                                                                <Typography.Text
+                                                                    style={{color: '#64748b', fontSize: '12px'}}>
                                                                     Item #{index + 1}
                                                                 </Typography.Text>
                                                             </Box>
                                                         </Box>
 
-                                                        {}
                                                         <Row gutter={[24, 16]}>
                                                             <Col span={item.designItem?.logoPosition ? 8 : 12}>
                                                                 <Box sx={{
@@ -697,10 +452,18 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                                     borderRadius: 3,
                                                                     border: '1px solid #e2e8f0'
                                                                 }}>
-                                                                    <Typography.Text strong style={{fontSize: '13px', color: '#475569'}}>
+                                                                    <Typography.Text strong style={{
+                                                                        fontSize: '13px',
+                                                                        color: '#475569'
+                                                                    }}>
                                                                         Color
                                                                     </Typography.Text>
-                                                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1.5, mt: 1}}>
+                                                                    <Box sx={{
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        gap: 1.5,
+                                                                        mt: 1
+                                                                    }}>
                                                                         <Box sx={{
                                                                             width: 20,
                                                                             height: 20,
@@ -722,10 +485,17 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                                     borderRadius: 3,
                                                                     border: '1px solid #e2e8f0'
                                                                 }}>
-                                                                    <Typography.Text strong style={{fontSize: '13px', color: '#475569'}}>
+                                                                    <Typography.Text strong style={{
+                                                                        fontSize: '13px',
+                                                                        color: '#475569'
+                                                                    }}>
                                                                         Fabric
                                                                     </Typography.Text>
-                                                                    <Typography.Text style={{fontSize: '13px', display: 'block', mt: 1}}>
+                                                                    <Typography.Text style={{
+                                                                        fontSize: '13px',
+                                                                        display: 'block',
+                                                                        mt: 1
+                                                                    }}>
                                                                         {item.designItem?.fabricName}
                                                                     </Typography.Text>
                                                                 </Box>
@@ -738,10 +508,17 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                                         borderRadius: 3,
                                                                         border: '1px solid #e2e8f0'
                                                                     }}>
-                                                                        <Typography.Text strong style={{fontSize: '13px', color: '#475569'}}>
+                                                                        <Typography.Text strong style={{
+                                                                            fontSize: '13px',
+                                                                            color: '#475569'
+                                                                        }}>
                                                                             Logo Position
                                                                         </Typography.Text>
-                                                                        <Typography.Text style={{fontSize: '13px', display: 'block', mt: 1}}>
+                                                                        <Typography.Text style={{
+                                                                            fontSize: '13px',
+                                                                            display: 'block',
+                                                                            mt: 1
+                                                                        }}>
                                                                             {item.designItem.logoPosition}
                                                                         </Typography.Text>
                                                                     </Box>
@@ -749,7 +526,59 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                             )}
                                                         </Row>
 
-                                                        {}
+                                                        {item.designItem?.type?.toLowerCase().includes('shirt') && (
+                                                            <Row gutter={[24, 16]} style={{marginTop: 16}}>
+                                                                <Col span={12}>
+                                                                    <Box sx={{
+                                                                        p: 2,
+                                                                        backgroundColor: '#fef3c7',
+                                                                        borderRadius: 3,
+                                                                        border: '1px solid #fde68a'
+                                                                    }}>
+                                                                        <Typography.Text strong style={{
+                                                                            fontSize: '13px',
+                                                                            color: '#92400e'
+                                                                        }}>
+                                                                            Logo Height
+                                                                        </Typography.Text>
+                                                                        <Typography.Text style={{
+                                                                            fontSize: '14px',
+                                                                            display: 'block',
+                                                                            mt: 1,
+                                                                            fontWeight: 600,
+                                                                            color: '#92400e'
+                                                                        }}>
+                                                                            {item.baseLogoHeight || item.logoHeight || 0} cm
+                                                                        </Typography.Text>
+                                                                    </Box>
+                                                                </Col>
+                                                                <Col span={12}>
+                                                                    <Box sx={{
+                                                                        p: 2,
+                                                                        backgroundColor: '#fef3c7',
+                                                                        borderRadius: 3,
+                                                                        border: '1px solid #fde68a'
+                                                                    }}>
+                                                                        <Typography.Text strong style={{
+                                                                            fontSize: '13px',
+                                                                            color: '#92400e'
+                                                                        }}>
+                                                                            Logo Width
+                                                                        </Typography.Text>
+                                                                        <Typography.Text style={{
+                                                                            fontSize: '14px',
+                                                                            display: 'block',
+                                                                            mt: 1,
+                                                                            fontWeight: 600,
+                                                                            color: '#92400e'
+                                                                        }}>
+                                                                            {item.baseLogoWidth || item.logoWidth || 0} cm
+                                                                        </Typography.Text>
+                                                                    </Box>
+                                                                </Col>
+                                                            </Row>
+                                                        )}
+
                                                         <Row gutter={[24, 16]} style={{marginTop: 16}}>
                                                             <Col span={12}>
                                                                 <Box sx={{
@@ -803,7 +632,6 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                             </Col>
                                                         </Row>
 
-                                                        {}
                                                         {item.designItem?.note && (
                                                             <Box sx={{
                                                                 mt: 2,
@@ -813,7 +641,10 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                                 border: '1px solid #e2e8f0'
                                                             }}>
                                                                 <Typography.Text type="secondary"
-                                                                                 style={{fontSize: '12px', fontStyle: 'italic'}}>
+                                                                                 style={{
+                                                                                     fontSize: '12px',
+                                                                                     fontStyle: 'italic'
+                                                                                 }}>
                                                                     <strong>Note:</strong> {item.designItem.note}
                                                                 </Typography.Text>
                                                             </Box>
@@ -824,7 +655,282 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                         </Box>
                                     )}
 
-                                    {}
+                                    {girlItems.length > 0 && (
+                                        <Box sx={{mb: 3}}>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                mb: 2,
+                                                p: 2,
+                                                backgroundColor: '#fce7f3',
+                                                borderRadius: 2,
+                                                border: '1px solid #f9a8d4'
+                                            }}>
+                                                <Typography.Title level={4} style={{
+                                                    margin: 0,
+                                                    color: '#be185d',
+                                                    fontWeight: 700
+                                                }}>
+                                                    GIRL
+                                                </Typography.Title>
+                                                <Tag color="magenta"
+                                                     style={{margin: 0, fontSize: '12px', fontWeight: 600}}>
+                                                    {girlItems.length} cloth{girlItems.length !== 1 ? 'es' : ''}
+                                                </Tag>
+                                            </Box>
+                                            <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                                                {girlItems.map((item, index) => (
+                                                    <Box key={`girl-${index}`} sx={{
+                                                        p: 3,
+                                                        backgroundColor: 'white',
+                                                        borderRadius: 4,
+                                                        border: '1px solid #e2e8f0',
+                                                        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                                                        transition: 'all 0.3s ease',
+                                                        '&:hover': {
+                                                            boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+                                                            transform: 'translateY(-2px)'
+                                                        }
+                                                    }}>
+                                                        <Box
+                                                            sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
+                                                            <Box sx={{
+                                                                width: 40,
+                                                                height: 40,
+                                                                borderRadius: '50%',
+                                                                background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                color: 'white',
+                                                                fontSize: '16px'
+                                                            }}>
+                                                                {getItemIcon(item.designItem?.type)}
+                                                            </Box>
+                                                            <Box>
+                                                                <Typography.Title level={5}
+                                                                                  style={{margin: 0, color: '#1e293b'}}>
+                                                                    {item.designItem?.type?.charAt(0).toUpperCase() + item.designItem?.type?.slice(1)} - {formatCategory(item.designItem?.category)}
+                                                                </Typography.Title>
+                                                                <Typography.Text
+                                                                    style={{color: '#64748b', fontSize: '12px'}}>
+                                                                    Item #{index + 1}
+                                                                </Typography.Text>
+                                                            </Box>
+                                                        </Box>
+
+                                                        <Row gutter={[24, 16]}>
+                                                            <Col span={item.designItem?.logoPosition ? 8 : 12}>
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    backgroundColor: '#f8fafc',
+                                                                    borderRadius: 3,
+                                                                    border: '1px solid #e2e8f0'
+                                                                }}>
+                                                                    <Typography.Text strong style={{
+                                                                        fontSize: '13px',
+                                                                        color: '#475569'
+                                                                    }}>
+                                                                        Color
+                                                                    </Typography.Text>
+                                                                    <Box sx={{
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        gap: 1.5,
+                                                                        mt: 1
+                                                                    }}>
+                                                                        <Box sx={{
+                                                                            width: 20,
+                                                                            height: 20,
+                                                                            borderRadius: '50%',
+                                                                            backgroundColor: item.designItem?.color,
+                                                                            border: '2px solid #e0e0e0',
+                                                                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                                                        }}/>
+                                                                        <Typography.Text style={{fontSize: '13px'}}>
+                                                                            {item.designItem?.color}
+                                                                        </Typography.Text>
+                                                                    </Box>
+                                                                </Box>
+                                                            </Col>
+                                                            <Col span={item.designItem?.logoPosition ? 8 : 12}>
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    backgroundColor: '#f8fafc',
+                                                                    borderRadius: 3,
+                                                                    border: '1px solid #e2e8f0'
+                                                                }}>
+                                                                    <Typography.Text strong style={{
+                                                                        fontSize: '13px',
+                                                                        color: '#475569'
+                                                                    }}>
+                                                                        Fabric
+                                                                    </Typography.Text>
+                                                                    <Typography.Text style={{
+                                                                        fontSize: '13px',
+                                                                        display: 'block',
+                                                                        mt: 1
+                                                                    }}>
+                                                                        {item.designItem?.fabricName}
+                                                                    </Typography.Text>
+                                                                </Box>
+                                                            </Col>
+                                                            {item.designItem?.logoPosition && (
+                                                                <Col span={8}>
+                                                                    <Box sx={{
+                                                                        p: 2,
+                                                                        backgroundColor: '#f8fafc',
+                                                                        borderRadius: 3,
+                                                                        border: '1px solid #e2e8f0'
+                                                                    }}>
+                                                                        <Typography.Text strong style={{
+                                                                            fontSize: '13px',
+                                                                            color: '#475569'
+                                                                        }}>
+                                                                            Logo Position
+                                                                        </Typography.Text>
+                                                                        <Typography.Text style={{
+                                                                            fontSize: '13px',
+                                                                            display: 'block',
+                                                                            mt: 1
+                                                                        }}>
+                                                                            {item.designItem.logoPosition}
+                                                                        </Typography.Text>
+                                                                    </Box>
+                                                                </Col>
+                                                            )}
+                                                        </Row>
+
+                                                        {item.designItem?.type?.toLowerCase().includes('shirt') && (
+                                                            <Row gutter={[24, 16]} style={{marginTop: 16}}>
+                                                                <Col span={12}>
+                                                                    <Box sx={{
+                                                                        p: 2,
+                                                                        backgroundColor: '#fef3c7',
+                                                                        borderRadius: 3,
+                                                                        border: '1px solid #fde68a'
+                                                                    }}>
+                                                                        <Typography.Text strong style={{
+                                                                            fontSize: '13px',
+                                                                            color: '#92400e'
+                                                                        }}>
+                                                                            Logo Height
+                                                                        </Typography.Text>
+                                                                        <Typography.Text style={{
+                                                                            fontSize: '14px',
+                                                                            display: 'block',
+                                                                            mt: 1,
+                                                                            fontWeight: 600,
+                                                                            color: '#92400e'
+                                                                        }}>
+                                                                            {item.baseLogoHeight || item.logoHeight || 0} cm
+                                                                        </Typography.Text>
+                                                                    </Box>
+                                                                </Col>
+                                                                <Col span={12}>
+                                                                    <Box sx={{
+                                                                        p: 2,
+                                                                        backgroundColor: '#fef3c7',
+                                                                        borderRadius: 3,
+                                                                        border: '1px solid #fde68a'
+                                                                    }}>
+                                                                        <Typography.Text strong style={{
+                                                                            fontSize: '13px',
+                                                                            color: '#92400e'
+                                                                        }}>
+                                                                            Logo Width
+                                                                        </Typography.Text>
+                                                                        <Typography.Text style={{
+                                                                            fontSize: '14px',
+                                                                            display: 'block',
+                                                                            mt: 1,
+                                                                            fontWeight: 600,
+                                                                            color: '#92400e'
+                                                                        }}>
+                                                                            {item.baseLogoWidth || item.logoWidth || 0} cm
+                                                                        </Typography.Text>
+                                                                    </Box>
+                                                                </Col>
+                                                            </Row>
+                                                        )}
+
+                                                        <Row gutter={[24, 16]} style={{marginTop: 16}}>
+                                                            <Col span={12}>
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    backgroundColor: '#f0fdf4',
+                                                                    borderRadius: 3,
+                                                                    border: '1px solid #bbf7d0',
+                                                                    textAlign: 'center'
+                                                                }}>
+                                                                    <Typography.Text strong style={{
+                                                                        fontSize: '13px',
+                                                                        color: '#166534',
+                                                                        display: 'block',
+                                                                        mb: 1
+                                                                    }}>
+                                                                        Front Design
+                                                                    </Typography.Text>
+                                                                    <DisplayImage
+                                                                        imageUrl={item.frontImageUrl}
+                                                                        alt="Front Design"
+                                                                        width="100%"
+                                                                        height="200px"
+                                                                        style={{borderRadius: 8, objectFit: 'cover'}}
+                                                                    />
+                                                                </Box>
+                                                            </Col>
+                                                            <Col span={12}>
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    backgroundColor: '#fef2f2',
+                                                                    borderRadius: 3,
+                                                                    border: '1px solid #fca5a5',
+                                                                    textAlign: 'center'
+                                                                }}>
+                                                                    <Typography.Text strong style={{
+                                                                        fontSize: '13px',
+                                                                        color: '#991b1b',
+                                                                        display: 'block',
+                                                                        mb: 1
+                                                                    }}>
+                                                                        Back Design
+                                                                    </Typography.Text>
+                                                                    <DisplayImage
+                                                                        imageUrl={item.backImageUrl}
+                                                                        alt="Back Design"
+                                                                        width="100%"
+                                                                        height="200px"
+                                                                        style={{borderRadius: 8, objectFit: 'cover'}}
+                                                                    />
+                                                                </Box>
+                                                            </Col>
+                                                        </Row>
+
+                                                        {item.designItem?.note && (
+                                                            <Box sx={{
+                                                                mt: 2,
+                                                                p: 2,
+                                                                backgroundColor: '#f8fafc',
+                                                                borderRadius: 3,
+                                                                border: '1px solid #e2e8f0'
+                                                            }}>
+                                                                <Typography.Text type="secondary"
+                                                                                 style={{
+                                                                                     fontSize: '12px',
+                                                                                     fontStyle: 'italic'
+                                                                                 }}>
+                                                                    <strong>Note:</strong> {item.designItem.note}
+                                                                </Typography.Text>
+                                                            </Box>
+                                                        )}
+                                                    </Box>
+                                                ))}
+                                            </Box>
+                                        </Box>
+                                    )}
+
                                     {otherItems.length > 0 && (
                                         <Box sx={{mb: 3}}>
                                             <Box sx={{
@@ -837,10 +943,15 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                 borderRadius: 2,
                                                 border: '1px solid #d1d5db'
                                             }}>
-                                                <Typography.Title level={4} style={{margin: 0, color: '#374151', fontWeight: 700}}>
+                                                <Typography.Title level={4} style={{
+                                                    margin: 0,
+                                                    color: '#374151',
+                                                    fontWeight: 700
+                                                }}>
                                                     OTHERS
                                                 </Typography.Title>
-                                                <Tag color="default" style={{margin: 0, fontSize: '12px', fontWeight: 600}}>
+                                                <Tag color="default"
+                                                     style={{margin: 0, fontSize: '12px', fontWeight: 600}}>
                                                     {otherItems.length} cloth{otherItems.length !== 1 ? 'es' : ''}
                                                 </Tag>
                                             </Box>
@@ -858,8 +969,8 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                             transform: 'translateY(-2px)'
                                                         }
                                                     }}>
-                                                        {}
-                                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
+                                                        <Box
+                                                            sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
                                                             <Box sx={{
                                                                 width: 40,
                                                                 height: 40,
@@ -874,16 +985,17 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                                 {getItemIcon(item.designItem?.type)}
                                                             </Box>
                                                             <Box>
-                                                                <Typography.Title level={5} style={{margin: 0, color: '#1e293b'}}>
+                                                                <Typography.Title level={5}
+                                                                                  style={{margin: 0, color: '#1e293b'}}>
                                                                     {item.designItem?.type?.charAt(0).toUpperCase() + item.designItem?.type?.slice(1)} - {formatCategory(item.designItem?.category)}
                                                                 </Typography.Title>
-                                                                <Typography.Text style={{color: '#64748b', fontSize: '12px'}}>
+                                                                <Typography.Text
+                                                                    style={{color: '#64748b', fontSize: '12px'}}>
                                                                     Item #{index + 1}
                                                                 </Typography.Text>
                                                             </Box>
                                                         </Box>
 
-                                                        {}
                                                         <Row gutter={[24, 16]}>
                                                             <Col span={item.designItem?.logoPosition ? 8 : 12}>
                                                                 <Box sx={{
@@ -892,10 +1004,18 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                                     borderRadius: 3,
                                                                     border: '1px solid #e2e8f0'
                                                                 }}>
-                                                                    <Typography.Text strong style={{fontSize: '13px', color: '#475569'}}>
+                                                                    <Typography.Text strong style={{
+                                                                        fontSize: '13px',
+                                                                        color: '#475569'
+                                                                    }}>
                                                                         Color
                                                                     </Typography.Text>
-                                                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1.5, mt: 1}}>
+                                                                    <Box sx={{
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        gap: 1.5,
+                                                                        mt: 1
+                                                                    }}>
                                                                         <Box sx={{
                                                                             width: 20,
                                                                             height: 20,
@@ -917,10 +1037,17 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                                     borderRadius: 3,
                                                                     border: '1px solid #e2e8f0'
                                                                 }}>
-                                                                    <Typography.Text strong style={{fontSize: '13px', color: '#475569'}}>
+                                                                    <Typography.Text strong style={{
+                                                                        fontSize: '13px',
+                                                                        color: '#475569'
+                                                                    }}>
                                                                         Fabric
                                                                     </Typography.Text>
-                                                                    <Typography.Text style={{fontSize: '13px', display: 'block', mt: 1}}>
+                                                                    <Typography.Text style={{
+                                                                        fontSize: '13px',
+                                                                        display: 'block',
+                                                                        mt: 1
+                                                                    }}>
                                                                         {item.designItem?.fabricName}
                                                                     </Typography.Text>
                                                                 </Box>
@@ -933,10 +1060,17 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                                         borderRadius: 3,
                                                                         border: '1px solid #e2e8f0'
                                                                     }}>
-                                                                        <Typography.Text strong style={{fontSize: '13px', color: '#475569'}}>
+                                                                        <Typography.Text strong style={{
+                                                                            fontSize: '13px',
+                                                                            color: '#475569'
+                                                                        }}>
                                                                             Logo Position
                                                                         </Typography.Text>
-                                                                        <Typography.Text style={{fontSize: '13px', display: 'block', mt: 1}}>
+                                                                        <Typography.Text style={{
+                                                                            fontSize: '13px',
+                                                                            display: 'block',
+                                                                            mt: 1
+                                                                        }}>
                                                                             {item.designItem.logoPosition}
                                                                         </Typography.Text>
                                                                     </Box>
@@ -944,7 +1078,6 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                             )}
                                                         </Row>
 
-                                                        {}
                                                         <Row gutter={[24, 16]} style={{marginTop: 16}}>
                                                             <Col span={12}>
                                                                 <Box sx={{
@@ -998,7 +1131,6 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                             </Col>
                                                         </Row>
 
-                                                        {}
                                                         {item.designItem?.note && (
                                                             <Box sx={{
                                                                 mt: 2,
@@ -1008,7 +1140,10 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
                                                                 border: '1px solid #e2e8f0'
                                                             }}>
                                                                 <Typography.Text type="secondary"
-                                                                                 style={{fontSize: '12px', fontStyle: 'italic'}}>
+                                                                                 style={{
+                                                                                     fontSize: '12px',
+                                                                                     fontStyle: 'italic'
+                                                                                 }}>
                                                                     <strong>Note:</strong> {item.designItem.note}
                                                                 </Typography.Text>
                                                             </Box>
@@ -1073,7 +1208,14 @@ function DeliveryDetailModal({visible, onCancel, delivery, showAddRevisionButton
     );
 }
 
-function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, designDeliveries, initialDeliveryType = 'normal'}) {
+function DeliverySubmissionModal({
+                                     visible,
+                                     onCancel,
+                                     onSubmit,
+                                     requestData,
+                                     designDeliveries,
+                                     initialDeliveryType = 'normal'
+                                 }) {
     const [form] = Form.useForm();
     const [deliveryType, setDeliveryType] = useState('normal');
     const [uploading, setUploading] = useState(false);
@@ -1082,7 +1224,7 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
     const [loadingRevisions, setLoadingRevisions] = useState(false);
     const {enqueueSnackbar} = useSnackbar();
     const [isFormValid, setIsFormValid] = useState(false);
-    const [formInitialValues, setFormInitialValues] = useState({ revisionOf: undefined, itemList: [] });
+    const [formInitialValues, setFormInitialValues] = useState({revisionOf: undefined, itemList: []});
     const [formKey, setFormKey] = useState(0);
     const validityTimerRef = useRef(null);
     const shirtIndexSetRef = useRef(new Set());
@@ -1111,25 +1253,25 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
     const isFormComplete = (values, currentDeliveryType) => {
         const deliveryNameOk = typeof values.deliveryName === 'string' && values.deliveryName.trim().length > 0;
         const items = Array.isArray(values.itemList) ? values.itemList : [];
-        if (!deliveryNameOk) return { ok: false, reason: 'missing deliveryName' };
-        if (items.length === 0) return { ok: false, reason: 'itemList empty' };
+        if (!deliveryNameOk) return {ok: false, reason: 'missing deliveryName'};
+        if (items.length === 0) return {ok: false, reason: 'itemList empty'};
         for (let i = 0; i < items.length; i++) {
             const it = items[i] || {};
             const label = getItemLabel(i);
-            if (!it.frontUrl) return { ok: false, reason: `${label} missing front design image` };
-            if (!it.backUrl) return { ok: false, reason: `${label} missing back design image` };
+            if (!it.frontUrl) return {ok: false, reason: `${label} missing front design image`};
+            if (!it.backUrl) return {ok: false, reason: `${label} missing back design image`};
             const requireLogoDims = shirtIndexSetRef.current.has(i);
             if (requireLogoDims) {
                 const hOk = Number(it.logoHeight) > 0;
                 const wOk = Number(it.logoWidth) > 0;
-                if (!hOk) return { ok: false, reason: `${label}'s logo height invalid` };
-                if (!wOk) return { ok: false, reason: `${label}'s logo width invalid` };
+                if (!hOk) return {ok: false, reason: `${label}'s logo height invalid`};
+                if (!wOk) return {ok: false, reason: `${label}'s logo width invalid`};
             }
         }
         if (currentDeliveryType === 'revision' && !values.revisionOf) {
-            return { ok: false, reason: 'missing revisionOf' };
+            return {ok: false, reason: 'missing revisionOf'};
         }
-        return { ok: true };
+        return {ok: true};
     };
 
     const updateFormValidity = () => {
@@ -1158,7 +1300,7 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
             setUploadedFiles({});
             setRevisionRequests([]);
             setIsFormValid(false);
-            setFormInitialValues({ revisionOf: undefined, itemList: [] });
+            setFormInitialValues({revisionOf: undefined, itemList: []});
             setFormKey((k) => k + 1);
         } else {
             setDeliveryType(initialDeliveryType);
@@ -1175,7 +1317,7 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
         if (!visible) return;
         if (deliveryType === 'normal') {
             setUploadedFiles({});
-            setFormInitialValues({ revisionOf: undefined, itemList: [] });
+            setFormInitialValues({revisionOf: undefined, itemList: []});
             setFormKey((k) => k + 1);
         }
     }, [visible, deliveryType]);
@@ -1205,11 +1347,11 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                     }
                 });
 
-                setFormInitialValues({ revisionOf: selectedRevisionId, itemList: itemListData });
+                setFormInitialValues({revisionOf: selectedRevisionId, itemList: itemListData});
                 setFormKey((k) => k + 1);
 
                 setTimeout(() => {
-                    form.setFieldsValue({ revisionOf: selectedRevisionId, itemList: itemListData });
+                    form.setFieldsValue({revisionOf: selectedRevisionId, itemList: itemListData});
                 }, 100);
 
                 const uploadedFilesData = {};
@@ -1273,7 +1415,7 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
             enqueueSnackbar('Some fields are invalid. Please fix highlighted errors.', {
                 variant: 'error',
                 autoHideDuration: 4000,
-                anchorOrigin: { vertical: 'top', horizontal: 'right' }
+                anchorOrigin: {vertical: 'top', horizontal: 'right'}
             });
             return;
         }
@@ -1417,7 +1559,8 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                                                 <Typography.Text strong style={{fontSize: '14px', color: '#ff6b35'}}>
                                                     Revision #{revisionRequests[0].id}
                                                 </Typography.Text>
-                                                <Typography.Text style={{fontSize: '12px', color: '#ff6b35', display: 'block'}}>
+                                                <Typography.Text
+                                                    style={{fontSize: '12px', color: '#ff6b35', display: 'block'}}>
                                                     {designDeliveries && Array.isArray(designDeliveries) ?
                                                         (() => {
                                                             const relatedDelivery = designDeliveries.find(d => d.id === revisionRequests[0].deliveryId);
@@ -1428,7 +1571,7 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                                                 </Typography.Text>
                                             </Box>
                                         </Box>
-                                        ) : (
+                                    ) : (
                                         <Box sx={{
                                             p: 2,
                                             backgroundColor: '#fef2f2',
@@ -1436,11 +1579,12 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                                             border: '1px solid #fca5a5',
                                             textAlign: 'center'
                                         }}>
-                                            <Typography.Text type="secondary" style={{fontSize: '14px', color: '#dc2626'}}>
+                                            <Typography.Text type="secondary"
+                                                             style={{fontSize: '14px', color: '#dc2626'}}>
                                                 No revision requests available
                                             </Typography.Text>
                                         </Box>
-                                        )}
+                                    )}
 
                                     {revisionRequests.length > 0 && (
                                         <Box sx={{
@@ -1501,15 +1645,17 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
 
                     {modalBoyItems.length > 0 && (
                         <>
-                            <Typography.Title level={5} style={{marginTop: 0}}>Boy ({modalBoyItems.length} clothes)</Typography.Title>
+                            <Typography.Title level={5} style={{marginTop: 0}}>Boy
+                                ({modalBoyItems.length} clothes)</Typography.Title>
                             {modalBoyItems.map((item) => (
-                                <Card key={`boy-${item.__index}`} size="small" style={{marginBottom: '16px', border: '1px solid #e2e8f0'}}>
+                                <Card key={`boy-${item.__index}`} size="small"
+                                      style={{marginBottom: '16px', border: '1px solid #e2e8f0'}}>
                                     <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
                                         {getItemIcon(item.type)}
                                         <Typography.Title level={5} style={{margin: 0}}>
                                             {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {formatCategory(item.category)}
-                                         </Typography.Title>
-                                         <Tag color="blue" style={{marginLeft: 'auto'}}>Boy</Tag>
+                                        </Typography.Title>
+                                        <Tag color="blue" style={{marginLeft: 'auto'}}>Boy</Tag>
                                     </Box>
                                     {}
                                     {item.type.toLowerCase().includes('shirt') && (
@@ -1517,33 +1663,55 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                                             <Col span={12}>
                                                 <Form.Item
                                                     name={['itemList', item.__index, 'logoHeight']}
-                                                    label={<Space size={4} style={{overflow: 'visible'}}>Logo Height (cm): <Tooltip title="This height is for the smallest size of cloth" styles={{ root: { zIndex: 3000 } }} getPopupContainer={() => document.body}><InfoCircleOutlined style={{ color: '#64748b', cursor: 'pointer' }} /></Tooltip></Space>}
-                                                    rules={[{required: true, message: 'Please enter logo height!'}, { validator: (_, value) => {
-                                                        if (value === undefined || value === '') return Promise.resolve();
-                                                        const numValue = Number(value);
-                                                        if (isNaN(numValue) || numValue < 1 || numValue > 999) {
-                                                            return Promise.reject(new Error('Logo height must be between 1 and 999 cm!'));
+                                                    label={<Space size={4} style={{overflow: 'visible'}}>Logo Height
+                                                        (cm): <Tooltip
+                                                            title="This height is for the smallest size of cloth"
+                                                            styles={{root: {zIndex: 3000}}}
+                                                            getPopupContainer={() => document.body}><InfoCircleOutlined
+                                                            style={{
+                                                                color: '#64748b',
+                                                                cursor: 'pointer'
+                                                            }}/></Tooltip></Space>}
+                                                    rules={[{required: true, message: 'Please enter logo height!'}, {
+                                                        validator: (_, value) => {
+                                                            if (value === undefined || value === '') return Promise.resolve();
+                                                            const numValue = Number(value);
+                                                            if (isNaN(numValue) || numValue < 1 || numValue > 999) {
+                                                                return Promise.reject(new Error('Logo height must be between 1 and 999 cm!'));
+                                                            }
+                                                            return Promise.resolve();
                                                         }
-                                                        return Promise.resolve();
-                                                    }}]}
+                                                    }]}
                                                 >
-                                                    <Input type="number" min={1} max={999} placeholder="e.g., 5" style={{borderRadius: '8px'}} autoComplete="off" />
+                                                    <Input type="number" min={1} max={999} placeholder="e.g., 5"
+                                                           style={{borderRadius: '8px'}} autoComplete="off"/>
                                                 </Form.Item>
                                             </Col>
                                             <Col span={12}>
                                                 <Form.Item
                                                     name={['itemList', item.__index, 'logoWidth']}
-                                                    label={<Space size={4} style={{overflow: 'visible'}}>Logo Width (cm): <Tooltip title="This width is for the smallest size of cloth" styles={{ root: { zIndex: 3000 } }} getPopupContainer={() => document.body}><InfoCircleOutlined style={{ color: '#64748b', cursor: 'pointer' }} /></Tooltip></Space>}
-                                                    rules={[{required: true, message: 'Please enter logo width!'}, { validator: (_, value) => {
-                                                        if (value === undefined || value === '') return Promise.resolve();
-                                                        const numValue = Number(value);
-                                                        if (isNaN(numValue) || numValue < 1 || numValue > 999) {
-                                                            return Promise.reject(new Error('Logo width must be between 1 and 999 cm!'));
+                                                    label={<Space size={4} style={{overflow: 'visible'}}>Logo Width
+                                                        (cm): <Tooltip
+                                                            title="This width is for the smallest size of cloth"
+                                                            styles={{root: {zIndex: 3000}}}
+                                                            getPopupContainer={() => document.body}><InfoCircleOutlined
+                                                            style={{
+                                                                color: '#64748b',
+                                                                cursor: 'pointer'
+                                                            }}/></Tooltip></Space>}
+                                                    rules={[{required: true, message: 'Please enter logo width!'}, {
+                                                        validator: (_, value) => {
+                                                            if (value === undefined || value === '') return Promise.resolve();
+                                                            const numValue = Number(value);
+                                                            if (isNaN(numValue) || numValue < 1 || numValue > 999) {
+                                                                return Promise.reject(new Error('Logo width must be between 1 and 999 cm!'));
+                                                            }
+                                                            return Promise.resolve();
                                                         }
-                                                        return Promise.resolve();
-                                                    }}]}
+                                                    }]}
                                                 >
-                                                    <Input type="number" min={1} max={999} placeholder="e.g., 8" style={{borderRadius: '8px'}} autoComplete="off" />
+                                                    <Input type="number" min={1} max={999} placeholder="e.g., 8"
+                                                           style={{borderRadius: '8px'}} autoComplete="off"/>
                                                 </Form.Item>
                                             </Col>
                                         </Row>
@@ -1551,33 +1719,73 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                                     {}
                                     {!item.type.toLowerCase().includes('shirt') && (
                                         <>
-                                            <Form.Item name={['itemList', item.__index, 'logoHeight']} initialValue={0} hidden>
-                                                <Input />
+                                            <Form.Item name={['itemList', item.__index, 'logoHeight']} initialValue={0}
+                                                       hidden>
+                                                <Input/>
                                             </Form.Item>
-                                            <Form.Item name={['itemList', item.__index, 'logoWidth']} initialValue={0} hidden>
-                                                <Input />
+                                            <Form.Item name={['itemList', item.__index, 'logoWidth']} initialValue={0}
+                                                       hidden>
+                                                <Input/>
                                             </Form.Item>
                                         </>
                                     )}
                                     <Row gutter={[16, 16]}>
                                         <Col span={12}>
-                                            <Form.Item name={['itemList', item.__index, 'frontUrl']} label="Front Design:" rules={[{required: true, message: 'Please upload front design!'}]}>
+                                            <Form.Item name={['itemList', item.__index, 'frontUrl']}
+                                                       label="Front Design:" rules={[{
+                                                required: true,
+                                                message: 'Please upload front design!'
+                                            }]}>
                                                 <Box sx={{position: 'relative'}}>
-                                                    <input type="file" accept="image/*" id={`front-upload-${item.__index}`} style={{display: 'none'}} onChange={async (e) => {
-                                                        const file = e.target.files[0];
-                                                        if (file) {
-                                                            setUploading(true);
-                                                            try {
-                                                                const url = await uploadCloudinary(file);
-                                                                form.setFieldsValue({ itemList: { ...form.getFieldValue('itemList'), [item.__index]: { ...form.getFieldValue('itemList')?.[item.__index], frontUrl: url } } });
-                                                                setUploadedFiles(prev => ({ ...prev, [`front-${item.__index}`]: url }));
-                                                            } finally { setUploading(false);} }
-                                                    }} />
+                                                    <input type="file" accept="image/*"
+                                                           id={`front-upload-${item.__index}`} style={{display: 'none'}}
+                                                           onChange={async (e) => {
+                                                               const file = e.target.files[0];
+                                                               if (file) {
+                                                                   setUploading(true);
+                                                                   try {
+                                                                       const url = await uploadCloudinary(file);
+                                                                       form.setFieldsValue({
+                                                                           itemList: {
+                                                                               ...form.getFieldValue('itemList'),
+                                                                               [item.__index]: {
+                                                                                   ...form.getFieldValue('itemList')?.[item.__index],
+                                                                                   frontUrl: url
+                                                                               }
+                                                                           }
+                                                                       });
+                                                                       setUploadedFiles(prev => ({
+                                                                           ...prev,
+                                                                           [`front-${item.__index}`]: url
+                                                                       }));
+                                                                   } finally {
+                                                                       setUploading(false);
+                                                                   }
+                                                               }
+                                                           }}/>
                                                     <Box sx={{width: '100%'}}>
-                                                        <Button onClick={() => document.getElementById(`front-upload-${item.__index}`).click()} icon={<UploadOutlined/>} loading={uploading} style={{ width: '100%', height: '40px', borderRadius: '8px', border: '2px dashed #d9d9d9', backgroundColor: '#fafafa', color: '#666', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.3s ease', cursor: 'pointer' }}> {uploading ? 'Uploading...' : 'Upload Front Design'} </Button>
+                                                        <Button
+                                                            onClick={() => document.getElementById(`front-upload-${item.__index}`).click()}
+                                                            icon={<UploadOutlined/>} loading={uploading} style={{
+                                                            width: '100%',
+                                                            height: '40px',
+                                                            borderRadius: '8px',
+                                                            border: '2px dashed #d9d9d9',
+                                                            backgroundColor: '#fafafa',
+                                                            color: '#666',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            gap: '8px',
+                                                            transition: 'all 0.3s ease',
+                                                            cursor: 'pointer'
+                                                        }}> {uploading ? 'Uploading...' : 'Upload Front Design'} </Button>
                                                         {uploadedFiles[`front-${item.__index}`] && (
-                                                            <Box sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
-                                                                <DisplayImage imageUrl={uploadedFiles[`front-${item.__index}`]} alt="Front Design" width="120px" height="120px" />
+                                                            <Box
+                                                                sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
+                                                                <DisplayImage
+                                                                    imageUrl={uploadedFiles[`front-${item.__index}`]}
+                                                                    alt="Front Design" width="120px" height="120px"/>
                                                             </Box>
                                                         )}
                                                     </Box>
@@ -1585,23 +1793,61 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                                             </Form.Item>
                                         </Col>
                                         <Col span={12}>
-                                            <Form.Item name={['itemList', item.__index, 'backUrl']} label="Back Design:" rules={[{required: true, message: 'Please upload back design!'}]}>
+                                            <Form.Item name={['itemList', item.__index, 'backUrl']} label="Back Design:"
+                                                       rules={[{
+                                                           required: true,
+                                                           message: 'Please upload back design!'
+                                                       }]}>
                                                 <Box sx={{position: 'relative'}}>
-                                                    <input type="file" accept="image/*" id={`back-upload-${item.__index}`} style={{display: 'none'}} onChange={async (e) => {
-                                                        const file = e.target.files[0];
-                                                        if (file) {
-                                                            setUploading(true);
-                                                            try {
-                                                                const url = await uploadCloudinary(file);
-                                                                form.setFieldsValue({ itemList: { ...form.getFieldValue('itemList'), [item.__index]: { ...form.getFieldValue('itemList')?.[item.__index], backUrl: url } } });
-                                                                setUploadedFiles(prev => ({ ...prev, [`back-${item.__index}`]: url }));
-                                                            } finally { setUploading(false);} }
-                                                    }} />
+                                                    <input type="file" accept="image/*"
+                                                           id={`back-upload-${item.__index}`} style={{display: 'none'}}
+                                                           onChange={async (e) => {
+                                                               const file = e.target.files[0];
+                                                               if (file) {
+                                                                   setUploading(true);
+                                                                   try {
+                                                                       const url = await uploadCloudinary(file);
+                                                                       form.setFieldsValue({
+                                                                           itemList: {
+                                                                               ...form.getFieldValue('itemList'),
+                                                                               [item.__index]: {
+                                                                                   ...form.getFieldValue('itemList')?.[item.__index],
+                                                                                   backUrl: url
+                                                                               }
+                                                                           }
+                                                                       });
+                                                                       setUploadedFiles(prev => ({
+                                                                           ...prev,
+                                                                           [`back-${item.__index}`]: url
+                                                                       }));
+                                                                   } finally {
+                                                                       setUploading(false);
+                                                                   }
+                                                               }
+                                                           }}/>
                                                     <Box sx={{width: '100%'}}>
-                                                        <Button onClick={() => document.getElementById(`back-upload-${item.__index}`).click()} icon={<UploadOutlined/>} loading={uploading} style={{ width: '100%', height: '40px', borderRadius: '8px', border: '2px dashed #d9d9d9', backgroundColor: '#fafafa', color: '#666', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.3s ease', cursor: 'pointer' }}> {uploading ? 'Uploading...' : 'Upload Back Design'} </Button>
+                                                        <Button
+                                                            onClick={() => document.getElementById(`back-upload-${item.__index}`).click()}
+                                                            icon={<UploadOutlined/>} loading={uploading} style={{
+                                                            width: '100%',
+                                                            height: '40px',
+                                                            borderRadius: '8px',
+                                                            border: '2px dashed #d9d9d9',
+                                                            backgroundColor: '#fafafa',
+                                                            color: '#666',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            gap: '8px',
+                                                            transition: 'all 0.3s ease',
+                                                            cursor: 'pointer'
+                                                        }}> {uploading ? 'Uploading...' : 'Upload Back Design'} </Button>
                                                         {uploadedFiles[`back-${item.__index}`] && (
-                                                            <Box sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
-                                                                <DisplayImage imageUrl={uploadedFiles[`back-${item.__index}`]} alt="Back Design" width="120px" height="120px" />
+                                                            <Box
+                                                                sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
+                                                                <DisplayImage
+                                                                    imageUrl={uploadedFiles[`back-${item.__index}`]}
+                                                                    alt="Back Design" width="120px" height="120px"/>
                                                             </Box>
                                                         )}
                                                     </Box>
@@ -1609,8 +1855,9 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                                             </Form.Item>
                                         </Col>
                                     </Row>
-                                    <Form.Item name={['itemList', item.__index, 'designItemId']} initialValue={item.id} hidden>
-                                        <Input />
+                                    <Form.Item name={['itemList', item.__index, 'designItemId']} initialValue={item.id}
+                                               hidden>
+                                        <Input/>
                                     </Form.Item>
                                 </Card>
                             ))}
@@ -1619,51 +1866,146 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
 
                     {modalGirlItems.length > 0 && (
                         <>
-                            <Typography.Title level={5} style={{marginTop: 16}}>Girl ({modalGirlItems.length} clothes)</Typography.Title>
+                            <Typography.Title level={5} style={{marginTop: 16}}>Girl
+                                ({modalGirlItems.length} clothes)</Typography.Title>
                             {modalGirlItems.map((item) => (
-                                <Card key={`girl-${item.__index}`} size="small" style={{marginBottom: '16px', border: '1px solid #e2e8f0'}}>
+                                <Card key={`girl-${item.__index}`} size="small"
+                                      style={{marginBottom: '16px', border: '1px solid #e2e8f0'}}>
                                     <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
                                         {getItemIcon(item.type)}
                                         <Typography.Title level={5} style={{margin: 0}}>
                                             {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {formatCategory(item.category)}
-                                         </Typography.Title>
-                                         <Tag color="magenta" style={{marginLeft: 'auto'}}>Girl</Tag>
+                                        </Typography.Title>
+                                        <Tag color="magenta" style={{marginLeft: 'auto'}}>Girl</Tag>
                                     </Box>
                                     {}
                                     {item.type.toLowerCase().includes('shirt') && (
                                         <Row gutter={[16, 16]}>
                                             <Col span={12}>
-                                                <Form.Item name={['itemList', item.__index, 'logoHeight']} label={<Space size={4} style={{overflow: 'visible'}}>Logo Height (cm): <Tooltip title="This height is for the smallest size of cloth" styles={{ root: { zIndex: 3000 } }} getPopupContainer={() => document.body}><InfoCircleOutlined style={{ color: '#64748b', cursor: 'pointer' }} /></Tooltip></Space>} rules={[{required: true, message: 'Please enter logo height!'}, { validator: (_, value) => { if (value === undefined || value === '') return Promise.resolve(); const numValue = Number(value); if (isNaN(numValue) || numValue < 1 || numValue > 999) { return Promise.reject(new Error('Logo height must be between 1 and 999 cm!')); } return Promise.resolve(); }}]}>
-                                                    <Input type="number" min={1} max={999} placeholder="e.g., 5" style={{borderRadius: '8px'}} autoComplete="off" />
+                                                <Form.Item name={['itemList', item.__index, 'logoHeight']}
+                                                           label={<Space size={4} style={{overflow: 'visible'}}>Logo
+                                                               Height (cm): <Tooltip
+                                                                   title="This height is for the smallest size of cloth"
+                                                                   styles={{root: {zIndex: 3000}}}
+                                                                   getPopupContainer={() => document.body}><InfoCircleOutlined
+                                                                   style={{
+                                                                       color: '#64748b',
+                                                                       cursor: 'pointer'
+                                                                   }}/></Tooltip></Space>} rules={[{
+                                                    required: true,
+                                                    message: 'Please enter logo height!'
+                                                }, {
+                                                    validator: (_, value) => {
+                                                        if (value === undefined || value === '') return Promise.resolve();
+                                                        const numValue = Number(value);
+                                                        if (isNaN(numValue) || numValue < 1 || numValue > 999) {
+                                                            return Promise.reject(new Error('Logo height must be between 1 and 999 cm!'));
+                                                        }
+                                                        return Promise.resolve();
+                                                    }
+                                                }]}>
+                                                    <Input type="number" min={1} max={999} placeholder="e.g., 5"
+                                                           style={{borderRadius: '8px'}} autoComplete="off"/>
                                                 </Form.Item>
                                             </Col>
                                             <Col span={12}>
-                                                <Form.Item name={['itemList', item.__index, 'logoWidth']} label={<Space size={4} style={{overflow: 'visible'}}>Logo Width (cm): <Tooltip title="This width is for the smallest size of cloth" styles={{ root: { zIndex: 3000 } }} getPopupContainer={() => document.body}><InfoCircleOutlined style={{ color: '#64748b', cursor: 'pointer' }} /></Tooltip></Space>} rules={[{required: true, message: 'Please enter logo width!'}, { validator: (_, value) => { if (value === undefined || value === '') return Promise.resolve(); const numValue = Number(value); if (isNaN(numValue) || numValue < 1 || numValue > 999) { return Promise.reject(new Error('Logo width must be between 1 and 999 cm!')); } return Promise.resolve(); }}]}>
-                                                    <Input type="number" min={1} max={999} placeholder="e.g., 8" style={{borderRadius: '8px'}} autoComplete="off" />
+                                                <Form.Item name={['itemList', item.__index, 'logoWidth']}
+                                                           label={<Space size={4} style={{overflow: 'visible'}}>Logo
+                                                               Width (cm): <Tooltip
+                                                                   title="This width is for the smallest size of cloth"
+                                                                   styles={{root: {zIndex: 3000}}}
+                                                                   getPopupContainer={() => document.body}><InfoCircleOutlined
+                                                                   style={{
+                                                                       color: '#64748b',
+                                                                       cursor: 'pointer'
+                                                                   }}/></Tooltip></Space>} rules={[{
+                                                    required: true,
+                                                    message: 'Please enter logo width!'
+                                                }, {
+                                                    validator: (_, value) => {
+                                                        if (value === undefined || value === '') return Promise.resolve();
+                                                        const numValue = Number(value);
+                                                        if (isNaN(numValue) || numValue < 1 || numValue > 999) {
+                                                            return Promise.reject(new Error('Logo width must be between 1 and 999 cm!'));
+                                                        }
+                                                        return Promise.resolve();
+                                                    }
+                                                }]}>
+                                                    <Input type="number" min={1} max={999} placeholder="e.g., 8"
+                                                           style={{borderRadius: '8px'}} autoComplete="off"/>
                                                 </Form.Item>
                                             </Col>
                                         </Row>
                                     )}
                                     {!item.type.toLowerCase().includes('shirt') && (
                                         <>
-                                            <Form.Item name={['itemList', item.__index, 'logoHeight']} initialValue={0} hidden>
-                                                <Input />
+                                            <Form.Item name={['itemList', item.__index, 'logoHeight']} initialValue={0}
+                                                       hidden>
+                                                <Input/>
                                             </Form.Item>
-                                            <Form.Item name={['itemList', item.__index, 'logoWidth']} initialValue={0} hidden>
-                                                <Input />
+                                            <Form.Item name={['itemList', item.__index, 'logoWidth']} initialValue={0}
+                                                       hidden>
+                                                <Input/>
                                             </Form.Item>
                                         </>
                                     )}
                                     <Row gutter={[16, 16]}>
                                         <Col span={12}>
-                                            <Form.Item name={['itemList', item.__index, 'frontUrl']} label="Front Design:" rules={[{required: true, message: 'Please upload front design!'}]}>
+                                            <Form.Item name={['itemList', item.__index, 'frontUrl']}
+                                                       label="Front Design:" rules={[{
+                                                required: true,
+                                                message: 'Please upload front design!'
+                                            }]}>
                                                 <Box sx={{position: 'relative'}}>
-                                                    <input type="file" accept="image/*" id={`front-upload-${item.__index}`} style={{display: 'none'}} onChange={async (e) => { const file = e.target.files[0]; if (file) { setUploading(true); try { const url = await uploadCloudinary(file); form.setFieldsValue({ itemList: { ...form.getFieldValue('itemList'), [item.__index]: { ...form.getFieldValue('itemList')?.[item.__index], frontUrl: url } } }); setUploadedFiles(prev => ({ ...prev, [`front-${item.__index}`]: url })); } finally { setUploading(false);} } }} />
+                                                    <input type="file" accept="image/*"
+                                                           id={`front-upload-${item.__index}`} style={{display: 'none'}}
+                                                           onChange={async (e) => {
+                                                               const file = e.target.files[0];
+                                                               if (file) {
+                                                                   setUploading(true);
+                                                                   try {
+                                                                       const url = await uploadCloudinary(file);
+                                                                       form.setFieldsValue({
+                                                                           itemList: {
+                                                                               ...form.getFieldValue('itemList'),
+                                                                               [item.__index]: {
+                                                                                   ...form.getFieldValue('itemList')?.[item.__index],
+                                                                                   frontUrl: url
+                                                                               }
+                                                                           }
+                                                                       });
+                                                                       setUploadedFiles(prev => ({
+                                                                           ...prev,
+                                                                           [`front-${item.__index}`]: url
+                                                                       }));
+                                                                   } finally {
+                                                                       setUploading(false);
+                                                                   }
+                                                               }
+                                                           }}/>
                                                     <Box sx={{width: '100%'}}>
-                                                        <Button onClick={() => document.getElementById(`front-upload-${item.__index}`).click()} icon={<UploadOutlined/>} loading={uploading} style={{ width: '100%', height: '40px', borderRadius: '8px', border: '2px dashed #d9d9d9', backgroundColor: '#fafafa', color: '#666', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.3s ease', cursor: 'pointer' }}>{uploading ? 'Uploading...' : 'Upload Front Design'}</Button>
+                                                        <Button
+                                                            onClick={() => document.getElementById(`front-upload-${item.__index}`).click()}
+                                                            icon={<UploadOutlined/>} loading={uploading} style={{
+                                                            width: '100%',
+                                                            height: '40px',
+                                                            borderRadius: '8px',
+                                                            border: '2px dashed #d9d9d9',
+                                                            backgroundColor: '#fafafa',
+                                                            color: '#666',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            gap: '8px',
+                                                            transition: 'all 0.3s ease',
+                                                            cursor: 'pointer'
+                                                        }}>{uploading ? 'Uploading...' : 'Upload Front Design'}</Button>
                                                         {uploadedFiles[`front-${item.__index}`] && (
-                                                            <Box sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
-                                                                <DisplayImage imageUrl={uploadedFiles[`front-${item.__index}`]} alt="Front Design" width="120px" height="120px" />
+                                                            <Box
+                                                                sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
+                                                                <DisplayImage
+                                                                    imageUrl={uploadedFiles[`front-${item.__index}`]}
+                                                                    alt="Front Design" width="120px" height="120px"/>
                                                             </Box>
                                                         )}
                                                     </Box>
@@ -1671,14 +2013,61 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                                             </Form.Item>
                                         </Col>
                                         <Col span={12}>
-                                            <Form.Item name={['itemList', item.__index, 'backUrl']} label="Back Design:" rules={[{required: true, message: 'Please upload back design!'}]}>
+                                            <Form.Item name={['itemList', item.__index, 'backUrl']} label="Back Design:"
+                                                       rules={[{
+                                                           required: true,
+                                                           message: 'Please upload back design!'
+                                                       }]}>
                                                 <Box sx={{position: 'relative'}}>
-                                                    <input type="file" accept="image/*" id={`back-upload-${item.__index}`} style={{display: 'none'}} onChange={async (e) => { const file = e.target.files[0]; if (file) { setUploading(true); try { const url = await uploadCloudinary(file); form.setFieldsValue({ itemList: { ...form.getFieldValue('itemList'), [item.__index]: { ...form.getFieldValue('itemList')?.[item.__index], backUrl: url } } }); setUploadedFiles(prev => ({ ...prev, [`back-${item.__index}`]: url })); } finally { setUploading(false);} } }} />
+                                                    <input type="file" accept="image/*"
+                                                           id={`back-upload-${item.__index}`} style={{display: 'none'}}
+                                                           onChange={async (e) => {
+                                                               const file = e.target.files[0];
+                                                               if (file) {
+                                                                   setUploading(true);
+                                                                   try {
+                                                                       const url = await uploadCloudinary(file);
+                                                                       form.setFieldsValue({
+                                                                           itemList: {
+                                                                               ...form.getFieldValue('itemList'),
+                                                                               [item.__index]: {
+                                                                                   ...form.getFieldValue('itemList')?.[item.__index],
+                                                                                   backUrl: url
+                                                                               }
+                                                                           }
+                                                                       });
+                                                                       setUploadedFiles(prev => ({
+                                                                           ...prev,
+                                                                           [`back-${item.__index}`]: url
+                                                                       }));
+                                                                   } finally {
+                                                                       setUploading(false);
+                                                                   }
+                                                               }
+                                                           }}/>
                                                     <Box sx={{width: '100%'}}>
-                                                        <Button onClick={() => document.getElementById(`back-upload-${item.__index}`).click()} icon={<UploadOutlined/>} loading={uploading} style={{ width: '100%', height: '40px', borderRadius: '8px', border: '2px dashed #d9d9d9', backgroundColor: '#fafafa', color: '#666', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.3s ease', cursor: 'pointer' }}>{uploading ? 'Uploading...' : 'Upload Back Design'}</Button>
+                                                        <Button
+                                                            onClick={() => document.getElementById(`back-upload-${item.__index}`).click()}
+                                                            icon={<UploadOutlined/>} loading={uploading} style={{
+                                                            width: '100%',
+                                                            height: '40px',
+                                                            borderRadius: '8px',
+                                                            border: '2px dashed #d9d9d9',
+                                                            backgroundColor: '#fafafa',
+                                                            color: '#666',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            gap: '8px',
+                                                            transition: 'all 0.3s ease',
+                                                            cursor: 'pointer'
+                                                        }}>{uploading ? 'Uploading...' : 'Upload Back Design'}</Button>
                                                         {uploadedFiles[`back-${item.__index}`] && (
-                                                            <Box sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
-                                                                <DisplayImage imageUrl={uploadedFiles[`back-${item.__index}`]} alt="Back Design" width="120px" height="120px" />
+                                                            <Box
+                                                                sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
+                                                                <DisplayImage
+                                                                    imageUrl={uploadedFiles[`back-${item.__index}`]}
+                                                                    alt="Back Design" width="120px" height="120px"/>
                                                             </Box>
                                                         )}
                                                     </Box>
@@ -1686,8 +2075,9 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                                             </Form.Item>
                                         </Col>
                                     </Row>
-                                    <Form.Item name={['itemList', item.__index, 'designItemId']} initialValue={item.id} hidden>
-                                        <Input />
+                                    <Form.Item name={['itemList', item.__index, 'designItemId']} initialValue={item.id}
+                                               hidden>
+                                        <Input/>
                                     </Form.Item>
                                 </Card>
                             ))}
@@ -1696,51 +2086,128 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
 
                     {modalOtherItems.length > 0 && (
                         <>
-                            <Typography.Title level={5} style={{marginTop: 16}}>Others ({modalOtherItems.length})</Typography.Title>
+                            <Typography.Title level={5} style={{marginTop: 16}}>Others
+                                ({modalOtherItems.length})</Typography.Title>
                             {modalOtherItems.map((item) => (
-                                <Card key={`other-${item.__index}`} size="small" style={{marginBottom: '16px', border: '1px solid #e2e8f0'}}>
+                                <Card key={`other-${item.__index}`} size="small"
+                                      style={{marginBottom: '16px', border: '1px solid #e2e8f0'}}>
                                     <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
                                         {getItemIcon(item.type)}
                                         <Typography.Title level={5} style={{margin: 0}}>
                                             {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {formatCategory(item.category)}
-                                         </Typography.Title>
-                                         <Tag style={{marginLeft: 'auto'}}>Unspecified</Tag>
+                                        </Typography.Title>
+                                        <Tag style={{marginLeft: 'auto'}}>Unspecified</Tag>
                                     </Box>
                                     {}
                                     {!item.type.toLowerCase().includes('shirt') && (
                                         <>
-                                            <Form.Item name={['itemList', item.__index, 'logoHeight']} initialValue={0} hidden>
-                                                <Input />
+                                            <Form.Item name={['itemList', item.__index, 'logoHeight']} initialValue={0}
+                                                       hidden>
+                                                <Input/>
                                             </Form.Item>
-                                            <Form.Item name={['itemList', item.__index, 'logoWidth']} initialValue={0} hidden>
-                                                <Input />
+                                            <Form.Item name={['itemList', item.__index, 'logoWidth']} initialValue={0}
+                                                       hidden>
+                                                <Input/>
                                             </Form.Item>
                                         </>
                                     )}
                                     {item.type.toLowerCase().includes('shirt') && (
                                         <Row gutter={[16, 16]}>
                                             <Col span={12}>
-                                                <Form.Item name={['itemList', item.__index, 'logoHeight']} label={<Space size={4} style={{overflow: 'visible'}}>Logo Height (cm): <Tooltip title="This height is for the smallest size of cloth" styles={{ root: { zIndex: 3000 } }} getPopupContainer={() => document.body}><InfoCircleOutlined style={{ color: '#64748b', cursor: 'pointer' }} /></Tooltip></Space>} rules={[{required: true, message: 'Please enter logo height!'}]}>
-                                                    <Input type="number" min={1} max={999} placeholder="e.g., 5" style={{borderRadius: '8px'}} autoComplete="off" />
+                                                <Form.Item name={['itemList', item.__index, 'logoHeight']}
+                                                           label={<Space size={4} style={{overflow: 'visible'}}>Logo
+                                                               Height (cm): <Tooltip
+                                                                   title="This height is for the smallest size of cloth"
+                                                                   styles={{root: {zIndex: 3000}}}
+                                                                   getPopupContainer={() => document.body}><InfoCircleOutlined
+                                                                   style={{
+                                                                       color: '#64748b',
+                                                                       cursor: 'pointer'
+                                                                   }}/></Tooltip></Space>} rules={[{
+                                                    required: true,
+                                                    message: 'Please enter logo height!'
+                                                }]}>
+                                                    <Input type="number" min={1} max={999} placeholder="e.g., 5"
+                                                           style={{borderRadius: '8px'}} autoComplete="off"/>
                                                 </Form.Item>
                                             </Col>
                                             <Col span={12}>
-                                                <Form.Item name={['itemList', item.__index, 'logoWidth']} label={<Space size={4} style={{overflow: 'visible'}}>Logo Width (cm): <Tooltip title="This width is for the smallest size of cloth" styles={{ root: { zIndex: 3000 } }} getPopupContainer={() => document.body}><InfoCircleOutlined style={{ color: '#64748b', cursor: 'pointer' }} /></Tooltip></Space>} rules={[{required: true, message: 'Please enter logo width!'}]}>
-                                                    <Input type="number" min={1} max={999} placeholder="e.g., 8" style={{borderRadius: '8px'}} autoComplete="off" />
+                                                <Form.Item name={['itemList', item.__index, 'logoWidth']}
+                                                           label={<Space size={4} style={{overflow: 'visible'}}>Logo
+                                                               Width (cm): <Tooltip
+                                                                   title="This width is for the smallest size of cloth"
+                                                                   styles={{root: {zIndex: 3000}}}
+                                                                   getPopupContainer={() => document.body}><InfoCircleOutlined
+                                                                   style={{
+                                                                       color: '#64748b',
+                                                                       cursor: 'pointer'
+                                                                   }}/></Tooltip></Space>} rules={[{
+                                                    required: true,
+                                                    message: 'Please enter logo width!'
+                                                }]}>
+                                                    <Input type="number" min={1} max={999} placeholder="e.g., 8"
+                                                           style={{borderRadius: '8px'}} autoComplete="off"/>
                                                 </Form.Item>
                                             </Col>
                                         </Row>
                                     )}
                                     <Row gutter={[16, 16]}>
                                         <Col span={12}>
-                                            <Form.Item name={['itemList', item.__index, 'frontUrl']} label="Front Design:" rules={[{required: true, message: 'Please upload front design!'}]}>
+                                            <Form.Item name={['itemList', item.__index, 'frontUrl']}
+                                                       label="Front Design:" rules={[{
+                                                required: true,
+                                                message: 'Please upload front design!'
+                                            }]}>
                                                 <Box sx={{position: 'relative'}}>
-                                                    <input type="file" accept="image/*" id={`front-upload-${item.__index}`} style={{display: 'none'}} onChange={async (e) => { const file = e.target.files[0]; if (file) { setUploading(true); try { const url = await uploadCloudinary(file); form.setFieldsValue({ itemList: { ...form.getFieldValue('itemList'), [item.__index]: { ...form.getFieldValue('itemList')?.[item.__index], frontUrl: url } } }); setUploadedFiles(prev => ({ ...prev, [`front-${item.__index}`]: url })); } finally { setUploading(false);} } }} />
+                                                    <input type="file" accept="image/*"
+                                                           id={`front-upload-${item.__index}`} style={{display: 'none'}}
+                                                           onChange={async (e) => {
+                                                               const file = e.target.files[0];
+                                                               if (file) {
+                                                                   setUploading(true);
+                                                                   try {
+                                                                       const url = await uploadCloudinary(file);
+                                                                       form.setFieldsValue({
+                                                                           itemList: {
+                                                                               ...form.getFieldValue('itemList'),
+                                                                               [item.__index]: {
+                                                                                   ...form.getFieldValue('itemList')?.[item.__index],
+                                                                                   frontUrl: url
+                                                                               }
+                                                                           }
+                                                                       });
+                                                                       setUploadedFiles(prev => ({
+                                                                           ...prev,
+                                                                           [`front-${item.__index}`]: url
+                                                                       }));
+                                                                   } finally {
+                                                                       setUploading(false);
+                                                                   }
+                                                               }
+                                                           }}/>
                                                     <Box sx={{width: '100%'}}>
-                                                        <Button onClick={() => document.getElementById(`front-upload-${item.__index}`).click()} icon={<UploadOutlined/>} loading={uploading} style={{ width: '100%', height: '40px', borderRadius: '8px', border: '2px dashed #d9d9d9', backgroundColor: '#fafafa', color: '#666', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.3s ease', cursor: 'pointer' }}>{uploading ? 'Uploading...' : 'Upload Front Design'}</Button>
+                                                        <Button
+                                                            onClick={() => document.getElementById(`front-upload-${item.__index}`).click()}
+                                                            icon={<UploadOutlined/>} loading={uploading} style={{
+                                                            width: '100%',
+                                                            height: '40px',
+                                                            borderRadius: '8px',
+                                                            border: '2px dashed #d9d9d9',
+                                                            backgroundColor: '#fafafa',
+                                                            color: '#666',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            gap: '8px',
+                                                            transition: 'all 0.3s ease',
+                                                            cursor: 'pointer'
+                                                        }}>{uploading ? 'Uploading...' : 'Upload Front Design'}</Button>
                                                         {uploadedFiles[`front-${item.__index}`] && (
-                                                            <Box sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
-                                                                <DisplayImage imageUrl={uploadedFiles[`front-${item.__index}`]} alt="Front Design" width="120px" height="120px" />
+                                                            <Box
+                                                                sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
+                                                                <DisplayImage
+                                                                    imageUrl={uploadedFiles[`front-${item.__index}`]}
+                                                                    alt="Front Design" width="120px" height="120px"/>
                                                             </Box>
                                                         )}
                                                     </Box>
@@ -1748,14 +2215,61 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                                             </Form.Item>
                                         </Col>
                                         <Col span={12}>
-                                            <Form.Item name={['itemList', item.__index, 'backUrl']} label="Back Design:" rules={[{required: true, message: 'Please upload back design!'}]}>
+                                            <Form.Item name={['itemList', item.__index, 'backUrl']} label="Back Design:"
+                                                       rules={[{
+                                                           required: true,
+                                                           message: 'Please upload back design!'
+                                                       }]}>
                                                 <Box sx={{position: 'relative'}}>
-                                                    <input type="file" accept="image/*" id={`back-upload-${item.__index}`} style={{display: 'none'}} onChange={async (e) => { const file = e.target.files[0]; if (file) { setUploading(true); try { const url = await uploadCloudinary(file); form.setFieldsValue({ itemList: { ...form.getFieldValue('itemList'), [item.__index]: { ...form.getFieldValue('itemList')?.[item.__index], backUrl: url } } }); setUploadedFiles(prev => ({ ...prev, [`back-${item.__index}`]: url })); } finally { setUploading(false);} } }} />
+                                                    <input type="file" accept="image/*"
+                                                           id={`back-upload-${item.__index}`} style={{display: 'none'}}
+                                                           onChange={async (e) => {
+                                                               const file = e.target.files[0];
+                                                               if (file) {
+                                                                   setUploading(true);
+                                                                   try {
+                                                                       const url = await uploadCloudinary(file);
+                                                                       form.setFieldsValue({
+                                                                           itemList: {
+                                                                               ...form.getFieldValue('itemList'),
+                                                                               [item.__index]: {
+                                                                                   ...form.getFieldValue('itemList')?.[item.__index],
+                                                                                   backUrl: url
+                                                                               }
+                                                                           }
+                                                                       });
+                                                                       setUploadedFiles(prev => ({
+                                                                           ...prev,
+                                                                           [`back-${item.__index}`]: url
+                                                                       }));
+                                                                   } finally {
+                                                                       setUploading(false);
+                                                                   }
+                                                               }
+                                                           }}/>
                                                     <Box sx={{width: '100%'}}>
-                                                        <Button onClick={() => document.getElementById(`back-upload-${item.__index}`).click()} icon={<UploadOutlined/>} loading={uploading} style={{ width: '100%', height: '40px', borderRadius: '8px', border: '2px dashed #d9d9d9', backgroundColor: '#fafafa', color: '#666', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.3s ease', cursor: 'pointer' }}>{uploading ? 'Uploading...' : 'Upload Back Design'}</Button>
+                                                        <Button
+                                                            onClick={() => document.getElementById(`back-upload-${item.__index}`).click()}
+                                                            icon={<UploadOutlined/>} loading={uploading} style={{
+                                                            width: '100%',
+                                                            height: '40px',
+                                                            borderRadius: '8px',
+                                                            border: '2px dashed #d9d9d9',
+                                                            backgroundColor: '#fafafa',
+                                                            color: '#666',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            gap: '8px',
+                                                            transition: 'all 0.3s ease',
+                                                            cursor: 'pointer'
+                                                        }}>{uploading ? 'Uploading...' : 'Upload Back Design'}</Button>
                                                         {uploadedFiles[`back-${item.__index}`] && (
-                                                            <Box sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
-                                                                <DisplayImage imageUrl={uploadedFiles[`back-${item.__index}`]} alt="Back Design" width="120px" height="120px" />
+                                                            <Box
+                                                                sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
+                                                                <DisplayImage
+                                                                    imageUrl={uploadedFiles[`back-${item.__index}`]}
+                                                                    alt="Back Design" width="120px" height="120px"/>
                                                             </Box>
                                                         )}
                                                     </Box>
@@ -1763,8 +2277,9 @@ function DeliverySubmissionModal({visible, onCancel, onSubmit, requestData, desi
                                             </Form.Item>
                                         </Col>
                                     </Row>
-                                    <Form.Item name={['itemList', item.__index, 'designItemId']} initialValue={item.id} hidden>
-                                        <Input />
+                                    <Form.Item name={['itemList', item.__index, 'designItemId']} initialValue={item.id}
+                                               hidden>
+                                        <Input/>
                                     </Form.Item>
                                 </Card>
                             ))}
@@ -1817,11 +2332,11 @@ export default function DesignerChat() {
     const [isOpenButtonHover, setIsOpenButtonHover] = useState(false);
     const emojiPickerRef = useRef(null);
 
-     const { chatMessages, unreadCount, sendMessage, markAsRead } = UseDesignerChatMessages(roomId);
+    const {chatMessages, unreadCount, sendMessage, markAsRead} = UseDesignerChatMessages(roomId);
 
-     useEffect(() => {
-           if (isChatOpen) markAsRead();
-         }, [isChatOpen, chatMessages, markAsRead]);
+    useEffect(() => {
+        if (isChatOpen) markAsRead();
+    }, [isChatOpen, chatMessages, markAsRead]);
 
     const fetchDesignDeliveries = async (designRequestId) => {
         try {
@@ -1937,7 +2452,6 @@ export default function DesignerChat() {
             setShowEmojiPicker(false);
         }
     };
-
 
 
     const onEmojiClick = (emojiData) => {
@@ -2106,7 +2620,7 @@ export default function DesignerChat() {
                                     size="large"
                                     style={{
                                         backgroundColor: requestData?.status === 'completed' ? '#1890ff' :
-                                                       requestData?.status === 'processing' ? '#7c3aed' : '#52c41a',
+                                            requestData?.status === 'processing' ? '#7c3aed' : '#52c41a',
                                         fontSize: '14px',
                                         fontWeight: 600,
                                         padding: '8px 16px',
@@ -2188,7 +2702,7 @@ export default function DesignerChat() {
                                                                       color: '#1e293b',
                                                                       fontWeight: 600
                                                                   }}>
-                                                    My Deliveries
+                                                    My Designs
                                                 </Typography.Title>
                                             </Box>
                                             <Box sx={{
@@ -2211,7 +2725,7 @@ export default function DesignerChat() {
                                         </Box>
                                     </Box>
 
-                                    {}
+                                    
                                     <Box sx={{
                                         flex: 1,
                                         p: 2,
@@ -2228,7 +2742,7 @@ export default function DesignerChat() {
                                                 gap: 2
                                             }}>
                                                 <Typography.Text type="secondary" style={{fontSize: '14px'}}>
-                                                    Loading deliveries...
+                                                    Loading designs...
                                                 </Typography.Text>
                                             </Box>
                                         ) : designDeliveries.length === 0 ? (
@@ -2250,7 +2764,7 @@ export default function DesignerChat() {
                                                     <FileTextOutlined style={{fontSize: '48px', opacity: 0.5}}/>
                                                     <Typography.Text type="secondary" style={{fontSize: '14px'}}>
                                                         {requestData?.status === 'completed' ? 'Design request completed - no actions available' :
-                                                            'No deliveries yet. Start by adding your first delivery!'}
+                                                            'No designs yet. Start by adding your first design!'}
                                                     </Typography.Text>
                                                     {requestData?.status === 'completed' && (
                                                         <Typography.Text type="secondary"
@@ -2263,7 +2777,6 @@ export default function DesignerChat() {
                                                     )}
                                                 </Box>
 
-                                                {}
                                                 {requestData?.status === 'processing' && (
                                                     <Button
                                                         type="dashed"
@@ -2279,14 +2792,14 @@ export default function DesignerChat() {
                                                             fontWeight: 500
                                                         }}
                                                     >
-                                                        + Add New Delivery
+                                                        + Add New Design
                                                     </Button>
                                                 )}
                                             </Box>
-                                                ) : (
+                                        ) : (
                                             <Box sx={{
-                                                display: 'grid',
-                                                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                                                display: 'flex',
+                                                flexDirection: 'column',
                                                 gap: 2,
                                                 p: 1
                                             }}>
@@ -2301,10 +2814,11 @@ export default function DesignerChat() {
                                                                 borderRadius: 3,
                                                                 backgroundColor: 'white',
                                                                 transition: 'all 0.3s ease',
-                                                                height: 'fit-content',
+                                                                width: '100%',
                                                                 minHeight: '120px',
                                                                 display: 'flex',
-                                                                flexDirection: 'column',
+                                                                flexDirection: 'row',
+                                                                alignItems: 'center',
                                                                 '&:hover': {
                                                                     borderColor: '#1976d2',
                                                                     boxShadow: '0 4px 12px rgba(25, 118, 210, 0.15)',
@@ -2314,39 +2828,36 @@ export default function DesignerChat() {
                                                         >
                                                             <Box sx={{
                                                                 display: 'flex',
-                                                                justifyContent: 'space-between',
-                                                                alignItems: 'flex-start',
-                                                                mb: 2,
-                                                                flex: 1
+                                                                flexDirection: 'column',
+                                                                flex: 1,
+                                                                gap: 1
                                                             }}>
-                                                                <Box sx={{flex: 1}}>
-                                                                    <Typography.Title level={5}
-                                                                                      style={{
-                                                                                          margin: 0,
-                                                                                          color: '#1e293b'
-                                                                                      }}>
-                                                                        {item.name}
-                                                                    </Typography.Title>
-                                                                    <Typography.Text type="secondary"
-                                                                                     style={{fontSize: '12px'}}>
-                                                                        {new Date(item.submitDate).toLocaleDateString('vi-VN', {
-                                                                            day: '2-digit',
-                                                                            month: '2-digit',
-                                                                            year: 'numeric'
-                                                                        })}
-                                                                    </Typography.Text>
-                                                                </Box>
-                                                                <Tag color="blue" style={{margin: 0}}>
-                                                                    {parseID(item.id, 'dd')}
-                                                                </Tag>
+                                                                <Typography.Title level={5}
+                                                                                  style={{
+                                                                                      margin: 0,
+                                                                                      color: '#1e293b'
+                                                                                  }}>
+                                                                    {item.name}
+                                                                </Typography.Title>
+                                                                <Typography.Text type="secondary"
+                                                                                 style={{fontSize: '12px'}}>
+                                                                    {new Date(item.submitDate).toLocaleDateString('vi-VN', {
+                                                                        day: '2-digit',
+                                                                        month: '2-digit',
+                                                                        year: 'numeric'
+                                                                    })}
+                                                                </Typography.Text>
                                                             </Box>
 
                                                             <Box sx={{
                                                                 display: 'flex',
-                                                                gap: 1,
-                                                                justifyContent: 'center',
-                                                                mt: 'auto'
+                                                                flexDirection: 'column',
+                                                                alignItems: 'flex-end',
+                                                                gap: 1
                                                             }}>
+                                                                <Tag color="blue" style={{margin: 0}}>
+                                                                    {parseID(item.id, 'dd')}
+                                                                </Tag>
                                                                 <Button
                                                                     size="small"
                                                                     icon={<EyeOutlined/>}
@@ -2369,7 +2880,6 @@ export default function DesignerChat() {
                                                     ))
                                                 }
 
-                                                {}
                                                 {requestData?.status === 'processing' && (
                                                     <Box sx={{
                                                         gridColumn: '1 / -1',
@@ -2389,7 +2899,7 @@ export default function DesignerChat() {
                                                                 fontWeight: 500
                                                             }}
                                                         >
-                                                            + Add New Delivery
+                                                            + Add New Design
                                                         </Button>
                                                     </Box>
                                                 )}
@@ -2398,7 +2908,6 @@ export default function DesignerChat() {
                                     </Box>
                                 </Paper>
 
-                                {}
                                 <Paper
                                     elevation={0}
                                     sx={{
@@ -2414,7 +2923,6 @@ export default function DesignerChat() {
                                         minWidth: 0
                                     }}
                                 >
-                                    {}
                                     <Box sx={{
                                         py: 2.5,
                                         px: 4,
@@ -2422,7 +2930,7 @@ export default function DesignerChat() {
                                         backgroundColor: 'linear-gradient(135deg, #fff5f0 0%, #ffe4d6 100%)',
                                         position: 'relative'
                                     }}>
-                                            <Box sx={{
+                                        <Box sx={{
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'space-between'
@@ -2431,17 +2939,17 @@ export default function DesignerChat() {
                                                 <Box sx={{
                                                     width: 40,
                                                     height: 40,
-                                                borderRadius: '50%',
-                                                background: 'linear-gradient(135deg, #ff6b35, #ff8c42)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                color: 'white',
+                                                    borderRadius: '50%',
+                                                    background: 'linear-gradient(135deg, #ff6b35, #ff8c42)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    color: 'white',
                                                     fontSize: '16px',
-                                                boxShadow: '0 4px 12px rgba(255, 107, 53, 0.3)'
-                                            }}>
-                                                <EditOutlined/>
-                                            </Box>
+                                                    boxShadow: '0 4px 12px rgba(255, 107, 53, 0.3)'
+                                                }}>
+                                                    <EditOutlined/>
+                                                </Box>
                                                 <Box>
                                                     <Typography.Title level={4}
                                                                       style={{
@@ -2449,17 +2957,17 @@ export default function DesignerChat() {
                                                                           color: '#ff6b35',
                                                                           fontWeight: 600
                                                                       }}>
-                                                Revision Requests
-                                            </Typography.Title>
+                                                        Revision Requests
+                                                    </Typography.Title>
                                                     <Typography.Text type="secondary"
                                                                      style={{fontSize: '12px', color: '#ff6b35'}}>
                                                         Track revision requests from school
                                                     </Typography.Text>
-                                        </Box>
-                                    </Box>
-                                    <Box sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
+                                                </Box>
+                                            </Box>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
                                                 justifyContent: 'center',
                                                 minWidth: 32,
                                                 height: 32,
@@ -2471,13 +2979,12 @@ export default function DesignerChat() {
                                                 fontWeight: 600,
                                                 boxShadow: '0 2px 8px rgba(255, 107, 53, 0.3)',
                                                 border: '2px solid rgba(255, 255, 255, 0.2)'
-                                    }}>
+                                            }}>
                                                 Amount: {revisionRequests.length}
                                             </Box>
                                         </Box>
                                     </Box>
 
-                                    {}
                                     <Box sx={{flex: 1, p: 2, overflowY: 'auto'}}>
                                         {loadingRevisionRequests ? (
                                             <Box sx={{
@@ -2578,9 +3085,9 @@ export default function DesignerChat() {
                                                             justifyContent: 'center',
                                                             mt: 'auto'
                                                         }}>
-                                                        <Typography.Text style={{
-                                                            fontSize: '13px',
-                                                            color: '#475569',
+                                                            <Typography.Text style={{
+                                                                fontSize: '13px',
+                                                                color: '#475569',
                                                                 lineHeight: 1.5,
                                                                 display: '-webkit-box',
                                                                 WebkitLineClamp: 2,
@@ -2588,9 +3095,9 @@ export default function DesignerChat() {
                                                                 overflow: 'hidden',
                                                                 textOverflow: 'ellipsis',
                                                                 mb: 1
-                                                        }}>
-                                                            {revision.note}
-                                                        </Typography.Text>
+                                                            }}>
+                                                                {revision.note}
+                                                            </Typography.Text>
                                                             <Button
                                                                 size="small"
                                                                 icon={<EyeOutlined/>}
@@ -2623,7 +3130,6 @@ export default function DesignerChat() {
                             </Box>
                         </Box>
 
-                        {}
                         <Paper
                             elevation={0}
                             sx={{
@@ -2640,7 +3146,6 @@ export default function DesignerChat() {
                                 flex: 1
                             }}
                         >
-                            {}
                             <Box sx={{
                                 py: 2,
                                 px: 3,
@@ -2665,12 +3170,11 @@ export default function DesignerChat() {
                                     </Box>
                                     <Typography.Title level={5}
                                                       style={{margin: 0, color: '#52c41a', fontWeight: 600}}>
-                                        Final Delivery
+                                        Final Design
                                     </Typography.Title>
                                 </Box>
                             </Box>
 
-                            {}
                             <Box sx={{
                                 p: 3,
                                 flex: 1,
@@ -2728,7 +3232,7 @@ export default function DesignerChat() {
                                     }}>
                                         <FileTextOutlined style={{fontSize: '48px', opacity: 0.5}}/>
                                         <Typography.Text type="secondary" style={{fontSize: '14px'}}>
-                                            {requestData?.status === 'completed' ? 'Design completed' : 'No final delivery selected'}
+                                            {requestData?.status === 'completed' ? 'Design completed' : 'No final design selected'}
                                         </Typography.Text>
                                     </Box>
                                 )}
@@ -2763,7 +3267,6 @@ export default function DesignerChat() {
                 onAddRevision={handleAddRevisionDelivery}
             />
 
-            {}
             <Box sx={{position: 'fixed', bottom: 24, right: 24, zIndex: 2000}}>
                 {isChatOpen ? (
                     <Paper
@@ -2929,26 +3432,26 @@ export default function DesignerChat() {
                     </Paper>
                 ) : (
                     <Badge count={unreadCount} overflowCount={99} offset={[-6, 6]}>
-                    <Button
-                        type="primary"
-                        shape="circle"
-                        size="large"
-                        icon={<MessageOutlined/>}
-                        onClick={() => setIsChatOpen(true)}
-                        onMouseEnter={() => setIsOpenButtonHover(true)}
-                        onMouseLeave={() => setIsOpenButtonHover(false)}
-                        style={{
-                            width: isOpenButtonHover ? '60px' : '56px',
-                            height: isOpenButtonHover ? '60px' : '56px',
-                            transform: isOpenButtonHover ? 'translateY(-2px)' : 'none',
-                            transition: 'all 150ms ease',
-                            boxShadow: isOpenButtonHover ? '0 10px 28px rgba(25, 118, 210, 0.5)' : '0 8px 24px rgba(25, 118, 210, 0.4)',
-                            background: isOpenButtonHover ? 'linear-gradient(135deg, #1976d2, #1e88e5)' : 'linear-gradient(135deg, #1976d2, #42a5f5)',
-                            animation: isOpenButtonHover ? 'unisew-chat-shake 220ms ease-in-out' : 'none',
-                            willChange: 'transform',
-                            border: 'none'
-                        }}
-                    />
+                        <Button
+                            type="primary"
+                            shape="circle"
+                            size="large"
+                            icon={<MessageOutlined/>}
+                            onClick={() => setIsChatOpen(true)}
+                            onMouseEnter={() => setIsOpenButtonHover(true)}
+                            onMouseLeave={() => setIsOpenButtonHover(false)}
+                            style={{
+                                width: isOpenButtonHover ? '60px' : '56px',
+                                height: isOpenButtonHover ? '60px' : '56px',
+                                transform: isOpenButtonHover ? 'translateY(-2px)' : 'none',
+                                transition: 'all 150ms ease',
+                                boxShadow: isOpenButtonHover ? '0 10px 28px rgba(25, 118, 210, 0.5)' : '0 8px 24px rgba(25, 118, 210, 0.4)',
+                                background: isOpenButtonHover ? 'linear-gradient(135deg, #1976d2, #1e88e5)' : 'linear-gradient(135deg, #1976d2, #42a5f5)',
+                                animation: isOpenButtonHover ? 'unisew-chat-shake 220ms ease-in-out' : 'none',
+                                willChange: 'transform',
+                                border: 'none'
+                            }}
+                        />
                     </Badge>
                 )}
             </Box>
