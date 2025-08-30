@@ -8,7 +8,6 @@ import {
     DollarOutlined,
     EditOutlined,
     EnvironmentOutlined,
-    EyeOutlined,
     FileTextOutlined,
     InfoCircleOutlined,
     PhoneOutlined,

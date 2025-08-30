@@ -1,41 +1,37 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
     Box,
-    Typography,
-    Paper,
+    Button,
     Card,
     CardContent,
-    Grid,
-    Button,
-    ButtonGroup,
-    CircularProgress,
     Chip,
+    CircularProgress,
     FormControl,
+    Grid,
     InputLabel,
-    Select,
     MenuItem,
-    Tabs,
+    Paper,
+    Select,
+    Skeleton,
     Tab,
-    Skeleton
+    Tabs,
+    Typography
 } from '@mui/material';
-import { DatePicker } from 'antd';
-import { LineChart, PieChart, BarChart } from '@mui/x-charts';
+import {DatePicker} from 'antd';
+import {BarChart, LineChart, PieChart} from '@mui/x-charts';
 import {
-    TrendingUpOutlined,
-    PeopleOutlined,
-    SchoolOutlined,
-    DesignServicesOutlined,
-    FactoryOutlined,
-    BlockOutlined,
-    CheckCircleOutlined,
     AccountBalanceWalletOutlined,
     AttachMoneyOutlined,
-    ReceiptOutlined
+    BlockOutlined,
+    CheckCircleOutlined,
+    PeopleOutlined,
+    ReceiptOutlined,
+    TrendingUpOutlined
 } from '@mui/icons-material';
-import { getAccountStats, getTransactionsStats } from '../../services/AdminService.jsx';
+import {getAccountStats, getTransactionsStats} from '../../services/AdminService.jsx';
 import dayjs from 'dayjs';
 
-const { RangePicker } = DatePicker;
+const {RangePicker} = DatePicker;
 
 const formatVND = (amount) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -48,7 +44,7 @@ const formatNumber = (number) => {
     return new Intl.NumberFormat('vi-VN').format(number || 0);
 };
 
-const StatCard = ({ icon, value, label, color, change, changeType }) => (
+const StatCard = ({icon, value, label, color, change, changeType}) => (
     <Card
         sx={{
             height: '100%',
@@ -62,8 +58,8 @@ const StatCard = ({ icon, value, label, color, change, changeType }) => (
             }
         }}
     >
-        <CardContent sx={{ p: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <CardContent sx={{p: 3}}>
+            <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
                 <Box>
                     <Typography
                         variant="h4"
@@ -142,7 +138,7 @@ export default function AdminDashboard() {
                 },
                 inactiveCount: 15
             },
-            timeSeries: Array.from({ length: 30 }, (_, i) => ({
+            timeSeries: Array.from({length: 30}, (_, i) => ({
                 bucket: dateRange[0].add(i, 'day').format('YYYY-MM-DD'),
                 count: Math.floor(Math.random() * 10)
             }))
@@ -177,11 +173,11 @@ export default function AdminDashboard() {
                 console.log('Raw response data:', response.data);
                 let processedData = response.data;
                 if (response.data.body) {
-                    processedData = { data: response.data.body };
+                    processedData = {data: response.data.body};
                 } else if (response.data.data) {
                     processedData = response.data;
                 } else {
-                    processedData = { data: response.data };
+                    processedData = {data: response.data};
                 }
 
                 console.log('Processed data structure:', processedData);
@@ -229,11 +225,11 @@ export default function AdminDashboard() {
 
                 let processedData = response.data;
                 if (response.data.body) {
-                    processedData = { data: response.data.body };
+                    processedData = {data: response.data.body};
                 } else if (response.data.data) {
                     processedData = response.data;
                 } else {
-                    processedData = { data: response.data };
+                    processedData = {data: response.data};
                 }
 
                 console.log('Processed transaction data structure:', processedData);
@@ -281,18 +277,23 @@ export default function AdminDashboard() {
                             ORDER: 4
                         }
                     },
-                    dailyRevenue: Array.from({ length: 30 }, (_, i) => ({
+                    dailyRevenue: Array.from({length: 30}, (_, i) => ({
                         date: dateRange[0].add(i, 'day').format('YYYY-MM-DD'),
                         revenue: Math.floor(Math.random() * 1000000),
                         completedCount: Math.floor(Math.random() * 10),
                         txCount: Math.floor(Math.random() * 15)
                     })),
                     monthlyRevenue: [
-                        { yearMonth: dateRange[0].format('YYYY-MM'), revenue: 2500000, completedCount: 45, txCount: 60 },
-                        { yearMonth: dateRange[1].format('YYYY-MM'), revenue: 3200000, completedCount: 38, txCount: 52 }
+                        {yearMonth: dateRange[0].format('YYYY-MM'), revenue: 2500000, completedCount: 45, txCount: 60},
+                        {yearMonth: dateRange[1].format('YYYY-MM'), revenue: 3200000, completedCount: 38, txCount: 52}
                     ],
                     yearlyRevenue: [
-                        { year: parseInt(dateRange[0].format('YYYY')), revenue: 15000000, completedCount: 200, txCount: 280 }
+                        {
+                            year: parseInt(dateRange[0].format('YYYY')),
+                            revenue: 15000000,
+                            completedCount: 200,
+                            txCount: 280
+                        }
                     ]
                 }
             };
@@ -339,13 +340,13 @@ export default function AdminDashboard() {
     const timeSeriesData = useMemo(() => {
         console.log('Processing timeSeries data, statsData:', statsData);
         const timeSeries = statsData?.data?.timeSeries ||
-                          statsData?.body?.timeSeries ||
-                          statsData?.timeSeries;
+            statsData?.body?.timeSeries ||
+            statsData?.timeSeries;
 
         console.log('Found timeSeries:', timeSeries);
         if (!timeSeries || !Array.isArray(timeSeries)) {
             console.log('No valid timeSeries data found');
-            return { xAxisData: [], seriesData: [] };
+            return {xAxisData: [], seriesData: []};
         }
 
         const xAxisData = timeSeries.map(item => {
@@ -364,15 +365,15 @@ export default function AdminDashboard() {
 
         const seriesData = timeSeries.map(item => item.count);
 
-        console.log('Processed chart data:', { xAxisData, seriesData });
-        return { xAxisData, seriesData };
+        console.log('Processed chart data:', {xAxisData, seriesData});
+        return {xAxisData, seriesData};
     }, [statsData, groupBy]);
 
     const roleChartData = useMemo(() => {
         console.log('Processing role data, statsData:', statsData);
         const overview = statsData?.data?.overview ||
-                        statsData?.body?.overview ||
-                        statsData?.overview;
+            statsData?.body?.overview ||
+            statsData?.overview;
 
         console.log('Found overview:', overview);
         if (!overview?.byRole) {
@@ -408,8 +409,8 @@ export default function AdminDashboard() {
     const statusChartData = useMemo(() => {
         console.log('Processing status data, statsData:', statsData);
         const overview = statsData?.data?.overview ||
-                        statsData?.body?.overview ||
-                        statsData?.overview;
+            statsData?.body?.overview ||
+            statsData?.overview;
 
         console.log('Found overview for status:', overview);
         if (!overview?.byStatus) {
@@ -449,46 +450,46 @@ export default function AdminDashboard() {
     const dailyRevenueData = useMemo(() => {
         console.log('Processing dailyRevenue data, transactionData:', transactionData);
         const dailyRevenue = transactionData?.data?.dailyRevenue ||
-                           transactionData?.body?.dailyRevenue ||
-                           transactionData?.dailyRevenue;
+            transactionData?.body?.dailyRevenue ||
+            transactionData?.dailyRevenue;
 
         console.log('Found dailyRevenue:', dailyRevenue);
         if (!dailyRevenue || !Array.isArray(dailyRevenue)) {
             console.log('No valid dailyRevenue data found');
-            return { xAxisData: [], seriesData: [] };
+            return {xAxisData: [], seriesData: []};
         }
 
         const xAxisData = dailyRevenue.map(item => dayjs(item.date).format('MM/DD'));
         const seriesData = dailyRevenue.map(item => item.revenue);
 
-        console.log('Processed daily revenue chart data:', { xAxisData, seriesData });
-        return { xAxisData, seriesData };
+        console.log('Processed daily revenue chart data:', {xAxisData, seriesData});
+        return {xAxisData, seriesData};
     }, [transactionData]);
 
     const monthlyRevenueData = useMemo(() => {
         console.log('Processing monthlyRevenue data, transactionData:', transactionData);
         const monthlyRevenue = transactionData?.data?.monthlyRevenue ||
-                             transactionData?.body?.monthlyRevenue ||
-                             transactionData?.monthlyRevenue;
+            transactionData?.body?.monthlyRevenue ||
+            transactionData?.monthlyRevenue;
 
         console.log('Found monthlyRevenue:', monthlyRevenue);
         if (!monthlyRevenue || !Array.isArray(monthlyRevenue)) {
             console.log('No valid monthlyRevenue data found');
-            return { xAxisData: [], seriesData: [] };
+            return {xAxisData: [], seriesData: []};
         }
 
         const xAxisData = monthlyRevenue.map(item => item.yearMonth);
         const seriesData = monthlyRevenue.map(item => item.revenue);
 
-        console.log('Processed monthly revenue chart data:', { xAxisData, seriesData });
-        return { xAxisData, seriesData };
+        console.log('Processed monthly revenue chart data:', {xAxisData, seriesData});
+        return {xAxisData, seriesData};
     }, [transactionData]);
 
     const transactionStatusData = useMemo(() => {
         console.log('Processing transaction status data, transactionData:', transactionData);
         const overview = transactionData?.data?.overview ||
-                        transactionData?.body?.overview ||
-                        transactionData?.overview;
+            transactionData?.body?.overview ||
+            transactionData?.overview;
 
         console.log('Found transaction overview:', overview);
         if (!overview?.byStatus) {
@@ -526,8 +527,8 @@ export default function AdminDashboard() {
     const paymentTypeData = useMemo(() => {
         console.log('Processing payment type data, transactionData:', transactionData);
         const overview = transactionData?.data?.overview ||
-                        transactionData?.body?.overview ||
-                        transactionData?.overview;
+            transactionData?.body?.overview ||
+            transactionData?.overview;
 
         console.log('Found payment type overview:', overview);
         if (!overview?.byPaymentType) {
@@ -586,8 +587,8 @@ export default function AdminDashboard() {
                 justifyContent: 'center',
                 flexDirection: 'column'
             }}>
-                <CircularProgress size={50} sx={{ color: '#dc3545', mb: 2 }} />
-                <Typography variant="h6" sx={{ color: '#64748b' }}>
+                <CircularProgress size={50} sx={{color: '#dc3545', mb: 2}}/>
+                <Typography variant="h6" sx={{color: '#64748b'}}>
                     Loading dashboard...
                 </Typography>
             </Box>
@@ -595,7 +596,7 @@ export default function AdminDashboard() {
     }
 
     return (
-        <Box sx={{ height: '100%', overflowY: 'auto', overflowX: 'hidden', width: '100%' }}>
+        <Box sx={{height: '100%', overflowY: 'auto', overflowX: 'hidden', width: '100%'}}>
             {}
             <Box
                 sx={{
@@ -607,7 +608,7 @@ export default function AdminDashboard() {
                     width: '100%'
                 }}
             >
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <Box sx={{display: "flex", alignItems: "center", justifyContent: "space-between"}}>
                     <Box>
                         <Typography
                             variant="h4"
@@ -633,7 +634,7 @@ export default function AdminDashboard() {
             </Box>
 
             {}
-            <Box sx={{ mb: 3 }}>
+            <Box sx={{mb: 3}}>
                 <Tabs
                     value={activeTab}
                     onChange={handleTabChange}
@@ -652,58 +653,58 @@ export default function AdminDashboard() {
                         },
                     }}
                 >
-                    <Tab label="Account Statistics" />
-                    <Tab label="Transaction & Revenue" />
+                    <Tab label="Account Statistics"/>
+                    <Tab label="Transaction & Revenue"/>
                 </Tabs>
             </Box>
 
             {/*tab*/}
             {activeTab === 0 && (
                 <>
-                    
-                    <Box sx={{ display: 'flex', gap: 3, width: '100%', mb: 4 }}>
-                        <Box sx={{ flex: 1 }}>
+
+                    <Box sx={{display: 'flex', gap: 3, width: '100%', mb: 4}}>
+                        <Box sx={{flex: 1}}>
                             {loading ? (
-                                <Skeleton variant="rectangular" height={100} sx={{ borderRadius: 2 }} />
+                                <Skeleton variant="rectangular" height={100} sx={{borderRadius: 2}}/>
                             ) : (
                                 <StatCard
-                                    icon={<PeopleOutlined style={{ fontSize: 28 }} />}
+                                    icon={<PeopleOutlined style={{fontSize: 28}}/>}
                                     value={(statsData?.data?.overview || statsData?.body?.overview || statsData?.overview)?.total || 0}
                                     label="Total Accounts (All Time)"
                                     color="#dc3545"
                                 />
                             )}
                         </Box>
-                        <Box sx={{ flex: 1 }}>
+                        <Box sx={{flex: 1}}>
                             {loading ? (
-                                <Skeleton variant="rectangular" height={100} sx={{ borderRadius: 2 }} />
+                                <Skeleton variant="rectangular" height={100} sx={{borderRadius: 2}}/>
                             ) : (
                                 <StatCard
-                                    icon={<CheckCircleOutlined style={{ fontSize: 28 }} />}
+                                    icon={<CheckCircleOutlined style={{fontSize: 28}}/>}
                                     value={(statsData?.data?.overview || statsData?.body?.overview || statsData?.overview)?.byStatus?.ACCOUNT_ACTIVE || 0}
                                     label="Active Accounts (All Time)"
                                     color="#28a745"
                                 />
                             )}
                         </Box>
-                        <Box sx={{ flex: 1 }}>
+                        <Box sx={{flex: 1}}>
                             {loading ? (
-                                <Skeleton variant="rectangular" height={100} sx={{ borderRadius: 2 }} />
+                                <Skeleton variant="rectangular" height={100} sx={{borderRadius: 2}}/>
                             ) : (
                                 <StatCard
-                                    icon={<BlockOutlined style={{ fontSize: 28 }} />}
+                                    icon={<BlockOutlined style={{fontSize: 28}}/>}
                                     value={(statsData?.data?.overview || statsData?.body?.overview || statsData?.overview)?.inactiveCount || 0}
                                     label="Inactive Accounts (All Time)"
                                     color="#dc3545"
                                 />
                             )}
                         </Box>
-                        <Box sx={{ flex: 1 }}>
+                        <Box sx={{flex: 1}}>
                             {loading ? (
-                                <Skeleton variant="rectangular" height={100} sx={{ borderRadius: 2 }} />
+                                <Skeleton variant="rectangular" height={100} sx={{borderRadius: 2}}/>
                             ) : (
                                 <StatCard
-                                    icon={<TrendingUpOutlined style={{ fontSize: 28 }} />}
+                                    icon={<TrendingUpOutlined style={{fontSize: 28}}/>}
                                     value={timeSeriesData.seriesData.reduce((a, b) => a + b, 0)}
                                     label={`New Registrations (${dateRange[0]?.format('MM/DD')} - ${dateRange[1]?.format('MM/DD')})`}
                                     color="#17a2b8"
@@ -713,9 +714,9 @@ export default function AdminDashboard() {
                     </Box>
 
                     {}
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, width: '100%' }}>
+                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 3, width: '100%'}}>
                         {}
-                        <Box sx={{ width: '100%' }}>
+                        <Box sx={{width: '100%'}}>
                             <Paper
                                 elevation={0}
                                 sx={{
@@ -727,7 +728,12 @@ export default function AdminDashboard() {
                                     overflow: 'hidden'
                                 }}
                             >
-                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    mb: 3
+                                }}>
                                     <Typography
                                         variant="h6"
                                         sx={{
@@ -846,10 +852,11 @@ export default function AdminDashboard() {
                                     </Box>
                                 </Box>
 
-                                <Box ref={chartContainerRef} sx={{ width: '100%', height: 350 }}>
+                                <Box ref={chartContainerRef} sx={{width: '100%', height: 350}}>
                                     {loading ? (
-                                        <Box sx={{ width: '100%', height: 350 }}>
-                                            <Skeleton variant="rectangular" width="100%" height={350} sx={{ borderRadius: 1 }} />
+                                        <Box sx={{width: '100%', height: 350}}>
+                                            <Skeleton variant="rectangular" width="100%" height={350}
+                                                      sx={{borderRadius: 1}}/>
                                         </Box>
                                     ) : timeSeriesData.xAxisData.length > 0 ? (
                                         <LineChart
@@ -864,7 +871,7 @@ export default function AdminDashboard() {
                                             }]}
                                             width={chartWidth}
                                             height={350}
-                                            margin={{ left: 60, right: 60, top: 20, bottom: 60 }}
+                                            margin={{left: 60, right: 60, top: 20, bottom: 60}}
                                             sx={{
                                                 '& .MuiChartsAxis-root': {
                                                     '& .MuiChartsAxis-tickLabel': {
@@ -886,7 +893,7 @@ export default function AdminDashboard() {
                                             alignItems: 'center',
                                             justifyContent: 'center'
                                         }}>
-                                            <Typography variant="body1" sx={{ color: '#64748b' }}>
+                                            <Typography variant="body1" sx={{color: '#64748b'}}>
                                                 No data available for the selected period
                                             </Typography>
                                         </Box>
@@ -896,9 +903,9 @@ export default function AdminDashboard() {
                         </Box>
 
                         {}
-                        <Box sx={{ display: 'flex', gap: 3, width: '100%' }}>
+                        <Box sx={{display: 'flex', gap: 3, width: '100%'}}>
                             {}
-                            <Box sx={{ flex: 1 }}>
+                            <Box sx={{flex: 1}}>
                                 <Paper
                                     elevation={0}
                                     sx={{
@@ -920,13 +927,13 @@ export default function AdminDashboard() {
                                     </Typography>
 
                                     {loading ? (
-                                        <Skeleton variant="circular" width={300} height={300} sx={{ mx: 'auto' }} />
+                                        <Skeleton variant="circular" width={300} height={300} sx={{mx: 'auto'}}/>
                                     ) : roleChartData.length > 0 ? (
                                         <PieChart
                                             series={[{
                                                 data: roleChartData,
-                                                highlightScope: { faded: 'global', highlighted: 'item' },
-                                                faded: { innerRadius: 30, additionalRadius: -30 },
+                                                highlightScope: {faded: 'global', highlighted: 'item'},
+                                                faded: {innerRadius: 30, additionalRadius: -30},
                                             }]}
                                             width={undefined}
                                             height={350}
@@ -938,7 +945,7 @@ export default function AdminDashboard() {
                                             alignItems: 'center',
                                             justifyContent: 'center'
                                         }}>
-                                            <Typography variant="body1" sx={{ color: '#64748b' }}>
+                                            <Typography variant="body1" sx={{color: '#64748b'}}>
                                                 No role data available
                                             </Typography>
                                         </Box>
@@ -947,7 +954,7 @@ export default function AdminDashboard() {
                             </Box>
 
                             {}
-                            <Box sx={{ flex: 1 }}>
+                            <Box sx={{flex: 1}}>
                                 <Paper
                                     elevation={0}
                                     sx={{
@@ -969,13 +976,13 @@ export default function AdminDashboard() {
                                     </Typography>
 
                                     {loading ? (
-                                        <Skeleton variant="circular" width={300} height={300} sx={{ mx: 'auto' }} />
+                                        <Skeleton variant="circular" width={300} height={300} sx={{mx: 'auto'}}/>
                                     ) : statusChartData.length > 0 ? (
                                         <PieChart
                                             series={[{
                                                 data: statusChartData,
-                                                highlightScope: { faded: 'global', highlighted: 'item' },
-                                                faded: { innerRadius: 30, additionalRadius: -30 },
+                                                highlightScope: {faded: 'global', highlighted: 'item'},
+                                                faded: {innerRadius: 30, additionalRadius: -30},
                                             }]}
                                             width={undefined}
                                             height={350}
@@ -987,7 +994,7 @@ export default function AdminDashboard() {
                                             alignItems: 'center',
                                             justifyContent: 'center'
                                         }}>
-                                            <Typography variant="body1" sx={{ color: '#64748b' }}>
+                                            <Typography variant="body1" sx={{color: '#64748b'}}>
                                                 No status data available
                                             </Typography>
                                         </Box>
@@ -996,7 +1003,7 @@ export default function AdminDashboard() {
                             </Box>
 
                             {}
-                            <Box sx={{ flex: 1 }}>
+                            <Box sx={{flex: 1}}>
                                 <Paper
                                     elevation={0}
                                     sx={{
@@ -1021,7 +1028,8 @@ export default function AdminDashboard() {
                                         <Grid container spacing={2}>
                                             {[1, 2, 3, 4].map((item) => (
                                                 <Grid item xs={6} key={item}>
-                                                    <Skeleton variant="rectangular" height={120} sx={{ borderRadius: 2 }} />
+                                                    <Skeleton variant="rectangular" height={120}
+                                                              sx={{borderRadius: 2}}/>
                                                 </Grid>
                                             ))}
                                         </Grid>
@@ -1050,10 +1058,12 @@ export default function AdminDashboard() {
                                                                 mb: 1
                                                             }}
                                                         />
-                                                        <Typography variant="h5" sx={{ fontWeight: 700, color: role.color, mb: 0.5 }}>
+                                                        <Typography variant="h5"
+                                                                    sx={{fontWeight: 700, color: role.color, mb: 0.5}}>
                                                             {role.value}
                                                         </Typography>
-                                                        <Typography variant="body2" sx={{ fontWeight: 500, color: '#64748b' }}>
+                                                        <Typography variant="body2"
+                                                                    sx={{fontWeight: 500, color: '#64748b'}}>
                                                             {role.label}
                                                         </Typography>
                                                     </Box>
@@ -1068,8 +1078,9 @@ export default function AdminDashboard() {
                                         mt: 3,
                                         textAlign: 'center'
                                     }}>
-                                        <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e293b' }}>
-                                            Total Accounts: {(statsData?.data?.overview || statsData?.body?.overview || statsData?.overview)?.total || 0}
+                                        <Typography variant="h6" sx={{fontWeight: 700, color: '#1e293b'}}>
+                                            Total
+                                            Accounts: {(statsData?.data?.overview || statsData?.body?.overview || statsData?.overview)?.total || 0}
                                         </Typography>
                                     </Box>
                                 </Paper>
@@ -1083,49 +1094,49 @@ export default function AdminDashboard() {
             {activeTab === 1 && (
                 <>
                     {}
-                    <Box sx={{ display: 'flex', gap: 3, width: '100%', mb: 4 }}>
-                        <Box sx={{ flex: 1 }}>
+                    <Box sx={{display: 'flex', gap: 3, width: '100%', mb: 4}}>
+                        <Box sx={{flex: 1}}>
                             {loading ? (
-                                <Skeleton variant="rectangular" height={100} sx={{ borderRadius: 2 }} />
+                                <Skeleton variant="rectangular" height={100} sx={{borderRadius: 2}}/>
                             ) : (
                                 <StatCard
-                                    icon={<ReceiptOutlined style={{ fontSize: 28 }} />}
+                                    icon={<ReceiptOutlined style={{fontSize: 28}}/>}
                                     value={formatNumber((transactionData?.data?.overview || transactionData?.body?.overview || transactionData?.overview)?.totalCount || 0)}
                                     label="Total Transactions"
                                     color="#17a2b8"
                                 />
                             )}
                         </Box>
-                        <Box sx={{ flex: 1 }}>
+                        <Box sx={{flex: 1}}>
                             {loading ? (
-                                <Skeleton variant="rectangular" height={100} sx={{ borderRadius: 2 }} />
+                                <Skeleton variant="rectangular" height={100} sx={{borderRadius: 2}}/>
                             ) : (
                                 <StatCard
-                                    icon={<AttachMoneyOutlined style={{ fontSize: 28 }} />}
+                                    icon={<AttachMoneyOutlined style={{fontSize: 28}}/>}
                                     value={formatVND((transactionData?.data?.overview || transactionData?.body?.overview || transactionData?.overview)?.totalAmount || 0)}
                                     label="Total Transaction Amount"
                                     color="#28a745"
                                 />
                             )}
                         </Box>
-                        <Box sx={{ flex: 1 }}>
+                        <Box sx={{flex: 1}}>
                             {loading ? (
-                                <Skeleton variant="rectangular" height={100} sx={{ borderRadius: 2 }} />
+                                <Skeleton variant="rectangular" height={100} sx={{borderRadius: 2}}/>
                             ) : (
                                 <StatCard
-                                    icon={<AccountBalanceWalletOutlined style={{ fontSize: 28 }} />}
+                                    icon={<AccountBalanceWalletOutlined style={{fontSize: 28}}/>}
                                     value={formatVND((transactionData?.data?.overview || transactionData?.body?.overview || transactionData?.overview)?.totalServiceFee || 0)}
                                     label="Platform Revenue (Service Fee)"
                                     color="#dc3545"
                                 />
                             )}
                         </Box>
-                        <Box sx={{ flex: 1 }}>
+                        <Box sx={{flex: 1}}>
                             {loading ? (
-                                <Skeleton variant="rectangular" height={100} sx={{ borderRadius: 2 }} />
+                                <Skeleton variant="rectangular" height={100} sx={{borderRadius: 2}}/>
                             ) : (
                                 <StatCard
-                                    icon={<CheckCircleOutlined style={{ fontSize: 28 }} />}
+                                    icon={<CheckCircleOutlined style={{fontSize: 28}}/>}
                                     value={`${Math.round(((transactionData?.data?.overview || transactionData?.body?.overview || transactionData?.overview)?.byStatus?.TRANSACTION_SUCCESS || 0) / Math.max((transactionData?.data?.overview || transactionData?.body?.overview || transactionData?.overview)?.totalCount || 1, 1) * 100)}%`}
                                     label="Success Rate"
                                     color="#6f42c1"
@@ -1135,11 +1146,11 @@ export default function AdminDashboard() {
                     </Box>
 
                     {}
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, width: '100%' }}>
+                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 3, width: '100%'}}>
                         {}
-                        <Box sx={{ display: 'flex', gap: 3, width: '100%' }}>
+                        <Box sx={{display: 'flex', gap: 3, width: '100%'}}>
                             {}
-                            <Box sx={{ flex: 2, minWidth: 0 }}>
+                            <Box sx={{flex: 2, minWidth: 0}}>
                                 <Paper
                                     elevation={0}
                                     sx={{
@@ -1151,7 +1162,12 @@ export default function AdminDashboard() {
                                         overflow: 'hidden'
                                     }}
                                 >
-                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        mb: 3
+                                    }}>
                                         <Typography
                                             variant="h6"
                                             sx={{
@@ -1232,9 +1248,10 @@ export default function AdminDashboard() {
                                         </Box>
                                     </Box>
 
-                                    <Box sx={{ width: '100%', height: 400 }}>
+                                    <Box sx={{width: '100%', height: 400}}>
                                         {loading ? (
-                                            <Skeleton variant="rectangular" width="100%" height={400} sx={{ borderRadius: 1 }} />
+                                            <Skeleton variant="rectangular" width="100%" height={400}
+                                                      sx={{borderRadius: 1}}/>
                                         ) : dailyRevenueData.xAxisData.length > 0 ? (
                                             <LineChart
                                                 xAxis={[{
@@ -1249,7 +1266,7 @@ export default function AdminDashboard() {
                                                 }]}
                                                 width={undefined}
                                                 height={400}
-                                                margin={{ left: 80, right: 60, top: 20, bottom: 60 }}
+                                                margin={{left: 80, right: 60, top: 20, bottom: 60}}
                                                 sx={{
                                                     '& .MuiChartsAxis-root': {
                                                         '& .MuiChartsAxis-tickLabel': {
@@ -1271,7 +1288,7 @@ export default function AdminDashboard() {
                                                 alignItems: 'center',
                                                 justifyContent: 'center'
                                             }}>
-                                                <Typography variant="body1" sx={{ color: '#64748b' }}>
+                                                <Typography variant="body1" sx={{color: '#64748b'}}>
                                                     No revenue data available for the selected period
                                                 </Typography>
                                             </Box>
@@ -1281,7 +1298,7 @@ export default function AdminDashboard() {
                             </Box>
 
                             {}
-                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Box sx={{flex: 1, minWidth: 0}}>
                                 <Paper
                                     elevation={0}
                                     sx={{
@@ -1305,7 +1322,8 @@ export default function AdminDashboard() {
                                     </Typography>
 
                                     {loading ? (
-                                        <Skeleton variant="rectangular" width="100%" height={400} sx={{ borderRadius: 1 }} />
+                                        <Skeleton variant="rectangular" width="100%" height={400}
+                                                  sx={{borderRadius: 1}}/>
                                     ) : monthlyRevenueData.xAxisData.length > 0 ? (
                                         <BarChart
                                             xAxis={[{
@@ -1319,7 +1337,7 @@ export default function AdminDashboard() {
                                             }]}
                                             width={undefined}
                                             height={400}
-                                            margin={{ left: 80, right: 20, top: 20, bottom: 60 }}
+                                            margin={{left: 80, right: 20, top: 20, bottom: 60}}
                                         />
                                     ) : (
                                         <Box sx={{
@@ -1328,7 +1346,7 @@ export default function AdminDashboard() {
                                             alignItems: 'center',
                                             justifyContent: 'center'
                                         }}>
-                                            <Typography variant="body1" sx={{ color: '#64748b' }}>
+                                            <Typography variant="body1" sx={{color: '#64748b'}}>
                                                 No monthly data available
                                             </Typography>
                                         </Box>
@@ -1338,9 +1356,9 @@ export default function AdminDashboard() {
                         </Box>
 
                         {}
-                        <Box sx={{ display: 'flex', gap: 3, width: '100%' }}>
+                        <Box sx={{display: 'flex', gap: 3, width: '100%'}}>
                             {}
-                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Box sx={{flex: 1, minWidth: 0}}>
                                 <Paper
                                     elevation={0}
                                     sx={{
@@ -1363,13 +1381,13 @@ export default function AdminDashboard() {
                                     </Typography>
 
                                     {loading ? (
-                                        <Skeleton variant="circular" width={250} height={250} sx={{ mx: 'auto' }} />
+                                        <Skeleton variant="circular" width={250} height={250} sx={{mx: 'auto'}}/>
                                     ) : transactionStatusData.length > 0 ? (
                                         <PieChart
                                             series={[{
                                                 data: transactionStatusData,
-                                                highlightScope: { faded: 'global', highlighted: 'item' },
-                                                faded: { innerRadius: 30, additionalRadius: -30 },
+                                                highlightScope: {faded: 'global', highlighted: 'item'},
+                                                faded: {innerRadius: 30, additionalRadius: -30},
                                             }]}
                                             width={undefined}
                                             height={300}
@@ -1381,7 +1399,7 @@ export default function AdminDashboard() {
                                             alignItems: 'center',
                                             justifyContent: 'center'
                                         }}>
-                                            <Typography variant="body1" sx={{ color: '#64748b' }}>
+                                            <Typography variant="body1" sx={{color: '#64748b'}}>
                                                 No status data available
                                             </Typography>
                                         </Box>
@@ -1390,7 +1408,7 @@ export default function AdminDashboard() {
                             </Box>
 
                             {}
-                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Box sx={{flex: 1, minWidth: 0}}>
                                 <Paper
                                     elevation={0}
                                     sx={{
@@ -1413,13 +1431,13 @@ export default function AdminDashboard() {
                                     </Typography>
 
                                     {loading ? (
-                                        <Skeleton variant="circular" width={250} height={250} sx={{ mx: 'auto' }} />
+                                        <Skeleton variant="circular" width={250} height={250} sx={{mx: 'auto'}}/>
                                     ) : paymentTypeData.length > 0 ? (
                                         <PieChart
                                             series={[{
                                                 data: paymentTypeData,
-                                                highlightScope: { faded: 'global', highlighted: 'item' },
-                                                faded: { innerRadius: 30, additionalRadius: -30 },
+                                                highlightScope: {faded: 'global', highlighted: 'item'},
+                                                faded: {innerRadius: 30, additionalRadius: -30},
                                             }]}
                                             width={undefined}
                                             height={300}
@@ -1431,7 +1449,7 @@ export default function AdminDashboard() {
                                             alignItems: 'center',
                                             justifyContent: 'center'
                                         }}>
-                                            <Typography variant="body1" sx={{ color: '#64748b' }}>
+                                            <Typography variant="body1" sx={{color: '#64748b'}}>
                                                 No payment type data available
                                             </Typography>
                                         </Box>
@@ -1441,7 +1459,7 @@ export default function AdminDashboard() {
                         </Box>
 
                         {}
-                        <Box sx={{ width: '100%' }}>
+                        <Box sx={{width: '100%'}}>
                             <Paper
                                 elevation={0}
                                 sx={{
@@ -1462,11 +1480,11 @@ export default function AdminDashboard() {
                                     Transaction Summary
                                 </Typography>
 
-                                <Grid container spacing={3} sx={{ width: '100%', mx: 0 }}>
+                                <Grid container spacing={3} sx={{width: '100%', mx: 0}}>
                                     {}
                                     <Grid item xs={12} sm={6} md={3}>
                                         {loading ? (
-                                            <Skeleton variant="rectangular" height={140} sx={{ borderRadius: 2 }} />
+                                            <Skeleton variant="rectangular" height={140} sx={{borderRadius: 2}}/>
                                         ) : (
                                             <Box sx={{
                                                 p: 3,
@@ -1484,10 +1502,15 @@ export default function AdminDashboard() {
                                                     boxShadow: '0 8px 24px rgba(40, 167, 69, 0.15)'
                                                 }
                                             }}>
-                                                <Typography variant="h3" sx={{ fontWeight: 800, color: '#28a745', mb: 1 }}>
+                                                <Typography variant="h3"
+                                                            sx={{fontWeight: 800, color: '#28a745', mb: 1}}>
                                                     {(transactionData?.data?.overview || transactionData?.body?.overview || transactionData?.overview)?.byStatus?.TRANSACTION_SUCCESS || 0}
                                                 </Typography>
-                                                <Typography variant="body1" sx={{ fontWeight: 600, color: '#64748b', fontSize: '0.9rem' }}>
+                                                <Typography variant="body1" sx={{
+                                                    fontWeight: 600,
+                                                    color: '#64748b',
+                                                    fontSize: '0.9rem'
+                                                }}>
                                                     Successful Transactions
                                                 </Typography>
                                             </Box>
@@ -1497,7 +1520,7 @@ export default function AdminDashboard() {
                                     {}
                                     <Grid item xs={12} sm={6} md={3}>
                                         {loading ? (
-                                            <Skeleton variant="rectangular" height={140} sx={{ borderRadius: 2 }} />
+                                            <Skeleton variant="rectangular" height={140} sx={{borderRadius: 2}}/>
                                         ) : (
                                             <Box sx={{
                                                 p: 3,
@@ -1515,10 +1538,15 @@ export default function AdminDashboard() {
                                                     boxShadow: '0 8px 24px rgba(220, 53, 69, 0.15)'
                                                 }
                                             }}>
-                                                <Typography variant="h3" sx={{ fontWeight: 800, color: '#dc3545', mb: 1 }}>
+                                                <Typography variant="h3"
+                                                            sx={{fontWeight: 800, color: '#dc3545', mb: 1}}>
                                                     {(transactionData?.data?.overview || transactionData?.body?.overview || transactionData?.overview)?.byStatus?.TRANSACTION_FAIL || 0}
                                                 </Typography>
-                                                <Typography variant="body1" sx={{ fontWeight: 600, color: '#64748b', fontSize: '0.9rem' }}>
+                                                <Typography variant="body1" sx={{
+                                                    fontWeight: 600,
+                                                    color: '#64748b',
+                                                    fontSize: '0.9rem'
+                                                }}>
                                                     Failed Transactions
                                                 </Typography>
                                             </Box>
@@ -1528,7 +1556,7 @@ export default function AdminDashboard() {
                                     {}
                                     <Grid item xs={12} sm={6} md={3}>
                                         {loading ? (
-                                            <Skeleton variant="rectangular" height={140} sx={{ borderRadius: 2 }} />
+                                            <Skeleton variant="rectangular" height={140} sx={{borderRadius: 2}}/>
                                         ) : (
                                             <Box sx={{
                                                 p: 3,
@@ -1546,10 +1574,15 @@ export default function AdminDashboard() {
                                                     boxShadow: '0 8px 24px rgba(111, 66, 193, 0.15)'
                                                 }
                                             }}>
-                                                <Typography variant="h3" sx={{ fontWeight: 800, color: '#6f42c1', mb: 1 }}>
+                                                <Typography variant="h3"
+                                                            sx={{fontWeight: 800, color: '#6f42c1', mb: 1}}>
                                                     {(transactionData?.data?.overview || transactionData?.body?.overview || transactionData?.overview)?.byPaymentType?.DESIGN || 0}
                                                 </Typography>
-                                                <Typography variant="body1" sx={{ fontWeight: 600, color: '#64748b', fontSize: '0.9rem' }}>
+                                                <Typography variant="body1" sx={{
+                                                    fontWeight: 600,
+                                                    color: '#64748b',
+                                                    fontSize: '0.9rem'
+                                                }}>
                                                     Design Payments
                                                 </Typography>
                                             </Box>
@@ -1559,7 +1592,7 @@ export default function AdminDashboard() {
                                     {}
                                     <Grid item xs={12} sm={6} md={3}>
                                         {loading ? (
-                                            <Skeleton variant="rectangular" height={140} sx={{ borderRadius: 2 }} />
+                                            <Skeleton variant="rectangular" height={140} sx={{borderRadius: 2}}/>
                                         ) : (
                                             <Box sx={{
                                                 p: 3,
@@ -1577,10 +1610,15 @@ export default function AdminDashboard() {
                                                     boxShadow: '0 8px 24px rgba(253, 126, 20, 0.15)'
                                                 }
                                             }}>
-                                                <Typography variant="h3" sx={{ fontWeight: 800, color: '#fd7e14', mb: 1 }}>
+                                                <Typography variant="h3"
+                                                            sx={{fontWeight: 800, color: '#fd7e14', mb: 1}}>
                                                     {(transactionData?.data?.overview || transactionData?.body?.overview || transactionData?.overview)?.byPaymentType?.ORDER || 0}
                                                 </Typography>
-                                                <Typography variant="body1" sx={{ fontWeight: 600, color: '#64748b', fontSize: '0.9rem' }}>
+                                                <Typography variant="body1" sx={{
+                                                    fontWeight: 600,
+                                                    color: '#64748b',
+                                                    fontSize: '0.9rem'
+                                                }}>
                                                     Order Payments
                                                 </Typography>
                                             </Box>

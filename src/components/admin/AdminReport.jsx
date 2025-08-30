@@ -1,51 +1,49 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
+    Avatar,
     Box,
-    Typography,
-    Paper,
+    Button,
     Card,
     CardContent,
-    Grid,
     Chip,
-    Button,
     Dialog,
-    DialogTitle,
-    DialogContent,
     DialogActions,
-    IconButton,
-    Avatar,
-    Rating,
-    Divider,
-    TextField,
+    DialogContent,
+    DialogTitle,
     FormControl,
-    FormLabel,
-    RadioGroup,
     FormControlLabel,
-    Radio
+    FormLabel,
+    Grid,
+    IconButton,
+    Paper,
+    Radio,
+    RadioGroup,
+    Rating,
+    TextField,
+    Typography
 } from '@mui/material';
 import {
     Assessment as AssessmentIcon,
-    Feedback as FeedbackIcon,
-    Report as ReportIcon,
-    CheckCircle as CheckCircleIcon,
-    Warning as WarningIcon,
-    Close as CloseIcon,
-    Visibility as VisibilityIcon,
-    ThumbUp as ThumbUpIcon,
-    ThumbDown as ThumbDownIcon,
-    Info as InfoIcon,
-    ShoppingCart as OrderIcon,
-    DesignServices as DesignIcon,
-    Business as BusinessIcon,
-    Phone as PhoneIcon,
-    LocationOn as LocationIcon,
-    CalendarToday as CalendarIcon,
     AttachMoney as MoneyIcon,
-    LocalShipping as ShippingIcon
+    Business as BusinessIcon,
+    CalendarToday as CalendarIcon,
+    CheckCircle as CheckCircleIcon,
+    Close as CloseIcon,
+    DesignServices as DesignIcon,
+    Feedback as FeedbackIcon,
+    Info as InfoIcon,
+    LocalShipping as ShippingIcon,
+    LocationOn as LocationIcon,
+    Phone as PhoneIcon,
+    Report as ReportIcon,
+    ShoppingCart as OrderIcon,
+    ThumbDown as ThumbDownIcon,
+    Visibility as VisibilityIcon,
+    Warning as WarningIcon
 } from '@mui/icons-material';
-import { enqueueSnackbar } from 'notistack';
-import { getAllReport, approveReport } from '../../services/FeedbackService';
-import { refundTransaction } from '../../services/PaymentService';
+import {enqueueSnackbar} from 'notistack';
+import {approveReport, getAllReport} from '../../services/FeedbackService';
+import {refundTransaction} from '../../services/PaymentService';
 import DisplayImage from '../ui/DisplayImage';
 import dayjs from 'dayjs';
 import {parseID} from "../../utils/ParseIDUtil.jsx";
@@ -77,7 +75,7 @@ export default function AdminReport() {
             }
         } catch (error) {
             console.error('Error fetching reports:', error);
-            enqueueSnackbar('Failed to load reports', { variant: 'error' });
+            enqueueSnackbar('Failed to load reports', {variant: 'error'});
         } finally {
             setLoading(false);
         }
@@ -117,7 +115,7 @@ export default function AdminReport() {
 
         // Validate problem level for accept action
         if (approvalAction === 'approve' && !problemLevel) {
-            enqueueSnackbar('Please select a problem level', { variant: 'error' });
+            enqueueSnackbar('Please select a problem level', {variant: 'error'});
             return;
         }
 
@@ -147,13 +145,13 @@ export default function AdminReport() {
 
                         const refundResponse = await refundTransaction(refundPayload);
                         if (refundResponse && refundResponse.status === 200) {
-                            enqueueSnackbar('Report accepted and refund processed successfully', { variant: 'success' });
+                            enqueueSnackbar('Report accepted and refund processed successfully', {variant: 'success'});
                         } else {
-                            enqueueSnackbar('Report accepted but refund processing failed', { variant: 'warning' });
+                            enqueueSnackbar('Report accepted but refund processing failed', {variant: 'warning'});
                         }
                     } catch (refundError) {
                         console.error('Error processing refund:', refundError);
-                        enqueueSnackbar('Report accepted but refund processing failed', { variant: 'warning' });
+                        enqueueSnackbar('Report accepted but refund processing failed', {variant: 'warning'});
                     }
                 } else {
                     // For reject action, also call refund API with REJECTED decision
@@ -168,13 +166,13 @@ export default function AdminReport() {
 
                         const refundResponse = await refundTransaction(refundPayload);
                         if (refundResponse && refundResponse.status === 200) {
-                            enqueueSnackbar('Report rejected successfully', { variant: 'success' });
+                            enqueueSnackbar('Report rejected successfully', {variant: 'success'});
                         } else {
-                            enqueueSnackbar('Report rejected but refund processing failed', { variant: 'warning' });
+                            enqueueSnackbar('Report rejected but refund processing failed', {variant: 'warning'});
                         }
                     } catch (refundError) {
                         console.error('Error processing refund for rejection:', refundError);
-                        enqueueSnackbar('Report rejected but refund processing failed', { variant: 'warning' });
+                        enqueueSnackbar('Report rejected but refund processing failed', {variant: 'warning'});
                     }
                 }
 
@@ -182,11 +180,11 @@ export default function AdminReport() {
                 handleCloseDetail();
                 fetchReports();
             } else {
-                enqueueSnackbar(`Failed to ${approvalAction} report`, { variant: 'error' });
+                enqueueSnackbar(`Failed to ${approvalAction} report`, {variant: 'error'});
             }
         } catch (error) {
             console.error(`Error ${approvalAction}ing report:`, error);
-            enqueueSnackbar(`Failed to ${approvalAction} report`, { variant: 'error' });
+            enqueueSnackbar(`Failed to ${approvalAction} report`, {variant: 'error'});
         } finally {
             setApproving(false);
         }
@@ -246,7 +244,7 @@ export default function AdminReport() {
                 alignItems: 'center',
                 minHeight: '60vh'
             }}>
-                <Typography variant="h6" sx={{ color: '#64748b' }}>
+                <Typography variant="h6" sx={{color: '#64748b'}}>
                     Loading reports...
                 </Typography>
             </Box>
@@ -254,7 +252,7 @@ export default function AdminReport() {
     }
 
     return (
-        <Box sx={{ height: '100%', overflowY: 'auto' }}>
+        <Box sx={{height: '100%', overflowY: 'auto'}}>
             {}
             <Box
                 sx={{
@@ -278,14 +276,14 @@ export default function AdminReport() {
                     }
                 }}
             >
-                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                    <AssessmentIcon sx={{ fontSize: 32, mr: 2, color: "#ef4444" }} />
+                <Box sx={{display: "flex", alignItems: "center", mb: 2}}>
+                    <AssessmentIcon sx={{fontSize: 32, mr: 2, color: "#ef4444"}}/>
                     <Typography
                         variant="h4"
                         sx={{
                             fontWeight: 700,
                             color: "#1e293b",
-                            fontSize: { xs: "1.5rem", md: "2rem" }
+                            fontSize: {xs: "1.5rem", md: "2rem"}
                         }}
                     >
                         Report Management
@@ -305,8 +303,8 @@ export default function AdminReport() {
             </Box>
 
             {/* Statistics Cards */}
-            <Box sx={{ display: 'flex', gap: 3, width: '100%', mb: 4 }}>
-                <Box sx={{ flex: 1 }}>
+            <Box sx={{display: 'flex', gap: 3, width: '100%', mb: 4}}>
+                <Box sx={{flex: 1}}>
                     <Card
                         sx={{
                             height: '100%',
@@ -320,8 +318,8 @@ export default function AdminReport() {
                             }
                         }}
                     >
-                        <CardContent sx={{ p: 3 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <CardContent sx={{p: 3}}>
+                            <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
                                 <Box>
                                     <Typography
                                         variant="h4"
@@ -351,14 +349,14 @@ export default function AdminReport() {
                                         color: '#3b82f6'
                                     }}
                                 >
-                                    <AssessmentIcon sx={{ fontSize: 28 }} />
+                                    <AssessmentIcon sx={{fontSize: 28}}/>
                                 </Box>
                             </Box>
                         </CardContent>
                     </Card>
                 </Box>
 
-                <Box sx={{ flex: 1 }}>
+                <Box sx={{flex: 1}}>
                     <Card
                         sx={{
                             height: '100%',
@@ -372,8 +370,8 @@ export default function AdminReport() {
                             }
                         }}
                     >
-                        <CardContent sx={{ p: 3 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <CardContent sx={{p: 3}}>
+                            <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
                                 <Box>
                                     <Typography
                                         variant="h4"
@@ -403,14 +401,14 @@ export default function AdminReport() {
                                         color: '#f59e0b'
                                     }}
                                 >
-                                    <WarningIcon sx={{ fontSize: 28 }} />
+                                    <WarningIcon sx={{fontSize: 28}}/>
                                 </Box>
                             </Box>
                         </CardContent>
                     </Card>
                 </Box>
 
-                <Box sx={{ flex: 1 }}>
+                <Box sx={{flex: 1}}>
                     <Card
                         sx={{
                             height: '100%',
@@ -424,8 +422,8 @@ export default function AdminReport() {
                             }
                         }}
                     >
-                        <CardContent sx={{ p: 3 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <CardContent sx={{p: 3}}>
+                            <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
                                 <Box>
                                     <Typography
                                         variant="h4"
@@ -455,14 +453,14 @@ export default function AdminReport() {
                                         color: '#3b82f6'
                                     }}
                                 >
-                                    <CheckCircleIcon sx={{ fontSize: 28 }} />
+                                    <CheckCircleIcon sx={{fontSize: 28}}/>
                                 </Box>
                             </Box>
                         </CardContent>
                     </Card>
                 </Box>
 
-                <Box sx={{ flex: 1 }}>
+                <Box sx={{flex: 1}}>
                     <Card
                         sx={{
                             height: '100%',
@@ -476,8 +474,8 @@ export default function AdminReport() {
                             }
                         }}
                     >
-                        <CardContent sx={{ p: 3 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <CardContent sx={{p: 3}}>
+                            <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
                                 <Box>
                                     <Typography
                                         variant="h4"
@@ -507,7 +505,7 @@ export default function AdminReport() {
                                         color: '#ef4444'
                                     }}
                                 >
-                                    <ThumbDownIcon sx={{ fontSize: 28 }} />
+                                    <ThumbDownIcon sx={{fontSize: 28}}/>
                                 </Box>
                             </Box>
                         </CardContent>
@@ -521,9 +519,9 @@ export default function AdminReport() {
                 border: '1px solid #e2e8f0',
                 overflow: 'hidden'
             }}>
-                <Box sx={{ p: 3, backgroundColor: 'white' }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                <Box sx={{p: 3, backgroundColor: 'white'}}>
+                    <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3}}>
+                        <Typography variant="h6" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                             All Reports
                         </Typography>
                         <Chip
@@ -544,11 +542,11 @@ export default function AdminReport() {
                             borderRadius: 2,
                             border: '2px dashed #cbd5e1'
                         }}>
-                            <AssessmentIcon sx={{ fontSize: 64, color: '#94a3b8', mb: 2 }} />
-                            <Typography variant="h6" sx={{ color: '#64748b', mb: 1 }}>
+                            <AssessmentIcon sx={{fontSize: 64, color: '#94a3b8', mb: 2}}/>
+                            <Typography variant="h6" sx={{color: '#64748b', mb: 1}}>
                                 No Reports Found
                             </Typography>
-                            <Typography variant="body2" sx={{ color: '#94a3b8' }}>
+                            <Typography variant="body2" sx={{color: '#94a3b8'}}>
                                 There are no reports to review at the moment.
                             </Typography>
                         </Box>
@@ -565,37 +563,45 @@ export default function AdminReport() {
                                             transform: 'translateY(-2px)'
                                         }
                                     }}>
-                                        <CardContent sx={{ p: 3 }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                        <CardContent sx={{p: 3}}>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                mb: 2
+                                            }}>
+                                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                                                     <Avatar sx={{
                                                         bgcolor: report.isReport ? '#ef4444' : '#10b981',
                                                         width: 40,
                                                         height: 40
                                                     }}>
-                                                        {report.isReport ? <ReportIcon /> : <FeedbackIcon />}
+                                                        {report.isReport ? <ReportIcon/> : <FeedbackIcon/>}
                                                     </Avatar>
                                                     <Box>
-                                                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                                        <Typography variant="h6"
+                                                                    sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                                             Report ID: {parseID(report.id, "rp")}
                                                         </Typography>
-                                                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                                        <Typography variant="body2" sx={{color: '#64748b'}}>
                                                             {report.order ? `Order ${parseID(report.order.id, "ord")}` :
-                                                             report.designRequest ? `Design Request #${report.designRequest.id}` : 'General Report'}
+                                                                report.designRequest ? `Design Request #${report.designRequest.id}` : 'General Report'}
                                                         </Typography>
                                                         {report.sender && (
-                                                            <Typography variant="body2" sx={{ color: '#64748b', fontSize: '0.8rem' }}>
+                                                            <Typography variant="body2"
+                                                                        sx={{color: '#64748b', fontSize: '0.8rem'}}>
                                                                 From: {report.sender.name} ({report.sender.type})
                                                             </Typography>
                                                         )}
                                                         {report.receiver && (
-                                                            <Typography variant="body2" sx={{ color: '#64748b', fontSize: '0.8rem' }}>
+                                                            <Typography variant="body2"
+                                                                        sx={{color: '#64748b', fontSize: '0.8rem'}}>
                                                                 To: {report.receiver.name} ({report.receiver.type})
                                                             </Typography>
                                                         )}
                                                     </Box>
                                                 </Box>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                                                     <Chip
                                                         label={report.status}
                                                         sx={{
@@ -612,7 +618,7 @@ export default function AdminReport() {
                                                     <Button
                                                         variant="outlined"
                                                         size="small"
-                                                        startIcon={<VisibilityIcon />}
+                                                        startIcon={<VisibilityIcon/>}
                                                         onClick={() => handleViewDetail(report)}
                                                         sx={{
                                                             borderColor: '#3b82f6',
@@ -628,28 +634,32 @@ export default function AdminReport() {
                                                 </Box>
                                             </Box>
 
-                                            <Box sx={{ mb: 2 }}>
-                                                <Typography variant="body2" sx={{ color: '#64748b', mb: 1 }}>
+                                            <Box sx={{mb: 2}}>
+                                                <Typography variant="body2" sx={{color: '#64748b', mb: 1}}>
                                                     Content:
                                                 </Typography>
-                                                <Typography variant="body1" sx={{ color: '#1e293b' }}>
+                                                <Typography variant="body1" sx={{color: '#1e293b'}}>
                                                     {report.content}
                                                 </Typography>
                                             </Box>
 
-                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between'
+                                            }}>
+                                                <Box sx={{display: 'flex', alignItems: 'center', gap: 3}}>
                                                     {report.rating && (
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                            <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                                            <Typography variant="body2" sx={{color: '#64748b'}}>
                                                                 Rating:
                                                             </Typography>
-                                                            <Rating value={report.rating} readOnly size="small" />
+                                                            <Rating value={report.rating} readOnly size="small"/>
                                                         </Box>
                                                     )}
                                                     {report.images && report.images.length > 0 && (
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                            <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                                            <Typography variant="body2" sx={{color: '#64748b'}}>
                                                                 Images:
                                                             </Typography>
                                                             <Chip
@@ -664,7 +674,7 @@ export default function AdminReport() {
                                                             />
                                                         </Box>
                                                     )}
-                                                    <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                                    <Typography variant="body2" sx={{color: '#64748b'}}>
                                                         {formatDate(report.creationDate)}
                                                     </Typography>
                                                 </Box>
@@ -685,7 +695,7 @@ export default function AdminReport() {
                 maxWidth="md"
                 fullWidth
                 PaperProps={{
-                    sx: { borderRadius: 3 }
+                    sx: {borderRadius: 3}
                 }}
             >
                 <DialogTitle sx={{
@@ -693,9 +703,9 @@ export default function AdminReport() {
                     color: 'white',
                     position: 'relative'
                 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <AssessmentIcon />
-                        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                        <AssessmentIcon/>
+                        <Typography variant="h6" sx={{fontWeight: 'bold'}}>
                             Report Details
                         </Typography>
                     </Box>
@@ -708,26 +718,26 @@ export default function AdminReport() {
                             color: 'white'
                         }}
                     >
-                        <CloseIcon />
+                        <CloseIcon/>
                     </IconButton>
                 </DialogTitle>
 
-                <DialogContent sx={{ p: 4, pb: 2 }}>
+                <DialogContent sx={{p: 4, pb: 2}}>
                     {selectedReport && (
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                                                        {}
+                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
+                            {}
                             <Paper elevation={0} sx={{
                                 p: 3,
                                 backgroundColor: '#f8fafc',
                                 borderRadius: 2,
                                 border: '1px solid #e2e8f0'
                             }}>
-                                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1e293b' }}>
+                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
                                     Report Information
                                 </Typography>
-                                <Box sx={{ display: 'flex', gap: 3, width: '100%' }}>
-                                    <Box sx={{ flex: 1 }}>
-                                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                <Box sx={{display: 'flex', gap: 3, width: '100%'}}>
+                                    <Box sx={{flex: 1}}>
+                                        <Typography variant="body2" sx={{color: '#64748b'}}>
                                             Status
                                         </Typography>
                                         <Chip
@@ -744,20 +754,20 @@ export default function AdminReport() {
                                             }}
                                         />
                                     </Box>
-                                    <Box sx={{ flex: 1 }}>
-                                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                    <Box sx={{flex: 1}}>
+                                        <Typography variant="body2" sx={{color: '#64748b'}}>
                                             Created Date
                                         </Typography>
-                                                                            <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
-                                        {dayjs(selectedReport.creationDate).format('DD/MM/YYYY')}
-                                    </Typography>
+                                        <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
+                                            {dayjs(selectedReport.creationDate).format('DD/MM/YYYY')}
+                                        </Typography>
                                     </Box>
                                     {selectedReport.images && selectedReport.images.length > 0 && (
-                                        <Box sx={{ flex: 1 }}>
-                                            <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                        <Box sx={{flex: 1}}>
+                                            <Typography variant="body2" sx={{color: '#64748b'}}>
                                                 {selectedReport.isReport ? 'Evidence Images' : 'Attached Images'}
                                             </Typography>
-                                            <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                            <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                                 {selectedReport.images.length} image{selectedReport.images.length > 1 ? 's' : ''}
                                             </Typography>
                                         </Box>
@@ -773,27 +783,28 @@ export default function AdminReport() {
                                     borderRadius: 2,
                                     border: '1px solid #e2e8f0'
                                 }}>
-                                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1e293b' }}>
+                                    <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
                                         User Information
                                     </Typography>
-                                    <Box sx={{ display: 'flex', gap: 3, width: '100%' }}>
+                                    <Box sx={{display: 'flex', gap: 3, width: '100%'}}>
                                         {selectedReport.sender && (
-                                            <Box sx={{ flex: 1 }}>
-                                                <Typography variant="body2" sx={{ color: '#64748b', mb: 1 }}>
+                                            <Box sx={{flex: 1}}>
+                                                <Typography variant="body2" sx={{color: '#64748b', mb: 1}}>
                                                     Sender
                                                 </Typography>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                                                     <Avatar
                                                         src={selectedReport.sender.avatar}
-                                                        sx={{ width: 40, height: 40 }}
+                                                        sx={{width: 40, height: 40}}
                                                     >
                                                         {selectedReport.sender.name.charAt(0)}
                                                     </Avatar>
                                                     <Box>
-                                                        <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                                        <Typography variant="body1"
+                                                                    sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                                             {selectedReport.sender.name}
                                                         </Typography>
-                                                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                                        <Typography variant="body2" sx={{color: '#64748b'}}>
                                                             {selectedReport.sender.email}
                                                         </Typography>
                                                         <Chip
@@ -812,22 +823,23 @@ export default function AdminReport() {
                                             </Box>
                                         )}
                                         {selectedReport.receiver && (
-                                            <Box sx={{ flex: 1 }}>
-                                                <Typography variant="body2" sx={{ color: '#64748b', mb: 1 }}>
+                                            <Box sx={{flex: 1}}>
+                                                <Typography variant="body2" sx={{color: '#64748b', mb: 1}}>
                                                     Receiver
                                                 </Typography>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                                                     <Avatar
                                                         src={selectedReport.receiver.avatar}
-                                                        sx={{ width: 40, height: 40 }}
+                                                        sx={{width: 40, height: 40}}
                                                     >
                                                         {selectedReport.receiver.name.charAt(0)}
                                                     </Avatar>
                                                     <Box>
-                                                        <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                                        <Typography variant="body1"
+                                                                    sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                                             {selectedReport.receiver.name}
                                                         </Typography>
-                                                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                                        <Typography variant="body2" sx={{color: '#64748b'}}>
                                                             {selectedReport.receiver.email}
                                                         </Typography>
                                                         <Chip
@@ -857,21 +869,30 @@ export default function AdminReport() {
                                     borderRadius: 2,
                                     border: '1px solid #e2e8f0'
                                 }}>
-                                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1e293b' }}>
+                                    <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
                                         Related Item
                                     </Typography>
-                                    
+
                                     {selectedReport.order && (
-                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, backgroundColor: 'white', borderRadius: 2, border: '1px solid #e2e8f0' }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                <Avatar sx={{ bgcolor: '#3f51b5', width: 40, height: 40 }}>
-                                                    <OrderIcon />
+                                        <Box sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            p: 2,
+                                            backgroundColor: 'white',
+                                            borderRadius: 2,
+                                            border: '1px solid #e2e8f0'
+                                        }}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                <Avatar sx={{bgcolor: '#3f51b5', width: 40, height: 40}}>
+                                                    <OrderIcon/>
                                                 </Avatar>
                                                 <Box>
-                                                    <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                                    <Typography variant="h6"
+                                                                sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                                         {selectedReport.order.selectedDesign?.designRequest?.name || `Order ${parseID(selectedReport.order.id, "ord")}`}
                                                     </Typography>
-                                                    <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                                    <Typography variant="body2" sx={{color: '#64748b'}}>
                                                         {parseID(selectedReport.order.id, "ord")}
                                                     </Typography>
                                                     <Chip
@@ -890,7 +911,7 @@ export default function AdminReport() {
                                             <Button
                                                 variant="outlined"
                                                 size="small"
-                                                startIcon={<InfoIcon />}
+                                                startIcon={<InfoIcon/>}
                                                 onClick={() => setOrderDetailOpen(true)}
                                                 sx={{
                                                     borderColor: '#3f51b5',
@@ -907,16 +928,25 @@ export default function AdminReport() {
                                     )}
 
                                     {selectedReport.designRequest && (
-                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, backgroundColor: 'white', borderRadius: 2, border: '1px solid #e2e8f0' }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                <Avatar sx={{ bgcolor: '#10b981', width: 40, height: 40 }}>
-                                                    <DesignIcon />
+                                        <Box sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            p: 2,
+                                            backgroundColor: 'white',
+                                            borderRadius: 2,
+                                            border: '1px solid #e2e8f0'
+                                        }}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                <Avatar sx={{bgcolor: '#10b981', width: 40, height: 40}}>
+                                                    <DesignIcon/>
                                                 </Avatar>
                                                 <Box>
-                                                    <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                                    <Typography variant="h6"
+                                                                sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                                         {selectedReport.designRequest.name}
                                                     </Typography>
-                                                    <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                                    <Typography variant="body2" sx={{color: '#64748b'}}>
                                                         Design Request {parseID(selectedReport.designRequest.id, "dr")}
                                                     </Typography>
                                                     <Chip
@@ -935,7 +965,7 @@ export default function AdminReport() {
                                             <Button
                                                 variant="outlined"
                                                 size="small"
-                                                startIcon={<InfoIcon />}
+                                                startIcon={<InfoIcon/>}
                                                 onClick={() => setDesignRequestDetailOpen(true)}
                                                 sx={{
                                                     borderColor: '#10b981',
@@ -960,10 +990,10 @@ export default function AdminReport() {
                                 borderRadius: 2,
                                 border: '1px solid #e2e8f0'
                             }}>
-                                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1e293b' }}>
+                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
                                     Content
                                 </Typography>
-                                <Typography variant="body1" sx={{ color: '#1e293b', lineHeight: 1.6 }}>
+                                <Typography variant="body1" sx={{color: '#1e293b', lineHeight: 1.6}}>
                                     {selectedReport.content}
                                 </Typography>
                             </Paper>
@@ -976,11 +1006,11 @@ export default function AdminReport() {
                                     borderRadius: 2,
                                     border: '1px solid #e2e8f0'
                                 }}>
-                                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1e293b' }}>
+                                    <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
                                         Rating
                                     </Typography>
-                                    <Rating value={selectedReport.rating} readOnly size="large" />
-                                    <Typography variant="body2" sx={{ color: '#64748b', mt: 1 }}>
+                                    <Rating value={selectedReport.rating} readOnly size="large"/>
+                                    <Typography variant="body2" sx={{color: '#64748b', mt: 1}}>
                                         {selectedReport.isReport
                                             ? 'Severity rating of the reported issue'
                                             : 'User experience rating'
@@ -997,7 +1027,7 @@ export default function AdminReport() {
                                     borderRadius: 2,
                                     border: '1px solid #e2e8f0'
                                 }}>
-                                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1e293b' }}>
+                                    <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
                                         {selectedReport.isReport ? 'Evidence Images' : 'Attached Images'} ({selectedReport.images.length})
                                     </Typography>
                                     <Grid container spacing={2}>
@@ -1049,7 +1079,7 @@ export default function AdminReport() {
                                     borderRadius: 2,
                                     border: '1px solid #e2e8f0'
                                 }}>
-                                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1e293b' }}>
+                                    <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
                                         Evidence Image
                                     </Typography>
                                     <Box sx={{
@@ -1072,7 +1102,7 @@ export default function AdminReport() {
                     )}
                 </DialogContent>
 
-                <DialogActions sx={{ p: 3, pt: 0 }}>
+                <DialogActions sx={{p: 3, pt: 0}}>
                     <Button
                         onClick={handleCloseDetail}
                         sx={{
@@ -1133,7 +1163,7 @@ export default function AdminReport() {
                 maxWidth="md"
                 fullWidth
                 PaperProps={{
-                    sx: { borderRadius: 3 }
+                    sx: {borderRadius: 3}
                 }}
             >
                 <DialogTitle sx={{
@@ -1143,9 +1173,9 @@ export default function AdminReport() {
                     color: 'white',
                     position: 'relative'
                 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        {approvalAction === 'approve' ? <CheckCircleIcon /> : <WarningIcon />}
-                        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                        {approvalAction === 'approve' ? <CheckCircleIcon/> : <WarningIcon/>}
+                        <Typography variant="h6" sx={{fontWeight: 'bold'}}>
                             {approvalAction === 'approve' ? 'Approve' : 'Reject'} Report
                         </Typography>
                     </Box>
@@ -1158,12 +1188,12 @@ export default function AdminReport() {
                             color: 'white'
                         }}
                     >
-                        <CloseIcon />
+                        <CloseIcon/>
                     </IconButton>
                 </DialogTitle>
 
-                <DialogContent sx={{ p: 4, pb: 2 }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <DialogContent sx={{p: 4, pb: 2}}>
+                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
                         {}
                         <Paper elevation={0} sx={{
                             p: 3,
@@ -1171,31 +1201,31 @@ export default function AdminReport() {
                             borderRadius: 2,
                             border: '1px solid #e2e8f0'
                         }}>
-                            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1e293b' }}>
+                            <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
                                 Report Summary
                             </Typography>
                             <Grid container spacing={2}>
                                 <Grid item xs={12} sm={6}>
-                                    <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                    <Typography variant="body2" sx={{color: '#64748b'}}>
                                         Report ID
                                     </Typography>
-                                    <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                    <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                         {parseID(selectedReport?.id, "fb")}
                                     </Typography>
                                 </Grid>
                                 <Grid item xs={12} sm={6}>
-                                    <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                    <Typography variant="body2" sx={{color: '#64748b'}}>
                                         Type
                                     </Typography>
-                                    <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                    <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                         {selectedReport?.isReport ? 'Report' : 'Feedback'}
                                     </Typography>
                                 </Grid>
                                 <Grid item xs={12}>
-                                    <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                    <Typography variant="body2" sx={{color: '#64748b'}}>
                                         Content
                                     </Typography>
-                                    <Typography variant="body1" sx={{ color: '#1e293b', fontStyle: 'italic' }}>
+                                    <Typography variant="body1" sx={{color: '#1e293b', fontStyle: 'italic'}}>
                                         "{selectedReport?.content}"
                                     </Typography>
                                 </Grid>
@@ -1210,27 +1240,29 @@ export default function AdminReport() {
                                 borderRadius: 2,
                                 border: '1px solid #f59e0b'
                             }}>
-                                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: '#92400e' }}>
+                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 3, color: '#92400e'}}>
                                     Problem Level (Required)
                                 </Typography>
                                 <FormControl component="fieldset" required>
-                                    <FormLabel component="legend" sx={{ color: '#92400e', fontWeight: 'bold', mb: 2 }}>
+                                    <FormLabel component="legend" sx={{color: '#92400e', fontWeight: 'bold', mb: 2}}>
                                         Select the severity level of the reported problem:
                                     </FormLabel>
                                     <RadioGroup
                                         value={problemLevel}
                                         onChange={(e) => setProblemLevel(e.target.value)}
-                                        sx={{ gap: 1 }}
+                                        sx={{gap: 1}}
                                     >
                                         <FormControlLabel
                                             value="low"
-                                            control={<Radio sx={{ color: '#10b981', '&.Mui-checked': { color: '#10b981' } }} />}
+                                            control={<Radio
+                                                sx={{color: '#10b981', '&.Mui-checked': {color: '#10b981'}}}/>}
                                             label={
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                    <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#065f46' }}>
+                                                <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                                    <Typography variant="body1"
+                                                                sx={{fontWeight: 'bold', color: '#065f46'}}>
                                                         Low
                                                     </Typography>
-                                                    <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                                    <Typography variant="body2" sx={{color: '#64748b'}}>
                                                         - Minor issues, minimal impact
                                                     </Typography>
                                                 </Box>
@@ -1238,13 +1270,15 @@ export default function AdminReport() {
                                         />
                                         <FormControlLabel
                                             value="medium"
-                                            control={<Radio sx={{ color: '#f59e0b', '&.Mui-checked': { color: '#f59e0b' } }} />}
+                                            control={<Radio
+                                                sx={{color: '#f59e0b', '&.Mui-checked': {color: '#f59e0b'}}}/>}
                                             label={
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                    <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#92400e' }}>
+                                                <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                                    <Typography variant="body1"
+                                                                sx={{fontWeight: 'bold', color: '#92400e'}}>
                                                         Medium
                                                     </Typography>
-                                                    <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                                    <Typography variant="body2" sx={{color: '#64748b'}}>
                                                         - Moderate issues, some impact
                                                     </Typography>
                                                 </Box>
@@ -1252,13 +1286,15 @@ export default function AdminReport() {
                                         />
                                         <FormControlLabel
                                             value="high"
-                                            control={<Radio sx={{ color: '#ef4444', '&.Mui-checked': { color: '#ef4444' } }} />}
+                                            control={<Radio
+                                                sx={{color: '#ef4444', '&.Mui-checked': {color: '#ef4444'}}}/>}
                                             label={
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                    <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#dc2626' }}>
+                                                <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                                    <Typography variant="body1"
+                                                                sx={{fontWeight: 'bold', color: '#dc2626'}}>
                                                         High
                                                     </Typography>
-                                                    <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                                    <Typography variant="body2" sx={{color: '#64748b'}}>
                                                         - Significant issues, major impact
                                                     </Typography>
                                                 </Box>
@@ -1266,13 +1302,15 @@ export default function AdminReport() {
                                         />
                                         <FormControlLabel
                                             value="serious"
-                                            control={<Radio sx={{ color: '#7c2d12', '&.Mui-checked': { color: '#7c2d12' } }} />}
+                                            control={<Radio
+                                                sx={{color: '#7c2d12', '&.Mui-checked': {color: '#7c2d12'}}}/>}
                                             label={
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                    <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#7c2d12' }}>
+                                                <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                                    <Typography variant="body1"
+                                                                sx={{fontWeight: 'bold', color: '#7c2d12'}}>
                                                         Serious
                                                     </Typography>
-                                                    <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                                    <Typography variant="body2" sx={{color: '#64748b'}}>
                                                         - Critical issues, severe impact
                                                     </Typography>
                                                 </Box>
@@ -1280,7 +1318,7 @@ export default function AdminReport() {
                                         />
                                     </RadioGroup>
                                 </FormControl>
-                                <Typography variant="body2" sx={{ color: '#92400e', mt: 2, fontStyle: 'italic' }}>
+                                <Typography variant="body2" sx={{color: '#92400e', mt: 2, fontStyle: 'italic'}}>
                                     This level will determine the refund amount and processing priority.
                                 </Typography>
                             </Paper>
@@ -1293,7 +1331,7 @@ export default function AdminReport() {
                             borderRadius: 2,
                             border: '1px solid #e2e8f0'
                         }}>
-                            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: '#1e293b' }}>
+                            <Typography variant="h6" sx={{fontWeight: 'bold', mb: 3, color: '#1e293b'}}>
                                 Response Messages
                             </Typography>
                             <Grid container spacing={3}>
@@ -1346,14 +1384,15 @@ export default function AdminReport() {
                                     />
                                 </Grid>
                             </Grid>
-                            <Typography variant="body2" sx={{ color: '#64748b', mt: 2, fontStyle: 'italic' }}>
-                                These messages will be sent to the respective parties when you {approvalAction} this report.
+                            <Typography variant="body2" sx={{color: '#64748b', mt: 2, fontStyle: 'italic'}}>
+                                These messages will be sent to the respective parties when you {approvalAction} this
+                                report.
                             </Typography>
                         </Paper>
                     </Box>
                 </DialogContent>
 
-                <DialogActions sx={{ p: 3, pt: 0 }}>
+                <DialogActions sx={{p: 3, pt: 0}}>
                     <Button
                         onClick={handleCloseApprovalDialog}
                         sx={{
@@ -1399,7 +1438,7 @@ export default function AdminReport() {
                 maxWidth="lg"
                 fullWidth
                 PaperProps={{
-                    sx: { borderRadius: 3 }
+                    sx: {borderRadius: 3}
                 }}
             >
                 <DialogTitle sx={{
@@ -1407,9 +1446,9 @@ export default function AdminReport() {
                     color: 'white',
                     position: 'relative'
                 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <OrderIcon />
-                        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                        <OrderIcon/>
+                        <Typography variant="h6" sx={{fontWeight: 'bold'}}>
                             Order Details
                         </Typography>
                     </Box>
@@ -1422,13 +1461,13 @@ export default function AdminReport() {
                             color: 'white'
                         }}
                     >
-                        <CloseIcon />
+                        <CloseIcon/>
                     </IconButton>
                 </DialogTitle>
 
-                <DialogContent sx={{ p: 4 }}>
+                <DialogContent sx={{p: 4}}>
                     {selectedReport?.order && (
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
                             {/* Order Summary */}
                             <Paper elevation={0} sx={{
                                 p: 3,
@@ -1436,43 +1475,71 @@ export default function AdminReport() {
                                 borderRadius: 2,
                                 border: '1px solid rgba(63, 81, 181, 0.1)'
                             }}>
-                                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1e293b' }}>
+                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
                                     Order Summary
                                 </Typography>
-                                <Box sx={{ display: 'flex', gap: 3, width: '100%' }}>
-                                    <Box sx={{ flex: 1, textAlign: 'center', p: 2, backgroundColor: 'white', borderRadius: 2, border: '1px solid #e2e8f0' }}>
-                                        <OrderIcon sx={{ fontSize: 32, color: '#3f51b5', mb: 1 }} />
-                                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                <Box sx={{display: 'flex', gap: 3, width: '100%'}}>
+                                    <Box sx={{
+                                        flex: 1,
+                                        textAlign: 'center',
+                                        p: 2,
+                                        backgroundColor: 'white',
+                                        borderRadius: 2,
+                                        border: '1px solid #e2e8f0'
+                                    }}>
+                                        <OrderIcon sx={{fontSize: 32, color: '#3f51b5', mb: 1}}/>
+                                        <Typography variant="h6" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                             {parseID(selectedReport.order.id, "ord")}
                                         </Typography>
-                                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                        <Typography variant="body2" sx={{color: '#64748b'}}>
                                             Order ID
                                         </Typography>
                                     </Box>
-                                    <Box sx={{ flex: 1, textAlign: 'center', p: 2, backgroundColor: 'white', borderRadius: 2, border: '1px solid #e2e8f0' }}>
-                                        <CalendarIcon sx={{ fontSize: 32, color: '#10b981', mb: 1 }} />
-                                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                    <Box sx={{
+                                        flex: 1,
+                                        textAlign: 'center',
+                                        p: 2,
+                                        backgroundColor: 'white',
+                                        borderRadius: 2,
+                                        border: '1px solid #e2e8f0'
+                                    }}>
+                                        <CalendarIcon sx={{fontSize: 32, color: '#10b981', mb: 1}}/>
+                                        <Typography variant="h6" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                             {dayjs(selectedReport.order.orderDate).format('DD/MM/YYYY')}
                                         </Typography>
-                                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                        <Typography variant="body2" sx={{color: '#64748b'}}>
                                             Order Date
                                         </Typography>
                                     </Box>
-                                    <Box sx={{ flex: 1, textAlign: 'center', p: 2, backgroundColor: 'white', borderRadius: 2, border: '1px solid #e2e8f0' }}>
-                                        <CalendarIcon sx={{ fontSize: 32, color: '#f59e0b', mb: 1 }} />
-                                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                    <Box sx={{
+                                        flex: 1,
+                                        textAlign: 'center',
+                                        p: 2,
+                                        backgroundColor: 'white',
+                                        borderRadius: 2,
+                                        border: '1px solid #e2e8f0'
+                                    }}>
+                                        <CalendarIcon sx={{fontSize: 32, color: '#f59e0b', mb: 1}}/>
+                                        <Typography variant="h6" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                             {dayjs(selectedReport.order.deadline).format('DD/MM/YYYY')}
                                         </Typography>
-                                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                        <Typography variant="body2" sx={{color: '#64748b'}}>
                                             Deadline
                                         </Typography>
                                     </Box>
-                                    <Box sx={{ flex: 1, textAlign: 'center', p: 2, backgroundColor: 'white', borderRadius: 2, border: '1px solid #e2e8f0' }}>
-                                        <MoneyIcon sx={{ fontSize: 32, color: '#ef4444', mb: 1 }} />
-                                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                    <Box sx={{
+                                        flex: 1,
+                                        textAlign: 'center',
+                                        p: 2,
+                                        backgroundColor: 'white',
+                                        borderRadius: 2,
+                                        border: '1px solid #e2e8f0'
+                                    }}>
+                                        <MoneyIcon sx={{fontSize: 32, color: '#ef4444', mb: 1}}/>
+                                        <Typography variant="h6" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                             {selectedReport.order.price?.toLocaleString('vi-VN')} VND
                                         </Typography>
-                                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                        <Typography variant="body2" sx={{color: '#64748b'}}>
                                             Total Price
                                         </Typography>
                                     </Box>
@@ -1490,40 +1557,40 @@ export default function AdminReport() {
                                         border: '1px solid #e2e8f0',
                                         height: '100%'
                                     }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                                            <Avatar sx={{ bgcolor: '#10b981', width: 40, height: 40 }}>
-                                                <BusinessIcon />
+                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                            <Avatar sx={{bgcolor: '#10b981', width: 40, height: 40}}>
+                                                <BusinessIcon/>
                                             </Avatar>
-                                            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                            <Typography variant="h6" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                                 School Information
                                             </Typography>
                                         </Box>
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
                                             <Box>
-                                                <Typography variant="body2" sx={{ color: '#64748b', mb: 0.5 }}>
+                                                <Typography variant="body2" sx={{color: '#64748b', mb: 0.5}}>
                                                     School Name
                                                 </Typography>
-                                                <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                                <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                                     {selectedReport.order.school?.business}
                                                 </Typography>
                                             </Box>
                                             <Box>
-                                                <Typography variant="body2" sx={{ color: '#64748b', mb: 0.5 }}>
+                                                <Typography variant="body2" sx={{color: '#64748b', mb: 0.5}}>
                                                     Contact Person
                                                 </Typography>
-                                                <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                                <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                                     {selectedReport.order.school?.name}
                                                 </Typography>
                                             </Box>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                <PhoneIcon sx={{ fontSize: 16, color: '#64748b' }} />
-                                                <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                                <PhoneIcon sx={{fontSize: 16, color: '#64748b'}}/>
+                                                <Typography variant="body2" sx={{color: '#64748b'}}>
                                                     {selectedReport.order.school?.phone}
                                                 </Typography>
                                             </Box>
-                                            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-                                                <LocationIcon sx={{ fontSize: 16, color: '#64748b', mt: 0.2 }} />
-                                                <Typography variant="body2" sx={{ color: '#64748b', lineHeight: 1.4 }}>
+                                            <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 1}}>
+                                                <LocationIcon sx={{fontSize: 16, color: '#64748b', mt: 0.2}}/>
+                                                <Typography variant="body2" sx={{color: '#64748b', lineHeight: 1.4}}>
                                                     {selectedReport.order.school?.address}
                                                 </Typography>
                                             </Box>
@@ -1540,40 +1607,40 @@ export default function AdminReport() {
                                         border: '1px solid #e2e8f0',
                                         height: '100%'
                                     }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                                            <Avatar sx={{ bgcolor: '#ef4444', width: 40, height: 40 }}>
-                                                <BusinessIcon />
+                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                            <Avatar sx={{bgcolor: '#ef4444', width: 40, height: 40}}>
+                                                <BusinessIcon/>
                                             </Avatar>
-                                            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                            <Typography variant="h6" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                                 Garment Factory
                                             </Typography>
                                         </Box>
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
                                             <Box>
-                                                <Typography variant="body2" sx={{ color: '#64748b', mb: 0.5 }}>
+                                                <Typography variant="body2" sx={{color: '#64748b', mb: 0.5}}>
                                                     Factory Name
                                                 </Typography>
-                                                <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                                <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                                     {selectedReport.order.garment?.customer?.business}
                                                 </Typography>
                                             </Box>
                                             <Box>
-                                                <Typography variant="body2" sx={{ color: '#64748b', mb: 0.5 }}>
+                                                <Typography variant="body2" sx={{color: '#64748b', mb: 0.5}}>
                                                     Contact Person
                                                 </Typography>
-                                                <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                                <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                                     {selectedReport.order.garment?.customer?.name}
                                                 </Typography>
                                             </Box>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                <PhoneIcon sx={{ fontSize: 16, color: '#64748b' }} />
-                                                <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                                <PhoneIcon sx={{fontSize: 16, color: '#64748b'}}/>
+                                                <Typography variant="body2" sx={{color: '#64748b'}}>
                                                     {selectedReport.order.garment?.customer?.phone}
                                                 </Typography>
                                             </Box>
-                                            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-                                                <LocationIcon sx={{ fontSize: 16, color: '#64748b', mt: 0.2 }} />
-                                                <Typography variant="body2" sx={{ color: '#64748b', lineHeight: 1.4 }}>
+                                            <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 1}}>
+                                                <LocationIcon sx={{fontSize: 16, color: '#64748b', mt: 0.2}}/>
+                                                <Typography variant="body2" sx={{color: '#64748b', lineHeight: 1.4}}>
                                                     {selectedReport.order.garment?.customer?.address}
                                                 </Typography>
                                             </Box>
@@ -1590,15 +1657,15 @@ export default function AdminReport() {
                                     border: '1px solid #e2e8f0',
                                     overflow: 'hidden'
                                 }}>
-                                    <Box sx={{ p: 3, backgroundColor: 'white', borderBottom: '1px solid #e2e8f0' }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                            <OrderIcon sx={{ color: '#3f51b5', fontSize: 24 }} />
-                                            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                    <Box sx={{p: 3, backgroundColor: 'white', borderBottom: '1px solid #e2e8f0'}}>
+                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                            <OrderIcon sx={{color: '#3f51b5', fontSize: 24}}/>
+                                            <Typography variant="h6" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                                 Order Items ({selectedReport.order.orderDetails.length})
                                             </Typography>
                                         </Box>
                                     </Box>
-                                    <Box sx={{ p: 3 }}>
+                                    <Box sx={{p: 3}}>
                                         <Box sx={{
                                             borderRadius: 3,
                                             overflow: 'hidden',
@@ -1629,7 +1696,7 @@ export default function AdminReport() {
                                                         Type
                                                     </Typography>
                                                 </Box>
-                                                
+
                                                 <Box sx={{
                                                     p: 2,
                                                     borderRight: '1px solid #000000',
@@ -1912,12 +1979,12 @@ export default function AdminReport() {
                                     borderRadius: 2,
                                     border: '1px solid #e2e8f0'
                                 }}>
-                                    <Box sx={{ p: 3, backgroundColor: 'white', borderBottom: '1px solid #e2e8f0' }}>
-                                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                    <Box sx={{p: 3, backgroundColor: 'white', borderBottom: '1px solid #e2e8f0'}}>
+                                        <Typography variant="h6" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                             Production Milestones ({selectedReport.order.milestone.length})
                                         </Typography>
                                     </Box>
-                                    <Box sx={{ p: 3 }}>
+                                    <Box sx={{p: 3}}>
                                         <Grid container spacing={2}>
                                             {selectedReport.order.milestone.map((milestone, index) => (
                                                 <Grid item xs={12} sm={6} key={milestone.id}>
@@ -1926,17 +1993,25 @@ export default function AdminReport() {
                                                         borderRadius: 2,
                                                         backgroundColor: 'white'
                                                     }}>
-                                                        <CardContent sx={{ p: 2 }}>
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                                                                <Avatar sx={{ 
-                                                                    bgcolor: milestone.status === 'completed' ? '#10b981' : '#f59e0b', 
-                                                                    width: 32, 
-                                                                    height: 32 
+                                                        <CardContent sx={{p: 2}}>
+                                                            <Box sx={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: 2,
+                                                                mb: 2
+                                                            }}>
+                                                                <Avatar sx={{
+                                                                    bgcolor: milestone.status === 'completed' ? '#10b981' : '#f59e0b',
+                                                                    width: 32,
+                                                                    height: 32
                                                                 }}>
                                                                     {milestone.stage}
                                                                 </Avatar>
                                                                 <Box>
-                                                                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                                                    <Typography variant="subtitle2" sx={{
+                                                                        fontWeight: 'bold',
+                                                                        color: '#1e293b'
+                                                                    }}>
                                                                         {milestone.name}
                                                                     </Typography>
                                                                     <Chip
@@ -1951,15 +2026,20 @@ export default function AdminReport() {
                                                                     />
                                                                 </Box>
                                                             </Box>
-                                                            <Typography variant="body2" sx={{ color: '#64748b', mb: 1 }}>
+                                                            <Typography variant="body2" sx={{color: '#64748b', mb: 1}}>
                                                                 {milestone.description}
                                                             </Typography>
-                                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                                                <Typography variant="caption" sx={{ color: '#64748b' }}>
-                                                                    From: {dayjs(milestone.startDate).format('DD/MM/YYYY')} - To: {dayjs(milestone.endDate).format('DD/MM/YYYY')}
+                                                            <Box
+                                                                sx={{display: 'flex', flexDirection: 'column', gap: 1}}>
+                                                                <Typography variant="caption" sx={{color: '#64748b'}}>
+                                                                    From: {dayjs(milestone.startDate).format('DD/MM/YYYY')} -
+                                                                    To: {dayjs(milestone.endDate).format('DD/MM/YYYY')}
                                                                 </Typography>
                                                                 {milestone.completedDate && (
-                                                                    <Typography variant="caption" sx={{ color: '#10b981', fontWeight: 'bold' }}>
+                                                                    <Typography variant="caption" sx={{
+                                                                        color: '#10b981',
+                                                                        fontWeight: 'bold'
+                                                                    }}>
                                                                         Completed: {dayjs(milestone.completedDate).format('DD/MM/YYYY')}
                                                                     </Typography>
                                                                 )}
@@ -1980,28 +2060,28 @@ export default function AdminReport() {
                                 borderRadius: 2,
                                 border: '1px solid #e2e8f0'
                             }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                                    <Avatar sx={{ bgcolor: '#8b5cf6', width: 40, height: 40 }}>
-                                        <ShippingIcon />
+                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                    <Avatar sx={{bgcolor: '#8b5cf6', width: 40, height: 40}}>
+                                        <ShippingIcon/>
                                     </Avatar>
-                                    <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                    <Typography variant="h6" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                         Shipping Information
                                     </Typography>
                                 </Box>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6}>
-                                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                        <Typography variant="body2" sx={{color: '#64748b'}}>
                                             Shipping Code
                                         </Typography>
-                                        <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                        <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                             {selectedReport.order.shippingCode || 'Not assigned yet'}
                                         </Typography>
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
-                                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                        <Typography variant="body2" sx={{color: '#64748b'}}>
                                             Shipping Fee
                                         </Typography>
-                                        <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                        <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                             {selectedReport.order.shippingFee?.toLocaleString('vi-VN') || '0'} VND
                                         </Typography>
                                     </Grid>
@@ -2016,10 +2096,10 @@ export default function AdminReport() {
                                     borderRadius: 2,
                                     border: '1px solid #f59e0b'
                                 }}>
-                                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1, color: '#92400e' }}>
+                                    <Typography variant="h6" sx={{fontWeight: 'bold', mb: 1, color: '#92400e'}}>
                                         Order Notes
                                     </Typography>
-                                    <Typography variant="body1" sx={{ color: '#451a03', lineHeight: 1.6 }}>
+                                    <Typography variant="body1" sx={{color: '#451a03', lineHeight: 1.6}}>
                                         {selectedReport.order.note}
                                     </Typography>
                                 </Paper>
@@ -2028,7 +2108,7 @@ export default function AdminReport() {
                     )}
                 </DialogContent>
 
-                <DialogActions sx={{ p: 3, pt: 0 }}>
+                <DialogActions sx={{p: 3, pt: 0}}>
                     <Button
                         onClick={() => setOrderDetailOpen(false)}
                         sx={{
@@ -2052,7 +2132,7 @@ export default function AdminReport() {
                 maxWidth="md"
                 fullWidth
                 PaperProps={{
-                    sx: { borderRadius: 3 }
+                    sx: {borderRadius: 3}
                 }}
             >
                 <DialogTitle sx={{
@@ -2060,9 +2140,9 @@ export default function AdminReport() {
                     color: 'white',
                     position: 'relative'
                 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <DesignIcon />
-                        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                        <DesignIcon/>
+                        <Typography variant="h6" sx={{fontWeight: 'bold'}}>
                             Design Request Details
                         </Typography>
                     </Box>
@@ -2075,13 +2155,13 @@ export default function AdminReport() {
                             color: 'white'
                         }}
                     >
-                        <CloseIcon />
+                        <CloseIcon/>
                     </IconButton>
                 </DialogTitle>
 
-                <DialogContent sx={{ p: 4 }}>
+                <DialogContent sx={{p: 4}}>
                     {selectedReport?.designRequest && (
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
                             {/* Basic Information */}
                             <Paper elevation={0} sx={{
                                 p: 3,
@@ -2089,39 +2169,39 @@ export default function AdminReport() {
                                 borderRadius: 2,
                                 border: '1px solid #e2e8f0'
                             }}>
-                                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1e293b' }}>
+                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
                                     Basic Information
                                 </Typography>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6}>
-                                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                        <Typography variant="body2" sx={{color: '#64748b'}}>
                                             Request Name
                                         </Typography>
-                                        <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                        <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                             {selectedReport.designRequest.name}
                                         </Typography>
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
-                                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                        <Typography variant="body2" sx={{color: '#64748b'}}>
                                             Status
                                         </Typography>
-                                        <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                        <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                             {selectedReport.designRequest.status}
                                         </Typography>
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
-                                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                        <Typography variant="body2" sx={{color: '#64748b'}}>
                                             Creation Date
                                         </Typography>
-                                        <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                        <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                             {formatDate(selectedReport.designRequest.creationDate)}
                                         </Typography>
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
-                                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                        <Typography variant="body2" sx={{color: '#64748b'}}>
                                             Privacy
                                         </Typography>
-                                        <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                        <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                             {selectedReport.designRequest.privacy ? 'Private' : 'Public'}
                                         </Typography>
                                     </Grid>
@@ -2136,47 +2216,47 @@ export default function AdminReport() {
                                     borderRadius: 2,
                                     border: '1px solid #e2e8f0'
                                 }}>
-                                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1e293b' }}>
+                                    <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
                                         School Information
                                     </Typography>
                                     <Grid container spacing={2}>
                                         <Grid item xs={12} sm={6}>
-                                            <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                            <Typography variant="body2" sx={{color: '#64748b'}}>
                                                 School Name
                                             </Typography>
-                                            <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                            <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                                 {selectedReport.designRequest.school.business}
                                             </Typography>
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
-                                            <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                            <Typography variant="body2" sx={{color: '#64748b'}}>
                                                 Contact Person
                                             </Typography>
-                                            <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                            <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                                 {selectedReport.designRequest.school.name}
                                             </Typography>
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
-                                            <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                            <Typography variant="body2" sx={{color: '#64748b'}}>
                                                 Phone
                                             </Typography>
-                                            <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                            <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                                 {selectedReport.designRequest.school.phone}
                                             </Typography>
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
-                                            <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                            <Typography variant="body2" sx={{color: '#64748b'}}>
                                                 Tax Code
                                             </Typography>
-                                            <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                            <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                                 {selectedReport.designRequest.school.taxCode}
                                             </Typography>
                                         </Grid>
                                         <Grid item xs={12}>
-                                            <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                            <Typography variant="body2" sx={{color: '#64748b'}}>
                                                 Address
                                             </Typography>
-                                            <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                            <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                                 {selectedReport.designRequest.school.address}
                                             </Typography>
                                         </Grid>
@@ -2191,12 +2271,12 @@ export default function AdminReport() {
                                     borderRadius: 2,
                                     border: '1px solid #e2e8f0'
                                 }}>
-                                    <Box sx={{ p: 3, backgroundColor: 'white', borderBottom: '1px solid #e2e8f0' }}>
-                                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                    <Box sx={{p: 3, backgroundColor: 'white', borderBottom: '1px solid #e2e8f0'}}>
+                                        <Typography variant="h6" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                             Design Items ({selectedReport.designRequest.items.length})
                                         </Typography>
                                     </Box>
-                                    <Box sx={{ p: 3 }}>
+                                    <Box sx={{p: 3}}>
                                         <Grid container spacing={2}>
                                             {selectedReport.designRequest.items.map((item, index) => (
                                                 <Grid item xs={12} sm={6} key={item.id}>
@@ -2205,22 +2285,37 @@ export default function AdminReport() {
                                                         borderRadius: 2,
                                                         backgroundColor: 'white'
                                                     }}>
-                                                        <CardContent sx={{ p: 2 }}>
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                                                                <Avatar sx={{ bgcolor: '#10b981', width: 32, height: 32 }}>
-                                                                    <DesignIcon sx={{ fontSize: 16 }} />
+                                                        <CardContent sx={{p: 2}}>
+                                                            <Box sx={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: 2,
+                                                                mb: 2
+                                                            }}>
+                                                                <Avatar
+                                                                    sx={{bgcolor: '#10b981', width: 32, height: 32}}>
+                                                                    <DesignIcon sx={{fontSize: 16}}/>
                                                                 </Avatar>
                                                                 <Box>
-                                                                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                                                    <Typography variant="subtitle2" sx={{
+                                                                        fontWeight: 'bold',
+                                                                        color: '#1e293b'
+                                                                    }}>
                                                                         {item.type} - {item.gender}
                                                                     </Typography>
-                                                                    <Typography variant="caption" sx={{ color: '#64748b' }}>
+                                                                    <Typography variant="caption"
+                                                                                sx={{color: '#64748b'}}>
                                                                         {item.category}
                                                                     </Typography>
                                                                 </Box>
                                                             </Box>
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                                                <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                                            <Box sx={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: 1,
+                                                                mb: 1
+                                                            }}>
+                                                                <Typography variant="body2" sx={{color: '#64748b'}}>
                                                                     Color:
                                                                 </Typography>
                                                                 <Box sx={{
@@ -2230,17 +2325,25 @@ export default function AdminReport() {
                                                                     borderRadius: 0.5,
                                                                     border: '1px solid #e5e7eb'
                                                                 }}/>
-                                                                <Typography variant="body2" sx={{ color: '#1e293b', fontWeight: 'bold' }}>
+                                                                <Typography variant="body2"
+                                                                            sx={{color: '#1e293b', fontWeight: 'bold'}}>
                                                                     {item.color}
                                                                 </Typography>
                                                             </Box>
                                                             {item.logoPosition && (
-                                                                <Typography variant="body2" sx={{ color: '#64748b', mb: 1 }}>
-                                                                    Logo Position: <span style={{ fontWeight: 'bold', color: '#1e293b' }}>{item.logoPosition}</span>
+                                                                <Typography variant="body2"
+                                                                            sx={{color: '#64748b', mb: 1}}>
+                                                                    Logo Position: <span style={{
+                                                                    fontWeight: 'bold',
+                                                                    color: '#1e293b'
+                                                                }}>{item.logoPosition}</span>
                                                                 </Typography>
                                                             )}
-                                                            <Typography variant="body2" sx={{ color: '#64748b' }}>
-                                                                Fabric: <span style={{ fontWeight: 'bold', color: '#1e293b' }}>{item.fabricName}</span>
+                                                            <Typography variant="body2" sx={{color: '#64748b'}}>
+                                                                Fabric: <span style={{
+                                                                fontWeight: 'bold',
+                                                                color: '#1e293b'
+                                                            }}>{item.fabricName}</span>
                                                             </Typography>
                                                         </CardContent>
                                                     </Card>
@@ -2259,7 +2362,7 @@ export default function AdminReport() {
                                     borderRadius: 2,
                                     border: '1px solid #e2e8f0'
                                 }}>
-                                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1e293b' }}>
+                                    <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
                                         School Logo
                                     </Typography>
                                     <Box sx={{
@@ -2284,7 +2387,7 @@ export default function AdminReport() {
                     )}
                 </DialogContent>
 
-                <DialogActions sx={{ p: 3, pt: 0 }}>
+                <DialogActions sx={{p: 3, pt: 0}}>
                     <Button
                         onClick={() => setDesignRequestDetailOpen(false)}
                         sx={{

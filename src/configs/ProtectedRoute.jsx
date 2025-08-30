@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { refreshToken } from "../services/AuthService.jsx";
-import { getAccess, signout } from "../services/AccountService.jsx";
-import { useLoading } from "../contexts/LoadingContext.jsx";
+import {useEffect, useState} from "react";
+import {refreshToken} from "../services/AuthService.jsx";
+import {getAccess, signout} from "../services/AccountService.jsx";
+import {useLoading} from "../contexts/LoadingContext.jsx";
 
 async function GetAccessData() {
     const response = await getAccess()
@@ -32,12 +32,12 @@ async function CheckIfRoleValid(allowRoles, role) {
     return !!allowRoles.includes(role);
 }
 
-export default function ProtectedRoute({ children, allowRoles = [] }) {
+export default function ProtectedRoute({children, allowRoles = []}) {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [hasValidRole, setHasValidRole] = useState(false);
     const [hasAttemptedAuth, setHasAttemptedAuth] = useState(false);
-    const { setAuthLoading } = useLoading();
+    const {setAuthLoading} = useLoading();
 
     useEffect(() => {
         const checkAuthentication = async () => {

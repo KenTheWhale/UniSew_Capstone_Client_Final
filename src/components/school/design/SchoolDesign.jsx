@@ -1,38 +1,37 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {
     Box,
-    Typography,
     Button,
-    IconButton,
-    Tooltip,
-    Paper,
     Card,
     CardContent,
     Chip,
-    CircularProgress
+    CircularProgress,
+    IconButton,
+    Paper,
+    Tooltip,
+    Typography
 } from "@mui/material";
-import { DataLoadingState, ErrorState, EmptyState } from '../../ui/LoadingSpinner.jsx';
-import { useLoading } from '../../../contexts/LoadingContext.jsx';
+import {DataLoadingState, EmptyState, ErrorState} from '../../ui/LoadingSpinner.jsx';
+import {useLoading} from '../../../contexts/LoadingContext.jsx';
 import InfoIcon from '@mui/icons-material/Info';
 import AddIcon from '@mui/icons-material/Add';
 import DesignServicesIcon from '@mui/icons-material/DesignServices';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PendingIcon from '@mui/icons-material/Pending';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import { Table, Space, Empty } from 'antd';
+import {Table} from 'antd';
 import FeedbackIcon from '@mui/icons-material/Feedback';
 import ReportIcon from '@mui/icons-material/Report';
 import CancelIcon from '@mui/icons-material/Cancel';
 import 'antd/dist/reset.css';
-import RequestDetailPopup, { statusTag } from './dialog/RequestDetailPopup.jsx';
+import RequestDetailPopup, {statusTag} from './dialog/RequestDetailPopup.jsx';
 import FindingDesignerPopup from './dialog/FindingDesignerPopup.jsx';
 import DesignPaymentPopup from './dialog/DesignPaymentPopup.jsx';
-import { enqueueSnackbar } from 'notistack';
+import {enqueueSnackbar} from 'notistack';
 import FeedbackReportPopup from './dialog/FeedbackReportPopup.jsx';
-import { useNavigate } from 'react-router-dom';
-import {getSchoolDesignRequests, cancelDesignRequest} from "../../../services/DesignService.jsx";
-import { parseID } from "../../../utils/ParseIDUtil.jsx";
+import {useNavigate} from 'react-router-dom';
+import {cancelDesignRequest, getSchoolDesignRequests} from "../../../services/DesignService.jsx";
+import {parseID} from "../../../utils/ParseIDUtil.jsx";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -45,7 +44,7 @@ const STATUS_COLORS = {
 
 const TABLE_PAGE_SIZE_OPTIONS = ['5', '10'];
 
-const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
+const StatCard = React.memo(({icon, value, label, color, bgColor}) => (
     <Card
         elevation={0}
         sx={{
@@ -60,7 +59,7 @@ const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
             }
         }}
     >
-        <CardContent sx={{ textAlign: "center", p: 2 }}>
+        <CardContent sx={{textAlign: "center", p: 2}}>
             <Box
                 sx={{
                     width: 50,
@@ -76,10 +75,10 @@ const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
             >
                 {icon}
             </Box>
-            <Typography variant="h5" sx={{ fontWeight: 700, color, mb: 0.5 }}>
+            <Typography variant="h5" sx={{fontWeight: 700, color, mb: 0.5}}>
                 {value}
             </Typography>
-            <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500 }}>
+            <Typography variant="body2" sx={{color: "#64748b", fontWeight: 500}}>
                 {label}
             </Typography>
         </CardContent>
@@ -115,7 +114,7 @@ const EmptyStateComponent = React.memo(() => (
 ));
 
 export default function SchoolDesign() {
-    const { setDataLoading } = useLoading();
+    const {setDataLoading} = useLoading();
 
     useEffect(() => {
         localStorage.removeItem('currentDesignRequest');
@@ -135,7 +134,7 @@ export default function SchoolDesign() {
             }
             setError(null);
             const response = await getSchoolDesignRequests();
-            if(response && response.status === 200){
+            if (response && response.status === 200) {
                 console.log("Design request: ", response.data.body);
                 const newData = response.data.body || [];
                 setDesignRequests(newData);
@@ -184,7 +183,7 @@ export default function SchoolDesign() {
     const [menuRowId, setMenuRowId] = useState(null);
 
     const filteredDesignRequests = useMemo(() =>
-        designRequests,
+            designRequests,
         [designRequests]
     );
 
@@ -195,7 +194,7 @@ export default function SchoolDesign() {
         const processing = filteredDesignRequests.filter(req => req.status === 'processing').length;
         const canceled = filteredDesignRequests.filter(req => req.status === 'canceled').length;
 
-        return { total, pending, completed, processing, canceled };
+        return {total, pending, completed, processing, canceled};
     }, [filteredDesignRequests]);
 
     const handleViewDetail = useCallback((id) => {
@@ -232,11 +231,11 @@ export default function SchoolDesign() {
 
     const handleOpenFeedback = useCallback((request) => {
         if (request.status !== 'completed') {
-            enqueueSnackbar('Feedback is only available for completed requests', { variant: 'warning' });
+            enqueueSnackbar('Feedback is only available for completed requests', {variant: 'warning'});
             return;
         }
         if (request.feedback) {
-            enqueueSnackbar('Feedback has already been submitted for this request', { variant: 'warning' });
+            enqueueSnackbar('Feedback has already been submitted for this request', {variant: 'warning'});
             return;
         }
         setSelectedRequestForFeedback(request);
@@ -245,11 +244,11 @@ export default function SchoolDesign() {
 
     const handleOpenReport = useCallback((request) => {
         if (request.status === 'pending') {
-            enqueueSnackbar('Report is not available for pending requests', { variant: 'warning' });
+            enqueueSnackbar('Report is not available for pending requests', {variant: 'warning'});
             return;
         }
         if (request.feedback) {
-            enqueueSnackbar('Report is not available for requests that already have feedback', { variant: 'warning' });
+            enqueueSnackbar('Report is not available for requests that already have feedback', {variant: 'warning'});
             return;
         }
         setSelectedRequestForFeedback(request);
@@ -276,16 +275,16 @@ export default function SchoolDesign() {
 
             const request = designRequests.find(req => req.id === requestId);
             if (!request) {
-                enqueueSnackbar('Request not found', { variant: 'error' });
+                enqueueSnackbar('Request not found', {variant: 'error'});
                 return;
             }
 
             if (request.status !== 'pending' && request.status !== 'processing') {
-                enqueueSnackbar('Can only cancel pending or processing requests', { variant: 'warning' });
+                enqueueSnackbar('Can only cancel pending or processing requests', {variant: 'warning'});
                 return;
             }
 
-            const response = await cancelDesignRequest({ requestId: requestId });
+            const response = await cancelDesignRequest({requestId: requestId});
 
             if (response && response.status === 200) {
                 enqueueSnackbar('Design request cancelled successfully!', {
@@ -330,7 +329,7 @@ export default function SchoolDesign() {
             defaultSortOrder: 'descend',
             width: 120,
             render: (text) => (
-                <Typography variant="body2" sx={{ fontWeight: 600, color: '#1976d2' }}>
+                <Typography variant="body2" sx={{fontWeight: 600, color: '#1976d2'}}>
                     {parseID(text, 'dr')}
                 </Typography>
             ),
@@ -341,7 +340,10 @@ export default function SchoolDesign() {
             key: 'status',
             align: 'center',
             width: 160,
-            filters: [...new Set(filteredDesignRequests.map(request => request.status))].map(status => ({ text: status, value: status })),
+            filters: [...new Set(filteredDesignRequests.map(request => request.status))].map(status => ({
+                text: status,
+                value: status
+            })),
             onFilter: (value, record) => record.status.indexOf(value) === 0,
             render: (text) => statusTag(text),
         },
@@ -410,7 +412,7 @@ export default function SchoolDesign() {
                         }}
                         size="small"
                     >
-                        <InfoIcon />
+                        <InfoIcon/>
                     </IconButton>
                 </Tooltip>
             ),
@@ -434,38 +436,53 @@ export default function SchoolDesign() {
                             }
                         }}
                     >
-                        <MoreVertIcon />
+                        <MoreVertIcon/>
                     </IconButton>
                     {menuRowId === record.id && (
                         <Menu
                             anchorEl={menuAnchorEl}
                             open={Boolean(menuAnchorEl) && menuRowId === record.id}
                             onClose={handleCloseMenu}
-                            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                            anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
+                            transformOrigin={{vertical: 'top', horizontal: 'right'}}
                         >
                             <MenuItem
-                                onClick={() => { handleOpenFeedback(record); handleCloseMenu(); }}
+                                onClick={() => {
+                                    handleOpenFeedback(record);
+                                    handleCloseMenu();
+                                }}
                                 disabled={record.status !== 'completed' || !!record.feedback}
                             >
-                                <FeedbackIcon fontSize="small" sx={{ mr: 1, color: (record.status === 'completed' && !record.feedback) ? '#10b981' : '#9ca3af' }} />
+                                <FeedbackIcon fontSize="small" sx={{
+                                    mr: 1,
+                                    color: (record.status === 'completed' && !record.feedback) ? '#10b981' : '#9ca3af'
+                                }}/>
                                 Feedback
                             </MenuItem>
                             <MenuItem
-                                onClick={() => { handleOpenReport(record); handleCloseMenu(); }}
+                                onClick={() => {
+                                    handleOpenReport(record);
+                                    handleCloseMenu();
+                                }}
                                 disabled={record.status === 'pending' || !!record.feedback}
                             >
-                                <ReportIcon fontSize="small" sx={{ mr: 1, color: (record.status !== 'pending' && !record.feedback) ? '#ef4444' : '#9ca3af' }} />
+                                <ReportIcon fontSize="small" sx={{
+                                    mr: 1,
+                                    color: (record.status !== 'pending' && !record.feedback) ? '#ef4444' : '#9ca3af'
+                                }}/>
                                 Report
                             </MenuItem>
                             {(record.status === 'pending' || record.status === 'processing') && (
                                 <MenuItem
-                                    onClick={async () => { await handleCancelRequest(record.id); handleCloseMenu(); }}
+                                    onClick={async () => {
+                                        await handleCancelRequest(record.id);
+                                        handleCloseMenu();
+                                    }}
                                     disabled={cancellingRequestId === record.id}
                                 >
                                     {cancellingRequestId === record.id ?
-                                        <CircularProgress size={16} sx={{ color: '#9ca3af', mr: 1 }} /> :
-                                        <CancelIcon fontSize="small" sx={{ mr: 1, color: '#f59e0b' }} />
+                                        <CircularProgress size={16} sx={{color: '#9ca3af', mr: 1}}/> :
+                                        <CancelIcon fontSize="small" sx={{mr: 1, color: '#f59e0b'}}/>
                                     }
                                     Cancel
                                 </MenuItem>
@@ -487,7 +504,7 @@ export default function SchoolDesign() {
     }
 
     return (
-        <Box sx={{ height: '100%', overflowY: 'auto' }}>
+        <Box sx={{height: '100%', overflowY: 'auto'}}>
             <Box
                 sx={{
                     mb: 4,
@@ -510,14 +527,14 @@ export default function SchoolDesign() {
                     }
                 }}
             >
-                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                    <DesignServicesIcon sx={{ fontSize: 32, mr: 2, color: "#2e7d32" }} />
+                <Box sx={{display: "flex", alignItems: "center", mb: 2}}>
+                    <DesignServicesIcon sx={{fontSize: 32, mr: 2, color: "#2e7d32"}}/>
                     <Typography
                         variant="h4"
                         sx={{
                             fontWeight: 700,
                             color: "#1e293b",
-                            fontSize: { xs: "1.5rem", md: "2rem" }
+                            fontSize: {xs: "1.5rem", md: "2rem"}
                         }}
                     >
                         Design Management
@@ -537,7 +554,7 @@ export default function SchoolDesign() {
                 <Button
                     variant="contained"
                     size="large"
-                    startIcon={<AddIcon />}
+                    startIcon={<AddIcon/>}
                     onClick={handleCreateDesignRequest}
                     sx={{
                         background: "linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)",
@@ -560,38 +577,39 @@ export default function SchoolDesign() {
                 </Button>
             </Box>
 
-            <Box sx={{ mb: 4 }}>
-                <Box sx={{ display: 'flex', gap: 3 }}>
+            <Box sx={{mb: 4}}>
+                <Box sx={{display: 'flex', gap: 3}}>
                     <StatCard
-                        icon={<TrendingUpIcon sx={{ color: STATUS_COLORS.completed, fontSize: 24 }} />}
+                        icon={<TrendingUpIcon sx={{color: STATUS_COLORS.completed, fontSize: 24}}/>}
                         value={stats.total}
                         label="Total Requests"
                         color={STATUS_COLORS.completed}
                         bgColor="#e8f5e8"
                     />
                     <StatCard
-                        icon={<PendingIcon sx={{ color: '#f57c00', fontSize: 24 }} />}
+                        icon={<PendingIcon sx={{color: '#f57c00', fontSize: 24}}/>}
                         value={stats.pending}
                         label="Pending"
                         color="#f57c00"
                         bgColor="#fff3e0"
                     />
                     <StatCard
-                        icon={<PendingIcon sx={{ color: STATUS_COLORS.processing, fontSize: 24 }} />}
+                        icon={<PendingIcon sx={{color: STATUS_COLORS.processing, fontSize: 24}}/>}
                         value={stats.processing}
                         label="Processing"
                         color={STATUS_COLORS.processing}
                         bgColor="#f3f4f6"
                     />
                     <StatCard
-                        icon={<CheckCircleIcon sx={{ color: STATUS_COLORS.completed, fontSize: 24 }} />}
+                        icon={<CheckCircleIcon sx={{color: STATUS_COLORS.completed, fontSize: 24}}/>}
                         value={stats.completed}
                         label="Completed"
                         color={STATUS_COLORS.completed}
                         bgColor="#e8f5e8"
                     />
                     <StatCard
-                        icon={<Typography variant="h6" sx={{ color: STATUS_COLORS.canceled, fontWeight: 700 }}>✕</Typography>}
+                        icon={<Typography variant="h6"
+                                          sx={{color: STATUS_COLORS.canceled, fontWeight: 700}}>✕</Typography>}
                         value={stats.canceled}
                         label="Cancelled"
                         color={STATUS_COLORS.canceled}
@@ -608,8 +626,8 @@ export default function SchoolDesign() {
                     overflow: "hidden"
                 }}
             >
-                <Box sx={{ p: 3, backgroundColor: "white" }}>
-                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                <Box sx={{p: 3, backgroundColor: "white"}}>
+                    <Box sx={{display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3}}>
                         <Typography
                             variant="h6"
                             sx={{
@@ -642,9 +660,9 @@ export default function SchoolDesign() {
                                 pageSizeOptions: TABLE_PAGE_SIZE_OPTIONS,
                                 showSizeChanger: true,
                                 showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total} design requests`,
-                                style: { marginTop: 16 }
+                                style: {marginTop: 16}
                             }}
-                            scroll={{ x: 'max-content' }}
+                            scroll={{x: 'max-content'}}
                             style={{
                                 backgroundColor: 'white',
                                 borderRadius: '8px'

@@ -109,7 +109,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
     const [regularDialogOpen, setRegularDialogOpen] = React.useState(false);
     const [physicalDialogOpen, setPhysicalDialogOpen] = React.useState(false);
     const [showQuotationForm, setShowQuotationForm] = React.useState(false);
-    const [imageViewer, setImageViewer] = React.useState({ open: false, title: '', images: [], mode: 'reference' });
+    const [imageViewer, setImageViewer] = React.useState({open: false, title: '', images: [], mode: 'reference'});
     const [isSubmitting, setIsSubmitting] = React.useState(false);
 
     const [quotationData, setQuotationData] = React.useState({
@@ -133,7 +133,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
             return <CheckroomIcon/>;
         } else if (type.includes('jacket') || type.includes('Ã¡o khoÃ¡c')) {
             return <CheckroomIcon/>;
-        } else if (type.includes('sport') || type.includes('thá»?thao')) {
+        } else if (type.includes('sport') || type.includes('thï¿½?thao')) {
             return <SportsIcon/>;
         } else {
             return <CheckroomIcon/>;
@@ -278,7 +278,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
 
                 const combined = parseFloat(quotationData.price || '0') + parseFloat(quotationData.extraRevisionPrice || '0');
                 if (combined > 200000000) {
-                    enqueueSnackbar('Price + Extra revision must be â‰?200.000.000 VND', {variant: 'error'});
+                    enqueueSnackbar('Price + Extra revision must be ï¿½?200.000.000 VND', {variant: 'error'});
                     setIsSubmitting(false);
                     return;
                 }
@@ -288,8 +288,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                 quotationData.extraRevisionPrice = '0';
             }
             handleAcceptRequest();
-        }
-        else {
+        } else {
             setIsSubmitting(false);
         }
     };
@@ -1349,12 +1348,23 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                         {getItemsByCategory('regular').length > 0 && (
                             <Box sx={{mb: 4}}>
                                 {}
-                                <Box sx={{ mb: 2, p: 2, border: '1px solid #e2e8f0', borderRadius: 2, background: 'rgba(59,130,246,0.05)' }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                        <Box sx={{ width: 10, height: 10, borderRadius: '50%', background: '#3b82f6' }} />
-                                        <Typography variant="subtitle1" sx={{fontWeight: 700, color: '#1e293b'}}>Boy</Typography>
+                                <Box sx={{
+                                    mb: 2,
+                                    p: 2,
+                                    border: '1px solid #e2e8f0',
+                                    borderRadius: 2,
+                                    background: 'rgba(59,130,246,0.05)'
+                                }}>
+                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mb: 1}}>
+                                        <Box sx={{width: 10, height: 10, borderRadius: '50%', background: '#3b82f6'}}/>
+                                        <Typography variant="subtitle1"
+                                                    sx={{fontWeight: 700, color: '#1e293b'}}>Boy</Typography>
                                     </Box>
-                                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 2 }}>
+                                    <Box sx={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                                        gap: 2
+                                    }}>
                                         {getItemsByCategory('regular').filter(i => i.gender === 'boy').map((item, index) => (
                                             <Card key={`reg-boy-${index}`} sx={{
                                                 background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
@@ -1366,48 +1376,113 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                                 overflow: 'hidden',
                                                 height: '100%',
                                                 minHeight: 260,
-                                                '&:hover': { transform: 'translateY(-6px)', boxShadow: '0 12px 40px rgba(124, 58, 237, 0.25)', borderColor: 'rgba(124, 58, 237, 0.3)' },
-                                                '&::before': { content: '""', position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)' }
+                                                '&:hover': {
+                                                    transform: 'translateY(-6px)',
+                                                    boxShadow: '0 12px 40px rgba(124, 58, 237, 0.25)',
+                                                    borderColor: 'rgba(124, 58, 237, 0.3)'
+                                                },
+                                                '&::before': {
+                                                    content: '""',
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    left: 0,
+                                                    right: 0,
+                                                    height: '4px',
+                                                    background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)'
+                                                }
                                             }}>
                                                 <CardContent sx={{p: 2}}>
                                                     {}
-                                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5}}>
-                                                        <Box sx={{ p: 1, borderRadius: 3, background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)', color: 'white', boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)' }}>
+                                                    <Box
+                                                        sx={{display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5}}>
+                                                        <Box sx={{
+                                                            p: 1,
+                                                            borderRadius: 3,
+                                                            background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
+                                                            color: 'white',
+                                                            boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
+                                                        }}>
                                                             {getItemIcon(item.type)}
                                                         </Box>
                                                         <Box>
-                                                            <Typography variant="h6" sx={{fontWeight: 700, color: '#1e293b'}}>
+                                                            <Typography variant="h6"
+                                                                        sx={{fontWeight: 700, color: '#1e293b'}}>
                                                                 {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
                                                             </Typography>
-                                                            <Typography variant="body2" sx={{color: '#64748b', fontWeight: 500}}>Regular Uniform</Typography>
+                                                            <Typography variant="body2"
+                                                                        sx={{color: '#64748b', fontWeight: 500}}>Regular
+                                                                Uniform</Typography>
                                                         </Box>
                                                     </Box>
                                                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 1}}>
                                                         {renderColorWithPicker(item.color, '#7c3aed')}
                                                         <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                                                            <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: '#7c3aed' }}/>
-                                                            <Typography variant="body2" sx={{fontWeight: 600, color: '#374151'}}>Fabric: <span style={{ color: '#7c3aed', fontWeight: 500 }}>{item.fabricName || 'N/A'}</span></Typography>
+                                                            <Box sx={{
+                                                                width: 8,
+                                                                height: 8,
+                                                                borderRadius: '50%',
+                                                                background: '#7c3aed'
+                                                            }}/>
+                                                            <Typography variant="body2" sx={{
+                                                                fontWeight: 600,
+                                                                color: '#374151'
+                                                            }}>Fabric: <span style={{
+                                                                color: '#7c3aed',
+                                                                fontWeight: 500
+                                                            }}>{item.fabricName || 'N/A'}</span></Typography>
                                                         </Box>
                                                         {item.logoPosition && (
                                                             <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                                                                <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: '#7c3aed' }}/>
-                                                                <Typography variant="body2" sx={{fontWeight: 600, color: '#374151'}}>Logo Position: <span style={{ color: '#7c3aed', fontWeight: 500 }}>{item.logoPosition}</span></Typography>
+                                                                <Box sx={{
+                                                                    width: 8,
+                                                                    height: 8,
+                                                                    borderRadius: '50%',
+                                                                    background: '#7c3aed'
+                                                                }}/>
+                                                                <Typography variant="body2"
+                                                                            sx={{fontWeight: 600, color: '#374151'}}>Logo
+                                                                    Position: <span style={{
+                                                                        color: '#7c3aed',
+                                                                        fontWeight: 500
+                                                                    }}>{item.logoPosition}</span></Typography>
                                                             </Box>
                                                         )}
                                                         {item.note && (
-                                                            <Box sx={{ mt: 1, p: 1.5, background: 'rgba(124, 58, 237, 0.05)', borderRadius: 2, border: '1px solid rgba(124, 58, 237, 0.1)' }}>
-                                                                <Typography variant="body2" sx={{ fontStyle: 'italic', color: '#64748b', fontWeight: 500 }}><strong>Note:</strong> {item.note}</Typography>
+                                                            <Box sx={{
+                                                                mt: 1,
+                                                                p: 1.5,
+                                                                background: 'rgba(124, 58, 237, 0.05)',
+                                                                borderRadius: 2,
+                                                                border: '1px solid rgba(124, 58, 237, 0.1)'
+                                                            }}>
+                                                                <Typography variant="body2" sx={{
+                                                                    fontStyle: 'italic',
+                                                                    color: '#64748b',
+                                                                    fontWeight: 500
+                                                                }}><strong>Note:</strong> {item.note}</Typography>
                                                             </Box>
                                                         )}
                                                     </Box>
-                                                    <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
+                                                    <Box sx={{display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap'}}>
                                                         {item.type?.toLowerCase() === 'shirt' && (request?.logoImage || item.logoImageUrl) && (
-                                                            <Button size="small" variant="outlined" onClick={() => setImageViewer({ open: true, title: 'Logo image', images: [request?.logoImage || item.logoImageUrl], mode: 'logo' })}>
+                                                            <Button size="small" variant="outlined"
+                                                                    onClick={() => setImageViewer({
+                                                                        open: true,
+                                                                        title: 'Logo image',
+                                                                        images: [request?.logoImage || item.logoImageUrl],
+                                                                        mode: 'logo'
+                                                                    })}>
                                                                 View logo image
                                                             </Button>
                                                         )}
                                                         {item.sampleImages && item.sampleImages.length > 0 && (
-                                                            <Button size="small" variant="outlined" onClick={() => setImageViewer({ open: true, title: 'Reference images', images: item.sampleImages.slice(0,4).map(img => img.url), mode: 'reference' })}>
+                                                            <Button size="small" variant="outlined"
+                                                                    onClick={() => setImageViewer({
+                                                                        open: true,
+                                                                        title: 'Reference images',
+                                                                        images: item.sampleImages.slice(0, 4).map(img => img.url),
+                                                                        mode: 'reference'
+                                                                    })}>
                                                                 View reference images
                                                             </Button>
                                                         )}
@@ -1419,12 +1494,22 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                 </Box>
 
                                 {}
-                                <Box sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: 2, background: 'rgba(236,72,153,0.05)' }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                        <Box sx={{ width: 10, height: 10, borderRadius: '50%', background: '#ec4899' }} />
-                                        <Typography variant="subtitle1" sx={{fontWeight: 700, color: '#1e293b'}}>Girl</Typography>
+                                <Box sx={{
+                                    p: 2,
+                                    border: '1px solid #e2e8f0',
+                                    borderRadius: 2,
+                                    background: 'rgba(236,72,153,0.05)'
+                                }}>
+                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mb: 1}}>
+                                        <Box sx={{width: 10, height: 10, borderRadius: '50%', background: '#ec4899'}}/>
+                                        <Typography variant="subtitle1"
+                                                    sx={{fontWeight: 700, color: '#1e293b'}}>Girl</Typography>
                                     </Box>
-                                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 2 }}>
+                                    <Box sx={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                                        gap: 2
+                                    }}>
                                         {getItemsByCategory('regular').filter(i => i.gender === 'girl').map((item, index) => (
                                             <Card key={`reg-girl-${index}`} sx={{
                                                 background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
@@ -1436,43 +1521,110 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                                 overflow: 'hidden',
                                                 height: '100%',
                                                 minHeight: 260,
-                                                '&:hover': { transform: 'translateY(-6px)', boxShadow: '0 12px 40px rgba(124, 58, 237, 0.25)', borderColor: 'rgba(124, 58, 237, 0.3)' },
-                                                '&::before': { content: '""', position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)' }
+                                                '&:hover': {
+                                                    transform: 'translateY(-6px)',
+                                                    boxShadow: '0 12px 40px rgba(124, 58, 237, 0.25)',
+                                                    borderColor: 'rgba(124, 58, 237, 0.3)'
+                                                },
+                                                '&::before': {
+                                                    content: '""',
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    left: 0,
+                                                    right: 0,
+                                                    height: '4px',
+                                                    background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)'
+                                                }
                                             }}>
                                                 <CardContent sx={{p: 2}}>
-                                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5}}>
-                                                        <Box sx={{ p: 1, borderRadius: 3, background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)', color: 'white', boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)' }}>{getItemIcon(item.type)}</Box>
+                                                    <Box
+                                                        sx={{display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5}}>
+                                                        <Box sx={{
+                                                            p: 1,
+                                                            borderRadius: 3,
+                                                            background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
+                                                            color: 'white',
+                                                            boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
+                                                        }}>{getItemIcon(item.type)}</Box>
                                                         <Box>
-                                                            <Typography variant="h6" sx={{fontWeight: 700, color: '#1e293b'}}>{item.type.charAt(0).toUpperCase() + item.type.slice(1)}</Typography>
-                                                            <Typography variant="body2" sx={{color: '#64748b', fontWeight: 500}}>Regular Uniform</Typography>
+                                                            <Typography variant="h6" sx={{
+                                                                fontWeight: 700,
+                                                                color: '#1e293b'
+                                                            }}>{item.type.charAt(0).toUpperCase() + item.type.slice(1)}</Typography>
+                                                            <Typography variant="body2"
+                                                                        sx={{color: '#64748b', fontWeight: 500}}>Regular
+                                                                Uniform</Typography>
                                                         </Box>
                                                     </Box>
                                                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 1}}>
                                                         {renderColorWithPicker(item.color, '#7c3aed')}
                                                         <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                                                            <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: '#7c3aed' }}/>
-                                                            <Typography variant="body2" sx={{fontWeight: 600, color: '#374151'}}>Fabric: <span style={{ color: '#7c3aed', fontWeight: 500 }}>{item.fabricName || 'N/A'}</span></Typography>
+                                                            <Box sx={{
+                                                                width: 8,
+                                                                height: 8,
+                                                                borderRadius: '50%',
+                                                                background: '#7c3aed'
+                                                            }}/>
+                                                            <Typography variant="body2" sx={{
+                                                                fontWeight: 600,
+                                                                color: '#374151'
+                                                            }}>Fabric: <span style={{
+                                                                color: '#7c3aed',
+                                                                fontWeight: 500
+                                                            }}>{item.fabricName || 'N/A'}</span></Typography>
                                                         </Box>
                                                         {item.logoPosition && (
                                                             <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                                                                <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: '#7c3aed' }}/>
-                                                                <Typography variant="body2" sx={{fontWeight: 600, color: '#374151'}}>Logo Position: <span style={{ color: '#7c3aed', fontWeight: 500 }}>{item.logoPosition}</span></Typography>
+                                                                <Box sx={{
+                                                                    width: 8,
+                                                                    height: 8,
+                                                                    borderRadius: '50%',
+                                                                    background: '#7c3aed'
+                                                                }}/>
+                                                                <Typography variant="body2"
+                                                                            sx={{fontWeight: 600, color: '#374151'}}>Logo
+                                                                    Position: <span style={{
+                                                                        color: '#7c3aed',
+                                                                        fontWeight: 500
+                                                                    }}>{item.logoPosition}</span></Typography>
                                                             </Box>
                                                         )}
                                                         {item.note && (
-                                                            <Box sx={{ mt: 1, p: 1.5, background: 'rgba(124, 58, 237, 0.05)', borderRadius: 2, border: '1px solid rgba(124, 58, 237, 0.1)' }}>
-                                                                <Typography variant="body2" sx={{ fontStyle: 'italic', color: '#64748b', fontWeight: 500 }}><strong>Note:</strong> {item.note}</Typography>
+                                                            <Box sx={{
+                                                                mt: 1,
+                                                                p: 1.5,
+                                                                background: 'rgba(124, 58, 237, 0.05)',
+                                                                borderRadius: 2,
+                                                                border: '1px solid rgba(124, 58, 237, 0.1)'
+                                                            }}>
+                                                                <Typography variant="body2" sx={{
+                                                                    fontStyle: 'italic',
+                                                                    color: '#64748b',
+                                                                    fontWeight: 500
+                                                                }}><strong>Note:</strong> {item.note}</Typography>
                                                             </Box>
                                                         )}
                                                     </Box>
-                                                    <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
+                                                    <Box sx={{display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap'}}>
                                                         {item.type?.toLowerCase() === 'shirt' && (request?.logoImage || item.logoImageUrl) && (
-                                                            <Button size="small" variant="outlined" onClick={() => setImageViewer({ open: true, title: 'Logo image', images: [request?.logoImage || item.logoImageUrl], mode: 'logo' })}>
+                                                            <Button size="small" variant="outlined"
+                                                                    onClick={() => setImageViewer({
+                                                                        open: true,
+                                                                        title: 'Logo image',
+                                                                        images: [request?.logoImage || item.logoImageUrl],
+                                                                        mode: 'logo'
+                                                                    })}>
                                                                 View logo image
                                                             </Button>
                                                         )}
                                                         {item.sampleImages && item.sampleImages.length > 0 && (
-                                                            <Button size="small" variant="outlined" onClick={() => setImageViewer({ open: true, title: 'Reference images', images: item.sampleImages.slice(0,4).map(img => img.url), mode: 'reference' })}>
+                                                            <Button size="small" variant="outlined"
+                                                                    onClick={() => setImageViewer({
+                                                                        open: true,
+                                                                        title: 'Reference images',
+                                                                        images: item.sampleImages.slice(0, 4).map(img => img.url),
+                                                                        mode: 'reference'
+                                                                    })}>
                                                                 View reference images
                                                             </Button>
                                                         )}
@@ -1600,12 +1752,23 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                         {getItemsByCategory('pe').length > 0 && (
                             <Box sx={{mb: 4}}>
                                 {}
-                                <Box sx={{ mb: 2, p: 2, border: '1px solid #e2e8f0', borderRadius: 2, background: 'rgba(59,130,246,0.05)' }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                        <Box sx={{ width: 10, height: 10, borderRadius: '50%', background: '#3b82f6' }} />
-                                        <Typography variant="subtitle1" sx={{fontWeight: 700, color: '#1e293b'}}>Boy</Typography>
+                                <Box sx={{
+                                    mb: 2,
+                                    p: 2,
+                                    border: '1px solid #e2e8f0',
+                                    borderRadius: 2,
+                                    background: 'rgba(59,130,246,0.05)'
+                                }}>
+                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mb: 1}}>
+                                        <Box sx={{width: 10, height: 10, borderRadius: '50%', background: '#3b82f6'}}/>
+                                        <Typography variant="subtitle1"
+                                                    sx={{fontWeight: 700, color: '#1e293b'}}>Boy</Typography>
                                     </Box>
-                                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 2 }}>
+                                    <Box sx={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                                        gap: 2
+                                    }}>
                                         {getItemsByCategory('pe').filter(i => i.gender === 'boy').map((item, index) => (
                                             <Card key={`pe-boy-${index}`} sx={{
                                                 background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
@@ -1617,43 +1780,110 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                                 overflow: 'hidden',
                                                 height: '100%',
                                                 minHeight: 260,
-                                                '&:hover': { transform: 'translateY(-6px)', boxShadow: '0 12px 40px rgba(124, 58, 237, 0.25)', borderColor: 'rgba(124, 58, 237, 0.3)' },
-                                                '&::before': { content: '""', position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)' }
+                                                '&:hover': {
+                                                    transform: 'translateY(-6px)',
+                                                    boxShadow: '0 12px 40px rgba(124, 58, 237, 0.25)',
+                                                    borderColor: 'rgba(124, 58, 237, 0.3)'
+                                                },
+                                                '&::before': {
+                                                    content: '""',
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    left: 0,
+                                                    right: 0,
+                                                    height: '4px',
+                                                    background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)'
+                                                }
                                             }}>
                                                 <CardContent sx={{p: 2}}>
-                                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5}}>
-                                                        <Box sx={{ p: 1, borderRadius: 3, background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)', color: 'white', boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)' }}>{getItemIcon(item.type)}</Box>
+                                                    <Box
+                                                        sx={{display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5}}>
+                                                        <Box sx={{
+                                                            p: 1,
+                                                            borderRadius: 3,
+                                                            background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
+                                                            color: 'white',
+                                                            boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
+                                                        }}>{getItemIcon(item.type)}</Box>
                                                         <Box>
-                                                            <Typography variant="h6" sx={{fontWeight: 700, color: '#1e293b'}}>{item.type.charAt(0).toUpperCase() + item.type.slice(1)}</Typography>
-                                                            <Typography variant="body2" sx={{color: '#64748b', fontWeight: 500}}>Physical Education</Typography>
+                                                            <Typography variant="h6" sx={{
+                                                                fontWeight: 700,
+                                                                color: '#1e293b'
+                                                            }}>{item.type.charAt(0).toUpperCase() + item.type.slice(1)}</Typography>
+                                                            <Typography variant="body2"
+                                                                        sx={{color: '#64748b', fontWeight: 500}}>Physical
+                                                                Education</Typography>
                                                         </Box>
                                                     </Box>
                                                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 1}}>
                                                         {renderColorWithPicker(item.color, '#7c3aed')}
                                                         <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                                                            <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: '#7c3aed' }}/>
-                                                            <Typography variant="body2" sx={{fontWeight: 600, color: '#374151'}}>Fabric: <span style={{ color: '#7c3aed', fontWeight: 500 }}>{item.fabricName || 'N/A'}</span></Typography>
+                                                            <Box sx={{
+                                                                width: 8,
+                                                                height: 8,
+                                                                borderRadius: '50%',
+                                                                background: '#7c3aed'
+                                                            }}/>
+                                                            <Typography variant="body2" sx={{
+                                                                fontWeight: 600,
+                                                                color: '#374151'
+                                                            }}>Fabric: <span style={{
+                                                                color: '#7c3aed',
+                                                                fontWeight: 500
+                                                            }}>{item.fabricName || 'N/A'}</span></Typography>
                                                         </Box>
                                                         {item.logoPosition && (
                                                             <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                                                                <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: '#7c3aed' }}/>
-                                                                <Typography variant="body2" sx={{fontWeight: 600, color: '#374151'}}>Logo Position: <span style={{ color: '#7c3aed', fontWeight: 500 }}>{item.logoPosition}</span></Typography>
+                                                                <Box sx={{
+                                                                    width: 8,
+                                                                    height: 8,
+                                                                    borderRadius: '50%',
+                                                                    background: '#7c3aed'
+                                                                }}/>
+                                                                <Typography variant="body2"
+                                                                            sx={{fontWeight: 600, color: '#374151'}}>Logo
+                                                                    Position: <span style={{
+                                                                        color: '#7c3aed',
+                                                                        fontWeight: 500
+                                                                    }}>{item.logoPosition}</span></Typography>
                                                             </Box>
                                                         )}
                                                         {item.note && (
-                                                            <Box sx={{ mt: 1, p: 1.5, background: 'rgba(124, 58, 237, 0.05)', borderRadius: 2, border: '1px solid rgba(124, 58, 237, 0.1)' }}>
-                                                                <Typography variant="body2" sx={{ fontStyle: 'italic', color: '#64748b', fontWeight: 500 }}><strong>Note:</strong> {item.note}</Typography>
+                                                            <Box sx={{
+                                                                mt: 1,
+                                                                p: 1.5,
+                                                                background: 'rgba(124, 58, 237, 0.05)',
+                                                                borderRadius: 2,
+                                                                border: '1px solid rgba(124, 58, 237, 0.1)'
+                                                            }}>
+                                                                <Typography variant="body2" sx={{
+                                                                    fontStyle: 'italic',
+                                                                    color: '#64748b',
+                                                                    fontWeight: 500
+                                                                }}><strong>Note:</strong> {item.note}</Typography>
                                                             </Box>
                                                         )}
                                                     </Box>
-                                                    <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
+                                                    <Box sx={{display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap'}}>
                                                         {item.type?.toLowerCase() === 'shirt' && (request?.logoImage || item.logoImageUrl) && (
-                                                            <Button size="small" variant="outlined" onClick={() => setImageViewer({ open: true, title: 'Logo image', images: [request?.logoImage || item.logoImageUrl], mode: 'logo' })}>
+                                                            <Button size="small" variant="outlined"
+                                                                    onClick={() => setImageViewer({
+                                                                        open: true,
+                                                                        title: 'Logo image',
+                                                                        images: [request?.logoImage || item.logoImageUrl],
+                                                                        mode: 'logo'
+                                                                    })}>
                                                                 View logo image
                                                             </Button>
                                                         )}
                                                         {item.sampleImages && item.sampleImages.length > 0 && (
-                                                            <Button size="small" variant="outlined" onClick={() => setImageViewer({ open: true, title: 'Reference images', images: item.sampleImages.slice(0,4).map(img => img.url), mode: 'reference' })}>
+                                                            <Button size="small" variant="outlined"
+                                                                    onClick={() => setImageViewer({
+                                                                        open: true,
+                                                                        title: 'Reference images',
+                                                                        images: item.sampleImages.slice(0, 4).map(img => img.url),
+                                                                        mode: 'reference'
+                                                                    })}>
                                                                 View reference images
                                                             </Button>
                                                         )}
@@ -1665,12 +1895,22 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                 </Box>
 
                                 {}
-                                <Box sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: 2, background: 'rgba(236,72,153,0.05)' }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                        <Box sx={{ width: 10, height: 10, borderRadius: '50%', background: '#ec4899' }} />
-                                        <Typography variant="subtitle1" sx={{fontWeight: 700, color: '#1e293b'}}>Girl</Typography>
+                                <Box sx={{
+                                    p: 2,
+                                    border: '1px solid #e2e8f0',
+                                    borderRadius: 2,
+                                    background: 'rgba(236,72,153,0.05)'
+                                }}>
+                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mb: 1}}>
+                                        <Box sx={{width: 10, height: 10, borderRadius: '50%', background: '#ec4899'}}/>
+                                        <Typography variant="subtitle1"
+                                                    sx={{fontWeight: 700, color: '#1e293b'}}>Girl</Typography>
                                     </Box>
-                                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 2 }}>
+                                    <Box sx={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                                        gap: 2
+                                    }}>
                                         {getItemsByCategory('pe').filter(i => i.gender === 'girl').map((item, index) => (
                                             <Card key={`pe-girl-${index}`} sx={{
                                                 background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
@@ -1682,43 +1922,110 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                                 overflow: 'hidden',
                                                 height: '100%',
                                                 minHeight: 260,
-                                                '&:hover': { transform: 'translateY(-6px)', boxShadow: '0 12px 40px rgba(124, 58, 237, 0.25)', borderColor: 'rgba(124, 58, 237, 0.3)' },
-                                                '&::before': { content: '""', position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)' }
+                                                '&:hover': {
+                                                    transform: 'translateY(-6px)',
+                                                    boxShadow: '0 12px 40px rgba(124, 58, 237, 0.25)',
+                                                    borderColor: 'rgba(124, 58, 237, 0.3)'
+                                                },
+                                                '&::before': {
+                                                    content: '""',
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    left: 0,
+                                                    right: 0,
+                                                    height: '4px',
+                                                    background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)'
+                                                }
                                             }}>
                                                 <CardContent sx={{p: 2}}>
-                                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5}}>
-                                                        <Box sx={{ p: 1, borderRadius: 3, background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)', color: 'white', boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)' }}>{getItemIcon(item.type)}</Box>
+                                                    <Box
+                                                        sx={{display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5}}>
+                                                        <Box sx={{
+                                                            p: 1,
+                                                            borderRadius: 3,
+                                                            background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
+                                                            color: 'white',
+                                                            boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
+                                                        }}>{getItemIcon(item.type)}</Box>
                                                         <Box>
-                                                            <Typography variant="h6" sx={{fontWeight: 700, color: '#1e293b'}}>{item.type.charAt(0).toUpperCase() + item.type.slice(1)}</Typography>
-                                                            <Typography variant="body2" sx={{color: '#64748b', fontWeight: 500}}>Physical Education</Typography>
+                                                            <Typography variant="h6" sx={{
+                                                                fontWeight: 700,
+                                                                color: '#1e293b'
+                                                            }}>{item.type.charAt(0).toUpperCase() + item.type.slice(1)}</Typography>
+                                                            <Typography variant="body2"
+                                                                        sx={{color: '#64748b', fontWeight: 500}}>Physical
+                                                                Education</Typography>
                                                         </Box>
                                                     </Box>
                                                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 1}}>
                                                         {renderColorWithPicker(item.color, '#7c3aed')}
                                                         <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                                                            <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: '#7c3aed' }}/>
-                                                            <Typography variant="body2" sx={{fontWeight: 600, color: '#374151'}}>Fabric: <span style={{ color: '#7c3aed', fontWeight: 500 }}>{item.fabricName || 'N/A'}</span></Typography>
+                                                            <Box sx={{
+                                                                width: 8,
+                                                                height: 8,
+                                                                borderRadius: '50%',
+                                                                background: '#7c3aed'
+                                                            }}/>
+                                                            <Typography variant="body2" sx={{
+                                                                fontWeight: 600,
+                                                                color: '#374151'
+                                                            }}>Fabric: <span style={{
+                                                                color: '#7c3aed',
+                                                                fontWeight: 500
+                                                            }}>{item.fabricName || 'N/A'}</span></Typography>
                                                         </Box>
                                                         {item.logoPosition && (
                                                             <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                                                                <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: '#7c3aed' }}/>
-                                                                <Typography variant="body2" sx={{fontWeight: 600, color: '#374151'}}>Logo Position: <span style={{ color: '#7c3aed', fontWeight: 500 }}>{item.logoPosition}</span></Typography>
+                                                                <Box sx={{
+                                                                    width: 8,
+                                                                    height: 8,
+                                                                    borderRadius: '50%',
+                                                                    background: '#7c3aed'
+                                                                }}/>
+                                                                <Typography variant="body2"
+                                                                            sx={{fontWeight: 600, color: '#374151'}}>Logo
+                                                                    Position: <span style={{
+                                                                        color: '#7c3aed',
+                                                                        fontWeight: 500
+                                                                    }}>{item.logoPosition}</span></Typography>
                                                             </Box>
                                                         )}
                                                         {item.note && (
-                                                            <Box sx={{ mt: 1, p: 1.5, background: 'rgba(124, 58, 237, 0.05)', borderRadius: 2, border: '1px solid rgba(124, 58, 237, 0.1)' }}>
-                                                                <Typography variant="body2" sx={{ fontStyle: 'italic', color: '#64748b', fontWeight: 500 }}><strong>Note:</strong> {item.note}</Typography>
+                                                            <Box sx={{
+                                                                mt: 1,
+                                                                p: 1.5,
+                                                                background: 'rgba(124, 58, 237, 0.05)',
+                                                                borderRadius: 2,
+                                                                border: '1px solid rgba(124, 58, 237, 0.1)'
+                                                            }}>
+                                                                <Typography variant="body2" sx={{
+                                                                    fontStyle: 'italic',
+                                                                    color: '#64748b',
+                                                                    fontWeight: 500
+                                                                }}><strong>Note:</strong> {item.note}</Typography>
                                                             </Box>
                                                         )}
                                                     </Box>
-                                                    <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
+                                                    <Box sx={{display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap'}}>
                                                         {item.type?.toLowerCase() === 'shirt' && (request?.logoImage || item.logoImageUrl) && (
-                                                            <Button size="small" variant="outlined" onClick={() => setImageViewer({ open: true, title: 'Logo image', images: [request?.logoImage || item.logoImageUrl], mode: 'logo' })}>
+                                                            <Button size="small" variant="outlined"
+                                                                    onClick={() => setImageViewer({
+                                                                        open: true,
+                                                                        title: 'Logo image',
+                                                                        images: [request?.logoImage || item.logoImageUrl],
+                                                                        mode: 'logo'
+                                                                    })}>
                                                                 View logo image
                                                             </Button>
                                                         )}
                                                         {item.sampleImages && item.sampleImages.length > 0 && (
-                                                            <Button size="small" variant="outlined" onClick={() => setImageViewer({ open: true, title: 'Reference images', images: item.sampleImages.slice(0,4).map(img => img.url), mode: 'reference' })}>
+                                                            <Button size="small" variant="outlined"
+                                                                    onClick={() => setImageViewer({
+                                                                        open: true,
+                                                                        title: 'Reference images',
+                                                                        images: item.sampleImages.slice(0, 4).map(img => img.url),
+                                                                        mode: 'reference'
+                                                                    })}>
                                                                 View reference images
                                                             </Button>
                                                         )}
@@ -1783,19 +2090,23 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
             </Dialog>
 
             {}
-            <Dialog open={imageViewer.open} onClose={() => setImageViewer(prev => ({ ...prev, open: false }))} maxWidth="md" fullWidth>
-                <DialogContent sx={{ p: 3 }}>
-                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>{imageViewer.title}</Typography>
+            <Dialog open={imageViewer.open} onClose={() => setImageViewer(prev => ({...prev, open: false}))}
+                    maxWidth="md" fullWidth>
+                <DialogContent sx={{p: 3}}>
+                    <Typography variant="h6" sx={{mb: 2, fontWeight: 700}}>{imageViewer.title}</Typography>
                     {imageViewer.mode === 'logo' ? (
-                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
                             {imageViewer.images[0] && (
-                                <DisplayImage imageUrl={imageViewer.images[0]} width={260} height={260} alt={imageViewer.title} />
+                                <DisplayImage imageUrl={imageViewer.images[0]} width={260} height={260}
+                                              alt={imageViewer.title}/>
                             )}
                         </Box>
                     ) : (
-                        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 2 }}>
-                            {imageViewer.images.slice(0,4).map((url, idx) => (
-                                <DisplayImage key={idx} imageUrl={url} width={160} height={160} alt={`${imageViewer.title} ${idx + 1}`} />
+                        <Box
+                            sx={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 2}}>
+                            {imageViewer.images.slice(0, 4).map((url, idx) => (
+                                <DisplayImage key={idx} imageUrl={url} width={160} height={160}
+                                              alt={`${imageViewer.title} ${idx + 1}`}/>
                             ))}
                         </Box>
                     )}

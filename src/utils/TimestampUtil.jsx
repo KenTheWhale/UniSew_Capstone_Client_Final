@@ -1,6 +1,6 @@
 export const getShippingDaysFromTimestamp = (shippingLeadTime) => {
     if (!shippingLeadTime) return 0;
-    
+
     if (shippingLeadTime > 1000000) {
         // This is a timestamp, calculate days from current time
         const currentTime = Math.floor(Date.now() / 1000);

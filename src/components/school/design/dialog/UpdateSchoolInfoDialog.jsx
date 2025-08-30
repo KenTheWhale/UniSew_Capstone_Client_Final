@@ -9,7 +9,6 @@ import {
     DialogContent,
     DialogTitle,
     FormControl,
-    Grid,
     InputLabel,
     MenuItem,
     Select,
@@ -17,14 +16,14 @@ import {
     Typography
 } from '@mui/material';
 import {Business, LocationOn, Phone, Receipt} from '@mui/icons-material';
-import {getProvinces, getDistricts, getWards} from '../../../../services/ShippingService.jsx';
+import {getDistricts, getProvinces, getWards} from '../../../../services/ShippingService.jsx';
 import {getTaxInfo} from '../../../../services/TaxService.jsx';
 import {checkSchoolInitData} from '../../../../services/AccountService.jsx';
 import {useSnackbar} from 'notistack';
 
 export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initialData}) {
     const {enqueueSnackbar} = useSnackbar();
-    
+
     // Parse address from initialData if available
     const parseAddress = (address) => {
         if (!address || address === 'N/A') return {province: '', district: '', ward: '', street: ''};
@@ -85,11 +84,11 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                         const filteredProvinces = response.data.data.filter(province => {
                             const unwantedNames = [
                                 'Hà Nội 02',
-                                'Test - Alert - Tỉnh - 001', 
+                                'Test - Alert - Tỉnh - 001',
                                 'Ngoc test',
                                 'Test'
                             ];
-                            return !unwantedNames.some(name => 
+                            return !unwantedNames.some(name =>
                                 province.ProvinceName.includes(name)
                             );
                         });
@@ -146,7 +145,7 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
         if (!taxCode || taxCode.length < 10 || taxCode.length > 13) {
             return false;
         }
-        
+
         setValidatingTaxCode(true);
         try {
             const response = await getTaxInfo(taxCode);
@@ -241,16 +240,16 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
             setDistricts([]);
             setWards([]);
             setErrors(prev => ({...prev, district: '', ward: '', street: ''}));
-            
+
             // Clear tax code and phone when address changes
             setFormData(prev => ({...prev, taxCode: '', phone: ''}));
             setErrors(prev => ({...prev, taxCode: '', phone: ''}));
             setTaxCodeValid(null);
-            
+
             // Reset server flags
             setIsTaxCodeFromServer(false);
             setIsPhoneFromServer(false);
-            
+
             // Fetch districts for selected province
             if (value) {
                 fetchDistricts(value);
@@ -262,32 +261,32 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
             setFormData(prev => ({...prev, ward: '', street: ''}));
             setWards([]);
             setErrors(prev => ({...prev, ward: '', street: ''}));
-            
+
             // Clear tax code and phone when address changes
             setFormData(prev => ({...prev, taxCode: '', phone: ''}));
             setErrors(prev => ({...prev, taxCode: '', phone: ''}));
             setTaxCodeValid(null);
-            
+
             // Reset server flags
             setIsTaxCodeFromServer(false);
             setIsPhoneFromServer(false);
-            
+
             // Fetch wards for selected district
             if (value) {
                 fetchWards(value);
-        }
+            }
         }
 
         // Reset street when ward changes
         if (field === 'ward') {
             setFormData(prev => ({...prev, street: ''}));
             setErrors(prev => ({...prev, street: ''}));
-            
+
             // Clear tax code and phone when address changes
             setFormData(prev => ({...prev, taxCode: '', phone: ''}));
             setErrors(prev => ({...prev, taxCode: '', phone: ''}));
             setTaxCodeValid(null);
-            
+
             // Reset server flags
             setIsTaxCodeFromServer(false);
             setIsPhoneFromServer(false);
@@ -309,15 +308,15 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                 taxCode: '',
                 phone: ''
             }));
-            
+
             setErrors(prev => ({
                 ...prev,
                 taxCode: '',
                 phone: ''
             }));
-            
+
             setTaxCodeValid(null);
-            
+
             // Reset server flags
             setIsTaxCodeFromServer(false);
             setIsPhoneFromServer(false);
@@ -329,11 +328,11 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
 
     const handleSubmit = async () => {
         // Validate all fields
-        const newErrors = {}; 
-        
+        const newErrors = {};
+
         // Use the state flags to check if fields are from server
         // These are set when we receive data from server in step 1
-        
+
         // Special handling for tax code validation - only if not from server
         if (formData.taxCode && !isTaxCodeFromServer) {
             if (!/^[0-9]{10,13}$/.test(formData.taxCode)) {
@@ -348,7 +347,7 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                 newErrors.taxCode = 'Tax code is not valid according to tax authority';
             }
         }
-        
+
         // Validate other fields
         Object.keys(formData).forEach(field => {
             if (field === 'taxCode' && isTaxCodeFromServer) {
@@ -359,7 +358,7 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                 // Skip phone validation if it's from server
                 return;
             }
-            
+
             const error = validateField(field, formData[field]);
             if (error) newErrors[field] = error;
         });
@@ -373,7 +372,7 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
         const selectedProvince = provinces.find(p => p.ProvinceID === formData.province);
         const selectedDistrict = districts.find(d => d.DistrictID === formData.district);
         const selectedWard = wards.find(w => w.WardCode === formData.ward);
-        
+
         const fullAddress = `${formData.street}, ${selectedWard?.WardName}, ${selectedDistrict?.DistrictName}, ${selectedProvince?.ProvinceName}`;
 
         // Call API to check school data for step 2 before updating
@@ -405,7 +404,7 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                     variant: 'error',
                     autoHideDuration: 5000
                 });
-                
+
                 // Set specific errors based on the API response
                 // The API will return specific error messages for each field
                 setErrors({
@@ -416,15 +415,15 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
             }
         } catch (error) {
             console.error('Error updating school info:', error);
-            
+
             // Extract error message from API response if available
             const errorMessage = error?.response?.data?.message || 'Error updating school data. Please try again.';
-            
+
             enqueueSnackbar(errorMessage, {
                 variant: 'error',
                 autoHideDuration: 4000
             });
-            
+
             // If there's an error updating the data, show a generic error
             setErrors({
                 business: 'Error updating school data. Please try again.',
@@ -438,7 +437,7 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
 
     const isStep1Valid = () => {
         const step1Fields = ['business', 'province', 'district', 'ward', 'street'];
-        
+
         const allFieldsHaveValue = step1Fields.every(field => {
             const value = formData[field];
             if (field === 'province' || field === 'district' || field === 'ward') {
@@ -455,7 +454,7 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
 
     const isStep2Valid = () => {
         const step2Fields = ['taxCode', 'phone'];
-        
+
         const allFieldsHaveValue = step2Fields.every(field => {
             const value = formData[field];
             return value && (typeof value === 'string' ? value.trim() !== '' : true) && value !== 'N/A';
@@ -475,7 +474,7 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
     // We need to track if these values came from server vs user input
     const [isTaxCodeFromServer, setIsTaxCodeFromServer] = useState(false);
     const [isPhoneFromServer, setIsPhoneFromServer] = useState(false);
-    
+
     const isFromExistingSchool = () => {
         return isTaxCodeFromServer || isPhoneFromServer;
     };
@@ -495,9 +494,9 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
             const selectedProvince = provinces.find(p => p.ProvinceID === formData.province);
             const selectedDistrict = districts.find(d => d.DistrictID === formData.district);
             const selectedWard = wards.find(w => w.WardCode === formData.ward);
-            
+
             const addressString = `${formData.street}, ${selectedWard?.WardName}, ${selectedDistrict?.DistrictName}, ${selectedProvince?.ProvinceName}`;
-            
+
             // Call API to check school data for step 1
             const checkResponse = await checkSchoolInitData(
                 formData.business,
@@ -510,7 +509,7 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
             // Handle Step 1 response scenarios
             if (checkResponse && checkResponse.status === 200) {
                 const responseData = checkResponse.data;
-                
+
                 if (responseData.body === null) {
                     // Response 1: School name and address don't exist
                     // Continue to step 2
@@ -518,18 +517,18 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                 } else if (responseData.body) {
                     // Response 2: School name exists but address doesn't exist
                     // Server returns existing tax code and phone
-                    
+
                     // Update form with existing tax code and phone from server
                     setFormData(prev => ({
                         ...prev,
                         taxCode: responseData.body.taxCode || '',
                         phone: responseData.body.phone || ''
                     }));
-                    
+
                     // Mark these fields as coming from server
                     setIsTaxCodeFromServer(true);
                     setIsPhoneFromServer(true);
-                    
+
                     // Continue to step 2
                     setCurrentStep(2);
                 }
@@ -540,7 +539,7 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                     variant: 'error',
                     autoHideDuration: 5000
                 });
-                
+
                 setErrors({
                     business: 'Error checking school data',
                     province: 'Error checking address data',
@@ -551,15 +550,15 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
             }
         } catch (error) {
             console.error('Error checking school data:', error);
-            
+
             // Extract error message from API response if available
             const errorMessage = error?.response?.data?.message || 'Error checking school data. Please try again.';
-            
+
             enqueueSnackbar(errorMessage, {
                 variant: 'error',
                 autoHideDuration: 4000
             });
-            
+
             setErrors({
                 business: 'Error checking school data',
                 province: 'Error checking address data',
@@ -580,21 +579,21 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
             taxCode: '',
             phone: ''
         }));
-        
+
         // Clear any errors related to tax code and phone
         setErrors(prev => ({
             ...prev,
             taxCode: '',
             phone: ''
         }));
-        
+
         // Reset tax code validation state
         setTaxCodeValid(null);
-        
+
         // Reset server flags
         setIsTaxCodeFromServer(false);
         setIsPhoneFromServer(false);
-        
+
         setCurrentStep(1);
     };
 
@@ -630,7 +629,7 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                 <Typography variant="body2" sx={{color: '#64748b', mt: 1}}>
                     Please update all school information to continue using the system
                 </Typography>
-                
+
                 {/* Step Indicator */}
                 <Box sx={{display: 'flex', alignItems: 'center', width: '100%', mt: 2, px: 10}}>
                     <Box sx={{
@@ -658,14 +657,14 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                             School Info & Address
                         </Typography>
                     </Box>
-                    
+
                     <Box sx={{
                         flex: 1,
                         height: 2,
                         backgroundColor: currentStep >= 2 ? '#1976d2' : '#e0e0e0',
                         mx: 2
-                    }} />
-                    
+                    }}/>
+
                     <Box sx={{
                         display: 'flex',
                         alignItems: 'center',
@@ -735,7 +734,7 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                                         disabled={loadingProvinces}>
                                         {loadingProvinces ? (
                                             <MenuItem disabled>
-                                                <CircularProgress size={20} sx={{mr: 1}} />
+                                                <CircularProgress size={20} sx={{mr: 1}}/>
                                                 Loading provinces...
                                             </MenuItem>
                                         ) : (
@@ -753,7 +752,8 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                                     )}
                                 </FormControl>
 
-                                <FormControl sx={{flex: 1}} error={!!errors.district} disabled={!formData.province || loadingDistricts}>
+                                <FormControl sx={{flex: 1}} error={!!errors.district}
+                                             disabled={!formData.province || loadingDistricts}>
                                     <InputLabel>District</InputLabel>
                                     <Select
                                         value={formData.district}
@@ -762,7 +762,7 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                                         variant='outlined'>
                                         {loadingDistricts ? (
                                             <MenuItem disabled>
-                                                <CircularProgress size={20} sx={{mr: 1}} />
+                                                <CircularProgress size={20} sx={{mr: 1}}/>
                                                 Loading districts...
                                             </MenuItem>
                                         ) : (
@@ -780,7 +780,8 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                                     )}
                                 </FormControl>
 
-                                <FormControl sx={{flex: 1}} error={!!errors.ward} disabled={!formData.district || loadingWards}>
+                                <FormControl sx={{flex: 1}} error={!!errors.ward}
+                                             disabled={!formData.district || loadingWards}>
                                     <InputLabel>Ward</InputLabel>
                                     <Select
                                         value={formData.ward}
@@ -789,7 +790,7 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                                         variant='outlined'>
                                         {loadingWards ? (
                                             <MenuItem disabled>
-                                                <CircularProgress size={20} sx={{mr: 1}} />
+                                                <CircularProgress size={20} sx={{mr: 1}}/>
                                                 Loading wards...
                                             </MenuItem>
                                         ) : (
@@ -835,7 +836,8 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                         {isFromExistingSchool() && (
                             <Alert severity="info" sx={{mb: 2}}>
                                 <Typography variant="body2">
-                                    Tax code and phone number have been filled from existing school data. These fields are read-only.
+                                    Tax code and phone number have been filled from existing school data. These fields
+                                    are read-only.
                                 </Typography>
                             </Alert>
                         )}
@@ -847,13 +849,13 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                                 onChange={(e) => handleInputChange('taxCode', e.target.value)}
                                 error={!!errors.taxCode}
                                 helperText={
-                                    errors.taxCode || 
-                                    (isTaxCodeFromServer ? 
-                                     '✅ Tax code from existing school (verified by server)' :
-                                     validatingTaxCode ? 'Validating tax code...' : 
-                                     taxCodeValid === true ? '✅ Tax code is valid' :
-                                     taxCodeValid === false ? '❌ Tax code is not valid' :
-                                     'Enter business tax code (10-13 digits)')
+                                    errors.taxCode ||
+                                    (isTaxCodeFromServer ?
+                                        '✅ Tax code from existing school (verified by server)' :
+                                        validatingTaxCode ? 'Validating tax code...' :
+                                            taxCodeValid === true ? '✅ Tax code is valid' :
+                                                taxCodeValid === false ? '❌ Tax code is not valid' :
+                                                    'Enter business tax code (10-13 digits)')
                                 }
                                 slotProps={{
                                     input: {
@@ -862,7 +864,7 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                                 }}
                                 InputProps={{
                                     endAdornment: validatingTaxCode ? (
-                                        <CircularProgress size={20} sx={{mr: 1}} />
+                                        <CircularProgress size={20} sx={{mr: 1}}/>
                                     ) : taxCodeValid === true ? (
                                         <Box sx={{color: 'success.main', mr: 1}}>✅</Box>
                                     ) : taxCodeValid === false ? (
@@ -872,7 +874,7 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                                 placeholder="Enter tax code (10-13 digits)"
                                 disabled={isTaxCodeFromServer}
                             />
-                            
+
                             {/* Check Tax Code Button - Only show when tax code is not from existing school */}
                             {!isTaxCodeFromServer && (
                                 <Button
@@ -883,14 +885,20 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                                             if (isValid) {
                                                 setErrors(prev => ({...prev, taxCode: ''}));
                                             } else {
-                                                setErrors(prev => ({...prev, taxCode: 'Tax code is not valid according to tax authority'}));
+                                                setErrors(prev => ({
+                                                    ...prev,
+                                                    taxCode: 'Tax code is not valid according to tax authority'
+                                                }));
                                             }
                                         } else {
-                                            setErrors(prev => ({...prev, taxCode: 'Please enter a valid tax code (10-13 digits)'}));
+                                            setErrors(prev => ({
+                                                ...prev,
+                                                taxCode: 'Please enter a valid tax code (10-13 digits)'
+                                            }));
                                         }
                                     }}
                                     disabled={!formData.taxCode || validatingTaxCode}
-                                    startIcon={validatingTaxCode ? <CircularProgress size={16} /> : <Receipt />}
+                                    startIcon={validatingTaxCode ? <CircularProgress size={16}/> : <Receipt/>}
                                     sx={{
                                         width: 200,
                                         height: 56,
@@ -901,33 +909,60 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                                 </Button>
                             )}
                         </Box>
-                        
+
                         {/* Validation Status - Only show when tax code is not from existing school */}
                         {!isTaxCodeFromServer && (
                             <>
                                 {validatingTaxCode && (
                                     <Box sx={{mt: 1, display: 'flex', alignItems: 'center', gap: 1}}>
-                                        <CircularProgress size={16} />
+                                        <CircularProgress size={16}/>
                                         <Typography variant="caption" sx={{color: 'text.secondary'}}>
                                             Validating with tax authority...
                                         </Typography>
                                     </Box>
                                 )}
-                                
+
                                 {taxCodeValid === true && (
-                                    <Box sx={{mt: 1, p: 1.5, bgcolor: 'success.50', borderRadius: 1, border: '1px solid', borderColor: 'success.200'}}>
-                                        <Typography variant="caption" sx={{color: 'success.700', display: 'flex', alignItems: 'center', gap: 1}}>
-                                            ✅ <strong>Verified:</strong> This tax code is valid and registered with the tax authority.
+                                    <Box sx={{
+                                        mt: 1,
+                                        p: 1.5,
+                                        bgcolor: 'success.50',
+                                        borderRadius: 1,
+                                        border: '1px solid',
+                                        borderColor: 'success.200'
+                                    }}>
+                                        <Typography variant="caption" sx={{
+                                            color: 'success.700',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 1
+                                        }}>
+                                            ✅ <strong>Verified:</strong> This tax code is valid and registered with the
+                                            tax authority.
                                         </Typography>
                                     </Box>
                                 )}
-                                
+
                                 {taxCodeValid === false && (
-                                    <Box sx={{mt: 1, p: 1.5, bgcolor: 'error.50', borderRadius: 1, border: '1px solid', borderColor: 'error.200'}}>
-                                        <Typography variant="caption" sx={{color: 'error.700', display: 'flex', alignItems: 'center', gap: 1}}>
-                                            ❌ <strong>Invalid:</strong> This tax code is not valid according to the tax authority.
+                                    <Box sx={{
+                                        mt: 1,
+                                        p: 1.5,
+                                        bgcolor: 'error.50',
+                                        borderRadius: 1,
+                                        border: '1px solid',
+                                        borderColor: 'error.200'
+                                    }}>
+                                        <Typography variant="caption" sx={{
+                                            color: 'error.700',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 1
+                                        }}>
+                                            ❌ <strong>Invalid:</strong> This tax code is not valid according to the tax
+                                            authority.
                                         </Typography>
-                                        <Typography variant="caption" sx={{color: 'error.600', mt: 0.5, display: 'block'}}>
+                                        <Typography variant="caption"
+                                                    sx={{color: 'error.600', mt: 0.5, display: 'block'}}>
                                             Please check your tax code and try again.
                                         </Typography>
                                     </Box>
@@ -942,7 +977,7 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                             onChange={(e) => handleInputChange('phone', e.target.value)}
                             error={!!errors.phone}
                             helperText={
-                                errors.phone || 
+                                errors.phone ||
                                 (isPhoneFromServer ? 'Phone from existing school (read-only)' : 'Enter phone number (10 digits)')
                             }
                             slotProps={{
@@ -968,7 +1003,7 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                 >
                     Cancel
                 </Button>
-                
+
                 {currentStep === 1 && (
                     <Button
                         onClick={handleNextStep}
@@ -984,7 +1019,7 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                         {loading ? 'Checking...' : 'Next'}
                     </Button>
                 )}
-                
+
                 {currentStep === 2 && (
                     <>
                         <Button

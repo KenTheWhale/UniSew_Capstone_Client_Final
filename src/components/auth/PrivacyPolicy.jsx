@@ -6,7 +6,7 @@ export default function PrivacyPolicy() {
     const sections = [
         {
             title: "Information We Collect",
-            icon: <InfoOutlined />,
+            icon: <InfoOutlined/>,
             content: "We may collect various types of information from you, including:",
             items: [
                 "Personal information (e.g., name, email address, phone number) when you register for an account or use our services.",
@@ -16,7 +16,7 @@ export default function PrivacyPolicy() {
         },
         {
             title: "How We Use Your Information",
-            icon: <PersonOutline />,
+            icon: <PersonOutline/>,
             content: "We use the information we collect for the following purposes:",
             items: [
                 "To provide and maintain our services.",
@@ -30,22 +30,22 @@ export default function PrivacyPolicy() {
         },
         {
             title: "Sharing Your Information",
-            icon: <Share />,
+            icon: <Share/>,
             content: "We do not sell, trade, or rent Users' personal identification information to others. We may share generic aggregated demographic information not linked to any personal identification information regarding visitors and users with our partners, trusted affiliates and advertisers for the purposes outlined above."
         },
         {
             title: "Your Rights",
-            icon: <Security />,
+            icon: <Security/>,
             content: "You have the right to access, rectify, or erase your personal information. You may also have the right to object to or restrict the processing of your data. Please contact us if you wish to exercise any of these rights."
         },
         {
             title: "Changes to This Privacy Policy",
-            icon: <Update />,
+            icon: <Update/>,
             content: "We may update our privacy policy from time to time. We will notify you of any changes by posting the new privacy policy on this page. You are advised to review this privacy policy periodically for any changes."
         },
         {
             title: "Contact Us",
-            icon: <ContactSupport />,
+            icon: <ContactSupport/>,
             content: "If you have any questions about this privacy policy, please contact us:",
             contactInfo: {
                 email: "support@unisew.com",
@@ -55,25 +55,25 @@ export default function PrivacyPolicy() {
     ];
 
     return (
-        <Box sx={{ backgroundColor: '#fafafa', minHeight: '100vh', py: { xs: 4, md: 8 } }}>
+        <Box sx={{backgroundColor: '#fafafa', minHeight: '100vh', py: {xs: 4, md: 8}}}>
             {}
             <Box
                 sx={{
                     background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
-                    py: { xs: 6, md: 10 },
+                    py: {xs: 6, md: 10},
                     color: "white",
                     textAlign: "center",
-                    mb: { xs: 4, md: 8 }
+                    mb: {xs: 4, md: 8}
                 }}
             >
                 <Container maxWidth="lg">
-                    <Security sx={{ fontSize: 60, mb: 2, opacity: 0.9 }} />
+                    <Security sx={{fontSize: 60, mb: 2, opacity: 0.9}}/>
                     <Typography
                         variant="h2"
                         sx={{
                             fontWeight: 800,
                             mb: 2,
-                            fontSize: { xs: "2.5rem", md: "3.5rem" },
+                            fontSize: {xs: "2.5rem", md: "3.5rem"},
                             letterSpacing: "-0.02em"
                         }}
                     >
@@ -83,7 +83,7 @@ export default function PrivacyPolicy() {
                         variant="h5"
                         sx={{
                             opacity: 0.95,
-                            fontSize: { xs: "1.1rem", md: "1.3rem" },
+                            fontSize: {xs: "1.1rem", md: "1.3rem"},
                             maxWidth: 600,
                             mx: "auto",
                             lineHeight: 1.6
@@ -95,11 +95,11 @@ export default function PrivacyPolicy() {
             </Box>
 
             {}
-            <Container maxWidth="lg" sx={{ mb: 6 }}>
+            <Container maxWidth="lg" sx={{mb: 6}}>
                 <Paper
                     elevation={0}
                     sx={{
-                        p: { xs: 4, md: 6 },
+                        p: {xs: 4, md: 6},
                         borderRadius: 3,
                         border: "1px solid #e2e8f0"
                     }}
@@ -110,7 +110,7 @@ export default function PrivacyPolicy() {
                             fontWeight: 700,
                             color: "#1e293b",
                             mb: 3,
-                            fontSize: { xs: "1.8rem", md: "2.2rem" }
+                            fontSize: {xs: "1.8rem", md: "2.2rem"}
                         }}
                     >
                         Welcome to UniSew
@@ -123,20 +123,22 @@ export default function PrivacyPolicy() {
                             fontSize: "1.1rem"
                         }}
                     >
-                        Welcome to our privacy policy. We are committed to protecting your personal information and being transparent about how we collect, use, and share your data. This policy explains how we handle your information when you use our uniform design and manufacturing services.
+                        Welcome to our privacy policy. We are committed to protecting your personal information and
+                        being transparent about how we collect, use, and share your data. This policy explains how we
+                        handle your information when you use our uniform design and manufacturing services.
                     </Typography>
                 </Paper>
             </Container>
 
             {}
             <Container maxWidth="lg">
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <Box sx={{display: 'flex', flexDirection: 'column', gap: 4}}>
                     {sections.map((section, index) => (
                         <Paper
                             key={index}
                             elevation={0}
                             sx={{
-                                p: { xs: 4, md: 6 },
+                                p: {xs: 4, md: 6},
                                 borderRadius: 3,
                                 border: "1px solid #e2e8f0",
                                 transition: "all 0.3s ease",
@@ -146,7 +148,7 @@ export default function PrivacyPolicy() {
                                 }
                             }}
                         >
-                            <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+                            <Box sx={{display: "flex", alignItems: "center", mb: 3}}>
                                 <Box
                                     sx={{
                                         width: 50,
@@ -160,7 +162,7 @@ export default function PrivacyPolicy() {
                                     }}
                                 >
                                     {React.cloneElement(section.icon, {
-                                        sx: { color: "#1976d2", fontSize: 28 }
+                                        sx: {color: "#1976d2", fontSize: 28}
                                     })}
                                 </Box>
                                 <Typography
@@ -168,7 +170,7 @@ export default function PrivacyPolicy() {
                                     sx={{
                                         fontWeight: 700,
                                         color: "#1e293b",
-                                        fontSize: { xs: "1.3rem", md: "1.5rem" }
+                                        fontSize: {xs: "1.3rem", md: "1.5rem"}
                                     }}
                                 >
                                     {index + 1}. {section.title}
@@ -188,10 +190,10 @@ export default function PrivacyPolicy() {
                             </Typography>
 
                             {section.items && (
-                                <List sx={{ pl: 2 }}>
+                                <List sx={{pl: 2}}>
                                     {section.items.map((item, itemIndex) => (
-                                        <ListItem key={itemIndex} sx={{ pl: 0, py: 1 }}>
-                                            <ListItemIcon sx={{ minWidth: 30 }}>
+                                        <ListItem key={itemIndex} sx={{pl: 0, py: 1}}>
+                                            <ListItemIcon sx={{minWidth: 30}}>
                                                 <Box
                                                     sx={{
                                                         width: 8,
@@ -217,32 +219,32 @@ export default function PrivacyPolicy() {
                             )}
 
                             {section.contactInfo && (
-                                <Box sx={{ mt: 3 }}>
-                                    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                                <Box sx={{mt: 3}}>
+                                    <Box sx={{display: "flex", flexDirection: "column", gap: 2}}>
+                                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
                                             <Typography
                                                 variant="body1"
-                                                sx={{ fontWeight: 600, color: "#1e293b", minWidth: 60 }}
+                                                sx={{fontWeight: 600, color: "#1e293b", minWidth: 60}}
                                             >
                                                 Email:
                                             </Typography>
                                             <Typography
                                                 variant="body1"
-                                                sx={{ color: "#1976d2", fontWeight: 500 }}
+                                                sx={{color: "#1976d2", fontWeight: 500}}
                                             >
                                                 {section.contactInfo.email}
                                             </Typography>
                                         </Box>
-                                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
                                             <Typography
                                                 variant="body1"
-                                                sx={{ fontWeight: 600, color: "#1e293b", minWidth: 60 }}
+                                                sx={{fontWeight: 600, color: "#1e293b", minWidth: 60}}
                                             >
                                                 Phone:
                                             </Typography>
                                             <Typography
                                                 variant="body1"
-                                                sx={{ color: "#1976d2", fontWeight: 500 }}
+                                                sx={{color: "#1976d2", fontWeight: 500}}
                                             >
                                                 {section.contactInfo.phone}
                                             </Typography>
@@ -256,7 +258,7 @@ export default function PrivacyPolicy() {
             </Container>
 
             {}
-            <Container maxWidth="lg" sx={{ mt: 8 }}>
+            <Container maxWidth="lg" sx={{mt: 8}}>
                 <Paper
                     elevation={0}
                     sx={{
@@ -275,7 +277,8 @@ export default function PrivacyPolicy() {
                             fontSize: "0.95rem"
                         }}
                     >
-                        This privacy policy is effective as of the date last updated above. We reserve the right to change this policy at any time.
+                        This privacy policy is effective as of the date last updated above. We reserve the right to
+                        change this policy at any time.
                         Please check this page periodically for updates.
                     </Typography>
                 </Paper>

@@ -1,22 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import {Avatar, Box, Button, Divider, ListItem, ListItemIcon, ListItemText, Paper, Typography, AppBar, Toolbar, Badge, Popover, CssBaseline} from "@mui/material";
+import {AppBar, Avatar, Badge, Box, CssBaseline, Divider, Popover, Toolbar, Typography} from "@mui/material";
 import {Outlet} from "react-router-dom";
 import LogoutIcon from '@mui/icons-material/Logout';
-import {
-    AccountCircle,
-    DesignServices,
-    History,
-    PendingActions,
-    RequestQuote,
-    Settings,
-    ShoppingCart,
-    School
-} from '@mui/icons-material';
+import {AccountCircle, DesignServices, History, School, Settings} from '@mui/icons-material';
 import {useSnackbar} from "notistack";
 import {signout, updateSchoolInfo} from "../../services/AccountService.jsx";
 import UpdateSchoolInfoDialog from "../../components/school/design/dialog/UpdateSchoolInfoDialog.jsx";
-import { Tag } from "antd";
-import Bell from "../../components/ui/Bell.jsx";
+import {Tag} from "antd";
 
 function Navbar({school, enqueueSnackbar}) {
     return (
@@ -34,27 +24,39 @@ function Navbar({school, enqueueSnackbar}) {
                     overflowY: "auto",
                     msOverflowStyle: "none",
                     scrollbarWidth: "none",
-                    "&::-webkit-scrollbar": { display: "none" },
+                    "&::-webkit-scrollbar": {display: "none"},
                 },
             }}
         >
             {}
-            <Box sx={{ p: 3, background: "linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)", color: "white", textAlign: "center" }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+            <Box sx={{
+                p: 3,
+                background: "linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)",
+                color: "white",
+                textAlign: "center"
+            }}>
+                <Typography variant="h6" sx={{fontWeight: 700, mb: 1}}>
                     School Dashboard
                 </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                <Typography variant="body2" sx={{opacity: 0.9}}>
                     Manage Your School Uniform
                 </Typography>
             </Box>
 
             {}
-            <Box sx={{ p: 2 }}>
+            <Box sx={{p: 2}}>
                 {}
-                <Typography variant="overline" sx={{ px: 2, pb: 1, color: "#6c757d", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "1px" }}>
+                <Typography variant="overline" sx={{
+                    px: 2,
+                    pb: 1,
+                    color: "#6c757d",
+                    fontWeight: 700,
+                    fontSize: "0.75rem",
+                    letterSpacing: "1px"
+                }}>
                     DESIGN MANAGEMENT
                 </Typography>
-                <Box sx={{ mb: 3 }}>
+                <Box sx={{mb: 3}}>
                     <Box
                         sx={{
                             borderRadius: 2,
@@ -72,22 +74,29 @@ function Navbar({school, enqueueSnackbar}) {
                         }}
                         onClick={() => window.location.href = "/school/design"}
                     >
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                            <DesignServices sx={{ color: "inherit", fontSize: 20 }} />
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
+                            <DesignServices sx={{color: "inherit", fontSize: 20}}/>
+                            <Typography variant="body2" sx={{fontWeight: 500}}>
                                 My Designs
                             </Typography>
                         </Box>
                     </Box>
                 </Box>
 
-                <Divider sx={{ my: 3, borderColor: "#e9ecef" }} />
+                <Divider sx={{my: 3, borderColor: "#e9ecef"}}/>
 
                 {}
-                <Typography variant="overline" sx={{ px: 2, pb: 1, color: "#6c757d", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "1px" }}>
+                <Typography variant="overline" sx={{
+                    px: 2,
+                    pb: 1,
+                    color: "#6c757d",
+                    fontWeight: 700,
+                    fontSize: "0.75rem",
+                    letterSpacing: "1px"
+                }}>
                     ORDER MANAGEMENT
                 </Typography>
-                <Box sx={{ mb: 3 }}>
+                <Box sx={{mb: 3}}>
                     <Box
                         sx={{
                             borderRadius: 2,
@@ -105,9 +114,9 @@ function Navbar({school, enqueueSnackbar}) {
                         }}
                         onClick={() => window.location.href = "/school/order"}
                     >
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                            <History sx={{ color: "inherit", fontSize: 20 }} />
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
+                            <History sx={{color: "inherit", fontSize: 20}}/>
+                            <Typography variant="body2" sx={{fontWeight: 500}}>
                                 My Orders
                             </Typography>
                         </Box>
@@ -139,13 +148,20 @@ function Navbar({school, enqueueSnackbar}) {
                     {}
                 </Box>
 
-                <Divider sx={{ my: 3, borderColor: "#e9ecef" }} />
+                <Divider sx={{my: 3, borderColor: "#e9ecef"}}/>
 
                 {}
-                <Typography variant="overline" sx={{ px: 2, pb: 1, color: "#6c757d", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "1px" }}>
+                <Typography variant="overline" sx={{
+                    px: 2,
+                    pb: 1,
+                    color: "#6c757d",
+                    fontWeight: 700,
+                    fontSize: "0.75rem",
+                    letterSpacing: "1px"
+                }}>
                     ACCOUNT MANAGEMENT
                 </Typography>
-                <Box sx={{ mb: 3 }}>
+                <Box sx={{mb: 3}}>
                     <Box
                         sx={{
                             borderRadius: 2,
@@ -163,9 +179,9 @@ function Navbar({school, enqueueSnackbar}) {
                         }}
                         onClick={() => window.location.href = "/school/profile"}
                     >
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                            <Settings sx={{ color: "inherit", fontSize: 20 }} />
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
+                            <Settings sx={{color: "inherit", fontSize: 20}}/>
+                            <Typography variant="body2" sx={{fontWeight: 500}}>
                                 Profile Setting
                             </Typography>
                         </Box>
@@ -190,8 +206,8 @@ function Content() {
                 p: 4
             }}
         >
-            <Box sx={{ flex: 1 }}>
-                <Outlet />
+            <Box sx={{flex: 1}}>
+                <Outlet/>
             </Box>
         </Box>
     );
@@ -202,7 +218,7 @@ export default function SchoolDashboardLayout() {
     const [schoolData, setSchoolData] = useState(null);
     const [isChecking, setIsChecking] = useState(true);
     const [anchorEl, setAnchorEl] = useState(null);
-    const { enqueueSnackbar } = useSnackbar();
+    const {enqueueSnackbar} = useSnackbar();
 
     const schoolString = localStorage.getItem('user')
     if (!schoolString) {
@@ -213,11 +229,11 @@ export default function SchoolDashboardLayout() {
 
     const handleSignOut = async () => {
         const response = await signout()
-        if(response){
-            if (localStorage.length > 0){
+        if (response) {
+            if (localStorage.length > 0) {
                 localStorage.clear();
             }
-            if(sessionStorage.length > 0){
+            if (sessionStorage.length > 0) {
                 sessionStorage.clear()
             }
             enqueueSnackbar("Sign out successful!", {variant: "success"});
@@ -279,16 +295,16 @@ export default function SchoolDashboardLayout() {
                 };
                 localStorage.setItem('user', JSON.stringify(updatedUser));
 
-                enqueueSnackbar("Update school information successfully!", { variant: "success" });
+                enqueueSnackbar("Update school information successfully!", {variant: "success"});
                 setShowUpdateDialog(false);
 
                 window.location.href = '/school/design';
             } else {
-                enqueueSnackbar("Error updating school information!", { variant: "error" });
+                enqueueSnackbar("Error updating school information!", {variant: "error"});
             }
         } catch (error) {
             console.error('Error updating school info:', error);
-            enqueueSnackbar("Error updating school information!", { variant: "error" });
+            enqueueSnackbar("Error updating school information!", {variant: "error"});
         }
     };
 
@@ -297,8 +313,14 @@ export default function SchoolDashboardLayout() {
     };
 
     return (
-        <Box sx={{display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#fafafa', overflow: 'hidden'}}>
-            <CssBaseline />
+        <Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100vh',
+            backgroundColor: '#fafafa',
+            overflow: 'hidden'
+        }}>
+            <CssBaseline/>
 
             {}
             <AppBar
@@ -309,8 +331,8 @@ export default function SchoolDashboardLayout() {
                     boxShadow: "0 4px 20px rgba(46, 125, 50, 0.3)",
                 }}
             >
-                <Toolbar sx={{ justifyContent: "space-between", py: 1 }}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Toolbar sx={{justifyContent: "space-between", py: 1}}>
+                    <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
                         <Box
                             sx={{
                                 display: "flex",
@@ -322,7 +344,8 @@ export default function SchoolDashboardLayout() {
                                 py: 1,
                             }}
                         >
-                            <Typography onClick={() => window.location.href = "/home"} variant="h5" fontWeight="800" sx={{cursor:"pointer", color: "#FFFFFF" }}>
+                            <Typography onClick={() => window.location.href = "/home"} variant="h5" fontWeight="800"
+                                        sx={{cursor: "pointer", color: "#FFFFFF"}}>
                                 UNISEW
                             </Typography>
                         </Box>
@@ -343,7 +366,7 @@ export default function SchoolDashboardLayout() {
                         </Tag>
                     </Box>
 
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
                         {/*<Bell />*/}
                         <Box
                             sx={{
@@ -365,13 +388,13 @@ export default function SchoolDashboardLayout() {
                         >
                             <Badge
                                 overlap="circular"
-                                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                                anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
                                 badgeContent={
-                                    <School sx={{ fontSize: 16, color: '#2e7d32' }} />
+                                    <School sx={{fontSize: 16, color: '#2e7d32'}}/>
                                 }
                             >
                                 <Avatar
-                                    sx={{ width: 32, height: 32, bgcolor: "rgba(255, 255, 255, 0.2)" }}
+                                    sx={{width: 32, height: 32, bgcolor: "rgba(255, 255, 255, 0.2)"}}
                                     src={user.customer.avatar}
                                     slotProps={{
                                         img: {
@@ -379,7 +402,7 @@ export default function SchoolDashboardLayout() {
                                         }
                                     }}
                                 >
-                                    <AccountCircle />
+                                    <AccountCircle/>
                                 </Avatar>
                             </Badge>
                             <Typography variant="subtitle1" sx={{fontWeight: 600, color: '#FFFFFF'}}>
@@ -409,7 +432,7 @@ export default function SchoolDashboardLayout() {
                                 }
                             }}
                         >
-                            <Box sx={{ p: 2 }}>
+                            <Box sx={{p: 2}}>
                                 <Box sx={{
                                     display: 'flex',
                                     alignItems: 'center',
@@ -419,7 +442,7 @@ export default function SchoolDashboardLayout() {
                                     mb: 1,
                                     background: 'rgba(46, 125, 50, 0.05)'
                                 }}>
-                                    <Avatar sx={{ width: 40, height: 40, bgcolor: "rgba(46, 125, 50, 0.2)" }}
+                                    <Avatar sx={{width: 40, height: 40, bgcolor: "rgba(46, 125, 50, 0.2)"}}
                                             src={user.customer.avatar}
                                             slotProps={{
                                                 img: {
@@ -427,19 +450,19 @@ export default function SchoolDashboardLayout() {
                                                 }
                                             }}
                                     >
-                                        <AccountCircle />
+                                        <AccountCircle/>
                                     </Avatar>
                                     <Box>
-                                        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                                        <Typography variant="subtitle2" sx={{fontWeight: 600, color: 'text.primary'}}>
                                             {user.customer.name}
                                         </Typography>
-                                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                        <Typography variant="caption" sx={{color: 'text.secondary'}}>
                                             School Administrator
                                         </Typography>
                                     </Box>
                                 </Box>
 
-                                <Divider sx={{ my: 1 }} />
+                                <Divider sx={{my: 1}}/>
 
                                 <Box
                                     sx={{
@@ -460,8 +483,8 @@ export default function SchoolDashboardLayout() {
                                         handleSignOut();
                                     }}
                                 >
-                                    <LogoutIcon sx={{ fontSize: 20, color: '#dc3545' }} />
-                                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                    <LogoutIcon sx={{fontSize: 20, color: '#dc3545'}}/>
+                                    <Typography variant="body2" sx={{fontWeight: 500}}>
                                         Logout
                                     </Typography>
                                 </Box>

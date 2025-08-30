@@ -332,7 +332,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                 }}
                 footer={null}
             >
-                
+
                 <Box sx={{
                     mb: 3,
                     p: 3,
@@ -378,7 +378,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                     </Typography>
                 </Box>
 
-                
+
                 {showAppliedGarment && (
                     <Box sx={{
                         mb: 3,
@@ -393,7 +393,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                             offers different quotations with varying timelines and features.
                         </Typography>
 
-                        
+
                         <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3, flexWrap: 'wrap'}}>
                             <Select
                                 mode="multiple"
@@ -439,7 +439,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                             )}
                         </Box>
 
-                        
+
                         {loadingQuotations && (
                             <Box sx={{
                                 p: 6,
@@ -458,7 +458,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                             </Box>
                         )}
 
-                        
+
                         {quotationsError && !loadingQuotations && (
                             <Box sx={{
                                 p: 6,
@@ -478,7 +478,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                             </Box>
                         )}
 
-                        
+
                         {!loadingQuotations && !quotationsError && quotations.length === 0 && (
                             <Box sx={{
                                 p: 6,
@@ -498,7 +498,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                             </Box>
                         )}
 
-                        
+
                         {!loadingQuotations && !quotationsError && sortedQuotations.length > 0 && (
                             <Box sx={{
                                 display: 'grid',
@@ -543,7 +543,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                     }}
                                          onClick={() => handleQuotationClick(quotation)}
                                     >
-                                        
+
                                         <Box sx={{display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5}}>
                                             <Avatar
                                                 sx={{
@@ -596,7 +596,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
 
                                         <Divider sx={{my: 1.5}}/>
 
-                                        
+
                                         <Box sx={{display: 'grid', gridTemplateColumns: '1fr', gap: 1, mb: 1}}>
                                             <Chip size="medium" variant="outlined"
                                                   icon={<CalendarIcon style={{fontSize: 14}}/>}
@@ -604,14 +604,14 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                   sx={{height: 26}}/>
                                         </Box>
 
-                                        
+
                                         <Box sx={{
                                             display: 'flex',
                                             flexDirection: 'column',
                                             gap: 1,
                                             mb: 1
                                         }}>
-                                            
+
                                             <Box sx={{
                                                 display: 'flex',
                                                 alignItems: 'center',
@@ -632,8 +632,8 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                 </Typography>
                                             </Box>
 
-                                            
-                                            <Box 
+
+                                            <Box
                                                 sx={{
                                                     display: 'flex',
                                                     alignItems: 'center',
@@ -667,7 +667,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                 </Typography>
                                             </Box>
 
-                                            
+
                                             {quotation.garment?.customer?.address && (
                                                 <Box sx={{
                                                     display: 'flex',
@@ -700,7 +700,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                 </Box>
                                             )}
 
-                                            
+
                                             {quotation.garment?.customer?.account?.email && (
                                                 <Box sx={{
                                                     display: 'flex',
@@ -726,7 +726,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                             )}
                                         </Box>
 
-                                        
+
                                         {quotation.note && (
                                             <Box sx={{
                                                 mt: 1,
@@ -765,7 +765,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                             </Box>
                         )}
 
-                        
+
                         {selectedQuotation && (
                             <Box sx={{
                                 mt: 3,
@@ -801,7 +801,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                     )}
                                 </Typography>
 
-                                
+
                                 <Box sx={{
                                     p: 2.5,
                                     backgroundColor: '#ffffff',
@@ -818,7 +818,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                     </Typography>
 
                                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 1}}>
-                                        
+
                                         <Box sx={{
                                             display: 'flex',
                                             justifyContent: 'space-between',
@@ -839,7 +839,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                             </Typography>
                                         </Box>
 
-                                        
+
                                         <Box sx={{
                                             display: 'flex',
                                             justifyContent: 'space-between',
@@ -860,7 +860,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                             </Typography>
                                         </Box>
 
-                                        
+
                                         <Box sx={{
                                             display: 'flex',
                                             justifyContent: 'space-between',
@@ -886,7 +886,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                             </Typography>
                                         </Box>
 
-                                        
+
                                         {order.status === 'pending' && (
                                             <Box sx={{
                                                 display: 'flex',
@@ -922,10 +922,10 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                             </Box>
                                         )}
 
-                                        
+
                                         <Divider sx={{my: 1}}/>
 
-                                        
+
                                         <Box sx={{
                                             display: 'flex',
                                             justifyContent: 'space-between',
@@ -953,7 +953,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                     </Box>
                                 </Box>
 
-                                
+
                                 <Box sx={{
                                     mt: 3,
                                     display: 'flex',
@@ -986,7 +986,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                     </Box>
                 )}
 
-                
+
                 {showOrderDetail && (
                     <Box sx={{
                         mb: 3,
@@ -996,7 +996,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                         border: '1px solid #e2e8f0',
                         width: '100%'
                     }}>
-                        
+
                         <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2}}>
                             <Typography variant="h6" sx={{
                                 fontWeight: 700,
@@ -1014,7 +1014,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                             specifications.
                         </Typography>
 
-                        
+
                         <Card
                             size="small"
                             style={{
@@ -1049,7 +1049,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                             </Box>
                         </Card>
 
-                        
+
                         <Box sx={{
                             display: 'flex',
                             flexDirection: 'row',
@@ -1057,7 +1057,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                             marginTop: '16px',
                             alignItems: 'stretch'
                         }}>
-                            
+
                             <Box sx={{flex: 1}}>
                                 <Typography variant="h6" sx={{
                                     fontWeight: 700,
@@ -1188,7 +1188,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                             </Box>
                                         </Box>
 
-                                        
+
                                         {order.note && (
                                             <Box sx={{
                                                 mt: 3,
@@ -1231,7 +1231,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                             </Box>
                         </Box>
 
-                        
+
                         <Box sx={{mt: 10}}>
                             <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2}}>
                                 <Typography variant="h6" sx={{
@@ -1277,7 +1277,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                             overflow: 'hidden',
                                             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
                                         }}>
-                                            
+
                                             <Box sx={{
                                                 display: 'grid',
                                                 gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr',
@@ -1286,7 +1286,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                 overflow: 'hidden',
                                                 width: '100%'
                                             }}>
-                                                
+
                                                 <Box sx={{
                                                     p: 2,
                                                     borderRight: '1px solid #000000',
@@ -1456,7 +1456,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                     </Typography>
                                                 </Box>
 
-                                                
+
                                                 {(() => {
                                                     const groupedItems = groupItemsByCategory(order.orderDetails || []);
                                                     const rows = [];
@@ -1465,7 +1465,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                         rows.push(
                                                             <React.Fragment
                                                                 key={`${groupedItem.category}-${groupedItem.gender}-${groupedItem.type}-${index}`}>
-                                                                
+
                                                                 {groupedItem.isFirstInCategory && (
                                                                     <Box sx={{
                                                                         p: 2,
@@ -1492,7 +1492,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                                     </Box>
                                                                 )}
 
-                                                                
+
                                                                 {groupedItem.isFirstInGender && (
                                                                     <Box sx={{
                                                                         p: 2,
@@ -1518,7 +1518,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                                     </Box>
                                                                 )}
 
-                                                                
+
                                                                 <Box sx={{
                                                                     p: 2,
                                                                     borderRight: '1px solid #000000',
@@ -1538,7 +1538,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                                     </Typography>
                                                                 </Box>
 
-                                                                
+
                                                                 <Box sx={{
                                                                     p: 2,
                                                                     borderRight: '1px solid #000000',
@@ -1557,7 +1557,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                                     </Typography>
                                                                 </Box>
 
-                                                                
+
                                                                 <Box sx={{
                                                                     p: 2,
                                                                     borderRight: '1px solid #000000',
@@ -1585,7 +1585,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                                     </Button>
                                                                 </Box>
 
-                                                                
+
                                                                 <Box sx={{
                                                                     p: 2,
                                                                     borderRight: '1px solid #000000',
@@ -1612,7 +1612,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                                     </Typography>
                                                                 </Box>
 
-                                                                
+
                                                                 <Box sx={{
                                                                     p: 2,
                                                                     borderRight: '1px solid #000000',
@@ -1651,7 +1651,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                                     })()}
                                                                 </Box>
 
-                                                                
+
                                                                 <Box sx={{
                                                                     p: 2,
                                                                     borderRight: '1px solid #000000',
@@ -1693,7 +1693,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                                     })()}
                                                                 </Box>
 
-                                                                
+
                                                                 <Box sx={{
                                                                     p: 2,
                                                                     borderBottom: '1px solid #000000',
@@ -1736,7 +1736,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                 }
             </Modal>
 
-            
+
             <Modal
                 title={
                     <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
@@ -1776,7 +1776,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                 {selectedItemImages && (
                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
 
-                        
+
                         {selectedItemImages.type === 'shirt' && (
                             <Box sx={{
                                 p: 2.5,
@@ -1824,7 +1824,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                             </Box>
                         )}
 
-                        
+
                         <Box sx={{
                             p: 2.5,
                             backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -1836,7 +1836,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                 Design Images
                             </Typography>
                             <Box sx={{display: 'flex', gap: 2, flexWrap: 'wrap'}}>
-                                
+
                                 <Box sx={{flex: 1, minWidth: 200}}>
                                     <Typography variant="subtitle2"
                                                 sx={{fontWeight: 600, mb: 1, color: '#10b981', fontSize: '13px'}}>
@@ -1879,7 +1879,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                     )}
                                 </Box>
 
-                                
+
                                 <Box sx={{flex: 1, minWidth: 200}}>
                                     <Typography variant="subtitle2"
                                                 sx={{fontWeight: 600, mb: 1, color: '#8b5cf6', fontSize: '13px'}}>
@@ -1927,7 +1927,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                 )}
             </Modal>
 
-            
+
             <Modal
                 title={
                     <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
@@ -1965,7 +1965,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
             >
                 {selectedQuantityDetails && (
                     <Box>
-                        
+
                         <Box sx={{
                             background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
                             border: '1px solid #cbd5e1',
@@ -2012,7 +2012,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                             </Typography>
                         </Box>
 
-                        
+
                         <Box sx={{
                             border: '1px solid #e2e8f0',
                             borderRadius: 2,
@@ -2112,7 +2112,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                 )}
             </Modal>
 
-            
+
             <OrderPaymentPopup
                 visible={showPaymentModal}
                 onCancel={() => setShowPaymentModal(false)}

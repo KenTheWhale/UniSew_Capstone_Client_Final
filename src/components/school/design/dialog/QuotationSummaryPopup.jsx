@@ -1,36 +1,35 @@
 import React from 'react';
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
     Box,
-    Typography,
     Button,
+    CircularProgress,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
     Divider,
+    IconButton,
     Paper,
-    Chip,
-    IconButton
+    Typography
 } from '@mui/material';
 import {
-    Close as CloseIcon,
-    Payment as PaymentIcon,
+    AccessTime as TimeIcon,
     Business as BusinessIcon,
     CalendarToday as CalendarIcon,
-    AccessTime as TimeIcon,
-    MonetizationOn as MoneyIcon
+    Close as CloseIcon,
+    MonetizationOn as MoneyIcon,
+    Payment as PaymentIcon
 } from '@mui/icons-material';
-import { CircularProgress } from '@mui/material';
 import dayjs from 'dayjs';
-import { serviceFee } from '../../../../configs/FixedVariables.jsx';
+import {serviceFee} from '../../../../configs/FixedVariables.jsx';
 
 export default function QuotationSummaryPopup({
-    visible,
-    onCancel,
-    quotation,
-    onPayment,
-    isProcessing = false
-}) {
+                                                  visible,
+                                                  onCancel,
+                                                  quotation,
+                                                  onPayment,
+                                                  isProcessing = false
+                                              }) {
     if (!quotation) return null;
 
     const formatCurrency = (amount) => {
@@ -66,13 +65,13 @@ export default function QuotationSummaryPopup({
                     py: 3
                 }}
             >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <PaymentIcon sx={{ fontSize: 32 }} />
+                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                    <PaymentIcon sx={{fontSize: 32}}/>
                     <Box>
-                        <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                        <Typography variant="h5" sx={{fontWeight: 'bold', mb: 0.5}}>
                             Quotation Summary
                         </Typography>
-                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                        <Typography variant="body2" sx={{opacity: 0.9}}>
                             Review and proceed to payment
                         </Typography>
                     </Box>
@@ -84,16 +83,16 @@ export default function QuotationSummaryPopup({
                         right: 16,
                         top: 16,
                         color: 'white',
-                        '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' }
+                        '&:hover': {backgroundColor: 'rgba(255, 255, 255, 0.1)'}
                     }}
                 >
-                    <CloseIcon />
+                    <CloseIcon/>
                 </IconButton>
             </DialogTitle>
 
             {}
-            <DialogContent sx={{ p: 0 }}>
-                <Box sx={{ p: 4 }}>
+            <DialogContent sx={{p: 0}}>
+                <Box sx={{p: 4}}>
                     {}
                     <Paper
                         elevation={0}
@@ -105,19 +104,19 @@ export default function QuotationSummaryPopup({
                             borderRadius: 2
                         }}
                     >
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                            <BusinessIcon sx={{ color: '#3b82f6' }} />
-                            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                            <BusinessIcon sx={{color: '#3b82f6'}}/>
+                            <Typography variant="h6" sx={{fontWeight: 'bold'}}>
                                 Garment Manufacturer
                             </Typography>
                         </Box>
-                        <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                        <Typography variant="h5" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                             {quotation.garmentName}
                         </Typography>
                     </Paper>
 
                     {}
-                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3, mb: 3 }}>
+                    <Box sx={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3, mb: 3}}>
                         {}
                         <Paper
                             elevation={0}
@@ -128,13 +127,13 @@ export default function QuotationSummaryPopup({
                                 borderRadius: 2
                             }}
                         >
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                                <CalendarIcon sx={{ color: '#dc2626' }} />
-                                <Typography variant="subtitle2" sx={{ color: '#7f1d1d', fontWeight: 'bold' }}>
+                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 1}}>
+                                <CalendarIcon sx={{color: '#dc2626'}}/>
+                                <Typography variant="subtitle2" sx={{color: '#7f1d1d', fontWeight: 'bold'}}>
                                     Delivery Date
                                 </Typography>
                             </Box>
-                            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                            <Typography variant="h6" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                 {formatDate(quotation.earlyDeliveryDate)}
                             </Typography>
                         </Paper>
@@ -149,13 +148,13 @@ export default function QuotationSummaryPopup({
                                 borderRadius: 2
                             }}
                         >
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                                <TimeIcon sx={{ color: '#ea580c' }} />
-                                <Typography variant="subtitle2" sx={{ color: '#9a3412', fontWeight: 'bold' }}>
+                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 1}}>
+                                <TimeIcon sx={{color: '#ea580c'}}/>
+                                <Typography variant="subtitle2" sx={{color: '#9a3412', fontWeight: 'bold'}}>
                                     Valid Until
                                 </Typography>
                             </Box>
-                            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                            <Typography variant="h6" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                 {formatDate(quotation.acceptanceDeadline)}
                             </Typography>
                         </Paper>
@@ -173,16 +172,16 @@ export default function QuotationSummaryPopup({
                                 borderRadius: 2
                             }}
                         >
-                            <Typography variant="subtitle2" sx={{ color: '#075985', fontWeight: 'bold', mb: 1 }}>
+                            <Typography variant="subtitle2" sx={{color: '#075985', fontWeight: 'bold', mb: 1}}>
                                 Additional Notes
                             </Typography>
-                            <Typography variant="body1" sx={{ color: '#0c4a6e' }}>
+                            <Typography variant="body1" sx={{color: '#0c4a6e'}}>
                                 {quotation.note}
                             </Typography>
                         </Paper>
                     )}
 
-                    <Divider sx={{ my: 3 }} />
+                    <Divider sx={{my: 3}}/>
 
                     {}
                     <Paper
@@ -195,11 +194,11 @@ export default function QuotationSummaryPopup({
                             borderRadius: 3
                         }}
                     >
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: '#1e293b' }}>
+                        <Typography variant="h6" sx={{fontWeight: 'bold', mb: 3, color: '#1e293b'}}>
                             Price Breakdown
                         </Typography>
 
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
                             {}
                             <Box sx={{
                                 display: 'flex',
@@ -210,13 +209,13 @@ export default function QuotationSummaryPopup({
                                 borderRadius: 2,
                                 border: '1px solid #bae6fd'
                             }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                    <MoneyIcon sx={{ color: '#0284c7', fontSize: 20 }} />
-                                    <Typography variant="body1" sx={{ color: '#475569', fontWeight: 600 }}>
+                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                    <MoneyIcon sx={{color: '#0284c7', fontSize: 20}}/>
+                                    <Typography variant="body1" sx={{color: '#475569', fontWeight: 600}}>
                                         Quotation Price
                                     </Typography>
                                 </Box>
-                                <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#0284c7' }}>
+                                <Typography variant="h6" sx={{fontWeight: 'bold', color: '#0284c7'}}>
                                     {formatCurrency(quotation.price)}
                                 </Typography>
                             </Box>
@@ -231,13 +230,13 @@ export default function QuotationSummaryPopup({
                                 borderRadius: 2,
                                 border: '1px solid #fbbf24'
                             }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                    <MoneyIcon sx={{ color: '#d97706', fontSize: 20 }} />
-                                    <Typography variant="body1" sx={{ color: '#475569', fontWeight: 600 }}>
+                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                    <MoneyIcon sx={{color: '#d97706', fontSize: 20}}/>
+                                    <Typography variant="body1" sx={{color: '#475569', fontWeight: 600}}>
                                         Service Fee
                                     </Typography>
                                 </Box>
-                                <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#d97706' }}>
+                                <Typography variant="h6" sx={{fontWeight: 'bold', color: '#d97706'}}>
                                     {formatCurrency(serviceFee(quotation.price))}
                                 </Typography>
                             </Box>
@@ -253,13 +252,13 @@ export default function QuotationSummaryPopup({
                                 border: '2px solid #16a34a',
                                 mt: 1
                             }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                    <MoneyIcon sx={{ color: '#16a34a', fontSize: 24 }} />
-                                    <Typography variant="h6" sx={{ color: '#166534', fontWeight: 'bold' }}>
+                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                    <MoneyIcon sx={{color: '#16a34a', fontSize: 24}}/>
+                                    <Typography variant="h6" sx={{color: '#166534', fontWeight: 'bold'}}>
                                         Total Amount
                                     </Typography>
                                 </Box>
-                                <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#16a34a' }}>
+                                <Typography variant="h4" sx={{fontWeight: 'bold', color: '#16a34a'}}>
                                     {formatCurrency(quotation.price + serviceFee(quotation.price))}
                                 </Typography>
                             </Box>
@@ -269,8 +268,8 @@ export default function QuotationSummaryPopup({
             </DialogContent>
 
             {}
-            <DialogActions sx={{ p: 4, pt: 0 }}>
-                <Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
+            <DialogActions sx={{p: 4, pt: 0}}>
+                <Box sx={{display: 'flex', gap: 2, width: '100%'}}>
                     <Button
                         variant="outlined"
                         onClick={onCancel}
@@ -293,7 +292,7 @@ export default function QuotationSummaryPopup({
                         variant="contained"
                         onClick={() => onPayment(quotation)}
                         disabled={isProcessing}
-                        startIcon={isProcessing ? <CircularProgress size={20} sx={{ color: 'white' }} /> : <PaymentIcon />}
+                        startIcon={isProcessing ? <CircularProgress size={20} sx={{color: 'white'}}/> : <PaymentIcon/>}
                         sx={{
                             flex: 2,
                             py: 1.5,

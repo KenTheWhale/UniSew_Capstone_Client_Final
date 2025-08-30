@@ -481,11 +481,11 @@ export default function MilestoneManagement() {
         if (selectedOrder) {
             calculateShippingTimeForOrder();
         }
-        
+
         // Auto-set start date for stage 1 to today
         const today = dayjs().format('YYYY-MM-DD');
         const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD');
-        
+
         setStageDurations(prev => ({
             ...prev,
             1: {
@@ -530,7 +530,7 @@ export default function MilestoneManagement() {
                     leadtime: leadtime,
                     type: typeof leadtime
                 });
-                
+
                 // Test the calculation immediately
                 const testMaxDelivery = getMaxDeliveryTime();
                 console.log('Test max delivery calculation:', {
@@ -551,7 +551,7 @@ export default function MilestoneManagement() {
 
     const getCalculatedShippingDays = () => {
         if (!shippingLeadTime) return 0;
-        
+
         // Use the new utility function from TimestampUtil
         return getShippingDaysFromTimestamp(shippingLeadTime);
     };
@@ -561,7 +561,7 @@ export default function MilestoneManagement() {
 
         try {
             const leadtimeDays = getCalculatedShippingDays();
-            
+
             if (isNaN(leadtimeDays) || leadtimeDays <= 0) {
                 console.warn('Invalid shipping lead time:', shippingLeadTime, 'calculated days:', leadtimeDays);
                 return null;
@@ -570,10 +570,10 @@ export default function MilestoneManagement() {
             // Calculate: deadline - shipping_time - 1 day (buffer)
             const deadlineDate = new Date(selectedOrder.deadline);
             const maxDeliveryDate = new Date(deadlineDate);
-            
+
             // Subtract shipping time and buffer day
             maxDeliveryDate.setDate(maxDeliveryDate.getDate() - leadtimeDays - 1);
-            
+
             console.log('Shipping calculation:', {
                 originalLeadTime: shippingLeadTime,
                 calculatedDays: leadtimeDays,
@@ -591,11 +591,11 @@ export default function MilestoneManagement() {
     const getMaxStartDate = () => {
         const maxDeliveryTime = getMaxDeliveryTime();
         if (!maxDeliveryTime) return null;
-        
+
         // Start date maximum = End date maximum - 1 day
         const maxStartDate = new Date(maxDeliveryTime);
         maxStartDate.setDate(maxStartDate.getDate() - 1);
-        
+
         return maxStartDate;
     };
 
@@ -615,7 +615,7 @@ export default function MilestoneManagement() {
         const maxDeliveryTime = getMaxDeliveryTime();
         const maxStartTime = getMaxStartDate();
         const maxDeliveryDate = maxDeliveryTime ? dayjs(maxDeliveryTime) : dayjs(selectedOrder?.deadline).subtract(1, 'day');
-                                            const maxStartDate = maxStartTime ? dayjs(maxStartTime) : dayjs(selectedOrder?.deadline).subtract(2, 'day');
+        const maxStartDate = maxStartTime ? dayjs(maxStartTime) : dayjs(selectedOrder?.deadline).subtract(2, 'day');
 
         const stagesStartExceedingDeadline = selectedPhases.filter((_, index) => {
             const stage = index + 1;
@@ -627,7 +627,7 @@ export default function MilestoneManagement() {
         });
 
         if (stagesStartExceedingDeadline.length > 0) {
-            const errorMessage = maxStartTime 
+            const errorMessage = maxStartTime
                 ? `Start date must be before maximum start date (${maxStartDate.format('DD/MM/YYYY')})`
                 : `Start date must be at least 2 days before order deadline (${dayjs(selectedOrder.deadline).format('DD/MM/YYYY')})`;
             enqueueSnackbar(errorMessage, {variant: 'warning'});
@@ -644,7 +644,7 @@ export default function MilestoneManagement() {
         });
 
         if (stagesEndExceedingDeadline.length > 0) {
-            const errorMessage = maxDeliveryTime 
+            const errorMessage = maxDeliveryTime
                 ? `End date must be before maximum delivery date (${maxDeliveryDate.format('DD/MM/YYYY')})`
                 : `End date must be at least 1 day before order deadline (${dayjs(selectedOrder.deadline).format('DD/MM/YYYY')})`;
             enqueueSnackbar(errorMessage, {variant: 'warning'});
@@ -1726,7 +1726,8 @@ export default function MilestoneManagement() {
                         <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                             <AssignmentIcon/>
                             <Typography variant="h6" sx={{fontWeight: 600}}>
-                                {(selectedOrder?.milestone || []).length > 0 ? 'Edit' : 'Assign'} Milestone to Order {parseID(selectedOrder?.id, 'ord')}
+                                {(selectedOrder?.milestone || []).length > 0 ? 'Edit' : 'Assign'} Milestone to
+                                Order {parseID(selectedOrder?.id, 'ord')}
                             </Typography>
                         </Box>
                         <IconButton
@@ -2159,7 +2160,8 @@ export default function MilestoneManagement() {
                             mb: 2
                         }}>
                             <Typography variant="body2" sx={{color: '#64748b', flex: 3}}>
-                                Set start and end dates for each stage position. Any phase placed in a stage will inherit
+                                Set start and end dates for each stage position. Any phase placed in a stage will
+                                inherit
                                 its duration.
                             </Typography>
                             <Button
@@ -2191,7 +2193,7 @@ export default function MilestoneManagement() {
                                 <Typography variant="body2" sx={{color: '#d32f2f', mb: 1}}>
                                     Order Deadline: {dayjs(selectedOrder.deadline).format('DD/MM/YYYY')}
                                 </Typography>
-                                
+
                                 {/* Shipping calculation status */}
                                 {isCalculatingShipping && (
                                     <Box sx={{
@@ -2237,7 +2239,8 @@ export default function MilestoneManagement() {
                                         mb: 2
                                     }}>
                                         <Typography variant="body2" sx={{color: '#065f46', fontSize: '0.9rem'}}>
-                                            ✅ Estimated shipping time: <strong>{getCalculatedShippingDays()} days</strong>
+                                            ✅ Estimated shipping
+                                            time: <strong>{getCalculatedShippingDays()} days</strong>
                                         </Typography>
                                     </Box>
                                 )}
@@ -2248,7 +2251,7 @@ export default function MilestoneManagement() {
                                     const maxStartTime = getMaxStartDate();
                                     const maxDeliveryDate = maxDeliveryTime ? dayjs(maxDeliveryTime) : dayjs(selectedOrder.deadline).subtract(1, 'day');
                                     const maxStartDate = maxStartTime ? dayjs(maxStartTime) : dayjs(selectedOrder.deadline).subtract(8, 'day');
-                                    
+
                                     return (
                                         <>
                                             <Typography variant="body2" sx={{color: '#d32f2f'}}>
@@ -2318,9 +2321,9 @@ export default function MilestoneManagement() {
                                                             '& .MuiInputBase-input.Mui-disabled': {
                                                                 WebkitTextFillColor: '#666',
                                                                 color: '#666'
-                                            }
-                                        }
-                                    }}
+                                                            }
+                                                        }
+                                                    }}
                                                 />
                                             ) : (
                                                 <DatePicker

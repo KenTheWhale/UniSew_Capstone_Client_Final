@@ -32,16 +32,15 @@ import {
     CalendarOutlined,
     CheckCircleOutlined,
     CloseCircleOutlined,
+    ClockCircleOutlined,
     CreditCardOutlined,
+    DollarOutlined,
     EditOutlined,
     EnvironmentOutlined,
     IdcardOutlined,
     MailOutlined,
     PhoneOutlined,
     UserOutlined,
-    SwapOutlined,
-    DollarOutlined,
-    ClockCircleOutlined,
     WalletOutlined
 } from '@ant-design/icons';
 import {getSchoolProfile, updateSchoolProfile} from '../../../services/AccountService.jsx';
@@ -122,7 +121,7 @@ export default function SchoolProfile() {
                 // Handle different possible response structures
                 const transactionData = response.data?.body || response.data?.data || response.data || [];
                 console.log('Transaction data:', transactionData); // Debug log
-                
+
                 // Ensure we have an array
                 if (Array.isArray(transactionData)) {
                     setTransactions(transactionData);
@@ -189,14 +188,14 @@ export default function SchoolProfile() {
     };
 
     const getTransactionIcon = (type, isReceiver) => {
-        if (type === 'order_return') return <ArrowDownOutlined />;
-        if (isReceiver) return <ArrowDownOutlined />;
-        return <ArrowUpOutlined />;
+        if (type === 'order_return') return <ArrowDownOutlined/>;
+        if (isReceiver) return <ArrowDownOutlined/>;
+        return <ArrowUpOutlined/>;
     };
 
     const isCurrentUserReceiver = (transaction) => {
-        return transaction.receiver && transaction.receiver.account && 
-               transaction.receiver.account.role === 'school';
+        return transaction.receiver && transaction.receiver.account &&
+            transaction.receiver.account.role === 'school';
     };
 
     const handleAvatarUpload = async (event) => {
@@ -232,10 +231,10 @@ export default function SchoolProfile() {
 
         try {
             setAvatarUploading(true);
-            
+
             // Upload to cloudinary
             const uploadedUrl = await uploadCloudinary(file);
-            
+
             if (!uploadedUrl) {
                 enqueueSnackbar('Failed to upload avatar. Please try again.', {
                     variant: 'error',
@@ -262,11 +261,11 @@ export default function SchoolProfile() {
             };
 
             const response = await updateSchoolProfile(requestData);
-            
+
             if (response && response.status === 200) {
                 // Refresh profile data
                 await fetchProfileData();
-                
+
                 enqueueSnackbar('Avatar updated successfully!', {
                     variant: 'success',
                     autoHideDuration: 3000,
@@ -347,33 +346,33 @@ export default function SchoolProfile() {
 
     const validateEditForm = () => {
         const errors = {};
-        
+
         if (!editFormData.name.trim()) {
             errors.name = 'Name is required';
         }
-        
+
         if (!editFormData.business.trim()) {
             errors.business = 'Business name is required';
         }
-        
+
         if (!editFormData.phone.trim()) {
             errors.phone = 'Phone number is required';
         } else if (!/^0\d{9}$/.test(editFormData.phone.trim())) {
             errors.phone = 'Phone number must start with 0 and have 10 digits';
         }
-        
+
         if (!editFormData.bank.trim()) {
             errors.bank = 'Bank is required';
         }
-        
+
         if (!editFormData.bankNumber.trim()) {
             errors.bankNumber = 'Bank account number is required';
         }
-        
+
         if (!editFormData.cardOwner.trim()) {
             errors.cardOwner = 'Card owner name is required';
         }
-        
+
         setEditFormErrors(errors);
         return Object.keys(errors).length === 0;
     };
@@ -405,12 +404,12 @@ export default function SchoolProfile() {
                 cardOwner: editFormData.cardOwner
             };
             const response = await updateSchoolProfile(requestData);
-            
+
             if (response && response.status === 200) {
                 // Refresh profile data
                 await fetchProfileData();
                 setEditDialogOpen(false);
-                
+
                 // Success notification
                 enqueueSnackbar('Profile updated successfully!', {
                     variant: 'success',
@@ -658,10 +657,10 @@ export default function SchoolProfile() {
                                                             borderRadius: '50%',
                                                             animation: 'spin 1s linear infinite',
                                                             '@keyframes spin': {
-                                                                '0%': { transform: 'rotate(0deg)' },
-                                                                '100%': { transform: 'rotate(360deg)' }
+                                                                '0%': {transform: 'rotate(0deg)'},
+                                                                '100%': {transform: 'rotate(360deg)'}
                                                             }
-                                                        }} />
+                                                        }}/>
                                                         <Typography variant="caption" sx={{color: 'white'}}>
                                                             Uploading...
                                                         </Typography>
@@ -1008,7 +1007,7 @@ export default function SchoolProfile() {
                                                         flexDirection: 'column',
                                                         justifyContent: 'center'
                                                     }}>
-                                                        <Box sx={{ mb: 2 }}>
+                                                        <Box sx={{mb: 2}}>
                                                             <Typography variant="body2" sx={{
                                                                 color: '#64748b',
                                                                 mb: 0.5,
@@ -1165,7 +1164,7 @@ export default function SchoolProfile() {
                                     </Typography>
                                 </Box>
                                 <Chip
-                                    icon={<DollarOutlined />}
+                                    icon={<DollarOutlined/>}
                                     label={`${Array.isArray(transactions) ? transactions.length : 0} Transactions`}
                                     sx={{
                                         backgroundColor: '#f0f9ff',
@@ -1176,13 +1175,13 @@ export default function SchoolProfile() {
                             </Box>
 
                             {transactionsLoading ? (
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
                                     {[1, 2, 3].map((item) => (
-                                        <Skeleton 
-                                            key={item} 
-                                            variant="rectangular" 
-                                            height={120} 
-                                            sx={{ borderRadius: 2 }} 
+                                        <Skeleton
+                                            key={item}
+                                            variant="rectangular"
+                                            height={120}
+                                            sx={{borderRadius: 2}}
                                         />
                                     ))}
                                 </Box>
@@ -1192,8 +1191,8 @@ export default function SchoolProfile() {
                                     py: 8,
                                     color: '#64748b'
                                 }}>
-                                    <DollarOutlined style={{ fontSize: 48, color: '#cbd5e1', marginBottom: 16 }} />
-                                    <Typography variant="h6" sx={{ mb: 1 }}>
+                                    <DollarOutlined style={{fontSize: 48, color: '#cbd5e1', marginBottom: 16}}/>
+                                    <Typography variant="h6" sx={{mb: 1}}>
                                         No Transactions Found
                                     </Typography>
                                     <Typography variant="body2">
@@ -1201,11 +1200,17 @@ export default function SchoolProfile() {
                                     </Typography>
                                 </Box>
                             ) : (
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: '600px', overflowY: 'auto' }}>
+                                <Box sx={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 2,
+                                    maxHeight: '600px',
+                                    overflowY: 'auto'
+                                }}>
                                     {Array.isArray(transactions) && transactions.map((transaction) => {
                                         const isReceiver = isCurrentUserReceiver(transaction);
                                         const otherParty = isReceiver ? transaction.sender : transaction.receiver;
-                                        
+
                                         return (
                                             <Card
                                                 key={transaction.id}
@@ -1221,9 +1226,14 @@ export default function SchoolProfile() {
                                                     minHeight: '120px'
                                                 }}
                                             >
-                                                <CardContent sx={{ p: 4, minHeight: '140px'}}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                <CardContent sx={{p: 4, minHeight: '140px'}}>
+                                                    <Box sx={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'space-between',
+                                                        mb: 3
+                                                    }}>
+                                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                                                             <Box sx={{
                                                                 display: 'flex',
                                                                 alignItems: 'center',
@@ -1236,14 +1246,14 @@ export default function SchoolProfile() {
                                                                 {getTransactionIcon(transaction.paymentType, isReceiver)}
                                                             </Box>
                                                             <Box>
-                                                                <Typography variant="h6" sx={{ 
-                                                                    fontWeight: 600, 
+                                                                <Typography variant="h6" sx={{
+                                                                    fontWeight: 600,
                                                                     color: '#1e293b',
                                                                     fontSize: '17px'
                                                                 }}>
                                                                     {getPaymentTypeLabel(transaction.paymentType)}
                                                                 </Typography>
-                                                                <Typography variant="body2" sx={{ 
+                                                                <Typography variant="body2" sx={{
                                                                     color: '#64748b',
                                                                     fontSize: '14px'
                                                                 }}>
@@ -1251,8 +1261,8 @@ export default function SchoolProfile() {
                                                                 </Typography>
                                                             </Box>
                                                         </Box>
-                                                        
-                                                        <Box sx={{ textAlign: 'right' }}>
+
+                                                        <Box sx={{textAlign: 'right'}}>
                                                             <Typography variant="h6" sx={{
                                                                 fontWeight: 700,
                                                                 color: isReceiver ? '#10b981' : '#ef4444',
@@ -1273,28 +1283,48 @@ export default function SchoolProfile() {
                                                         </Box>
                                                     </Box>
 
-                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: 3, mt: 2, borderTop: '1px solid #f1f5f9' }}>
-                                                        <Box sx={{ display: 'flex', gap: 3 }}>
+                                                    <Box sx={{
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        alignItems: 'center',
+                                                        pt: 3,
+                                                        mt: 2,
+                                                        borderTop: '1px solid #f1f5f9'
+                                                    }}>
+                                                        <Box sx={{display: 'flex', gap: 3}}>
                                                             <Box>
-                                                                <Typography variant="body2" sx={{ color: '#64748b', fontSize: '12px' }}>
+                                                                <Typography variant="body2"
+                                                                            sx={{color: '#64748b', fontSize: '12px'}}>
                                                                     Business
                                                                 </Typography>
-                                                                <Typography variant="body2" sx={{ color: '#475569', fontWeight: 500, fontSize: '13px' }}>
+                                                                <Typography variant="body2" sx={{
+                                                                    color: '#475569',
+                                                                    fontWeight: 500,
+                                                                    fontSize: '13px'
+                                                                }}>
                                                                     {otherParty?.business || 'N/A'}
                                                                 </Typography>
                                                             </Box>
                                                             {transaction.serviceFee > 0 && (
                                                                 <Box>
-                                                                    <Typography variant="body2" sx={{ color: '#64748b', fontSize: '12px' }}>
+                                                                    <Typography variant="body2" sx={{
+                                                                        color: '#64748b',
+                                                                        fontSize: '12px'
+                                                                    }}>
                                                                         Service Fee
                                                                     </Typography>
-                                                                    <Typography variant="body2" sx={{ color: '#f59e0b', fontWeight: 600, fontSize: '13px' }}>
+                                                                    <Typography variant="body2" sx={{
+                                                                        color: '#f59e0b',
+                                                                        fontWeight: 600,
+                                                                        fontSize: '13px'
+                                                                    }}>
                                                                         {formatCurrency(transaction.serviceFee)}
                                                                     </Typography>
                                                                 </Box>
                                                             )}
                                                             <Box>
-                                                                <Typography variant="body2" sx={{ color: '#64748b', fontSize: '12px' }}>
+                                                                <Typography variant="body2"
+                                                                            sx={{color: '#64748b', fontSize: '12px'}}>
                                                                     Balance Type
                                                                 </Typography>
                                                                 <Chip
@@ -1310,10 +1340,12 @@ export default function SchoolProfile() {
                                                                 />
                                                             </Box>
                                                         </Box>
-                                                        
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                            <ClockCircleOutlined style={{ color: '#64748b', fontSize: 12 }} />
-                                                            <Typography variant="body2" sx={{ color: '#64748b', fontSize: '13px' }}>
+
+                                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                                            <ClockCircleOutlined
+                                                                style={{color: '#64748b', fontSize: 12}}/>
+                                                            <Typography variant="body2"
+                                                                        sx={{color: '#64748b', fontSize: '13px'}}>
                                                                 {formatDate(transaction.creationDate)}
                                                             </Typography>
                                                         </Box>
@@ -1330,8 +1362,8 @@ export default function SchoolProfile() {
             </Container>
 
             {/* Edit Profile Dialog */}
-            <Dialog 
-                open={editDialogOpen} 
+            <Dialog
+                open={editDialogOpen}
                 onClose={handleEditDialogClose}
                 maxWidth="md"
                 fullWidth
@@ -1350,8 +1382,8 @@ export default function SchoolProfile() {
                 }}>
                     Edit School Profile
                 </DialogTitle>
-                <DialogContent sx={{ 
-                    pt: 3, 
+                <DialogContent sx={{
+                    pt: 3,
                     pb: 2,
                     minHeight: '400px',
                     '&::-webkit-scrollbar': {
@@ -1365,17 +1397,17 @@ export default function SchoolProfile() {
                         borderRadius: '3px',
                     },
                 }}>
-                    <Box sx={{ 
-                        display: 'flex', 
-                        flexDirection: 'column', 
+                    <Box sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
                         gap: 3,
                         py: 1
                     }}>
                         {/* School Information Section */}
-                        <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b', mb: 1 }}>
+                        <Typography variant="h6" sx={{fontWeight: 600, color: '#1e293b', mb: 1}}>
                             School Information
                         </Typography>
-                        
+
                         <TextField
                             label="Name"
                             value={editFormData.name}
@@ -1395,7 +1427,7 @@ export default function SchoolProfile() {
                                 }
                             }}
                         />
-                        
+
                         <TextField
                             label="School Name"
                             value={editFormData.business}
@@ -1417,7 +1449,6 @@ export default function SchoolProfile() {
                         />
 
 
-                        
                         <TextField
                             label="Phone Number"
                             value={editFormData.phone}
@@ -1426,7 +1457,7 @@ export default function SchoolProfile() {
                             helperText={editFormErrors.phone}
                             fullWidth
                             variant="outlined"
-                            inputProps={{ maxLength: 10 }}
+                            inputProps={{maxLength: 10}}
                             sx={{
                                 '& .MuiOutlinedInput-root': {
                                     '&:hover fieldset': {
@@ -1440,10 +1471,10 @@ export default function SchoolProfile() {
                         />
 
                         {/* Payment Information Section */}
-                        <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b', mb: 1, mt: 2 }}>
+                        <Typography variant="h6" sx={{fontWeight: 600, color: '#1e293b', mb: 1, mt: 2}}>
                             Payment Information
                         </Typography>
-                        
+
                         <TextField
                             label="Card Owner Name"
                             value={editFormData.cardOwner}
@@ -1463,7 +1494,7 @@ export default function SchoolProfile() {
                                 }
                             }}
                         />
-                        
+
                         <FormControl fullWidth variant="outlined" error={!!editFormErrors.bank}>
                             <InputLabel>Bank</InputLabel>
                             <Select
@@ -1486,12 +1517,12 @@ export default function SchoolProfile() {
                                 ))}
                             </Select>
                             {editFormErrors.bank && (
-                                <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>
+                                <Typography variant="caption" color="error" sx={{mt: 0.5, ml: 1.5}}>
                                     {editFormErrors.bank}
                                 </Typography>
                             )}
                         </FormControl>
-                        
+
                         <TextField
                             label="Bank Account Number"
                             value={editFormData.bankNumber}
@@ -1513,13 +1544,13 @@ export default function SchoolProfile() {
                         />
                     </Box>
                 </DialogContent>
-                <DialogActions sx={{ 
-                    p: 3, 
+                <DialogActions sx={{
+                    p: 3,
                     gap: 2,
                     borderTop: '1px solid #e2e8f0',
                     justifyContent: 'center'
                 }}>
-                    <Button 
+                    <Button
                         onClick={handleEditDialogClose}
                         variant="outlined"
                         size="large"
@@ -1535,7 +1566,7 @@ export default function SchoolProfile() {
                     >
                         Cancel
                     </Button>
-                    <Button 
+                    <Button
                         onClick={handleEditFormSubmit}
                         variant="contained"
                         size="large"

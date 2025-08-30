@@ -18,7 +18,7 @@ import {
     TextField,
     Typography
 } from '@mui/material';
-import { InlineLoading } from '../../ui/LoadingSpinner.jsx';
+import {InlineLoading} from '../../ui/LoadingSpinner.jsx';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DesignServicesIcon from '@mui/icons-material/DesignServices';
 import {ColorPicker} from 'antd';
@@ -3227,7 +3227,7 @@ export default function SchoolCreateDesign() {
                     variant="contained"
                     size="large"
                     disabled={isSubmitting}
-                        startIcon={isSubmitting ? <InlineLoading size={20} color="inherit"/> : null}
+                    startIcon={isSubmitting ? <InlineLoading size={20} color="inherit"/> : null}
                     sx={{
                         background: "linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)",
                         color: "white",

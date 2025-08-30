@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
-import { Box, IconButton, Tooltip, Dialog, DialogContent, IconButton as MuiIconButton } from '@mui/material';
-import { Spin } from 'antd';
-import { LoadingOutlined, ZoomInOutlined } from '@ant-design/icons';
-import { Close as CloseIcon } from '@mui/icons-material';
+import React, {useState} from 'react';
+import {Box, Dialog, DialogContent, IconButton as MuiIconButton} from '@mui/material';
+import {Spin} from 'antd';
+import {LoadingOutlined} from '@ant-design/icons';
+import {Close as CloseIcon} from '@mui/icons-material';
 
 export default function DisplayImage({
-    imageUrl,
-    height = 'auto',
-    width = 'auto',
-    alt = "Display Image"
-}) {
+                                         imageUrl,
+                                         height = 'auto',
+                                         width = 'auto',
+                                         alt = "Display Image"
+                                     }) {
     const [isLoading, setIsLoading] = useState(true);
     const [hasError, setHasError] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -22,7 +22,6 @@ export default function DisplayImage({
         setIsLoading(false);
         setHasError(true);
     };
-
 
 
     const handleImageClick = () => {
@@ -51,7 +50,7 @@ export default function DisplayImage({
                         transform: 'translate(-50%, -50%)',
                         zIndex: 1
                     }}>
-                        <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
+                        <Spin indicator={<LoadingOutlined style={{fontSize: 24}} spin/>}/>
                     </Box>
                 )}
 
@@ -89,7 +88,7 @@ export default function DisplayImage({
             </Box>
 
             {}
-                            <Dialog
+            <Dialog
                 open={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 maxWidth="lg"
@@ -130,7 +129,7 @@ export default function DisplayImage({
                             }
                         }}
                     >
-                        <CloseIcon />
+                        <CloseIcon/>
                     </MuiIconButton>
 
                     <Box sx={{
@@ -152,7 +151,8 @@ export default function DisplayImage({
                                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
                                 display: 'block'
                             }}
-                            onLoad={() => {}}
+                            onLoad={() => {
+                            }}
                             onError={(e) => {
                                 e.target.style.display = 'none';
                                 const errorDiv = document.createElement('div');

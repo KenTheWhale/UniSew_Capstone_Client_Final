@@ -8,7 +8,6 @@ import CountUp from "../ui/CountUp.jsx";
 import {useEffect, useState} from "react";
 import {getNumberAccount} from "../../services/AuthService.jsx";
 import {getAccessCookie} from "../../utils/CookieUtil.jsx";
-import {jwtDecode} from "jwt-decode";
 
 
 const features = [
@@ -57,7 +56,7 @@ const testimonials = [
 
 function handleJoinNow() {
     const access = getAccessCookie('access');
-    if(access == null) {
+    if (access == null) {
         window.location.href = '/login';
     }
     const role = access.role
@@ -386,22 +385,22 @@ export default function Homepage() {
                                     duration={1}
                                     className="count-up-text"
                                 />
-                                    <Box sx={{display: "flex", gap: 1}}>
+                                <Box sx={{display: "flex", gap: 1}}>
+                                    <Typography
+                                        variant="body2"
+                                        sx={{color: "#64748b", fontWeight: 500}}
+                                    >
+                                        {stat.label}
+                                    </Typography>
+                                    {stat.label === "Platform Age" &&
                                         <Typography
                                             variant="body2"
                                             sx={{color: "#64748b", fontWeight: 500}}
                                         >
-                                            {stat.label}
+                                            ({isSameYear ? "months" : "years"})
                                         </Typography>
-                                        {stat.label === "Platform Age" &&
-                                            <Typography
-                                                variant="body2"
-                                                sx={{color: "#64748b", fontWeight: 500}}
-                                            >
-                                                ({isSameYear ? "months" : "years"})
-                                            </Typography>
-                                        }
-                                    </Box>
+                                    }
+                                </Box>
 
                             </Paper>
                         ))}

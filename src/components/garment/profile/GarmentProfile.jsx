@@ -39,7 +39,8 @@ import {
     MailOutlined,
     PhoneOutlined,
     StarOutlined,
-    UserOutlined, WalletOutlined
+    UserOutlined,
+    WalletOutlined
 } from '@ant-design/icons';
 import {getPartnerProfile, updatePartnerProfile} from '../../../services/AccountService.jsx';
 import {getBanks} from '../../../services/ShippingService.jsx';
@@ -118,7 +119,7 @@ export default function GarmentProfile() {
                 // Handle different possible response structures
                 const transactionData = response.data?.body || response.data?.data || response.data || [];
                 console.log('Transaction data:', transactionData); // Debug log
-                
+
                 // Ensure we have an array
                 if (Array.isArray(transactionData)) {
                     setTransactions(transactionData);
@@ -185,14 +186,14 @@ export default function GarmentProfile() {
     };
 
     const getTransactionIcon = (type, isReceiver) => {
-        if (type === 'order_return') return <ArrowUpOutlined />;
-        if (isReceiver) return <ArrowDownOutlined />;
-        return <ArrowUpOutlined />;
+        if (type === 'order_return') return <ArrowUpOutlined/>;
+        if (isReceiver) return <ArrowDownOutlined/>;
+        return <ArrowUpOutlined/>;
     };
 
     const isCurrentUserReceiver = (transaction) => {
-        return transaction.receiver && transaction.receiver.account && 
-               transaction.receiver.account.role === 'garment';
+        return transaction.receiver && transaction.receiver.account &&
+            transaction.receiver.account.role === 'garment';
     };
 
     const handleAvatarUpload = async (event) => {
@@ -228,10 +229,10 @@ export default function GarmentProfile() {
 
         try {
             setAvatarUploading(true);
-            
+
             // Upload to cloudinary
             const uploadedUrl = await uploadCloudinary(file);
-            
+
             if (!uploadedUrl) {
                 enqueueSnackbar('Failed to upload avatar. Please try again.', {
                     variant: 'error',
@@ -263,11 +264,11 @@ export default function GarmentProfile() {
             };
 
             const response = await updatePartnerProfile(requestData);
-            
+
             if (response && response.status === 200) {
                 // Refresh profile data
                 await fetchProfileData();
-                
+
                 enqueueSnackbar('Avatar updated successfully!', {
                     variant: 'success',
                     autoHideDuration: 3000,
@@ -340,45 +341,45 @@ export default function GarmentProfile() {
 
     const validateEditForm = () => {
         const errors = {};
-        
+
         if (!editFormData.name.trim()) {
             errors.name = 'Name is required';
         }
-        
+
         if (!editFormData.businessName.trim()) {
             errors.businessName = 'Business name is required';
         }
-        
+
         if (!editFormData.ownerName.trim()) {
             errors.ownerName = 'Owner name is required';
         }
-        
+
         if (!editFormData.bank.trim()) {
             errors.bank = 'Bank is required';
         }
-        
+
         if (!editFormData.bankAccountNumber.trim()) {
             errors.bankAccountNumber = 'Bank account number is required';
         }
-        
+
         if (!editFormData.startTime.trim()) {
             errors.startTime = 'Start time is required';
         }
-        
+
         if (!editFormData.endTime.trim()) {
             errors.endTime = 'End time is required';
         }
-        
+
         // Validate time logic
         if (editFormData.startTime && editFormData.endTime) {
             const startTime = new Date(`1970-01-01T${editFormData.startTime}:00`);
             const endTime = new Date(`1970-01-01T${editFormData.endTime}:00`);
-            
+
             if (startTime >= endTime) {
                 errors.endTime = 'End time must be after start time';
             }
         }
-        
+
         setEditFormErrors(errors);
         return Object.keys(errors).length === 0;
     };
@@ -416,12 +417,12 @@ export default function GarmentProfile() {
             };
 
             const response = await updatePartnerProfile(requestData);
-            
+
             if (response && response.status === 200) {
                 // Refresh profile data
                 await fetchProfileData();
                 setEditDialogOpen(false);
-                
+
                 // Success notification
                 enqueueSnackbar('Profile updated successfully!', {
                     variant: 'success',
@@ -673,10 +674,10 @@ export default function GarmentProfile() {
                                                             borderRadius: '50%',
                                                             animation: 'spin 1s linear infinite',
                                                             '@keyframes spin': {
-                                                                '0%': { transform: 'rotate(0deg)' },
-                                                                '100%': { transform: 'rotate(360deg)' }
+                                                                '0%': {transform: 'rotate(0deg)'},
+                                                                '100%': {transform: 'rotate(360deg)'}
                                                             }
-                                                        }} />
+                                                        }}/>
                                                         <Typography variant="caption" sx={{color: 'white'}}>
                                                             Uploading...
                                                         </Typography>
@@ -736,7 +737,12 @@ export default function GarmentProfile() {
                                 {}
                                 {profile.partner && (
                                     <Box sx={{mb: 3}}>
-                                        <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1}}>
+                                        <Box sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: 1
+                                        }}>
                                             <Typography variant="caption" sx={{color: '#64748b', fontSize: '18px'}}>
                                                 Rating:
                                             </Typography>
@@ -1062,7 +1068,7 @@ export default function GarmentProfile() {
                                                         flexDirection: 'column',
                                                         justifyContent: 'center'
                                                     }}>
-                                                        <Box sx={{ mb: 2 }}>
+                                                        <Box sx={{mb: 2}}>
                                                             <Typography variant="body2" sx={{
                                                                 color: '#64748b',
                                                                 mb: 0.5,
@@ -1219,7 +1225,7 @@ export default function GarmentProfile() {
                                     </Typography>
                                 </Box>
                                 <Chip
-                                    icon={<DollarOutlined />}
+                                    icon={<DollarOutlined/>}
                                     label={`${Array.isArray(transactions) ? transactions.length : 0} Transactions`}
                                     sx={{
                                         backgroundColor: '#f0f9ff',
@@ -1230,13 +1236,13 @@ export default function GarmentProfile() {
                             </Box>
 
                             {transactionsLoading ? (
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
                                     {[1, 2, 3].map((item) => (
-                                        <Skeleton 
-                                            key={item} 
-                                            variant="rectangular" 
-                                            height={120} 
-                                            sx={{ borderRadius: 2 }} 
+                                        <Skeleton
+                                            key={item}
+                                            variant="rectangular"
+                                            height={120}
+                                            sx={{borderRadius: 2}}
                                         />
                                     ))}
                                 </Box>
@@ -1246,8 +1252,8 @@ export default function GarmentProfile() {
                                     py: 8,
                                     color: '#64748b'
                                 }}>
-                                    <DollarOutlined style={{ fontSize: 48, color: '#cbd5e1', marginBottom: 16 }} />
-                                    <Typography variant="h6" sx={{ mb: 1 }}>
+                                    <DollarOutlined style={{fontSize: 48, color: '#cbd5e1', marginBottom: 16}}/>
+                                    <Typography variant="h6" sx={{mb: 1}}>
                                         No Transactions Found
                                     </Typography>
                                     <Typography variant="body2">
@@ -1255,11 +1261,17 @@ export default function GarmentProfile() {
                                     </Typography>
                                 </Box>
                             ) : (
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: '600px', overflowY: 'auto' }}>
+                                <Box sx={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 2,
+                                    maxHeight: '600px',
+                                    overflowY: 'auto'
+                                }}>
                                     {Array.isArray(transactions) && transactions.map((transaction) => {
                                         const isReceiver = isCurrentUserReceiver(transaction);
                                         const otherParty = isReceiver ? transaction.sender : transaction.receiver;
-                                        
+
                                         return (
                                             <Card
                                                 key={transaction.id}
@@ -1288,14 +1300,14 @@ export default function GarmentProfile() {
                                                                 {getTransactionIcon(transaction.paymentType, isReceiver)}
                                                             </Box>
                                                             <Box>
-                                                                <Typography variant="h6" sx={{ 
-                                                                    fontWeight: 600, 
+                                                                <Typography variant="h6" sx={{
+                                                                    fontWeight: 600,
                                                                     color: '#1e293b',
                                                                     fontSize: '17px'
                                                                 }}>
                                                                     {getPaymentTypeLabel(transaction.paymentType)}
                                                                 </Typography>
-                                                                <Typography variant="body2" sx={{ 
+                                                                <Typography variant="body2" sx={{
                                                                     color: '#64748b',
                                                                     fontSize: '14px'
                                                                 }}>
@@ -1303,8 +1315,8 @@ export default function GarmentProfile() {
                                                                 </Typography>
                                                             </Box>
                                                         </Box>
-                                                        
-                                                        <Box sx={{ textAlign: 'right' }}>
+
+                                                        <Box sx={{textAlign: 'right'}}>
                                                             <Typography variant="h6" sx={{
                                                                 fontWeight: 700,
                                                                 color: isReceiver ? '#10b981' : '#ef4444',
@@ -1336,8 +1348,8 @@ export default function GarmentProfile() {
             </Container>
 
             {/* Edit Profile Dialog */}
-            <Dialog 
-                open={editDialogOpen} 
+            <Dialog
+                open={editDialogOpen}
                 onClose={handleEditDialogClose}
                 maxWidth="md"
                 fullWidth
@@ -1356,8 +1368,8 @@ export default function GarmentProfile() {
                 }}>
                     Edit Garment Profile
                 </DialogTitle>
-                <DialogContent sx={{ 
-                    pt: 3, 
+                <DialogContent sx={{
+                    pt: 3,
                     pb: 2,
                     minHeight: '500px',
                     '&::-webkit-scrollbar': {
@@ -1371,17 +1383,17 @@ export default function GarmentProfile() {
                         borderRadius: '3px',
                     },
                 }}>
-                    <Box sx={{ 
-                        display: 'flex', 
-                        flexDirection: 'column', 
+                    <Box sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
                         gap: 3,
                         py: 1
                     }}>
                         {/* Personal Information Section */}
-                        <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b', mb: 1 }}>
+                        <Typography variant="h6" sx={{fontWeight: 600, color: '#1e293b', mb: 1}}>
                             Personal Information
                         </Typography>
-                        
+
                         <TextField
                             label="Name"
                             value={editFormData.name}
@@ -1391,7 +1403,7 @@ export default function GarmentProfile() {
                             fullWidth
                             variant="outlined"
                         />
-                        
+
                         <TextField
                             label="Business Name"
                             value={editFormData.businessName}
@@ -1403,11 +1415,11 @@ export default function GarmentProfile() {
                         />
 
                         {/* Working Hours Section */}
-                        <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b', mb: 1, mt: 2 }}>
+                        <Typography variant="h6" sx={{fontWeight: 600, color: '#1e293b', mb: 1, mt: 2}}>
                             Working Hours
                         </Typography>
-                        
-                        <Box sx={{ display: 'flex', gap: 2 }}>
+
+                        <Box sx={{display: 'flex', gap: 2}}>
                             <TextField
                                 label="Start Time"
                                 type="time"
@@ -1424,7 +1436,7 @@ export default function GarmentProfile() {
                                     step: 300, // 5 min
                                 }}
                             />
-                            
+
                             <TextField
                                 label="End Time"
                                 type="time"
@@ -1444,10 +1456,10 @@ export default function GarmentProfile() {
                         </Box>
 
                         {/* Wallet Information Section */}
-                        <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b', mb: 1, mt: 2 }}>
+                        <Typography variant="h6" sx={{fontWeight: 600, color: '#1e293b', mb: 1, mt: 2}}>
                             Wallet Information
                         </Typography>
-                        
+
                         <TextField
                             label="Owner Name"
                             value={editFormData.ownerName}
@@ -1457,7 +1469,7 @@ export default function GarmentProfile() {
                             fullWidth
                             variant="outlined"
                         />
-                        
+
                         <FormControl fullWidth variant="outlined" error={!!editFormErrors.bank}>
                             <InputLabel>Bank</InputLabel>
                             <Select
@@ -1472,12 +1484,12 @@ export default function GarmentProfile() {
                                 ))}
                             </Select>
                             {editFormErrors.bank && (
-                                <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>
+                                <Typography variant="caption" color="error" sx={{mt: 0.5, ml: 1.5}}>
                                     {editFormErrors.bank}
                                 </Typography>
                             )}
                         </FormControl>
-                        
+
                         <TextField
                             label="Bank Account Number"
                             value={editFormData.bankAccountNumber}
@@ -1489,13 +1501,13 @@ export default function GarmentProfile() {
                         />
                     </Box>
                 </DialogContent>
-                <DialogActions sx={{ 
-                    p: 3, 
+                <DialogActions sx={{
+                    p: 3,
                     gap: 2,
                     borderTop: '1px solid #e2e8f0',
                     justifyContent: 'center'
                 }}>
-                    <Button 
+                    <Button
                         onClick={handleEditDialogClose}
                         variant="outlined"
                         size="large"
@@ -1511,7 +1523,7 @@ export default function GarmentProfile() {
                     >
                         Cancel
                     </Button>
-                    <Button 
+                    <Button
                         onClick={handleEditFormSubmit}
                         variant="contained"
                         size="large"

@@ -140,7 +140,7 @@ export default function PaymentResult() {
         const userData = localStorage.getItem('user');
         let userEmail = 'N/A';
         let userBusinessName = 'N/A';
-        
+
         if (userData) {
             try {
                 const user = JSON.parse(userData);
@@ -150,7 +150,7 @@ export default function PaymentResult() {
                 console.error('Error parsing user data from localStorage:', error);
             }
         }
-        
+
         // Get current date and time
         const now = new Date();
         const paymentDate = now.toLocaleDateString('vi-VN', {
@@ -165,7 +165,7 @@ export default function PaymentResult() {
 
         // Determine partner type and name
         let partnerType, partnerName, itemId;
-        
+
         if (paymentType === 'design' || paymentType === 'revision') {
             partnerType = 'Designer';
             if (paymentType === 'design' && quotationDetails?.quotation?.designer?.customer?.name) {
@@ -175,7 +175,7 @@ export default function PaymentResult() {
             } else {
                 partnerName = 'N/A';
             }
-            itemId = paymentType === 'design' ? 
+            itemId = paymentType === 'design' ?
                 parseID(quotationDetails?.request?.id, "dr") :
                 parseID(revisionPurchaseDetails?.requestId, "dr");
         } else if (paymentType === 'order' || paymentType === 'deposit') {
@@ -191,7 +191,7 @@ export default function PaymentResult() {
             partnerName = 'Wallet Top-up';
             itemId = 'WALLET';
         }
-        
+
         // Format amount to VND format (e.g., 1,000,000)
         const formatAmountToVND = (amount) => {
             if (typeof amount === 'number' || !isNaN(amount)) {
@@ -199,7 +199,7 @@ export default function PaymentResult() {
             }
             return '0';
         };
-        
+
         return {
             result: isSuccess ? 'Successfully' : 'Failed',
             receiverEmail: userEmail,
@@ -227,10 +227,10 @@ export default function PaymentResult() {
             const emailData = buildEmailData(true, paymentType, parseInt(vnpAmount) / 100);
             console.log('Sending success email with data:', emailData);
             const emailResponse = await sendEmail(emailType.PAYMENT, emailData);
-            
+
             if (emailResponse && emailResponse.status === 200) {
                 console.log('Success email sent successfully');
-                
+
                 // Continue with payment logic
                 if (isDepositPayment && quotationId && orderDetails) {
                     await handleSuccessfulDeposit();
@@ -265,10 +265,10 @@ export default function PaymentResult() {
             const emailData = buildEmailData(false, paymentType, parseInt(vnpAmount) / 100);
             console.log('Sending failure email with data:', emailData);
             const emailResponse = await sendEmail(emailType.PAYMENT, emailData);
-            
+
             if (emailResponse && emailResponse.status === 200) {
                 console.log('Failure email sent successfully');
-                
+
                 // Continue with payment logic
                 if (isDepositPayment) {
                     await handleFailedDeposit();
@@ -312,7 +312,7 @@ export default function PaymentResult() {
 
     const handleSuccessfulOrder = async () => {
         console.log('handleSuccessfulOrder called');
-        
+
         try {
             // Get user data from localStorage
             const userData = localStorage.getItem('user');
@@ -320,15 +320,15 @@ export default function PaymentResult() {
                 console.error('User data not found in localStorage');
                 return;
             }
-            
+
             const user = JSON.parse(userData);
-            
+
             // Calculate total order price (base + service + shipping fee)
             const basePrice = orderDetails.order.price || 0;
             const serviceFee = orderDetails.serviceFee || 0;
             const shippingFee = orderDetails.shippingFee || 0;
             const orderPrice = basePrice + serviceFee + shippingFee;
-            
+
             // Call createShipping API FIRST
             console.log('Creating shipping order...');
             const shippingResponse = await createShipping(
@@ -339,16 +339,16 @@ export default function PaymentResult() {
                 orderDetails.order.id, // orderId
                 orderPrice // orderPrice
             );
-            
+
             if (!shippingResponse || shippingResponse.data.code !== 200) {
                 console.error('Failed to create shipping order:', shippingResponse);
                 return;
             }
-            
+
             // Extract order_code from shipping response
             const shippingOrderCode = shippingResponse.data.data.order_code;
             console.log('Shipping order created successfully with code:', shippingOrderCode);
-            
+
             // Now call confirmDeliveryOrder with shippingCode
             const response = await confirmDeliveryOrder(
                 orderDetails.order.id,
@@ -358,13 +358,13 @@ export default function PaymentResult() {
                 shippingOrderCode, // shippingCode from createShipping response
                 orderDetails.shippingFee // shippingFee
             );
-            
+
             if (response && response.status === 200) {
                 console.log('Order delivery confirmed successfully with shipping code:', shippingOrderCode);
             } else {
                 console.error('Failed to confirm order delivery:', response);
             }
-            
+
         } catch (error) {
             console.error('Error in handleSuccessfulOrder:', error);
         }
@@ -416,7 +416,7 @@ export default function PaymentResult() {
 
     const handleSuccessfulWallet = async () => {
         console.log('handleSuccessfulWallet called');
-        
+
         try {
             // Get user data from localStorage
             const userData = localStorage.getItem('user');
@@ -424,22 +424,22 @@ export default function PaymentResult() {
                 console.error('User data not found in localStorage');
                 return;
             }
-            
+
             const user = JSON.parse(userData);
-            
+
             // Call createDepositWalletTransaction API
             const response = await createDepositWalletTransaction(
                 user.customer.id, // receiverId (user's own ID)
                 parseInt(vnpAmount) / 100, // totalPrice
                 vnpResponseCode // gatewayCode
             );
-            
+
             if (response && response.status === 201) {
                 console.log('Wallet top-up transaction created successfully');
             } else {
                 console.error('Failed to create wallet top-up transaction:', response);
             }
-            
+
         } catch (error) {
             console.error('Error in handleSuccessfulWallet:', error);
         }
@@ -507,7 +507,7 @@ export default function PaymentResult() {
 
     const handleFailedWallet = async () => {
         console.log('handleFailedWallet called');
-        
+
         try {
             // Get user data from localStorage
             const userData = localStorage.getItem('user');
@@ -515,22 +515,22 @@ export default function PaymentResult() {
                 console.error('User data not found in localStorage');
                 return;
             }
-            
+
             const user = JSON.parse(userData);
-            
+
             // Call createDepositWalletTransaction API for failed payment
             const response = await createDepositWalletTransaction(
                 user.customer.id, // receiverId (user's own ID)
                 parseInt(vnpAmount) / 100, // totalPrice
                 vnpResponseCode // gatewayCode
             );
-            
+
             if (response && response.status === 201) {
                 console.log('Failed wallet top-up transaction recorded successfully');
             } else {
                 console.error('Failed to record wallet top-up transaction:', response);
             }
-            
+
         } catch (error) {
             console.error('Error in handleFailedWallet:', error);
         }
