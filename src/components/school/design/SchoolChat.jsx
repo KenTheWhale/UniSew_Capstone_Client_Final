@@ -606,14 +606,13 @@ export function UseDesignChatMessages(roomId) {
 
     const sendMessage = async (textOrPayload) => {
         if (!roomId) return;
-        const email = auth.currentUser?.email || "designer@unknown";
         const displayName = auth.currentUser?.displayName || "Designer";
         let cookie = await getAccessCookie()
         if (!cookie) {
             return false;
         }
         const accountId = cookie.id;
-
+        const email = cookie.email || "designer@unknown";
         const payload =
             typeof textOrPayload === "string"
                 ? {text: textOrPayload}
