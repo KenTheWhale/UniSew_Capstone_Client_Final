@@ -1,33 +1,12 @@
-import React, {useEffect, useState, useMemo} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {Outlet, useLocation, useNavigate} from 'react-router-dom';
-import {
-    AppBar,
-    Avatar,
-    Box,
-    CssBaseline,
-    Divider,
-    Toolbar,
-    Typography,
-    Popover,
-    Badge
-} from '@mui/material';
-import {
-    AccountCircle,
-    Assignment,
-    LocalShipping,
-    Logout,
-    Flag,
-    Assessment,
-    Settings,
-    Factory,
-    Feedback
-} from '@mui/icons-material';
+import {AppBar, Avatar, Badge, Box, CssBaseline, Divider, Popover, Toolbar, Typography} from '@mui/material';
+import {AccountCircle, Assessment, Assignment, Factory, Feedback, Flag, Logout, AccountBox} from '@mui/icons-material';
 import {Tag} from 'antd';
 import {signout} from "../../services/AccountService.jsx";
 import {enqueueSnackbar} from "notistack";
-import Bell from "../../components/ui/Bell.jsx";
 
-function Navbar({userObj, activeMenu, navigate}) {
+function Navbar({activeMenu, navigate}) {
     return (
         <Box
             sx={{
@@ -197,7 +176,7 @@ function Navbar({userObj, activeMenu, navigate}) {
 
                 {}
                 <Typography variant="overline" sx={{ px: 2, pb: 1, color: "#6c757d", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "1px" }}>
-                    ACCOUNT MANAGEMENT
+                    PROFILE MANAGEMENT
                 </Typography>
                 <Box sx={{ mb: 3 }}>
                     <Box
@@ -205,23 +184,23 @@ function Navbar({userObj, activeMenu, navigate}) {
                             borderRadius: 2,
                             mx: 1,
                             my: 0.5,
-                            color: activeMenu === 'settings' ? "#FFFFFF" : "#495057",
+                            color: activeMenu === 'profile' ? "#FFFFFF" : "#495057",
                             p: 2,
                             cursor: "pointer",
                             transition: "all 0.3s ease",
-                            background: activeMenu === 'settings' ? "linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)" : "transparent",
+                            background: activeMenu === 'profile' ? "linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)" : "transparent",
                             "&:hover": {
                                 background: "linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)",
                                 color: "#FFFFFF",
                                 transform: "translateY(-1px)",
                             },
                         }}
-                        onClick={() => navigate('/garment/settings')}
+                        onClick={() => navigate('/garment/profile')}
                     >
                         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                            <Settings sx={{ color: "inherit", fontSize: 20 }} />
+                            <AccountBox sx={{ color: "inherit", fontSize: 20 }} />
                             <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                Settings
+                                Profile
                             </Typography>
                         </Box>
                     </Box>
@@ -280,8 +259,8 @@ export default function GarmentDashboardLayout() {
             setActiveMenu('feedbacks');
         } else if (pathname.includes('/garment/reports')) {
             setActiveMenu('reports');
-        } else if (pathname.includes('/garment/settings')) {
-            setActiveMenu('settings');
+        } else if (pathname.includes('/garment/profile')) {
+            setActiveMenu('profile');
         } else {
             setActiveMenu('');
         }
