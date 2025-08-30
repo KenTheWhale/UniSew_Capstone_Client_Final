@@ -24,7 +24,6 @@ import DisplayImage from '../../../ui/DisplayImage.jsx';
 import {viewQuotation} from '../../../../services/OrderService.jsx';
 import OrderPaymentPopup from './OrderPaymentPopup.jsx';
 
-// Status tag function from RequestDetailPopup
 export function statusTag(status) {
     let color;
     let icon = null;
@@ -53,15 +52,13 @@ export function statusTag(status) {
 }
 
 export default function OrderDetailPopup({open, onClose, order}) {
-    // State for dialogs
     const [imagesDialogOpen, setImagesDialogOpen] = useState(false);
     const [selectedItemImages, setSelectedItemImages] = useState(null);
     const [showQuantityDetailsDialog, setShowQuantityDetailsDialog] = useState(false);
     const [selectedQuantityDetails, setSelectedQuantityDetails] = useState(null);
     const [showOrderDetail, setShowOrderDetail] = useState(false);
     const [showAppliedGarment, setShowAppliedGarment] = useState(false);
-    
-    // State for quotations
+
     const [quotations, setQuotations] = useState([]);
     const [loadingQuotations, setLoadingQuotations] = useState(false);
     const [quotationsError, setQuotationsError] = useState('');
@@ -72,7 +69,6 @@ export default function OrderDetailPopup({open, onClose, order}) {
 
     if (!order) return null;
 
-    // Fetch quotations when modal opens
     useEffect(() => {
         if (open && order?.id) {
             fetchQuotations();
@@ -83,9 +79,9 @@ export default function OrderDetailPopup({open, onClose, order}) {
         try {
             setLoadingQuotations(true);
             setQuotationsError('');
-            
+
             const response = await viewQuotation(order.id);
-            
+
             if (response && response.status === 200) {
                 setQuotations(response.data.body || []);
                 console.log('Quotations loaded:', response.data.body);
@@ -120,7 +116,6 @@ export default function OrderDetailPopup({open, onClose, order}) {
         return price.toLocaleString('vi-VN') + ' VND';
     };
 
-    // Calculate service fee
     const calculateServiceFee = (price) => {
         if (price > 10000000) {
             return 200000;
@@ -129,15 +124,12 @@ export default function OrderDetailPopup({open, onClose, order}) {
         }
     };
 
-    // Handle quotation click
     const handleQuotationClick = (quotation) => {
         setSelectedQuotation(quotation);
     };
 
-    // Sort functions
     const handleSortChange = (values) => {
         setSortCriteria(values);
-        // Set default order for new criteria
         const newOrder = { ...sortOrder };
         values.forEach(key => {
             if (!newOrder[key]) {
@@ -159,7 +151,6 @@ export default function OrderDetailPopup({open, onClose, order}) {
         setSortOrder({});
     };
 
-    // Get comparable value for sorting
     const getComparableValue = (quotation, key) => {
         switch (key) {
             case 'price':
@@ -175,15 +166,14 @@ export default function OrderDetailPopup({open, onClose, order}) {
         }
     };
 
-    // Sort quotations
     const sortedQuotations = useMemo(() => {
         if (!sortCriteria.length) return quotations;
-        
+
         const sorted = [...quotations].sort((a, b) => {
             for (const key of sortCriteria) {
                 const aVal = getComparableValue(a, key);
                 const bVal = getComparableValue(b, key);
-                
+
                 if (aVal !== bVal) {
                     const order = sortOrder[key] === 'desc' ? -1 : 1;
                     return aVal < bVal ? -order : order;
@@ -191,11 +181,10 @@ export default function OrderDetailPopup({open, onClose, order}) {
             }
             return 0;
         });
-        
+
         return sorted;
     }, [quotations, sortCriteria, sortOrder]);
 
-    // Function to sort sizes in correct order
     const sortSizes = (sizes) => {
         const sizeOrder = ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
         return sizes.sort((a, b) => {
@@ -205,11 +194,9 @@ export default function OrderDetailPopup({open, onClose, order}) {
         });
     };
 
-    // Function to group items by category with rowspan support
     const groupItemsByCategory = (orderDetails) => {
         if (!orderDetails || orderDetails.length === 0) return [];
 
-        // First, group by category
         const categoryGroups = {};
 
         orderDetails.forEach((item) => {
@@ -225,7 +212,6 @@ export default function OrderDetailPopup({open, onClose, order}) {
                 categoryGroups[category][gender] = [];
             }
 
-            // Find existing group for this type
             let existingGroup = categoryGroups[category][gender].find(group =>
                 group.type === type
             );
@@ -239,7 +225,6 @@ export default function OrderDetailPopup({open, onClose, order}) {
                     quantities: {},
                     items: [],
                     totalQuantity: 0,
-                    // Common properties from first item
                     color: item.deliveryItem?.designItem?.color,
                     logoPosition: item.deliveryItem?.designItem?.logoPosition,
                     baseLogoHeight: item.deliveryItem?.baseLogoHeight,
@@ -263,7 +248,6 @@ export default function OrderDetailPopup({open, onClose, order}) {
             existingGroup.totalQuantity += quantity;
         });
 
-        // Convert to array with category and gender info for rowspan
         const result = [];
         Object.entries(categoryGroups).forEach(([category, genderGroups]) => {
             const totalCategoryRows = Object.values(genderGroups).reduce((sum, groups) =>
@@ -291,7 +275,6 @@ export default function OrderDetailPopup({open, onClose, order}) {
 
     const items = groupItemsByCategory(order.orderDetails || []);
 
-    // Handler functions for dialogs
     const handleViewImages = (groupedItem) => {
         setSelectedItemImages(groupedItem);
         setImagesDialogOpen(true);
@@ -312,7 +295,6 @@ export default function OrderDetailPopup({open, onClose, order}) {
         setSelectedQuantityDetails(null);
     };
 
-    // Calculate total uniforms: sum all quantities and divide by 2 (1 uniform = shirt + pants/skirt)
     const totalQuantity = (order.orderDetails || []).reduce((sum, detail) => sum + detail.quantity, 0);
     const totalUniforms = Math.ceil(totalQuantity / 2);
 
@@ -355,7 +337,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                 }}
                 footer={null}
             >
-                    {/* Header Section */}
+                    {}
                     <Box sx={{
                         mb: 3,
                         p: 3,
@@ -400,7 +382,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                         </Typography>
                     </Box>
 
-                    {/* Applied Garment Section */}
+                    {}
                     {showAppliedGarment && (
                         <Box sx={{
                             mb: 3,
@@ -413,8 +395,8 @@ export default function OrderDetailPopup({open, onClose, order}) {
                             <Typography variant="body2" sx={{color: '#64748b', fontSize: '14px', mb: 3}}>
                                 Review and select from the garment factories that have applied to your order. Each factory offers different quotations with varying timelines and features.
                             </Typography>
-                            
-                            {/* Sort controls */}
+
+                            {}
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, flexWrap: 'wrap' }}>
                                 <Select
                                     mode="multiple"
@@ -443,8 +425,8 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                             size="small"
                                             variant="outlined"
                                             onClick={() => handleToggleSortOrder(key)}
-                                            sx={{ 
-                                                cursor: 'pointer', 
+                                            sx={{
+                                                cursor: 'pointer',
                                                 height: 26,
                                                 backgroundColor: sortOrder[key] === 'asc' ? '#f0f9ff' : '#fef3c7',
                                                 borderColor: sortOrder[key] === 'asc' ? '#0ea5e9' : '#f59e0b',
@@ -459,8 +441,8 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                     </Button>
                                 )}
                             </Box>
-                            
-                            {/* Loading State */}
+
+                            {}
                             {loadingQuotations && (
                                 <Box sx={{
                                     p: 6,
@@ -479,7 +461,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                 </Box>
                             )}
 
-                            {/* Error State */}
+                            {}
                             {quotationsError && !loadingQuotations && (
                                 <Box sx={{
                                     p: 6,
@@ -498,7 +480,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                 </Box>
                             )}
 
-                            {/* Empty State */}
+                            {}
                             {!loadingQuotations && !quotationsError && quotations.length === 0 && (
                                 <Box sx={{
                                     p: 6,
@@ -517,7 +499,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                 </Box>
                             )}
 
-                            {/* Quotations List */}
+                            {}
                             {!loadingQuotations && !quotationsError && sortedQuotations.length > 0 && (
                                 <Box sx={{
                                     display: 'grid',
@@ -562,7 +544,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                         }}
                                         onClick={() => handleQuotationClick(quotation)}
                                         >
-                                            {/* Header */}
+                                            {}
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
                                                 <Avatar
                                                     sx={{
@@ -595,7 +577,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                             {quotation.price.toLocaleString('vi-VN')} <span style={{fontSize: 12, fontWeight: 700}}>VND</span>
                                                         </Typography>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mt: 0.5 }}>
-                                                        <Chip size="small" variant="outlined" label={`⭐ ${quotation.garment?.rating || 0}`} sx={{ height: 22 }} />
+                                                        <Chip size="small" variant="outlined" label={`�?${quotation.garment?.rating || 0}`} sx={{ height: 22 }} />
                                                         <Chip size="small" variant="outlined" icon={<TimeIcon/>} label={`Valid until ${formatDate(quotation.acceptanceDeadline)}`} sx={{ height: 22 }} />
                                                     </Box>
                                                 </Box>
@@ -603,19 +585,19 @@ export default function OrderDetailPopup({open, onClose, order}) {
 
                                             <Divider sx={{ my: 1.5 }} />
 
-                                            {/* Details */}
+                                            {}
                                             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 1, mb: 1 }}>
                                                 <Chip size="medium" variant="outlined" icon={<CalendarIcon style={{ fontSize: 14 }} />} label={`Est. Delivery: ${formatDate(quotation.earlyDeliveryDate)}`} sx={{ height: 26 }} />
                                             </Box>
 
-                                            {/* Contact & Info */}
+                                            {}
                                             <Box sx={{
                                                 display: 'flex',
                                                 flexDirection: 'column',
                                                 gap: 1,
                                                 mb: 1
                                             }}>
-                                                {/* Contact Name */}
+                                                {}
                                                 <Box sx={{
                                                     display: 'flex',
                                                     alignItems: 'center',
@@ -636,7 +618,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                     </Typography>
                                                 </Box>
 
-                                                {/* Phone */}
+                                                {}
                                                 <Box sx={{
                                                     display: 'flex',
                                                     alignItems: 'center',
@@ -658,7 +640,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                     </Typography>
                                                 </Box>
 
-                                                {/* Address */}
+                                                {}
                                                 {quotation.garment?.customer?.address && (
                                                     <Box sx={{
                                                         display: 'flex',
@@ -691,7 +673,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                     </Box>
                                                 )}
 
-                                                {/* Email */}
+                                                {}
                                                 {quotation.garment?.customer?.account?.email && (
                                                     <Box sx={{
                                                         display: 'flex',
@@ -717,7 +699,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                 )}
                                             </Box>
 
-                                            {/* Footer note (optional) */}
+                                            {}
                                             {quotation.note && (
                                                 <Box sx={{
                                                     mt: 1,
@@ -752,7 +734,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                 </Box>
                             )}
 
-                            {/* Payment Summary Section */}
+                            {}
                             {selectedQuotation && (
                                 <Box sx={{
                                     mt: 3,
@@ -788,7 +770,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                         )}
                                     </Typography>
 
-                                    {/* Payment Summary */}
+                                    {}
                                     <Box sx={{
                                         p: 2.5,
                                         backgroundColor: '#ffffff',
@@ -803,9 +785,9 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                         }}>
                                             Payment Summary
                                         </Typography>
-                                        
+
                                         <Box sx={{display: 'flex', flexDirection: 'column', gap: 1}}>
-                                            {/* Base Price */}
+                                            {}
                                             <Box sx={{
                                                 display: 'flex',
                                                 justifyContent: 'space-between',
@@ -826,7 +808,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                 </Typography>
                                             </Box>
 
-                                            {/* Service Fee */}
+                                            {}
                                             <Box sx={{
                                                 display: 'flex',
                                                 justifyContent: 'space-between',
@@ -847,7 +829,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                 </Typography>
                                             </Box>
 
-                                            {/* Total Amount */}
+                                            {}
                                             <Box sx={{
                                                 display: 'flex',
                                                 justifyContent: 'space-between',
@@ -873,7 +855,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                 </Typography>
                                             </Box>
 
-                                            {/* Deposit (only for pending orders) */}
+                                            {}
                                             {order.status === 'pending' && (
                                                 <Box sx={{
                                                     display: 'flex',
@@ -909,10 +891,10 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                 </Box>
                                             )}
 
-                                            {/* Divider */}
+                                            {}
                                             <Divider sx={{ my: 1 }} />
 
-                                            {/* Final Payment */}
+                                            {}
                                             <Box sx={{
                                                 display: 'flex',
                                                 justifyContent: 'space-between',
@@ -931,7 +913,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                     fontSize: '16px',
                                                     margin: 0
                                                 }}>
-                                                    {order.status === 'pending' 
+                                                    {order.status === 'pending'
                                                         ? Math.round((selectedQuotation.price + calculateServiceFee(selectedQuotation.price)) * 0.5).toLocaleString('vi-VN') + ' VND'
                                                         : (selectedQuotation.price + calculateServiceFee(selectedQuotation.price)).toLocaleString('vi-VN') + ' VND'
                                                     }
@@ -940,7 +922,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                         </Box>
                                     </Box>
 
-                                    {/* Confirm Selection Button */}
+                                    {}
                                     <Box sx={{
                                         mt: 3,
                                         display: 'flex',
@@ -973,7 +955,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                         </Box>
                     )}
 
-                    {/* Order Detail Section */}
+                    {}
                     {showOrderDetail && (
                         <Box sx={{
                             mb: 3,
@@ -983,7 +965,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                             border: '1px solid #e2e8f0',
                             width: '100%'
                         }}>
-                            {/* Order Detail Header */}
+                            {}
                             <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2}}>
                                 <Typography variant="h6" sx={{
                                     fontWeight: 700,
@@ -1000,7 +982,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                 Detailed information about your order including dates, quantities, and product specifications.
                             </Typography>
 
-                                {/* Compact Header */}
+                                {}
                                 <Card
                                     size="small"
                                     style={{
@@ -1035,7 +1017,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                     </Box>
                                 </Card>
 
-                                {/* Order Information */}
+                                {}
                                 <Box sx={{
                                     display: 'flex',
                                     flexDirection: 'row',
@@ -1043,7 +1025,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                     marginTop: '16px',
                                     alignItems: 'stretch'
                                 }}>
-                                    {/* Order Summary Card */}
+                                    {}
                                     <Box sx={{flex: 1}}>
                                         <Typography variant="h6" sx={{
                                             fontWeight: 700,
@@ -1174,7 +1156,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                     </Box>
                                                 </Box>
 
-                                                {/* Order Notes */}
+                                                {}
                                                 {order.note && (
                                                     <Box sx={{
                                                         mt: 3,
@@ -1217,7 +1199,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                     </Box>
                                 </Box>
 
-                                {/* Product Details Section */}
+                                {}
                                 <Box sx={{mt: 10}}>
                                     <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2}}>
                                         <Typography variant="h6" sx={{
@@ -1262,7 +1244,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                     overflow: 'hidden',
                                                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
                                                 }}>
-                                                    {/* Excel-Style Table */}
+                                                    {}
                                                     <Box sx={{
                                                         display: 'grid',
                                                         gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr',
@@ -1271,7 +1253,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                         overflow: 'hidden',
                                                         width: '100%'
                                                     }}>
-                                                        {/* Header Row */}
+                                                        {}
                                                         <Box sx={{
                                                             p: 2,
                                                             borderRight: '1px solid #000000',
@@ -1441,7 +1423,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                             </Typography>
                                                         </Box>
 
-                                                        {/* Data Rows */}
+                                                        {}
                                                         {(() => {
                                                             const groupedItems = groupItemsByCategory(order.orderDetails || []);
                                                             const rows = [];
@@ -1450,7 +1432,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                                 rows.push(
                                                                     <React.Fragment
                                                                         key={`${groupedItem.category}-${groupedItem.gender}-${groupedItem.type}-${index}`}>
-                                                                        {/* Category - with rowspan */}
+                                                                        {}
                                                                         {groupedItem.isFirstInCategory && (
                                                                             <Box sx={{
                                                                                 p: 2,
@@ -1477,7 +1459,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                                             </Box>
                                                                         )}
 
-                                                                        {/* Gender - with rowspan */}
+                                                                        {}
                                                                         {groupedItem.isFirstInGender && (
                                                                             <Box sx={{
                                                                                 p: 2,
@@ -1503,7 +1485,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                                             </Box>
                                                                         )}
 
-                                                                        {/* Type */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             p: 2,
                                                                             borderRight: '1px solid #000000',
@@ -1523,7 +1505,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                                             </Typography>
                                                                         </Box>
 
-                                                                        {/* Size - Show all sizes */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             p: 2,
                                                                             borderRight: '1px solid #000000',
@@ -1542,7 +1524,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                                             </Typography>
                                                                         </Box>
 
-                                                                        {/* Quantity - Show View button */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             p: 2,
                                                                             borderRight: '1px solid #000000',
@@ -1570,7 +1552,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                                             </Button>
                                                                         </Box>
 
-                                                                        {/* Color */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             p: 2,
                                                                             borderRight: '1px solid #000000',
@@ -1597,7 +1579,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                                             </Typography>
                                                                         </Box>
 
-                                                                        {/* Logo Position */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             p: 2,
                                                                             borderRight: '1px solid #000000',
@@ -1636,7 +1618,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                                             })()}
                                                                         </Box>
 
-                                                                        {/* Logo Size */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             p: 2,
                                                                             borderRight: '1px solid #000000',
@@ -1678,7 +1660,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                                             })()}
                                                                         </Box>
 
-                                                                        {/* Images */}
+                                                                        {}
                                                                         <Box sx={{
                                                                             p: 2,
                                                                             borderBottom: '1px solid #000000',
@@ -1721,7 +1703,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                     }
             </Modal>
 
-            {/* Images Dialog */}
+            {}
             <Modal
                 title={
                     <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
@@ -1761,7 +1743,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                     {selectedItemImages && (
                         <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
 
-                            {/* Logo Image - Only for Shirt */}
+                            {}
                             {selectedItemImages.type === 'shirt' && (
                                 <Box sx={{
                                     p: 2.5,
@@ -1807,7 +1789,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                 </Box>
                             )}
 
-                            {/* Design Images */}
+                            {}
                             <Box sx={{
                                 p: 2.5,
                                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -1818,7 +1800,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                     Design Images
                                 </Typography>
                                 <Box sx={{display: 'flex', gap: 2, flexWrap: 'wrap'}}>
-                                    {/* Front Design */}
+                                    {}
                                     <Box sx={{flex: 1, minWidth: 200}}>
                                         <Typography variant="subtitle2" sx={{fontWeight: 600, mb: 1, color: '#10b981', fontSize: '13px'}}>
                                             Front Design
@@ -1860,7 +1842,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                         )}
                                     </Box>
 
-                                    {/* Back Design */}
+                                    {}
                                     <Box sx={{flex: 1, minWidth: 200}}>
                                         <Typography variant="subtitle2" sx={{fontWeight: 600, mb: 1, color: '#8b5cf6', fontSize: '13px'}}>
                                             Back Design
@@ -1907,7 +1889,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                     )}
             </Modal>
 
-            {/* Quantity Details Dialog */}
+            {}
             <Modal
                 title={
                     <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
@@ -1945,7 +1927,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
             >
                     {selectedQuantityDetails && (
                         <Box>
-                            {/* Item Info Header */}
+                            {}
                             <Box sx={{
                                 background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
                                 border: '1px solid #cbd5e1',
@@ -1992,7 +1974,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                 </Typography>
                             </Box>
 
-                            {/* Size Breakdown Table */}
+                            {}
                             <Box sx={{
                                 border: '1px solid #e2e8f0',
                                 borderRadius: 2,
@@ -2090,7 +2072,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                     )}
             </Modal>
 
-            {/* Order Payment Popup */}
+            {}
             <OrderPaymentPopup
                 visible={showPaymentModal}
                 onCancel={() => setShowPaymentModal(false)}
@@ -2101,4 +2083,4 @@ export default function OrderDetailPopup({open, onClose, order}) {
             />
         </>
     );
-} 
+}

@@ -34,7 +34,8 @@ import {
     Clear,
     DesignServices,
     Logout,
-    Search
+    Search,
+    Star
 } from "@mui/icons-material";
 import {Button, Tag} from "antd";
 import {signout} from "../../services/AccountService.jsx";
@@ -390,6 +391,29 @@ export default function DesignerDashboardLayout() {
                                         <Assignment/>
                                     </ListItemIcon>
                                     <ListItemText primary="Applied Designs"/>
+                                </ListItemButton>
+                            </ListItem>
+
+                            <ListItem disablePadding>
+                                <ListItemButton
+                                    sx={{
+                                        borderRadius: 2,
+                                        mx: 1,
+                                        my: 0.5,
+                                        color: "#495057",
+                                        "&:hover": {
+                                            background: "linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)",
+                                            color: "#FFFFFF",
+                                            transform: "translateY(-1px)",
+                                        },
+                                        transition: "all 0.3s ease",
+                                    }}
+                                    onClick={() => navigate("/designer/feedbacks")}
+                                >
+                                    <ListItemIcon sx={{color: "inherit"}}>
+                                        <Star/>
+                                    </ListItemIcon>
+                                    <ListItemText primary="Feedback Management"/>
                                 </ListItemButton>
                             </ListItem>
                         </List>

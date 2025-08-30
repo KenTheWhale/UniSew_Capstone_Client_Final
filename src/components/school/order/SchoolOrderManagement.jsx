@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState, useMemo} from 'react';
 import {
     Box,
     Button,
@@ -8,7 +8,9 @@ import {
     IconButton,
     Paper,
     Tooltip,
-    Typography
+    Typography,
+    Menu,
+    MenuItem
 } from '@mui/material';
 import { DataLoadingState, ErrorState, EmptyState } from '../../ui/LoadingSpinner.jsx';
 import { useLoading } from '../../../contexts/LoadingContext.jsx';
@@ -23,7 +25,8 @@ import {
     ShoppingCart as ShoppingCartIcon,
     TrendingUp as TrendingUpIcon,
     Feedback as FeedbackIcon,
-    Report as ReportIcon
+    Report as ReportIcon,
+    MoreVert as MoreVertIcon
 } from '@mui/icons-material';
 import {Empty, Space, Table, Tag} from 'antd';
 import 'antd/dist/reset.css';
@@ -107,6 +110,8 @@ export default function SchoolOrderList() {
     const [isFeedbackModalVisible, setIsFeedbackModalVisible] = useState(false);
     const [isReportModalVisible, setIsReportModalVisible] = useState(false);
     const [selectedOrderForFeedback, setSelectedOrderForFeedback] = useState(null);
+    const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+    const [menuRowId, setMenuRowId] = useState(null);
 
     const fetchOrders = useCallback(async (showLoading = true) => {
         try {
@@ -158,7 +163,6 @@ export default function SchoolOrderList() {
 
     const handleViewDetail = (order) => {
         if (order.status === 'processing' || order.status === 'delivering') {
-            // Lưu orderId vào sessionStorage và điều hướng đến OrderTrackingStatus
             sessionStorage.setItem('trackingOrderId', order.id);
             navigate('/school/order/status');
         } else {
@@ -317,7 +321,7 @@ export default function SchoolOrderList() {
         }
     };
 
-    const columns = [
+    const columns = useMemo(() => [
         {
             title: 'Order ID',
             dataIndex: 'id',
@@ -510,7 +514,7 @@ export default function SchoolOrderList() {
                 </Space>
             ),
         },
-    ];
+    ], [orders, handleViewDetail, handleOpenFeedback, handleOpenReport, handleCancelOrder, cancellingOrderId]);
 
     if (loading) {
         // Không hiển thị loading UI ở đây nữa, sẽ dùng GlobalLoadingOverlay
@@ -523,7 +527,6 @@ export default function SchoolOrderList() {
 
     return (
         <Box sx={{height: '100%', overflowY: 'auto'}}>
-            {}
             <Box
                 sx={{
                     mb: 4,
@@ -596,7 +599,6 @@ export default function SchoolOrderList() {
                 </Button>
             </Box>
 
-            {}
             <Box sx={{mb: 4}}>
                 <Box sx={{display: 'flex', gap: 3, flexWrap: 'wrap'}}>
                     <Card
@@ -796,7 +798,6 @@ export default function SchoolOrderList() {
                 </Box>
             </Box>
 
-            {}
             <Paper
                 elevation={0}
                 sx={{
@@ -852,7 +853,6 @@ export default function SchoolOrderList() {
                 </Box>
             </Paper>
 
-            {}
             {isDetailDialogOpen && (
                 <OrderDetailPopup
                     open={isDetailDialogOpen}
