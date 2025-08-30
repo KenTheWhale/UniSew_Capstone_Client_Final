@@ -37,7 +37,7 @@ import {
     where,
     writeBatch
 } from 'firebase/firestore';
-import {auth, db} from "../../../configs/FirebaseConfig.jsx";
+import {db} from "../../../configs/FirebaseConfig.jsx";
 import {
     createRevisionRequest,
     getDesignDeliveries,
@@ -567,11 +567,11 @@ const getItemIcon = (itemType) => {
 };
 
 
-export function UseDesignChatMessages(roomId) {
+export function UseDesignChatMessages(roomId, currentUserEmail) {
     const [chatMessages, setChatMessages] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
 
-    const me = auth.currentUser?.email || "";
+    const me = currentUserEmail || "";
 
     useEffect(() => {
         if (!roomId) return;
@@ -606,15 +606,13 @@ export function UseDesignChatMessages(roomId) {
 
     const sendMessage = async (textOrPayload) => {
         if (!roomId) return;
-        console.log("Auth: ", auth)
-        console.log("Auth user: ", auth.currentUser)
-        const displayName = auth.currentUser?.displayName || "School";
         let cookie = await getAccessCookie()
         if (!cookie) {
             return false;
         }
         const accountId = cookie.id;
         const email = cookie.email || "designer@unknown";
+        const displayName = cookie.email || "School";
         const payload =
             typeof textOrPayload === "string"
                 ? {text: textOrPayload}
@@ -1916,13 +1914,16 @@ export default function SchoolChat() {
         || 'Designer';
     const [isOpenButtonHover, setIsOpenButtonHover] = useState(false);
     const emojiPickerRef = useRef(null);
+    const [currentUserEmail, setCurrentUserEmail] = useState("");
 
-    const {chatMessages, unreadCount, sendMessage, markAsRead} = UseDesignChatMessages(roomId);
+    const {chatMessages, unreadCount, sendMessage, markAsRead} = UseDesignChatMessages(roomId, currentUserEmail);
     useEffect(() => {
         if (isChatOpen && chatMessages.length) {
             markAsRead();
         }
     }, [chatMessages, isChatOpen]);
+
+
 
 
     const fetchDesignDeliveries = async (designRequestId) => {
@@ -2019,6 +2020,17 @@ export default function SchoolChat() {
         } else {
             window.location.href = '/school/design';
         }
+    }, []);
+
+    // Effect để lấy thông tin user từ API
+    useEffect(() => {
+        const getUserInfo = async () => {
+            const cookie = await getAccessCookie();
+            if (cookie) {
+                setCurrentUserEmail(cookie.email || "");
+            }
+        };
+        getUserInfo();
     }, []);
 
     // Effect để cập nhật finalDelivery khi requestData thay đổi
@@ -3161,7 +3173,7 @@ export default function SchoolChat() {
                                                 key={msg.id || index}
                                                 sx={{
                                                     display: 'flex',
-                                                    justifyContent: msg.user === (auth.currentUser?.displayName || "User") ? 'flex-end' : 'flex-start'
+                                                    justifyContent: msg.senderEmail === currentUserEmail ? 'flex-end' : 'flex-start'
                                                 }}
                                             >
                                                 <Box sx={{
@@ -3170,25 +3182,25 @@ export default function SchoolChat() {
                                                     gap: 0.5,
                                                     maxWidth: '80%'
                                                 }}>
-                                                    {msg.user !== (auth.currentUser?.displayName || "User") && (
+                                                    {msg.senderEmail !== currentUserEmail && (
                                                         <Avatar size="small" style={{backgroundColor: '#1976d2'}}
                                                                 icon={<UserSwitchOutlined/>}/>
                                                     )}
                                                     <Box sx={{
                                                         p: 1.5,
                                                         borderRadius: 3,
-                                                        background: msg.user === (auth.currentUser?.displayName || "User")
+                                                        background: msg.senderEmail === currentUserEmail
                                                             ? 'linear-gradient(135deg, #2e7d32, #4caf50)'
                                                             : 'white',
-                                                        color: msg.user === (auth.currentUser?.displayName || "User") ? 'white' : '#1e293b',
-                                                        border: msg.user !== (auth.currentUser?.displayName || "User") ? '1px solid #e2e8f0' : 'none',
-                                                        boxShadow: msg.user === (auth.currentUser?.displayName || "User")
+                                                        color: msg.senderEmail === currentUserEmail ? 'white' : '#1e293b',
+                                                        border: msg.senderEmail !== currentUserEmail ? '1px solid #e2e8f0' : 'none',
+                                                        boxShadow: msg.senderEmail === currentUserEmail
                                                             ? '0 2px 8px rgba(46, 125, 50, 0.3)'
                                                             : '0 1px 4px rgba(0,0,0,0.1)'
                                                     }}>
                                                         <Typography.Text style={{
                                                             fontSize: '10px',
-                                                            color: msg.user === (auth.currentUser?.displayName || "User") ? 'rgba(255,255,255,0.8)' : '#94a3b8'
+                                                            color: msg.senderEmail === currentUserEmail ? 'rgba(255,255,255,0.8)' : '#94a3b8'
                                                         }}>
                                                             {msg.createdAt?.seconds ? new Date(msg.createdAt.seconds * 1000).toLocaleString() : ''}
                                                         </Typography.Text>
@@ -3196,13 +3208,13 @@ export default function SchoolChat() {
                                                             <Typography.Text style={{
                                                                 fontSize: '14px',
                                                                 display: 'block',
-                                                                color: (msg.user === (auth.currentUser?.displayName || "User")) ? 'white' : '#1e293b'
+                                                                color: (msg.senderEmail === currentUserEmail) ? 'white' : '#1e293b'
                                                             }}>
                                                                 {msg.text}
                                                             </Typography.Text>
                                                         )}
                                                     </Box>
-                                                    {msg.user === (auth.currentUser?.displayName || "User") && (
+                                                    {msg.senderEmail === currentUserEmail && (
                                                         <Avatar size="small" style={{backgroundColor: '#52c41a'}}
                                                                 icon={<UserOutlined/>}/>
                                                     )}

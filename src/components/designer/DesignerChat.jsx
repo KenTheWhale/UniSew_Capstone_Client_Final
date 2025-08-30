@@ -46,7 +46,7 @@ import {
     where,
     writeBatch
 } from 'firebase/firestore';
-import {auth, db} from "../../configs/FirebaseConfig.jsx";
+import {db} from "../../configs/FirebaseConfig.jsx";
 import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
 import {GiSkirt} from "react-icons/gi";
 import DisplayImage from '../ui/DisplayImage.jsx';
@@ -83,11 +83,11 @@ const getItemIcon = (itemType) => {
 };
 
 
-export function UseDesignerChatMessages(roomId) {
+export function UseDesignerChatMessages(roomId, currentUserEmail) {
     const [chatMessages, setChatMessages] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
 
-    const me = auth.currentUser?.email || "";
+    const me = currentUserEmail || "";
 
     useEffect(() => {
         if (!roomId) return;
@@ -122,9 +122,7 @@ export function UseDesignerChatMessages(roomId) {
 
     const sendMessage = async (textOrPayload) => {
         if (!roomId) return;
-        console.log("Auth: ", auth)
-        console.log("Auth user: ", auth.currentUser)
-        const displayName = auth.currentUser?.displayName || "Designer";
+
 
         let cookie = await getAccessCookie()
         if (!cookie) {
@@ -132,6 +130,7 @@ export function UseDesignerChatMessages(roomId) {
         }
         const accountId = cookie.id;
         const email = cookie.email || "designer@unknown";
+        const displayName = cookie.email || "Designer";
         const payload =
             typeof textOrPayload === "string"
                 ? {text: textOrPayload}
@@ -2332,8 +2331,9 @@ export default function DesignerChat() {
     const schoolName = requestData?.school?.business || 'School';
     const [isOpenButtonHover, setIsOpenButtonHover] = useState(false);
     const emojiPickerRef = useRef(null);
+    const [currentUserEmail, setCurrentUserEmail] = useState("");
 
-    const {chatMessages, unreadCount, sendMessage, markAsRead} = UseDesignerChatMessages(roomId);
+    const {chatMessages, unreadCount, sendMessage, markAsRead} = UseDesignerChatMessages(roomId, currentUserEmail);
 
     useEffect(() => {
         if (isChatOpen) markAsRead();
@@ -2418,6 +2418,17 @@ export default function DesignerChat() {
         } else {
             window.location.href = '/designer/requests';
         }
+    }, []);
+
+    // Effect để lấy thông tin user từ API
+    useEffect(() => {
+        const getUserInfo = async () => {
+            const cookie = await getAccessCookie();
+            if (cookie) {
+                setCurrentUserEmail(cookie.email || "");
+            }
+        };
+        getUserInfo();
     }, []);
 
     useEffect(() => {
@@ -3324,7 +3335,7 @@ export default function DesignerChat() {
                                     {chatMessages.map((msg, index) => (
                                         <Box key={msg.id || index} sx={{
                                             display: 'flex',
-                                            justifyContent: msg.user === (auth.currentUser?.displayName || 'Designer') ? 'flex-end' : 'flex-start'
+                                            justifyContent: msg.senderEmail === currentUserEmail ? 'flex-end' : 'flex-start'
                                         }}>
                                             <Box sx={{
                                                 display: 'flex',
@@ -3332,22 +3343,22 @@ export default function DesignerChat() {
                                                 gap: 0.5,
                                                 maxWidth: '80%'
                                             }}>
-                                                {msg.user !== (auth.currentUser?.displayName || 'Designer') && (
+                                                {msg.senderEmail !== currentUserEmail && (
                                                     <Avatar size="small" style={{backgroundColor: '#1976d2'}}
                                                             icon={<BankOutlined/>}/>
                                                 )}
                                                 <Box sx={{
                                                     p: 1.5,
                                                     borderRadius: 3,
-                                                    backgroundColor: msg.user === (auth.currentUser?.displayName || 'Designer') ? '#1976d2' : '#ffffff',
-                                                    background: msg.user === (auth.currentUser?.displayName || 'Designer') ? 'linear-gradient(135deg, #1976d2, #42a5f5)' : 'linear-gradient(135deg, #ffffff, #f8fafc)',
-                                                    color: msg.user === (auth.currentUser?.displayName || 'Designer') ? 'white' : '#1e293b',
-                                                    border: msg.user !== (auth.currentUser?.displayName || 'Designer') ? '1px solid #e2e8f0' : 'none',
-                                                    boxShadow: msg.user === (auth.currentUser?.displayName || 'Designer') ? '0 2px 8px rgba(25, 118, 210, 0.3)' : '0 1px 4px rgba(0,0,0,0.1)'
+                                                    backgroundColor: msg.senderEmail === currentUserEmail ? '#1976d2' : '#ffffff',
+                                                    background: msg.senderEmail === currentUserEmail ? 'linear-gradient(135deg, #1976d2, #42a5f5)' : 'linear-gradient(135deg, #ffffff, #f8fafc)',
+                                                    color: msg.senderEmail === currentUserEmail ? 'white' : '#1e293b',
+                                                    border: msg.senderEmail !== currentUserEmail ? '1px solid #e2e8f0' : 'none',
+                                                    boxShadow: msg.senderEmail === currentUserEmail ? '0 2px 8px rgba(25, 118, 210, 0.3)' : '0 1px 4px rgba(0,0,0,0.1)'
                                                 }}>
                                                     <Typography.Text style={{
                                                         fontSize: '10px',
-                                                        color: msg.user === (auth.currentUser?.displayName || 'Designer') ? 'rgba(255,255,255,0.8)' : '#94a3b8'
+                                                        color: msg.senderEmail === currentUserEmail ? 'rgba(255,255,255,0.8)' : '#94a3b8'
                                                     }}>
                                                         {msg.createdAt?.seconds ? new Date(msg.createdAt.seconds * 1000).toLocaleString() : ''}
                                                     </Typography.Text>
@@ -3355,13 +3366,13 @@ export default function DesignerChat() {
                                                         <Typography.Text style={{
                                                             fontSize: '14px',
                                                             display: 'block',
-                                                            color: (msg.user === (auth.currentUser?.displayName || 'Designer')) ? 'white' : '#1e293b'
+                                                            color: (msg.senderEmail === currentUserEmail) ? 'white' : '#1e293b'
                                                         }}>
                                                             {msg.text}
                                                         </Typography.Text>
                                                     )}
                                                 </Box>
-                                                {msg.user === (auth.currentUser?.displayName || 'Designer') && (
+                                                {msg.senderEmail === currentUserEmail && (
                                                     <Avatar size="small" style={{backgroundColor: '#52c41a'}}
                                                             icon={<UserOutlined/>}/>
                                                 )}
