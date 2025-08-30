@@ -81,9 +81,11 @@ export const deletePhase = async (phaseId) => {
     return response || null
 }
 
-export const confirmDeliveryOrder = async (orderId, receiverId, totalPrice, gatewayCode) => {
+export const confirmDeliveryOrder = async (orderId, receiverId, totalPrice, gatewayCode, shippingCode, shippingFee) => {
     const response = await axiosClient.put("/order/status/delivery", {
         orderId: orderId,
+        shippingCode: shippingCode,
+        shippingFee: shippingFee,
         createTransactionRequest:{
             type: 'order',
             receiverId: receiverId,

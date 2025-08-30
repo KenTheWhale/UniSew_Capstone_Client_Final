@@ -18,6 +18,7 @@ import {buyExtraRevision, pickQuotation} from "../../services/DesignService.jsx"
 import {approveQuotation, confirmDeliveryOrder} from "../../services/OrderService.jsx";
 import {createDesignTransaction, createDepositTransaction} from "../../services/PaymentService.jsx";
 import {emailType, sendEmail} from "../../services/EmailService.jsx";
+import {createShipping} from "../../services/ShippingService.jsx";
 import {useEffect, useState} from 'react';
 
 export default function PaymentResult() {
@@ -281,17 +282,61 @@ export default function PaymentResult() {
 
     const handleSuccessfulOrder = async () => {
         console.log('handleSuccessfulOrder called');
-        const response = await confirmDeliveryOrder(
-            orderDetails.order.id,
-            orderDetails.quotation.garmentId,
-            parseInt(vnpAmount) / 100,
-            vnpResponseCode
-        );
         
-        if (response && response.status === 200) {
-            console.log('Order delivery confirmed successfully');
-        } else {
-            console.error('Failed to confirm order delivery:', response);
+        try {
+            // Get user data from localStorage
+            const userData = localStorage.getItem('user');
+            if (!userData) {
+                console.error('User data not found in localStorage');
+                return;
+            }
+            
+            const user = JSON.parse(userData);
+            
+            // Calculate total order price (base + service + shipping fee)
+            const basePrice = orderDetails.order.price || 0;
+            const serviceFee = orderDetails.serviceFee || 0;
+            const shippingFee = orderDetails.shippingFee || 0;
+            const orderPrice = basePrice + serviceFee + shippingFee;
+            
+            // Call createShipping API FIRST
+            console.log('Creating shipping order...');
+            const shippingResponse = await createShipping(
+                orderDetails.quotation.garment.shippingUID, // garmentShippingUID
+                user.customer.business, // receiverName
+                user.customer.phone, // receiverPhone
+                user.customer.address, // receiverAddress
+                orderDetails.order.id, // orderId
+                orderPrice // orderPrice
+            );
+            
+            if (!shippingResponse || shippingResponse.data.code !== 200) {
+                console.error('Failed to create shipping order:', shippingResponse);
+                return;
+            }
+            
+            // Extract order_code from shipping response
+            const shippingOrderCode = shippingResponse.data.data.order_code;
+            console.log('Shipping order created successfully with code:', shippingOrderCode);
+            
+            // Now call confirmDeliveryOrder with shippingCode
+            const response = await confirmDeliveryOrder(
+                orderDetails.order.id,
+                orderDetails.quotation.garmentId,
+                parseInt(vnpAmount) / 100,
+                vnpResponseCode,
+                shippingOrderCode, // shippingCode from createShipping response
+                orderDetails.shippingFee // shippingFee
+            );
+            
+            if (response && response.status === 200) {
+                console.log('Order delivery confirmed successfully with shipping code:', shippingOrderCode);
+            } else {
+                console.error('Failed to confirm order delivery:', response);
+            }
+            
+        } catch (error) {
+            console.error('Error in handleSuccessfulOrder:', error);
         }
     };
 
