@@ -1,27 +1,10 @@
 import React, {useEffect, useState} from 'react';
+import {Alert, Box, Button, CircularProgress, Container, Grid, Paper, Typography} from '@mui/material';
 import {
-    Alert,
-    Box,
-    Button,
-    Card,
-    CardContent,
-    CircularProgress,
-    Container,
-    Divider,
-    Grid,
-    Paper,
-    Typography
-} from '@mui/material';
-import {
-    Business as BusinessIcon,
     CheckCircle as CheckCircleIcon,
     Error as ErrorIcon,
     Home as HomeIcon,
-    HourglassEmpty as HourglassIcon,
-    Notifications as NotificationsIcon,
-    PersonAdd as PersonAddIcon,
-    Schedule as ScheduleIcon,
-    VerifiedUser as VerifiedUserIcon
+    HourglassEmpty as HourglassIcon
 } from '@mui/icons-material';
 import {useNavigate} from 'react-router-dom';
 import {createPartnerRequest, updatePartnerStoreID} from "../../services/AuthService.jsx";
@@ -54,18 +37,18 @@ export default function EmailConfirmation() {
                 if (res && res.status === 201) {
                     try {
                         // Extract data from response (excluding pid)
-                        const { districtId, wardCode, address, name, phone } = res.data.body;
-                        
+                        const {districtId, wardCode, address, name, phone} = res.data.body;
+
                         // Call createStore API
                         const storeResponse = await createStore(districtId, wardCode, address, name, phone);
-                        
+
                         if (storeResponse && storeResponse.data.code === 200) {
                             const shopId = storeResponse.data.data.shop_id;
                             const pid = res.data.body.pid;
-                            
+
                             // Call updatePartnerStoreID API
                             const updateResponse = await updatePartnerStoreID(shopId, pid);
-                            
+
                             if (updateResponse && updateResponse.status === 200) {
                                 setStatus('success');
                                 setMessage('Account created successfully!');

@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
-import { db } from "../../configs/FirebaseConfig.jsx";
+import {useEffect, useState} from "react";
+import {collection, onSnapshot, query, where} from "firebase/firestore";
+import {db} from "../../configs/FirebaseConfig.jsx";
 
 export function useChatRoomsByEmail(accountId) {
     const [rooms, setRooms] = useState([]);

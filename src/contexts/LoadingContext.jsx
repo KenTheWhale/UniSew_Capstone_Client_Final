@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { PageLoading } from '../components/ui/LoadingSpinner.jsx';
+import React, {createContext, useCallback, useContext, useState} from 'react';
 
 const LoadingContext = createContext();
 
@@ -11,7 +10,7 @@ export const useLoading = () => {
     return context;
 };
 
-export const LoadingProvider = ({ children }) => {
+export const LoadingProvider = ({children}) => {
     const [loadingStates, setLoadingStates] = useState({
         app: false,           // React Router lazy loading
         auth: false,          // Authentication check
@@ -75,10 +74,10 @@ export const LoadingProvider = ({ children }) => {
 
 // Global Loading Overlay Component
 export const GlobalLoadingOverlay = () => {
-    const { globalLoading } = useLoading();
-    
+    const {globalLoading} = useLoading();
+
     if (!globalLoading) return null;
-    
+
     return (
         <div style={{
             position: 'fixed',

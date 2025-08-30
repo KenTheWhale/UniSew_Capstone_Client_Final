@@ -1,26 +1,26 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {
+    Avatar,
     Box,
-    Typography,
     Button,
-    IconButton,
-    Tooltip,
-    Paper,
     Card,
     CardContent,
     Chip,
     CircularProgress,
-    Avatar
+    IconButton,
+    Paper,
+    Tooltip,
+    Typography
 } from "@mui/material";
-import { Table, Space, Empty, Input, Select, Modal, Descriptions, Badge, Tag } from 'antd';
-import { SearchOutlined, UserOutlined, BookOutlined, ToolOutlined, ShopOutlined, FilterOutlined, StopOutlined, ReloadOutlined, DollarOutlined, PayCircleOutlined, CreditCardOutlined } from '@ant-design/icons';
-import { Visibility, AccountBalance } from '@mui/icons-material';
-import { enqueueSnackbar } from 'notistack';
-import { getTransactions } from '../../services/PaymentService.jsx';
+import {Badge, Descriptions, Empty, Input, Modal, Select, Table, Tag} from 'antd';
+import {CreditCardOutlined, DollarOutlined, PayCircleOutlined, ReloadOutlined, StopOutlined} from '@ant-design/icons';
+import {AccountBalance, Visibility} from '@mui/icons-material';
+import {enqueueSnackbar} from 'notistack';
+import {getTransactions} from '../../services/PaymentService.jsx';
 import {parseID} from "../../utils/ParseIDUtil.jsx";
 
-const { Search } = Input;
-const { Option } = Select;
+const {Search} = Input;
+const {Option} = Select;
 
 const STATUS_COLORS = {
     success: '#52c41a',
@@ -34,7 +34,7 @@ const PAYMENT_TYPE_COLORS = {
     wallet: '#13c2c2'
 };
 
-const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
+const StatCard = React.memo(({icon, value, label, color, bgColor}) => (
     <Card
         sx={{
             height: '100%',
@@ -49,16 +49,16 @@ const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
             minWidth: 0,
         }}
     >
-        <CardContent sx={{ p: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box sx={{ minWidth: 0, flex: 1, mr: 1 }}>
+        <CardContent sx={{p: 2}}>
+            <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                <Box sx={{minWidth: 0, flex: 1, mr: 1}}>
                     <Typography
                         variant="h6"
                         sx={{
                             fontWeight: 700,
                             color: color,
                             mb: 0.5,
-                            fontSize: { xs: '0.9rem', sm: '1.1rem' },
+                            fontSize: {xs: '0.9rem', sm: '1.1rem'},
                             lineHeight: 1.2,
                             wordBreak: 'break-word',
                             overflow: 'hidden',
@@ -74,7 +74,7 @@ const StatCard = React.memo(({ icon, value, label, color, bgColor }) => (
                         sx={{
                             color: '#64748b',
                             fontWeight: 500,
-                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            fontSize: {xs: '0.75rem', sm: '0.875rem'},
                             lineHeight: 1.2
                         }}
                     >
@@ -108,7 +108,7 @@ const EmptyState = () => (
         <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description={
-                <Typography variant="body1" sx={{ color: '#64748b', mt: 2 }}>
+                <Typography variant="body1" sx={{color: '#64748b', mt: 2}}>
                     No transactions found
                 </Typography>
             }
@@ -136,10 +136,8 @@ export default function AdminTransaction() {
                 if (transactionsData && typeof transactionsData === 'object') {
                     if (transactionsData.transactions && Array.isArray(transactionsData.transactions)) {
                         transactionsData = transactionsData.transactions;
-                    }
-                    else if (Array.isArray(transactionsData)) {
-                    }
-                    else {
+                    } else if (Array.isArray(transactionsData)) {
+                    } else {
                         const keys = Object.keys(transactionsData);
                         const arrayKey = keys.find(key => Array.isArray(transactionsData[key]));
                         if (arrayKey) {
@@ -153,14 +151,14 @@ export default function AdminTransaction() {
                 }
 
                 setTransactions(transactionsData);
-                enqueueSnackbar(`Loaded ${transactionsData.length} transactions successfully`, { variant: 'success' });
+                enqueueSnackbar(`Loaded ${transactionsData.length} transactions successfully`, {variant: 'success'});
             } else {
-                enqueueSnackbar('Failed to load transactions', { variant: 'error' });
+                enqueueSnackbar('Failed to load transactions', {variant: 'error'});
                 setTransactions([]);
             }
         } catch (error) {
             console.error('Error fetching transactions:', error);
-            enqueueSnackbar('Error loading transactions', { variant: 'error' });
+            enqueueSnackbar('Error loading transactions', {variant: 'error'});
             setTransactions([]);
         } finally {
             setLoading(false);
@@ -271,10 +269,10 @@ export default function AdminTransaction() {
         }
         return transactions.filter(transaction => {
             const matchesSearch = transaction.id.toString().includes(searchText) ||
-                                transaction.sender?.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-                                transaction.receiver?.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-                                transaction.sender?.account?.email?.toLowerCase().includes(searchText.toLowerCase()) ||
-                                transaction.receiver?.account?.email?.toLowerCase().includes(searchText.toLowerCase());
+                transaction.sender?.name?.toLowerCase().includes(searchText.toLowerCase()) ||
+                transaction.receiver?.name?.toLowerCase().includes(searchText.toLowerCase()) ||
+                transaction.sender?.account?.email?.toLowerCase().includes(searchText.toLowerCase()) ||
+                transaction.receiver?.account?.email?.toLowerCase().includes(searchText.toLowerCase());
             const matchesStatus = statusFilter === 'all' || transaction.status === statusFilter;
             const matchesPaymentType = paymentTypeFilter === 'all' || transaction.paymentType === paymentTypeFilter;
 
@@ -284,7 +282,7 @@ export default function AdminTransaction() {
 
     const stats = useMemo(() => {
         if (!Array.isArray(transactions)) {
-            return { total: 0, success: 0, failed: 0, pending: 0, totalAmount: 0, totalFees: 0 };
+            return {total: 0, success: 0, failed: 0, pending: 0, totalAmount: 0, totalFees: 0};
         }
         const total = transactions.length;
         const success = transactions.filter(t => t.status === 'success').length;
@@ -293,7 +291,7 @@ export default function AdminTransaction() {
         const totalAmount = transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
         const totalFees = transactions.reduce((sum, t) => sum + (t.serviceFee || 0), 0);
 
-        return { total, success, failed, pending, totalAmount, totalFees };
+        return {total, success, failed, pending, totalAmount, totalFees};
     }, [transactions]);
 
     const columns = useMemo(() => [
@@ -306,7 +304,7 @@ export default function AdminTransaction() {
             sorter: (a, b) => a.id - b.id,
             defaultSortOrder: 'descend',
             render: (id) => (
-                <Typography variant="body2" sx={{ fontWeight: 600, color: '#1976d2' }}>
+                <Typography variant="body2" sx={{fontWeight: 600, color: '#1976d2'}}>
                     {parseID(id, "trs")}
                 </Typography>
             )
@@ -316,10 +314,10 @@ export default function AdminTransaction() {
             key: 'sender',
             width: 200,
             render: (_, record) => (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
                     <Avatar
                         src={record.sender?.avatar}
-                        sx={{ width: 32, height: 32 }}
+                        sx={{width: 32, height: 32}}
                         slotProps={{
                             img: {
                                 referrerPolicy: 'no-referrer',
@@ -329,10 +327,10 @@ export default function AdminTransaction() {
                         {record.sender?.name?.charAt(0)?.toUpperCase()}
                     </Avatar>
                     <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '13px' }}>
+                        <Typography variant="body2" sx={{fontWeight: 500, fontSize: '13px'}}>
                             {record.sender?.name}
                         </Typography>
-                        <Typography variant="caption" sx={{ color: '#64748b', fontSize: '11px' }}>
+                        <Typography variant="caption" sx={{color: '#64748b', fontSize: '11px'}}>
                             {record.sender?.account?.email}
                         </Typography>
                     </Box>
@@ -344,10 +342,10 @@ export default function AdminTransaction() {
             key: 'receiver',
             width: 200,
             render: (_, record) => (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
                     <Avatar
                         src={record.receiver?.avatar}
-                        sx={{ width: 32, height: 32 }}
+                        sx={{width: 32, height: 32}}
                         slotProps={{
                             img: {
                                 referrerPolicy: 'no-referrer',
@@ -357,10 +355,10 @@ export default function AdminTransaction() {
                         {record.receiver?.name?.charAt(0)?.toUpperCase()}
                     </Avatar>
                     <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '13px' }}>
+                        <Typography variant="body2" sx={{fontWeight: 500, fontSize: '13px'}}>
                             {record.receiver?.name}
                         </Typography>
-                        <Typography variant="caption" sx={{ color: '#64748b', fontSize: '11px' }}>
+                        <Typography variant="caption" sx={{color: '#64748b', fontSize: '11px'}}>
                             {record.receiver?.account?.email}
                         </Typography>
                     </Box>
@@ -375,7 +373,7 @@ export default function AdminTransaction() {
             align: 'right',
             sorter: (a, b) => a.amount - b.amount,
             render: (amount) => (
-                <Typography variant="body2" sx={{ fontWeight: 600, color: '#52c41a' }}>
+                <Typography variant="body2" sx={{fontWeight: 600, color: '#52c41a'}}>
                     {formatCurrency(amount)}
                 </Typography>
             )
@@ -387,7 +385,7 @@ export default function AdminTransaction() {
             width: 100,
             align: 'right',
             render: (fee) => (
-                <Typography variant="body2" sx={{ color: '#64748b' }}>
+                <Typography variant="body2" sx={{color: '#64748b'}}>
                     {formatCurrency(fee)}
                 </Typography>
             )
@@ -399,9 +397,9 @@ export default function AdminTransaction() {
             width: 130,
             align: 'left',
             filters: [
-                { text: 'Order Payment', value: 'order' },
-                { text: 'Design Payment', value: 'design' },
-                { text: 'Wallet Deposit', value: 'wallet' }
+                {text: 'Order Payment', value: 'order'},
+                {text: 'Design Payment', value: 'design'},
+                {text: 'Wallet Deposit', value: 'wallet'}
             ],
             onFilter: (value, record) => record.paymentType === value,
             render: (type) => (
@@ -417,9 +415,9 @@ export default function AdminTransaction() {
             width: 100,
             align: 'center',
             filters: [
-                { text: 'Success', value: 'success' },
-                { text: 'Failed', value: 'fail' },
-                { text: 'Pending', value: 'pending' }
+                {text: 'Success', value: 'success'},
+                {text: 'Failed', value: 'fail'},
+                {text: 'Pending', value: 'pending'}
             ],
             onFilter: (value, record) => record.status === value,
             render: (status) => (
@@ -439,7 +437,7 @@ export default function AdminTransaction() {
             render: (date) => {
                 const transactionDate = new Date(date);
                 return (
-                    <Typography variant="body2" sx={{ color: '#64748b' }}>
+                    <Typography variant="body2" sx={{color: '#64748b'}}>
                         {transactionDate.toLocaleDateString('vi-VN')}
                     </Typography>
                 );
@@ -457,9 +455,9 @@ export default function AdminTransaction() {
                         type="primary"
                         size="small"
                         onClick={() => handleViewDetail(record)}
-                        style={{ display: 'flex', alignItems: 'center', padding: '4px 8px' }}
+                        style={{display: 'flex', alignItems: 'center', padding: '4px 8px'}}
                     >
-                        <Visibility style={{ fontSize: 16 }} />
+                        <Visibility style={{fontSize: 16}}/>
                     </Button>
                 </Tooltip>
             )
@@ -471,9 +469,9 @@ export default function AdminTransaction() {
             height: '100%',
             overflowY: 'auto',
             '& @keyframes pulse': {
-                '0%': { opacity: 1 },
-                '50%': { opacity: 0.4 },
-                '100%': { opacity: 1 }
+                '0%': {opacity: 1},
+                '50%': {opacity: 0.4},
+                '100%': {opacity: 1}
             }
         }}>
             {}
@@ -487,8 +485,8 @@ export default function AdminTransaction() {
                     border: "1px solid rgba(220, 53, 69, 0.1)",
                 }}
             >
-                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                    <AccountBalance style={{ fontSize: 32, color: '#dc3545', marginRight: 16 }} />
+                <Box sx={{display: "flex", alignItems: "center", mb: 2}}>
+                    <AccountBalance style={{fontSize: 32, color: '#dc3545', marginRight: 16}}/>
                     <Box>
                         <Typography
                             variant="h4"
@@ -512,39 +510,47 @@ export default function AdminTransaction() {
                     </Box>
                 </Box>
 
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <Box sx={{ display: "flex", gap: 2 }}>
+                <Box sx={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
+                    <Box sx={{display: "flex", gap: 2}}>
                         {}
                         <Search
                             placeholder="Search by ID, sender, receiver..."
                             allowClear
-                            style={{ width: 300 }}
+                            style={{width: 300}}
                             onSearch={handleSearch}
                             onChange={(e) => setSearchText(e.target.value)}
                         />
                         <Select
                             placeholder="Filter by payment type"
-                            style={{ width: 170 }}
+                            style={{width: 170}}
                             value={paymentTypeFilter}
                             onChange={handlePaymentTypeFilter}
                             loading={loading}
                         >
-                            <Option value="all">All Types ({loading ? '...' : Array.isArray(transactions) ? transactions.length : 0})</Option>
-                            <Option value="order">Order ({loading ? '...' : Array.isArray(transactions) ? transactions.filter(t => t.paymentType === 'order').length : 0})</Option>
-                            <Option value="design">Design ({loading ? '...' : Array.isArray(transactions) ? transactions.filter(t => t.paymentType === 'design').length : 0})</Option>
-                            <Option value="wallet">Wallet ({loading ? '...' : Array.isArray(transactions) ? transactions.filter(t => t.paymentType === 'wallet').length : 0})</Option>
+                            <Option value="all">All Types
+                                ({loading ? '...' : Array.isArray(transactions) ? transactions.length : 0})</Option>
+                            <Option value="order">Order
+                                ({loading ? '...' : Array.isArray(transactions) ? transactions.filter(t => t.paymentType === 'order').length : 0})</Option>
+                            <Option value="design">Design
+                                ({loading ? '...' : Array.isArray(transactions) ? transactions.filter(t => t.paymentType === 'design').length : 0})</Option>
+                            <Option value="wallet">Wallet
+                                ({loading ? '...' : Array.isArray(transactions) ? transactions.filter(t => t.paymentType === 'wallet').length : 0})</Option>
                         </Select>
                         <Select
                             placeholder="Filter by status"
-                            style={{ width: 150 }}
+                            style={{width: 150}}
                             value={statusFilter}
                             onChange={handleStatusFilter}
                             loading={loading}
                         >
-                            <Option value="all">All Status ({loading ? '...' : Array.isArray(transactions) ? transactions.length : 0})</Option>
-                            <Option value="success">Success ({loading ? '...' : Array.isArray(transactions) ? transactions.filter(t => t.status === 'success').length : 0})</Option>
-                            <Option value="fail">Failed ({loading ? '...' : Array.isArray(transactions) ? transactions.filter(t => t.status === 'fail').length : 0})</Option>
-                            <Option value="pending">Pending ({loading ? '...' : Array.isArray(transactions) ? transactions.filter(t => t.status === 'pending').length : 0})</Option>
+                            <Option value="all">All Status
+                                ({loading ? '...' : Array.isArray(transactions) ? transactions.length : 0})</Option>
+                            <Option value="success">Success
+                                ({loading ? '...' : Array.isArray(transactions) ? transactions.filter(t => t.status === 'success').length : 0})</Option>
+                            <Option value="fail">Failed
+                                ({loading ? '...' : Array.isArray(transactions) ? transactions.filter(t => t.status === 'fail').length : 0})</Option>
+                            <Option value="pending">Pending
+                                ({loading ? '...' : Array.isArray(transactions) ? transactions.filter(t => t.status === 'pending').length : 0})</Option>
                         </Select>
                         <Button
                             onClick={() => {
@@ -557,7 +563,7 @@ export default function AdminTransaction() {
                         </Button>
                     </Box>
 
-                    <Box sx={{ display: "flex", gap: 1 }}>
+                    <Box sx={{display: "flex", gap: 1}}>
                         <Tooltip title="Refresh Data">
                             <IconButton
                                 onClick={handleRefresh}
@@ -571,7 +577,7 @@ export default function AdminTransaction() {
                                     transition: 'all 0.2s ease'
                                 }}
                             >
-                                <ReloadOutlined />
+                                <ReloadOutlined/>
                             </IconButton>
                         </Tooltip>
                     </Box>
@@ -579,12 +585,12 @@ export default function AdminTransaction() {
             </Box>
 
             {}
-            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 2, mb: 4 }}>
+            <Box sx={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 2, mb: 4}}>
                 {loading ? (
-                    Array.from({ length: 6 }).map((_, index) => (
-                        <Card key={index} sx={{ height: '100%', borderRadius: 2 }}>
-                            <CardContent sx={{ p: 3 }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    Array.from({length: 6}).map((_, index) => (
+                        <Card key={index} sx={{height: '100%', borderRadius: 2}}>
+                            <CardContent sx={{p: 3}}>
+                                <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
                                     <Box>
                                         <Box
                                             sx={{
@@ -622,37 +628,37 @@ export default function AdminTransaction() {
                 ) : (
                     <>
                         <StatCard
-                            icon={<DollarOutlined style={{ fontSize: 24 }} />}
+                            icon={<DollarOutlined style={{fontSize: 24}}/>}
                             value={stats.total}
                             label="Total Transactions"
                             color="#dc3545"
                         />
                         <StatCard
-                            icon={<PayCircleOutlined style={{ fontSize: 24 }} />}
+                            icon={<PayCircleOutlined style={{fontSize: 24}}/>}
                             value={stats.success}
                             label="Successful"
                             color="#52c41a"
                         />
                         <StatCard
-                            icon={<StopOutlined style={{ fontSize: 24 }} />}
+                            icon={<StopOutlined style={{fontSize: 24}}/>}
                             value={stats.failed}
                             label="Failed Transactions"
                             color="#ff4d4f"
                         />
                         <StatCard
-                            icon={<CreditCardOutlined style={{ fontSize: 24 }} />}
+                            icon={<CreditCardOutlined style={{fontSize: 24}}/>}
                             value={stats.pending}
                             label="Pending"
                             color="#faad14"
                         />
                         <StatCard
-                            icon={<DollarOutlined style={{ fontSize: 24 }} />}
+                            icon={<DollarOutlined style={{fontSize: 24}}/>}
                             value={formatCompactCurrency(stats.totalAmount)}
                             label="Total Amount"
                             color="#1890ff"
                         />
                         <StatCard
-                            icon={<PayCircleOutlined style={{ fontSize: 24 }} />}
+                            icon={<PayCircleOutlined style={{fontSize: 24}}/>}
                             value={formatCompactCurrency(stats.totalFees)}
                             label="Total Fees"
                             color="#722ed1"
@@ -670,8 +676,8 @@ export default function AdminTransaction() {
                     overflow: "hidden"
                 }}
             >
-                <Box sx={{ p: 3, backgroundColor: "white" }}>
-                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                <Box sx={{p: 3, backgroundColor: "white"}}>
+                    <Box sx={{display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3}}>
                         <Typography
                             variant="h6"
                             sx={{
@@ -699,13 +705,13 @@ export default function AdminTransaction() {
                             justifyContent: 'center',
                             py: 8
                         }}>
-                            <CircularProgress size={40} sx={{ color: '#dc3545', mb: 2 }} />
-                            <Typography variant="body1" sx={{ color: '#64748b' }}>
+                            <CircularProgress size={40} sx={{color: '#dc3545', mb: 2}}/>
+                            <Typography variant="body1" sx={{color: '#64748b'}}>
                                 Loading transactions...
                             </Typography>
                         </Box>
                     ) : filteredTransactions.length === 0 ? (
-                        <EmptyState />
+                        <EmptyState/>
                     ) : (
                         <Table
                             columns={columns}
@@ -719,9 +725,9 @@ export default function AdminTransaction() {
                                 showQuickJumper: true,
                                 showTotal: (total, range) =>
                                     `Showing ${range[0]}-${range[1]} of ${total} transactions`,
-                                style: { marginTop: 16 }
+                                style: {marginTop: 16}
                             }}
-                            scroll={{ x: 'max-content' }}
+                            scroll={{x: 'max-content'}}
                             style={{
                                 backgroundColor: 'white',
                                 borderRadius: '8px'
@@ -746,12 +752,12 @@ export default function AdminTransaction() {
                 {selectedTransaction && (
                     <Descriptions bordered column={2}>
                         <Descriptions.Item label="Transaction ID" span={2}>
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: '#1976d2' }}>
+                            <Typography variant="body2" sx={{fontWeight: 600, color: '#1976d2'}}>
                                 #{selectedTransaction.id}
                             </Typography>
                         </Descriptions.Item>
                         <Descriptions.Item label="Amount">
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: '#52c41a' }}>
+                            <Typography variant="body2" sx={{fontWeight: 600, color: '#52c41a'}}>
                                 {formatCurrency(selectedTransaction.amount)}
                             </Typography>
                         </Descriptions.Item>
@@ -770,10 +776,10 @@ export default function AdminTransaction() {
                             />
                         </Descriptions.Item>
                         <Descriptions.Item label="Sender" span={2}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                                 <Avatar
                                     src={selectedTransaction.sender?.avatar}
-                                    sx={{ width: 40, height: 40 }}
+                                    sx={{width: 40, height: 40}}
                                     slotProps={{
                                         img: {
                                             referrerPolicy: 'no-referrer',
@@ -783,20 +789,20 @@ export default function AdminTransaction() {
                                     {selectedTransaction.sender?.name?.charAt(0)?.toUpperCase()}
                                 </Avatar>
                                 <Box>
-                                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                    <Typography variant="body2" sx={{fontWeight: 500}}>
                                         {selectedTransaction.sender?.name}
                                     </Typography>
-                                    <Typography variant="caption" sx={{ color: '#64748b' }}>
+                                    <Typography variant="caption" sx={{color: '#64748b'}}>
                                         {selectedTransaction.sender?.account?.email}
                                     </Typography>
                                 </Box>
                             </Box>
                         </Descriptions.Item>
                         <Descriptions.Item label="Receiver" span={2}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                                 <Avatar
                                     src={selectedTransaction.receiver?.avatar}
-                                    sx={{ width: 40, height: 40 }}
+                                    sx={{width: 40, height: 40}}
                                     slotProps={{
                                         img: {
                                             referrerPolicy: 'no-referrer',
@@ -806,10 +812,10 @@ export default function AdminTransaction() {
                                     {selectedTransaction.receiver?.name?.charAt(0)?.toUpperCase()}
                                 </Avatar>
                                 <Box>
-                                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                    <Typography variant="body2" sx={{fontWeight: 500}}>
                                         {selectedTransaction.receiver?.name}
                                     </Typography>
-                                    <Typography variant="caption" sx={{ color: '#64748b' }}>
+                                    <Typography variant="caption" sx={{color: '#64748b'}}>
                                         {selectedTransaction.receiver?.account?.email}
                                     </Typography>
                                 </Box>

@@ -5,7 +5,7 @@ export const prefixes = {
     rr: 'REV',
     fb: 'FDB',
     rp: 'RPT',
-    trs : 'TRS'
+    trs: 'TRS'
 };
 
 export const parseID = (id, type) => {

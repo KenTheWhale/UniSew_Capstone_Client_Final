@@ -1,40 +1,14 @@
-import React, {useEffect, useState, useMemo, useCallback, useRef} from 'react';
-import {
-    Box,
-    Button,
-    Chip,
-    Container,
-    Divider,
-    IconButton,
-    Paper,
-    Tooltip,
-    Typography,
-    Card,
-    CardContent,
-    TextField,
-    InputAdornment,
-    Skeleton,
-    Snackbar
-} from "@mui/material";
-import { DataLoadingState, ErrorState, EmptyState } from '../ui/LoadingSpinner.jsx';
-import {
-    Info as InfoIcon,
-    Search as SearchIcon,
-    FilterList as FilterIcon,
-    Refresh as RefreshIcon
-} from '@mui/icons-material';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {Box, Card, CardContent, Chip, IconButton, Paper, Tooltip, Typography} from "@mui/material";
+import {DataLoadingState, EmptyState, ErrorState} from '../ui/LoadingSpinner.jsx';
+import {Info as InfoIcon} from '@mui/icons-material';
 import DesignServicesIcon from '@mui/icons-material/DesignServices';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import PendingIcon from '@mui/icons-material/Pending';
-import AddIcon from '@mui/icons-material/Add';
-import {Space, Table, Select, Empty} from 'antd';
+import {Space, Table} from 'antd';
 import 'antd/dist/reset.css';
 import {statusTag} from '../school/design/dialog/RequestDetailPopup.jsx';
 import DesignerPendingDesignDetail from './DesignerPendingDesignDetail.jsx';
 import {parseID} from "../../utils/ParseIDUtil.jsx";
 import {getDesignRequests} from "../../services/DesignService.jsx";
-import {enqueueSnackbar} from "notistack";
 
 const STATUS_COLORS = {
     pending: '#7c3aed',
@@ -120,15 +94,15 @@ const StatCard = React.memo(({icon, value, label, color, bgColor}) => (
 ));
 
 const LoadingState = React.memo(() => (
-    <DataLoadingState 
-        text="Loading Design Requests..." 
-        size={60} 
+    <DataLoadingState
+        text="Loading Design Requests..."
+        size={60}
         color="#7c3aed"
     />
 ));
 
 const ErrorStateComponent = React.memo(({error, onRetry, isRetrying}) => (
-    <ErrorState 
+    <ErrorState
         error={error}
         onRetry={onRetry}
         isRetrying={isRetrying}
@@ -138,7 +112,7 @@ const ErrorStateComponent = React.memo(({error, onRetry, isRetrying}) => (
 ));
 
 const EmptyStateComponent = React.memo(() => (
-    <EmptyState 
+    <EmptyState
         title="No pending design requests available"
         description="There are no pending design requests to display"
         icon="🎨"

@@ -161,8 +161,9 @@ export default function HowItWork() {
                 backgroundColor: '#f1f8fe',
                 borderRadius: '10px'
             }}>
-                <h3 style={{ color: '#2c3e50', marginBottom: '15px' }}>Ready to Start Your Project?</h3>
-                <p style={{ color: '#7f8c8d', marginBottom: '25px' }}>Create your first design request and bring your vision to life</p>
+                <h3 style={{color: '#2c3e50', marginBottom: '15px'}}>Ready to Start Your Project?</h3>
+                <p style={{color: '#7f8c8d', marginBottom: '25px'}}>Create your first design request and bring your
+                    vision to life</p>
                 <button style={{
                     backgroundColor: '#3498db',
                     color: 'white',

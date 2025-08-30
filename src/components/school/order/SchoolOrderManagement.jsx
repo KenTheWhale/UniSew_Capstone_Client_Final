@@ -1,35 +1,34 @@
-import React, {useCallback, useEffect, useState, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {
     Box,
     Button,
     Card,
     CardContent,
     Chip,
+    CircularProgress,
     IconButton,
-    Paper,
-    Tooltip,
-    Typography,
     Menu,
     MenuItem,
-    CircularProgress
+    Paper,
+    Tooltip,
+    Typography
 } from '@mui/material';
-import { DataLoadingState, ErrorState, EmptyState } from '../../ui/LoadingSpinner.jsx';
-import { useLoading } from '../../../contexts/LoadingContext.jsx';
+import {DataLoadingState, EmptyState, ErrorState} from '../../ui/LoadingSpinner.jsx';
+import {useLoading} from '../../../contexts/LoadingContext.jsx';
 import {
     Add as AddIcon,
     Cancel as CancelIcon,
     CheckCircle as CheckCircleIcon,
+    Feedback as FeedbackIcon,
     Info as InfoIcon,
     LocalShipping as LocalShippingIcon,
+    MoreVert as MoreVertIcon,
     Pending as PendingIcon,
-    Refresh as RefreshIcon,
-    ShoppingCart as ShoppingCartIcon,
-    TrendingUp as TrendingUpIcon,
-    Feedback as FeedbackIcon,
     Report as ReportIcon,
-    MoreVert as MoreVertIcon
+    ShoppingCart as ShoppingCartIcon,
+    TrendingUp as TrendingUpIcon
 } from '@mui/icons-material';
-import {Empty, Space, Table, Tag} from 'antd';
+import {Table, Tag} from 'antd';
 import 'antd/dist/reset.css';
 import {useNavigate} from 'react-router-dom';
 import {CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, SyncOutlined} from '@ant-design/icons';
@@ -38,7 +37,6 @@ import {parseID} from '../../../utils/ParseIDUtil';
 import OrderDetailPopup from './dialog/OrderDetailPopup.jsx';
 import {useSnackbar} from 'notistack';
 import FeedbackReportPopup from '../design/dialog/FeedbackReportPopup.jsx';
-import {giveFeedback} from '../../../services/FeedbackService.jsx';
 
 const statusTag = (status) => {
     let color;
@@ -72,15 +70,15 @@ const statusTag = (status) => {
 };
 
 const LoadingState = React.memo(() => (
-    <DataLoadingState 
-        text="Loading Orders..." 
-        size={60} 
+    <DataLoadingState
+        text="Loading Orders..."
+        size={60}
         color="#2e7d32"
     />
 ));
 
 const ErrorStateComponent = React.memo(({error, onRetry, isRetrying}) => (
-    <ErrorState 
+    <ErrorState
         error={error}
         onRetry={onRetry}
         isRetrying={isRetrying}
@@ -90,7 +88,7 @@ const ErrorStateComponent = React.memo(({error, onRetry, isRetrying}) => (
 ));
 
 const EmptyStateComponent = React.memo(() => (
-    <EmptyState 
+    <EmptyState
         title="No orders available"
         description="There are no orders to display"
         icon="📦"
@@ -100,7 +98,7 @@ const EmptyStateComponent = React.memo(() => (
 export default function SchoolOrderList() {
     const navigate = useNavigate();
     const {enqueueSnackbar} = useSnackbar();
-    const { setDataLoading } = useLoading();
+    const {setDataLoading} = useLoading();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -224,11 +222,11 @@ export default function SchoolOrderList() {
 
     const handleOpenFeedback = useCallback((order) => {
         if (order.status !== 'completed') {
-            enqueueSnackbar('Feedback is only available for completed orders', { variant: 'warning' });
+            enqueueSnackbar('Feedback is only available for completed orders', {variant: 'warning'});
             return;
         }
         if (order.feedback) {
-            enqueueSnackbar('Feedback has already been submitted for this order', { variant: 'warning' });
+            enqueueSnackbar('Feedback has already been submitted for this order', {variant: 'warning'});
             return;
         }
         const orderForFeedback = {
@@ -241,15 +239,15 @@ export default function SchoolOrderList() {
 
     const handleOpenReport = useCallback((order) => {
         if (order.status === 'pending') {
-            enqueueSnackbar('Report is not available for pending orders', { variant: 'warning' });
+            enqueueSnackbar('Report is not available for pending orders', {variant: 'warning'});
             return;
         }
         if (order.feedback) {
-            enqueueSnackbar('Report is not available for orders that already have feedback', { variant: 'warning' });
+            enqueueSnackbar('Report is not available for orders that already have feedback', {variant: 'warning'});
             return;
         }
         if (order.report) {
-            enqueueSnackbar('Report has already been submitted for this order', { variant: 'warning' });
+            enqueueSnackbar('Report has already been submitted for this order', {variant: 'warning'});
             return;
         }
         const orderForReport = {
@@ -450,38 +448,53 @@ export default function SchoolOrderList() {
                             }
                         }}
                     >
-                        <MoreVertIcon />
+                        <MoreVertIcon/>
                     </IconButton>
                     {menuRowId === record.id && (
                         <Menu
                             anchorEl={menuAnchorEl}
                             open={Boolean(menuAnchorEl) && menuRowId === record.id}
                             onClose={handleCloseMenu}
-                            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                            anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
+                            transformOrigin={{vertical: 'top', horizontal: 'right'}}
                         >
                             <MenuItem
-                                onClick={() => { handleOpenFeedback(record); handleCloseMenu(); }}
+                                onClick={() => {
+                                    handleOpenFeedback(record);
+                                    handleCloseMenu();
+                                }}
                                 disabled={record.status !== 'completed' || !!record.feedback}
                             >
-                                <FeedbackIcon fontSize="small" sx={{ mr: 1, color: (record.status === 'completed' && !record.feedback) ? '#10b981' : '#9ca3af' }} />
+                                <FeedbackIcon fontSize="small" sx={{
+                                    mr: 1,
+                                    color: (record.status === 'completed' && !record.feedback) ? '#10b981' : '#9ca3af'
+                                }}/>
                                 Feedback
                             </MenuItem>
                             <MenuItem
-                                onClick={() => { handleOpenReport(record); handleCloseMenu(); }}
+                                onClick={() => {
+                                    handleOpenReport(record);
+                                    handleCloseMenu();
+                                }}
                                 disabled={record.status === 'pending' || !!record.feedback || !!record.report}
                             >
-                                <ReportIcon fontSize="small" sx={{ mr: 1, color: (record.status !== 'pending' && !record.feedback && !record.report) ? '#ef4444' : '#9ca3af' }} />
+                                <ReportIcon fontSize="small" sx={{
+                                    mr: 1,
+                                    color: (record.status !== 'pending' && !record.feedback && !record.report) ? '#ef4444' : '#9ca3af'
+                                }}/>
                                 Report
                             </MenuItem>
                             {record.status === 'pending' && (
                                 <MenuItem
-                                    onClick={async () => { await handleCancelOrder(record.id); handleCloseMenu(); }}
+                                    onClick={async () => {
+                                        await handleCancelOrder(record.id);
+                                        handleCloseMenu();
+                                    }}
                                     disabled={cancellingOrderId === record.id}
                                 >
                                     {cancellingOrderId === record.id ?
-                                        <CircularProgress size={16} sx={{ color: '#9ca3af', mr: 1 }} /> :
-                                        <CancelIcon fontSize="small" sx={{ mr: 1, color: '#f59e0b' }} />
+                                        <CircularProgress size={16} sx={{color: '#9ca3af', mr: 1}}/> :
+                                        <CancelIcon fontSize="small" sx={{mr: 1, color: '#f59e0b'}}/>
                                     }
                                     Cancel
                                 </MenuItem>

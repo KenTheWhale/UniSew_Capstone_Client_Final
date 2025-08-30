@@ -1,4 +1,4 @@
-import {Button, InputNumber, Modal, Spin, Tag, Typography, Select} from 'antd';
+import {Button, InputNumber, Modal, Select, Spin, Tag, Typography} from 'antd';
 import {
     CalendarOutlined as CalendarIcon,
     CheckCircleOutlined,
@@ -10,33 +10,40 @@ import {
     MailOutlined,
     PhoneOutlined,
     SyncOutlined,
-    UserOutlined,
-    UpOutlined,
-    DownOutlined
+    UserOutlined
 } from '@ant-design/icons';
-import {Box, Chip, Divider, Paper, Avatar, IconButton, Tooltip, Badge, Rating, Typography as MuiTypography} from '@mui/material';
-import {useEffect, useState, useMemo, useCallback} from 'react';
-import React from 'react';
+import {
+    Avatar,
+    Badge,
+    Box,
+    Chip,
+    Divider,
+    IconButton,
+    Paper,
+    Rating,
+    Tooltip,
+    Typography as MuiTypography
+} from '@mui/material';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import DesignPaymentPopup from './DesignPaymentPopup.jsx';
 import {parseID} from "../../../../utils/ParseIDUtil.jsx";
 import DisplayImage from '../../../ui/DisplayImage.jsx';
-import { serviceFee } from '../../../../configs/FixedVariables.jsx';
+import {serviceFee} from '../../../../configs/FixedVariables.jsx';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import BusinessIcon from '@mui/icons-material/Business';
 import HomeIcon from '@mui/icons-material/Home';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import StarIcon from '@mui/icons-material/Star';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import BlockIcon from '@mui/icons-material/Block';
 
 const STATUS_CONFIG = {
-    pending: { color: 'blue', icon: <FileTextOutlined/>, text: 'Finding designer' },
-    processing: { color: 'purple', icon: <SyncOutlined/>, text: 'processing' },
-    completed: { color: 'cyan', icon: <CheckCircleOutlined/>, text: 'completed' },
-    canceled: { color: 'red', icon: <CloseCircleOutlined/>, text: 'canceled' }
+    pending: {color: 'blue', icon: <FileTextOutlined/>, text: 'Finding designer'},
+    processing: {color: 'purple', icon: <SyncOutlined/>, text: 'processing'},
+    completed: {color: 'cyan', icon: <CheckCircleOutlined/>, text: 'completed'},
+    canceled: {color: 'red', icon: <CloseCircleOutlined/>, text: 'canceled'}
 };
 
 const UNLIMITED_REVISION_CODE = 9999;
@@ -55,11 +62,11 @@ const formatPrice = (price) => {
 };
 
 export function statusTag(status) {
-    const config = STATUS_CONFIG[status] || { color: 'default', icon: null, text: status };
+    const config = STATUS_CONFIG[status] || {color: 'default', icon: null, text: status};
     return <Tag color={config.color}>{config.icon} {config.text}</Tag>;
 }
 
-const DesignerCard = React.memo(({ designer, isSelected, onSelect, onViewProfile }) => {
+const DesignerCard = React.memo(({designer, isSelected, onSelect, onViewProfile}) => {
     const handleKeyPress = useCallback((event) => {
         if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
@@ -107,51 +114,54 @@ const DesignerCard = React.memo(({ designer, isSelected, onSelect, onViewProfile
             aria-label={`Select quotation from ${designer.designer.customer.name}`}
         >
             {/* Header Section */}
-            <Box sx={{ mb: 2.5 }}>
+            <Box sx={{mb: 2.5}}>
                 {/* Action Buttons */}
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+                <Box sx={{display: 'flex', justifyContent: 'flex-end', mb: 2}}>
                     <Tooltip title="View Profile">
-                        <IconButton 
-                            className="profile-btn" 
-                            onClick={e => { e.stopPropagation(); onViewProfile(designer.designer); }} 
-                            size="small" 
-                            sx={{ 
-                                bgcolor: '#f8fafc', 
+                        <IconButton
+                            className="profile-btn"
+                            onClick={e => {
+                                e.stopPropagation();
+                                onViewProfile(designer.designer);
+                            }}
+                            size="small"
+                            sx={{
+                                bgcolor: '#f8fafc',
                                 border: '1px solid #e2e8f0',
-                                '&:hover': { 
-                                    bgcolor: '#1976d2', 
+                                '&:hover': {
+                                    bgcolor: '#1976d2',
                                     color: 'white',
                                     borderColor: '#1976d2'
-                                } 
+                                }
                             }}
                         >
-                            <PersonSearchIcon fontSize="small" />
+                            <PersonSearchIcon fontSize="small"/>
                         </IconButton>
                     </Tooltip>
                 </Box>
 
                 {/* Designer Info & Price */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                     <Avatar
-                        sx={{ 
-                            width: 56, 
-                            height: 56, 
-                            bgcolor: '#2e7d32', 
+                        sx={{
+                            width: 56,
+                            height: 56,
+                            bgcolor: '#2e7d32',
                             border: isSelected ? '3px solid #2e7d32' : '2px solid #e2e8f0',
                             fontSize: '20px',
                             fontWeight: 600
                         }}
                         src={designer?.designer?.customer?.avatar}
-                        slotProps={{ img: { referrerPolicy: 'no-referrer' } }}
+                        slotProps={{img: {referrerPolicy: 'no-referrer'}}}
                     >
                         {designer.designer.customer.name.charAt(0)}
                     </Avatar>
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
-                            <Typography.Title 
-                                level={5} 
-                                style={{ 
-                                    margin: 0, 
+                    <Box sx={{flex: 1, minWidth: 0}}>
+                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5}}>
+                            <Typography.Title
+                                level={5}
+                                style={{
+                                    margin: 0,
                                     color: '#1e293b',
                                     fontSize: '16px',
                                     fontWeight: 600,
@@ -161,120 +171,121 @@ const DesignerCard = React.memo(({ designer, isSelected, onSelect, onViewProfile
                                 {designer.designer.customer.name}
                             </Typography.Title>
                             {isSelected && (
-                                <Chip 
-                                    label="Selected" 
-                                    color="success" 
-                                    size="small" 
-                                    sx={{ 
-                                        fontWeight: 600, 
-                                        fontSize: 10, 
+                                <Chip
+                                    label="Selected"
+                                    color="success"
+                                    size="small"
+                                    sx={{
+                                        fontWeight: 600,
+                                        fontSize: 10,
                                         height: 20,
                                         px: 1,
                                         borderRadius: 1.5,
                                         bgcolor: '#e8f5e8',
                                         color: '#2e7d32',
                                         border: '1px solid #2e7d32'
-                                    }} 
+                                    }}
                                 />
                             )}
                         </Box>
-                        <Typography 
-                            style={{ 
-                                marginTop: 1, 
-                                color: '#2e7d32', 
-                                fontWeight: 700, 
+                        <Typography
+                            style={{
+                                marginTop: 1,
+                                color: '#2e7d32',
+                                fontWeight: 700,
                                 fontSize: '18px',
                                 lineHeight: 1.2
                             }}
                         >
-                            {formatPrice(designer.price).replace(' VND','')} <span style={{fontSize: 11, fontWeight: 600}}>VND</span>
+                            {formatPrice(designer.price).replace(' VND', '')} <span
+                            style={{fontSize: 11, fontWeight: 600}}>VND</span>
                         </Typography>
                     </Box>
                 </Box>
             </Box>
 
             {/* Rating & Validity */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>
-                <Chip 
-                    size="small" 
-                    variant="outlined" 
-                    label={`⭐ ${designer.designer.rating}`} 
-                    sx={{ 
+            <Box sx={{display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5}}>
+                <Chip
+                    size="small"
+                    variant="outlined"
+                    label={`⭐ ${designer.designer.rating}`}
+                    sx={{
                         height: 24,
                         bgcolor: '#fef3c7',
                         borderColor: '#f59e0b',
                         color: '#92400e',
                         fontWeight: 600,
                         fontSize: '12px'
-                    }} 
+                    }}
                 />
-                <Chip 
-                    size="small" 
-                    variant="outlined" 
-                    icon={<ClockCircleOutlined style={{ fontSize: 12 }} />} 
-                    label={`Valid until ${formatDate(designer.acceptanceDeadline)}`} 
-                    sx={{ 
+                <Chip
+                    size="small"
+                    variant="outlined"
+                    icon={<ClockCircleOutlined style={{fontSize: 12}}/>}
+                    label={`Valid until ${formatDate(designer.acceptanceDeadline)}`}
+                    sx={{
                         height: 24,
                         bgcolor: '#f0f9ff',
                         borderColor: '#0ea5e9',
                         color: '#0c4a6e',
                         fontWeight: 500,
                         fontSize: '11px'
-                    }} 
+                    }}
                 />
             </Box>
 
             {/* Service Details Grid */}
-            <Box sx={{ 
-                display: 'grid', 
-                gridTemplateColumns: '1fr 1fr', 
-                gap: 1.5, 
+            <Box sx={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: 1.5,
                 mb: 2.5,
                 p: 2,
                 bgcolor: '#f8fafc',
                 borderRadius: 2,
                 border: '1px solid #e2e8f0'
             }}>
-                <Box sx={{ 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    alignItems: 'center', 
+                <Box sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
                     textAlign: 'center',
                     p: 1.5,
                     bgcolor: 'white',
                     borderRadius: 1.5,
                     border: '1px solid #e2e8f0'
                 }}>
-                    <CalendarIcon style={{ fontSize: 16, color: '#0ea5e9', marginBottom: 4 }} />
-                    <Typography.Text style={{ fontSize: '11px', color: '#64748b', fontWeight: 500, mb: 0.5 }}>
+                    <CalendarIcon style={{fontSize: 16, color: '#0ea5e9', marginBottom: 4}}/>
+                    <Typography.Text style={{fontSize: '11px', color: '#64748b', fontWeight: 500, mb: 0.5}}>
                         Delivery
                     </Typography.Text>
-                    <Typography.Text style={{ fontSize: '13px', color: '#1e293b', fontWeight: 600 }}>
+                    <Typography.Text style={{fontSize: '13px', color: '#1e293b', fontWeight: 600}}>
                         {designer.deliveryWithIn} days
                     </Typography.Text>
                 </Box>
-                
-                <Box sx={{ 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    alignItems: 'center', 
+
+                <Box sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
                     textAlign: 'center',
                     p: 1.5,
                     bgcolor: 'white',
                     borderRadius: 1.5,
                     border: '1px solid #e2e8f0'
                 }}>
-                    <EditOutlined style={{ fontSize: 16, color: '#8b5cf6', marginBottom: 4 }} />
-                    <Typography.Text style={{ fontSize: '11px', color: '#64748b', fontWeight: 500, mb: 0.5 }}>
+                    <EditOutlined style={{fontSize: 16, color: '#8b5cf6', marginBottom: 4}}/>
+                    <Typography.Text style={{fontSize: '11px', color: '#64748b', fontWeight: 500, mb: 0.5}}>
                         Revisions
                     </Typography.Text>
-                    <Typography.Text style={{ fontSize: '13px', color: '#1e293b', fontWeight: 600 }}>
+                    <Typography.Text style={{fontSize: '13px', color: '#1e293b', fontWeight: 600}}>
                         {designer.revisionTime === UNLIMITED_REVISION_CODE ? 'Unlimited' : designer.revisionTime}
                     </Typography.Text>
                 </Box>
 
                 {designer.extraRevisionPrice > 0 && (
-                    <Box sx={{ 
+                    <Box sx={{
                         gridColumn: 'span 2',
                         p: 1.5,
                         bgcolor: '#fef3c7',
@@ -282,7 +293,7 @@ const DesignerCard = React.memo(({ designer, isSelected, onSelect, onViewProfile
                         border: '1px solid #f59e0b',
                         textAlign: 'center'
                     }}>
-                        <Typography.Text style={{ fontSize: '11px', color: '#92400e', fontWeight: 600 }}>
+                        <Typography.Text style={{fontSize: '11px', color: '#92400e', fontWeight: 600}}>
                             Extra Revisions: {formatPrice(designer.extraRevisionPrice)}
                         </Typography.Text>
                     </Box>
@@ -300,12 +311,12 @@ const DesignerCard = React.memo(({ designer, isSelected, onSelect, onViewProfile
                 border: '1px solid #cbd5e1',
                 mb: 2
             }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
                     <MailOutlined style={{color: '#64748b', fontSize: 14}}/>
-                    <Typography.Text 
+                    <Typography.Text
                         style={{
-                            fontSize: '12px', 
-                            color: '#475569', 
+                            fontSize: '12px',
+                            color: '#475569',
                             fontWeight: 500,
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
@@ -315,12 +326,12 @@ const DesignerCard = React.memo(({ designer, isSelected, onSelect, onViewProfile
                         {designer.designer.customer.account.email}
                     </Typography.Text>
                 </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
                     <PhoneOutlined style={{color: '#64748b', fontSize: 14}}/>
                     <Typography.Text
                         style={{
-                            fontSize: '12px', 
-                            color: '#475569', 
+                            fontSize: '12px',
+                            color: '#475569',
                             fontWeight: 500,
                             cursor: 'pointer'
                         }}
@@ -342,20 +353,20 @@ const DesignerCard = React.memo(({ designer, isSelected, onSelect, onViewProfile
                     borderRadius: 2,
                     borderLeft: '4px solid #1976d2'
                 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1 }}>
-                        <FileTextOutlined style={{ color: '#1976d2', fontSize: 14, marginTop: 1 }} />
-                        <Typography.Text style={{ fontSize: '11px', color: '#1e293b', fontWeight: 600 }}>
+                    <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1}}>
+                        <FileTextOutlined style={{color: '#1976d2', fontSize: 14, marginTop: 1}}/>
+                        <Typography.Text style={{fontSize: '11px', color: '#1e293b', fontWeight: 600}}>
                             Designer Note
                         </Typography.Text>
                     </Box>
                     <Typography.Paragraph
-                        style={{ 
-                            margin: 0, 
-                            fontSize: '12px', 
+                        style={{
+                            margin: 0,
+                            fontSize: '12px',
                             color: '#475569',
                             lineHeight: 1.4
                         }}
-                        ellipsis={{ rows: 2, tooltip: designer.note }}
+                        ellipsis={{rows: 2, tooltip: designer.note}}
                     >
                         {designer.note}
                     </Typography.Paragraph>
@@ -368,7 +379,7 @@ const DesignerCard = React.memo(({ designer, isSelected, onSelect, onViewProfile
 DesignerCard.displayName = 'DesignerCard';
 
 // Thêm DesignerProfileModal
-const DesignerProfileModal = ({ open, onClose, designer }) => {
+const DesignerProfileModal = ({open, onClose, designer}) => {
     if (!designer) return null;
     const customer = designer.customer || {};
     const account = customer.account || {};
@@ -380,71 +391,83 @@ const DesignerProfileModal = ({ open, onClose, designer }) => {
             centered
             width={480}
             title={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <PersonSearchIcon style={{ color: '#1976d2', fontSize: 28 }} />
-                    <MuiTypography variant="h6" sx={{ fontWeight: 700, color: '#1e293b', m: 0 }}>
+                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                    <PersonSearchIcon style={{color: '#1976d2', fontSize: 28}}/>
+                    <MuiTypography variant="h6" sx={{fontWeight: 700, color: '#1e293b', m: 0}}>
                         Designer Profile
                     </MuiTypography>
                 </Box>
             }
         >
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 2 }}>
+            <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', py: 2}}>
                 <Badge
                     overlap="circular"
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                    anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
                     badgeContent={
                         account.status === 'active' ? (
-                            <CheckCircleIcon sx={{ color: '#16a34a', fontSize: 28, bgcolor: 'white', borderRadius: '50%' }} />
+                            <CheckCircleIcon
+                                sx={{color: '#16a34a', fontSize: 28, bgcolor: 'white', borderRadius: '50%'}}/>
                         ) : (
-                            <BlockIcon sx={{ color: '#dc2626', fontSize: 28, bgcolor: 'white', borderRadius: '50%' }} />
+                            <BlockIcon sx={{color: '#dc2626', fontSize: 28, bgcolor: 'white', borderRadius: '50%'}}/>
                         )
                     }
                 >
                     <Avatar
                         src={customer.avatar}
                         alt={customer.name}
-                        sx={{ width: 96, height: 96, mb: 2, border: '3px solid #1976d2' }}
+                        sx={{width: 96, height: 96, mb: 2, border: '3px solid #1976d2'}}
                     >
                         {customer.name?.charAt(0)}
                     </Avatar>
                 </Badge>
-                <MuiTypography variant="h5" sx={{ fontWeight: 700, color: '#1976d2', mb: 1, textAlign: 'center' }}>
+                <MuiTypography variant="h5" sx={{fontWeight: 700, color: '#1976d2', mb: 1, textAlign: 'center'}}>
                     {customer.name}
                 </MuiTypography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <Rating value={designer.rating || 0} precision={0.1} readOnly size="small" icon={<StarIcon fontSize="inherit" />} />
-                    <MuiTypography variant="body2" sx={{ color: '#f59e0b', fontWeight: 600 }}>{designer.rating?.toFixed(1) || 0}</MuiTypography>
+                <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mb: 1}}>
+                    <Rating value={designer.rating || 0} precision={0.1} readOnly size="small"
+                            icon={<StarIcon fontSize="inherit"/>}/>
+                    <MuiTypography variant="body2" sx={{
+                        color: '#f59e0b',
+                        fontWeight: 600
+                    }}>{designer.rating?.toFixed(1) || 0}</MuiTypography>
                 </Box>
-                <Divider sx={{ width: '100%', my: 2 }} />
-                <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <EmailIcon sx={{ color: '#1976d2' }} />
-                        <MuiTypography variant="body2" sx={{ color: '#1e293b', fontWeight: 500 }}>{account.email}</MuiTypography>
+                <Divider sx={{width: '100%', my: 2}}/>
+                <Box sx={{width: '100%', display: 'flex', flexDirection: 'column', gap: 1}}>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                        <EmailIcon sx={{color: '#1976d2'}}/>
+                        <MuiTypography variant="body2"
+                                       sx={{color: '#1e293b', fontWeight: 500}}>{account.email}</MuiTypography>
                     </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <PhoneIcon sx={{ color: '#1976d2' }} />
-                        <MuiTypography variant="body2" sx={{ color: '#1e293b', fontWeight: 500 }}>{customer.phone}</MuiTypography>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                        <PhoneIcon sx={{color: '#1976d2'}}/>
+                        <MuiTypography variant="body2"
+                                       sx={{color: '#1e293b', fontWeight: 500}}>{customer.phone}</MuiTypography>
                     </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <HomeIcon sx={{ color: '#1976d2' }} />
-                        <MuiTypography variant="body2" sx={{ color: '#1e293b', fontWeight: 500 }}>{customer.address}</MuiTypography>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                        <HomeIcon sx={{color: '#1976d2'}}/>
+                        <MuiTypography variant="body2"
+                                       sx={{color: '#1e293b', fontWeight: 500}}>{customer.address}</MuiTypography>
                     </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <BusinessIcon sx={{ color: '#1976d2' }} />
-                        <MuiTypography variant="body2" sx={{ color: '#1e293b', fontWeight: 500 }}>{customer.business}</MuiTypography>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                        <BusinessIcon sx={{color: '#1976d2'}}/>
+                        <MuiTypography variant="body2"
+                                       sx={{color: '#1e293b', fontWeight: 500}}>{customer.business}</MuiTypography>
                     </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <AssignmentIndIcon sx={{ color: '#1976d2' }} />
-                        <MuiTypography variant="body2" sx={{ color: '#1e293b', fontWeight: 500 }}>Registered: {account.registerDate}</MuiTypography>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                        <AssignmentIndIcon sx={{color: '#1976d2'}}/>
+                        <MuiTypography variant="body2" sx={{
+                            color: '#1e293b',
+                            fontWeight: 500
+                        }}>Registered: {account.registerDate}</MuiTypography>
                     </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
                         <Chip
                             label={account.status === 'active' ? 'Active' : 'Inactive'}
                             color={account.status === 'active' ? 'success' : 'error'}
                             size="small"
-                            sx={{ fontWeight: 600 }}
+                            sx={{fontWeight: 600}}
                         />
-                        <Chip label={account.role} color="primary" size="small" />
+                        <Chip label={account.role} color="primary" size="small"/>
                     </Box>
                 </Box>
             </Box>
@@ -467,17 +490,17 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
     const [profileDesigner, setProfileDesigner] = useState(null);
 
     const selectedDesigner = useMemo(() =>
-        appliedDesigners.find(d => d.id === selectedQuotation?.designerId),
+            appliedDesigners.find(d => d.id === selectedQuotation?.designerId),
         [appliedDesigners, selectedQuotation]
     );
 
     const extraRevisionCost = useMemo(() =>
-        extraRevision * (selectedDesigner?.extraRevisionPrice || 0),
+            extraRevision * (selectedDesigner?.extraRevisionPrice || 0),
         [extraRevision, selectedDesigner]
     );
 
     const isUnlimitedRevisions = useMemo(() =>
-        selectedDesigner?.revisionTime === UNLIMITED_REVISION_CODE,
+            selectedDesigner?.revisionTime === UNLIMITED_REVISION_CODE,
         [selectedDesigner]
     );
 
@@ -490,7 +513,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
     const baseAndExtra = useMemo(() => {
         const base = selectedDesigner?.price || 0;
         const extra = isUnlimitedRevisions ? 0 : extraRevisionCost;
-        return { base, extra };
+        return {base, extra};
     }, [selectedDesigner, isUnlimitedRevisions, extraRevisionCost]);
     const feeAmount = useMemo(() => Math.round(serviceFee(baseAndExtra.base + baseAndExtra.extra)), [baseAndExtra]);
     const exceedsCap = totalCost > 200000000;
@@ -520,13 +543,15 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                     if (sanitized.length) setSortCriteria(sanitized);
                 }
             }
-        } catch {}
+        } catch {
+        }
     }, []);
 
     useEffect(() => {
         try {
             localStorage.setItem('designerSortCriteria', JSON.stringify(sortCriteria));
-        } catch {}
+        } catch {
+        }
     }, [sortCriteria]);
 
     const handleQuotationSelect = useCallback((designerId) => {
@@ -608,18 +633,21 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
     const handleSortChange = useCallback((values) => {
         setSortCriteria(prev => {
             const prevMap = new Map(prev.map(c => [c.key, c.order]));
-            const next = values.map(key => ({ key, order: prevMap.get(key) || DEFAULT_SORT_ORDER[key] || 'asc' }));
+            const next = values.map(key => ({key, order: prevMap.get(key) || DEFAULT_SORT_ORDER[key] || 'asc'}));
             return next;
         });
     }, []);
 
     const handleToggleSortOrder = useCallback((key) => {
-        setSortCriteria(prev => prev.map(c => c.key === key ? { ...c, order: c.order === 'asc' ? 'desc' : 'asc' } : c));
+        setSortCriteria(prev => prev.map(c => c.key === key ? {...c, order: c.order === 'asc' ? 'desc' : 'asc'} : c));
     }, []);
 
     const handleResetSort = useCallback(() => {
         setSortCriteria([]);
-        try { localStorage.removeItem('designerSortCriteria'); } catch {}
+        try {
+            localStorage.removeItem('designerSortCriteria');
+        } catch {
+        }
     }, []);
 
     const getComparableValue = (d, key) => {
@@ -660,9 +688,16 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
     if (!request) {
         return (
             <Modal open={visible} onCancel={onCancel} footer={null} centered>
-                <Box sx={{display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', py: 4, gap: 2}}>
-                    <Spin size="large" />
-                    <Typography.Text style={{ color: '#64748b' }}>
+                <Box sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    py: 4,
+                    gap: 2
+                }}>
+                    <Spin size="large"/>
+                    <Typography.Text style={{color: '#64748b'}}>
                         Loading request details...
                     </Typography.Text>
                 </Box>
@@ -687,7 +722,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                         type="primary"
                         onClick={handleConfirmSelection}
                         disabled={!selectedQuotation || isProcessing || exceedsCap}
-                        icon={isProcessing ? <Spin size="small" /> : <CheckCircleOutlined/>}
+                        icon={isProcessing ? <Spin size="small"/> : <CheckCircleOutlined/>}
                         style={{
                             backgroundColor: '#2e7d32',
                             color: 'white',
@@ -769,7 +804,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                             <Typography.Title level={5} style={{margin: 0, color: '#1e293b'}}>
                                 Applied Designers ({appliedDesigners.length})
                             </Typography.Title>
-                            <Box style={{ display: 'flex', gap: 8 }}>
+                            <Box style={{display: 'flex', gap: 8}}>
                                 <Button
                                     key="toggleRequestDetail"
                                     type={showRequestDetail ? 'default' : 'primary'}
@@ -802,23 +837,23 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                             different quotations with varying timelines and features.
                         </Typography.Text>
                         {showDesigners && (
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2, flexWrap: 'wrap' }}>
+                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mt: 2, flexWrap: 'wrap'}}>
                                 <Select
                                     mode="multiple"
                                     allowClear
                                     placeholder="Sort by (priority left → right)"
-                                    style={{ minWidth: 360 }}
+                                    style={{minWidth: 360}}
                                     value={sortCriteria.map(c => c.key)}
                                     onChange={handleSortChange}
                                     options={[
-                                        { label: 'Rating', value: 'rating' },
-                                        { label: 'Valid until', value: 'acceptanceDeadline' },
-                                        { label: 'Delivery time', value: 'deliveryWithIn' },
-                                        { label: 'Revisions', value: 'revisionTime' },
-                                        { label: 'Price', value: 'price' }
+                                        {label: 'Rating', value: 'rating'},
+                                        {label: 'Valid until', value: 'acceptanceDeadline'},
+                                        {label: 'Delivery time', value: 'deliveryWithIn'},
+                                        {label: 'Revisions', value: 'revisionTime'},
+                                        {label: 'Price', value: 'price'}
                                     ]}
                                 />
-                                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                <Box sx={{display: 'flex', gap: 1, flexWrap: 'wrap'}}>
                                     {sortCriteria.map(c => (
                                         <Chip
                                             key={c.key}
@@ -832,7 +867,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                             size="small"
                                             variant="outlined"
                                             onClick={() => handleToggleSortOrder(c.key)}
-                                            sx={{ cursor: 'pointer', height: 26 }}
+                                            sx={{cursor: 'pointer', height: 26}}
                                         />
                                     ))}
                                 </Box>
@@ -844,30 +879,46 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                     </Box>
 
                     {showRequestDetail && (
-                        <Box sx={{ mb: 3, p: 3, backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: 2, width: '100%' }}>
-                            <Box sx={{ display: 'grid', gridTemplateColumns: 'auto 1fr', alignItems: 'center', gap: 2, mb: 2 }}>
+                        <Box sx={{
+                            mb: 3,
+                            p: 3,
+                            backgroundColor: 'white',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: 2,
+                            width: '100%'
+                        }}>
+                            <Box sx={{
+                                display: 'grid',
+                                gridTemplateColumns: 'auto 1fr',
+                                alignItems: 'center',
+                                gap: 2,
+                                mb: 2
+                            }}>
                                 {request.logoImage && (
-                                    <DisplayImage imageUrl={request.logoImage} alt="School logo" width={56} height={56} />
+                                    <DisplayImage imageUrl={request.logoImage} alt="School logo" width={56}
+                                                  height={56}/>
                                 )}
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
-                                        <Typography.Title level={5} style={{ margin: 0, color: '#1e293b' }}>
+                                <Box sx={{display: 'flex', flexDirection: 'column', gap: 0.5}}>
+                                    <Box sx={{display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1}}>
+                                        <Typography.Title level={5} style={{margin: 0, color: '#1e293b'}}>
                                             {request.name}
                                         </Typography.Title>
                                         <Tag color="green">{parseID(request.id, 'dr')}</Tag>
                                     </Box>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                                    <Box sx={{display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1}}>
                                         <Tag color="geekblue">Status: {request.status}</Tag>
-                                        <Tag color={request.privacy ? 'blue' : 'default'}>{request.privacy ? 'Private' : 'Public'}</Tag>
+                                        <Tag
+                                            color={request.privacy ? 'blue' : 'default'}>{request.privacy ? 'Private' : 'Public'}</Tag>
                                         <Tag color="purple">Created: {formatDate(request.creationDate)}</Tag>
                                     </Box>
                                 </Box>
                             </Box>
 
                             {boyItems.length > 0 && (
-                                <Box sx={{ mb: 2 }}>
-                                    <Typography.Title level={5} style={{ margin: 0, color: '#1e293b' }}>Boy</Typography.Title>
-                                    <Box sx={{ mt: 1, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
+                                <Box sx={{mb: 2}}>
+                                    <Typography.Title level={5}
+                                                      style={{margin: 0, color: '#1e293b'}}>Boy</Typography.Title>
+                                    <Box sx={{mt: 1, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2}}>
                                         {boyItems.map((item) => (
                                             <Paper key={item.id} elevation={0} sx={{
                                                 p: 2,
@@ -882,7 +933,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                     transform: 'translateY(-2px)'
                                                 }
                                             }}>
-                                                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1.5 }}>
+                                                <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1.5}}>
                                                     <Box sx={{
                                                         width: 12,
                                                         height: 12,
@@ -891,7 +942,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                         border: '1px solid #e2e8f0',
                                                         mt: '6px',
                                                         flexShrink: 0
-                                                    }} />
+                                                    }}/>
                                                     <Typography.Title level={5} style={{
                                                         margin: 0,
                                                         color: '#1e293b',
@@ -915,7 +966,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                             alt="Sample"
                                                             width="100px"
                                                             height="100px"
-                                                            style={{ objectFit: 'cover', borderRadius: '8px' }}
+                                                            style={{objectFit: 'cover', borderRadius: '8px'}}
                                                         />
                                                     ) : (
                                                         <Box sx={{
@@ -928,19 +979,30 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                             alignItems: 'center',
                                                             justifyContent: 'center'
                                                         }}>
-                                                            <Typography.Text style={{ color: '#64748b', fontSize: '12px' }}>
+                                                            <Typography.Text
+                                                                style={{color: '#64748b', fontSize: '12px'}}>
                                                                 No reference image
                                                             </Typography.Text>
                                                         </Box>
                                                     )}
                                                 </Box>
 
-                                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mb: 1 }}>
-                                                    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                                                        <Tag color="blue" style={{ fontSize: '10px', padding: '2px 6px' }}>{item.gender}</Tag>
-                                                        <Tag color="success" style={{ fontSize: '10px', padding: '2px 6px' }}>{item.fabricName}</Tag>
+                                                <Box sx={{display: 'flex', flexDirection: 'column', gap: 0.5, mb: 1}}>
+                                                    <Box sx={{display: 'flex', gap: 0.5, flexWrap: 'wrap'}}>
+                                                        <Tag color="blue" style={{
+                                                            fontSize: '10px',
+                                                            padding: '2px 6px'
+                                                        }}>{item.gender}</Tag>
+                                                        <Tag color="success" style={{
+                                                            fontSize: '10px',
+                                                            padding: '2px 6px'
+                                                        }}>{item.fabricName}</Tag>
                                                         {item.logoPosition && (
-                                                            <Tag color="gold" style={{ fontSize: '10px', padding: '2px 6px', alignSelf: 'flex-start' }}>
+                                                            <Tag color="gold" style={{
+                                                                fontSize: '10px',
+                                                                padding: '2px 6px',
+                                                                alignSelf: 'flex-start'
+                                                            }}>
                                                                 Logo: {item.logoPosition}
                                                             </Tag>
                                                         )}
@@ -948,21 +1010,21 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                 </Box>
 
                                                 <Box sx={{
-                                                        mt: 'auto',
-                                                        p: 1,
-                                                        backgroundColor: '#f8fafc',
-                                                        borderRadius: 1,
-                                                        border: '1px solid #e2e8f0'
+                                                    mt: 'auto',
+                                                    p: 1,
+                                                    backgroundColor: '#f8fafc',
+                                                    borderRadius: 1,
+                                                    border: '1px solid #e2e8f0'
+                                                }}>
+                                                    <Typography.Text style={{
+                                                        fontSize: '10px',
+                                                        color: '#64748b',
+                                                        display: 'block',
+                                                        lineHeight: '1.3'
                                                     }}>
-                                                        <Typography.Text style={{
-                                                            fontSize: '10px',
-                                                            color: '#64748b',
-                                                            display: 'block',
-                                                            lineHeight: '1.3'
-                                                        }}>
-                                                            {item.note || 'N/A'}
-                                                        </Typography.Text>
-                                                    </Box>
+                                                        {item.note || 'N/A'}
+                                                    </Typography.Text>
+                                                </Box>
                                             </Paper>
                                         ))}
                                     </Box>
@@ -970,9 +1032,10 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                             )}
 
                             {girlItems.length > 0 && (
-                                <Box sx={{ mb: 2 }}>
-                                    <Typography.Title level={5} style={{ margin: 0, color: '#1e293b' }}>Girl</Typography.Title>
-                                    <Box sx={{ mt: 1, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
+                                <Box sx={{mb: 2}}>
+                                    <Typography.Title level={5}
+                                                      style={{margin: 0, color: '#1e293b'}}>Girl</Typography.Title>
+                                    <Box sx={{mt: 1, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2}}>
                                         {girlItems.map((item) => (
                                             <Paper key={item.id} elevation={0} sx={{
                                                 p: 2,
@@ -987,7 +1050,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                     transform: 'translateY(-2px)'
                                                 }
                                             }}>
-                                                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1.5 }}>
+                                                <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1.5}}>
                                                     <Box sx={{
                                                         width: 12,
                                                         height: 12,
@@ -996,7 +1059,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                         border: '1px solid #e2e8f0',
                                                         mt: '6px',
                                                         flexShrink: 0
-                                                    }} />
+                                                    }}/>
                                                     <Typography.Title level={5} style={{
                                                         margin: 0,
                                                         color: '#1e293b',
@@ -1020,7 +1083,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                             alt="Sample"
                                                             width="100px"
                                                             height="100px"
-                                                            style={{ objectFit: 'cover', borderRadius: '8px' }}
+                                                            style={{objectFit: 'cover', borderRadius: '8px'}}
                                                         />
                                                     ) : (
                                                         <Box sx={{
@@ -1033,19 +1096,30 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                             alignItems: 'center',
                                                             justifyContent: 'center'
                                                         }}>
-                                                            <Typography.Text style={{ color: '#64748b', fontSize: '12px' }}>
+                                                            <Typography.Text
+                                                                style={{color: '#64748b', fontSize: '12px'}}>
                                                                 No reference image
                                                             </Typography.Text>
                                                         </Box>
                                                     )}
                                                 </Box>
 
-                                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mb: 1 }}>
-                                                    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                                                        <Tag color="pink" style={{ fontSize: '10px', padding: '2px 6px' }}>{item.gender}</Tag>
-                                                        <Tag color="success" style={{ fontSize: '10px', padding: '2px 6px' }}>{item.fabricName}</Tag>
+                                                <Box sx={{display: 'flex', flexDirection: 'column', gap: 0.5, mb: 1}}>
+                                                    <Box sx={{display: 'flex', gap: 0.5, flexWrap: 'wrap'}}>
+                                                        <Tag color="pink" style={{
+                                                            fontSize: '10px',
+                                                            padding: '2px 6px'
+                                                        }}>{item.gender}</Tag>
+                                                        <Tag color="success" style={{
+                                                            fontSize: '10px',
+                                                            padding: '2px 6px'
+                                                        }}>{item.fabricName}</Tag>
                                                         {item.logoPosition && (
-                                                            <Tag color="gold" style={{ fontSize: '10px', padding: '2px 6px', alignSelf: 'flex-start' }}>
+                                                            <Tag color="gold" style={{
+                                                                fontSize: '10px',
+                                                                padding: '2px 6px',
+                                                                alignSelf: 'flex-start'
+                                                            }}>
                                                                 Logo: {item.logoPosition}
                                                             </Tag>
                                                         )}
@@ -1054,21 +1128,21 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                 </Box>
 
                                                 <Box sx={{
-                                                        mt: 'auto',
-                                                        p: 1,
-                                                        backgroundColor: '#f8fafc',
-                                                        borderRadius: 1,
-                                                        border: '1px solid #e2e8f0'
+                                                    mt: 'auto',
+                                                    p: 1,
+                                                    backgroundColor: '#f8fafc',
+                                                    borderRadius: 1,
+                                                    border: '1px solid #e2e8f0'
+                                                }}>
+                                                    <Typography.Text style={{
+                                                        fontSize: '10px',
+                                                        color: '#64748b',
+                                                        display: 'block',
+                                                        lineHeight: '1.3'
                                                     }}>
-                                                        <Typography.Text style={{
-                                                            fontSize: '10px',
-                                                            color: '#64748b',
-                                                            display: 'block',
-                                                            lineHeight: '1.3'
-                                                        }}>
-                                                            {item.note || 'N/A'}
-                                                        </Typography.Text>
-                                                    </Box>
+                                                        {item.note || 'N/A'}
+                                                    </Typography.Text>
+                                                </Box>
                                             </Paper>
                                         ))}
                                     </Box>
@@ -1086,12 +1160,15 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                     gap: 3
                                 }}>
                                     {sortedDesigners.map((designer, index) => (
-                                        <Box key={index} sx={{ minWidth: 0 }}>
+                                        <Box key={index} sx={{minWidth: 0}}>
                                             <DesignerCard
                                                 designer={designer}
                                                 isSelected={selectedQuotation && selectedQuotation.designerId === designer.id}
                                                 onSelect={handleQuotationSelect}
-                                                onViewProfile={designerObj => { setProfileDesigner(designerObj); setProfileModalOpen(true); }}
+                                                onViewProfile={designerObj => {
+                                                    setProfileDesigner(designerObj);
+                                                    setProfileModalOpen(true);
+                                                }}
                                             />
                                         </Box>
                                     ))}
@@ -1104,12 +1181,20 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                     border: '2px dashed #cbd5e1',
                                     textAlign: 'center'
                                 }}>
-                                    <UserOutlined style={{fontSize: 64, marginBottom: 24, opacity: 0.5, color: '#64748b'}}/>
-                                    <Typography.Title level={4} style={{margin: '0 0 16px 0', color: '#475569', fontWeight: 600}}>
+                                    <UserOutlined
+                                        style={{fontSize: 64, marginBottom: 24, opacity: 0.5, color: '#64748b'}}/>
+                                    <Typography.Title level={4}
+                                                      style={{margin: '0 0 16px 0', color: '#475569', fontWeight: 600}}>
                                         No Applied Designers
                                     </Typography.Title>
-                                    <Typography.Text style={{color: '#64748b', maxWidth: '400px', margin: '0 auto', display: 'block'}}>
-                                        No designers have applied to this request yet. Check back later for updates or consider adjusting your request requirements.
+                                    <Typography.Text style={{
+                                        color: '#64748b',
+                                        maxWidth: '400px',
+                                        margin: '0 auto',
+                                        display: 'block'
+                                    }}>
+                                        No designers have applied to this request yet. Check back later for updates or
+                                        consider adjusting your request requirements.
                                     </Typography.Text>
                                 </Box>
                             )}
@@ -1146,14 +1231,21 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                             border: '1px solid #bbf7d0',
                                             textAlign: 'center'
                                         }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, mb: 2 }}>
-                                                <CheckCircleOutlined style={{ color: '#16a34a', fontSize: '20px' }} />
-                                                <Typography.Title level={5} style={{ margin: 0, color: '#166534' }}>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: 2,
+                                                mb: 2
+                                            }}>
+                                                <CheckCircleOutlined style={{color: '#16a34a', fontSize: '20px'}}/>
+                                                <Typography.Title level={5} style={{margin: 0, color: '#166534'}}>
                                                     Unlimited Revisions Included
                                                 </Typography.Title>
                                             </Box>
-                                            <Typography.Text style={{ color: '#166534', fontSize: '14px' }}>
-                                                This quotation already includes unlimited revisions. No additional revisions needed.
+                                            <Typography.Text style={{color: '#166534', fontSize: '14px'}}>
+                                                This quotation already includes unlimited revisions. No additional
+                                                revisions needed.
                                             </Typography.Text>
                                         </Box>
                                     );
@@ -1168,273 +1260,313 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                         overflow: 'hidden',
                                         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
                                     }}>
-                                <Box sx={{
-                                    p: 3,
-                                    backgroundColor: '#f8fafc',
-                                    borderBottom: '1px solid #e2e8f0'
-                                }}>
-                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                                         <Box sx={{
-                                            width: 32,
-                                            height: 32,
-                                            borderRadius: '50%',
-                                            backgroundColor: '#e8f5e8',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center'
+                                            p: 3,
+                                            backgroundColor: '#f8fafc',
+                                            borderBottom: '1px solid #e2e8f0'
                                         }}>
-                                            <EditOutlined style={{color: '#2e7d32', fontSize: '14px'}}/>
-                                        </Box>
-                                        <Box>
-                                            <Typography.Title level={5} style={{margin: 0, color: '#1e293b'}}>
-                                                Additional Revisions
-                                            </Typography.Title>
-                                            <Typography.Text style={{fontSize: '12px', color: '#64748b'}}>
-                                                Optional upgrade for more design iterations
-                                            </Typography.Text>
-                                        </Box>
-                                    </Box>
-                                </Box>
-
-                                <Box sx={{p: 3}}>
-                                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
-                                        <Box sx={{
-                                            p: 2,
-                                            backgroundColor: '#f0f9ff',
-                                            borderRadius: 2,
-                                            border: '1px solid #bae6fd'
-                                        }}>
-                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 1}}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                                                 <Box sx={{
-                                                    width: 20,
-                                                    height: 20,
+                                                    width: 32,
+                                                    height: 32,
                                                     borderRadius: '50%',
-                                                    backgroundColor: '#0ea5e9',
+                                                    backgroundColor: '#e8f5e8',
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'center'
                                                 }}>
-                                                    <Typography.Text
-                                                        style={{color: 'white', fontSize: '10px', fontWeight: 'bold'}}>
-                                                        ₫
+                                                    <EditOutlined style={{color: '#2e7d32', fontSize: '14px'}}/>
+                                                </Box>
+                                                <Box>
+                                                    <Typography.Title level={5} style={{margin: 0, color: '#1e293b'}}>
+                                                        Additional Revisions
+                                                    </Typography.Title>
+                                                    <Typography.Text style={{fontSize: '12px', color: '#64748b'}}>
+                                                        Optional upgrade for more design iterations
                                                     </Typography.Text>
                                                 </Box>
-                                                <Typography.Text
-                                                    style={{fontSize: '13px', color: '#0c4a6e', fontWeight: 600}}>
-                                                    Pricing Information
-                                                </Typography.Text>
-                                            </Box>
-                                            <Typography.Text style={{fontSize: '12px', color: '#0369a1'}}>
-                                                Each additional revision
-                                                costs <strong>{selectedDesigner?.extraRevisionPrice?.toLocaleString('vi-VN')} VND</strong>
-                                            </Typography.Text>
-                                        </Box>
-
-                                        <Box sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
-                                            p: 2,
-                                            backgroundColor: '#f8fafc',
-                                            borderRadius: 2,
-                                            border: '1px solid #e2e8f0'
-                                        }}>
-                                            <Box>
-                                                <Typography.Text
-                                                    style={{fontSize: '14px', color: '#475569', fontWeight: 500}}>
-                                                    Number of Extra Revisions
-                                                </Typography.Text>
-                                            </Box>
-                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
-                                                <InputNumber
-                                                    min={0}
-                                                    max={MAX_EXTRA_REVISIONS}
-                                                    value={extraRevision}
-                                                    onChange={handleExtraRevisionChange}
-                                                    style={{
-                                                        width: 100,
-                                                        textAlign: 'center'
-                                                    }}
-                                                    size="middle"
-                                                />
-                                                <Typography.Text style={{fontSize: '12px', color: '#64748b'}}>
-                                                    revisions
-                                                </Typography.Text>
                                             </Box>
                                         </Box>
 
-                                        {extraRevision > 0 && (
-                                            <Box sx={{
-                                                backgroundColor: 'white',
-                                                borderRadius: 3,
-                                                border: '1px solid #e2e8f0',
-                                                overflow: 'hidden',
-                                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)'
-                                            }}>
+                                        <Box sx={{p: 3}}>
+                                            <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
                                                 <Box sx={{
                                                     p: 2,
-                                                    backgroundColor: '#fef3c7',
-                                                    borderBottom: '1px solid #f59e0b',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'space-between'
+                                                    backgroundColor: '#f0f9ff',
+                                                    borderRadius: 2,
+                                                    border: '1px solid #bae6fd'
                                                 }}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 1}}>
                                                         <Box sx={{
-                                                            width: 28,
-                                                            height: 28,
+                                                            width: 20,
+                                                            height: 20,
                                                             borderRadius: '50%',
-                                                            backgroundColor: '#f59e0b',
+                                                            backgroundColor: '#0ea5e9',
                                                             display: 'flex',
                                                             alignItems: 'center',
                                                             justifyContent: 'center'
                                                         }}>
-                                                            <Typography.Text style={{
-                                                                color: 'white',
-                                                                fontSize: '12px',
-                                                                fontWeight: 'bold'
-                                                            }}>
+                                                            <Typography.Text
+                                                                style={{
+                                                                    color: 'white',
+                                                                    fontSize: '10px',
+                                                                    fontWeight: 'bold'
+                                                                }}>
                                                                 ₫
                                                             </Typography.Text>
                                                         </Box>
-                                                        <Box>
-                                                            <Typography.Text style={{
-                                                                color: '#92400e',
-                                                                fontWeight: 600,
-                                                                fontSize: '14px'
+                                                        <Typography.Text
+                                                            style={{
+                                                                fontSize: '13px',
+                                                                color: '#0c4a6e',
+                                                                fontWeight: 600
                                                             }}>
-                                                                Additional Cost Summary
-                                                            </Typography.Text>
-                                                        </Box>
+                                                            Pricing Information
+                                                        </Typography.Text>
                                                     </Box>
-                                                    <Box sx={{
-                                                        px: 2,
-                                                        py: 1,
-                                                        backgroundColor: '#f59e0b',
-                                                        borderRadius: 2,
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: 1
-                                                    }}>
-                                                        <Typography.Text style={{
-                                                            color: 'white',
-                                                            fontSize: '12px',
-                                                            fontWeight: 'bold'
-                                                        }}>
-                                                            +{extraRevision}
+                                                    <Typography.Text style={{fontSize: '12px', color: '#0369a1'}}>
+                                                        Each additional revision
+                                                        costs <strong>{selectedDesigner?.extraRevisionPrice?.toLocaleString('vi-VN')} VND</strong>
+                                                    </Typography.Text>
+                                                </Box>
+
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'space-between',
+                                                    p: 2,
+                                                    backgroundColor: '#f8fafc',
+                                                    borderRadius: 2,
+                                                    border: '1px solid #e2e8f0'
+                                                }}>
+                                                    <Box>
+                                                        <Typography.Text
+                                                            style={{
+                                                                fontSize: '14px',
+                                                                color: '#475569',
+                                                                fontWeight: 500
+                                                            }}>
+                                                            Number of Extra Revisions
+                                                        </Typography.Text>
+                                                    </Box>
+                                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                        <InputNumber
+                                                            min={0}
+                                                            max={MAX_EXTRA_REVISIONS}
+                                                            value={extraRevision}
+                                                            onChange={handleExtraRevisionChange}
+                                                            style={{
+                                                                width: 100,
+                                                                textAlign: 'center'
+                                                            }}
+                                                            size="middle"
+                                                        />
+                                                        <Typography.Text style={{fontSize: '12px', color: '#64748b'}}>
+                                                            revisions
                                                         </Typography.Text>
                                                     </Box>
                                                 </Box>
 
-                                                <Box sx={{ p: 3 }}>
-                                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                                                        <Box sx={{
-                                                            p: 3,
-                                                            backgroundColor: '#fef3c7',
-                                                            borderRadius: 2,
-                                                            border: '1px solid #f59e0b',
-                                                            textAlign: 'center'
-                                                        }}>
-                                                            <Typography.Text style={{
-                                                                color: '#92400e',
-                                                                fontSize: '12px',
-                                                                fontWeight: 500,
-                                                                display: 'block',
-                                                                mb: 1
-                                                            }}>
-                                                                TOTAL ADDITIONAL COST
-                                                            </Typography.Text>
-                                                            <Typography.Title level={3} style={{
-                                                                margin: 0,
-                                                                color: '#d97706',
-                                                                fontWeight: 700
-                                                            }}>
-                                                                {extraRevisionCost.toLocaleString('vi-VN')} VND
-                                                            </Typography.Title>
-                                                        </Box>
-
+                                                {extraRevision > 0 && (
+                                                    <Box sx={{
+                                                        backgroundColor: 'white',
+                                                        borderRadius: 3,
+                                                        border: '1px solid #e2e8f0',
+                                                        overflow: 'hidden',
+                                                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)'
+                                                    }}>
                                                         <Box sx={{
                                                             p: 2,
-                                                            backgroundColor: '#f0fdf4',
-                                                            borderRadius: 2,
-                                                            border: '1px solid #bbf7d0',
+                                                            backgroundColor: '#fef3c7',
+                                                            borderBottom: '1px solid #f59e0b',
                                                             display: 'flex',
                                                             alignItems: 'center',
                                                             justifyContent: 'space-between'
                                                         }}>
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                                <CheckCircleOutlined style={{
-                                                                    color: '#16a34a',
-                                                                    fontSize: '14px'
-                                                                }}/>
-                                                                <Typography.Text style={{
-                                                                    color: '#166534',
-                                                                    fontSize: '12px',
-                                                                    fontWeight: 500
+                                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                                <Box sx={{
+                                                                    width: 28,
+                                                                    height: 28,
+                                                                    borderRadius: '50%',
+                                                                    backgroundColor: '#f59e0b',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center'
                                                                 }}>
-                                                                    {extraRevision} additional revision{extraRevision > 1 ? 's' : ''} selected
+                                                                    <Typography.Text style={{
+                                                                        color: 'white',
+                                                                        fontSize: '12px',
+                                                                        fontWeight: 'bold'
+                                                                    }}>
+                                                                        ₫
+                                                                    </Typography.Text>
+                                                                </Box>
+                                                                <Box>
+                                                                    <Typography.Text style={{
+                                                                        color: '#92400e',
+                                                                        fontWeight: 600,
+                                                                        fontSize: '14px'
+                                                                    }}>
+                                                                        Additional Cost Summary
+                                                                    </Typography.Text>
+                                                                </Box>
+                                                            </Box>
+                                                            <Box sx={{
+                                                                px: 2,
+                                                                py: 1,
+                                                                backgroundColor: '#f59e0b',
+                                                                borderRadius: 2,
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: 1
+                                                            }}>
+                                                                <Typography.Text style={{
+                                                                    color: 'white',
+                                                                    fontSize: '12px',
+                                                                    fontWeight: 'bold'
+                                                                }}>
+                                                                    +{extraRevision}
                                                                 </Typography.Text>
                                                             </Box>
-                                                            <Typography.Text style={{
-                                                                color: '#059669',
-                                                                fontSize: '13px',
-                                                                fontWeight: 600
-                                                            }}>
-                                                                {selectedDesigner?.extraRevisionPrice?.toLocaleString('vi-VN')} VND each
-                                                            </Typography.Text>
+                                                        </Box>
+
+                                                        <Box sx={{p: 3}}>
+                                                            <Box
+                                                                sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
+                                                                <Box sx={{
+                                                                    p: 3,
+                                                                    backgroundColor: '#fef3c7',
+                                                                    borderRadius: 2,
+                                                                    border: '1px solid #f59e0b',
+                                                                    textAlign: 'center'
+                                                                }}>
+                                                                    <Typography.Text style={{
+                                                                        color: '#92400e',
+                                                                        fontSize: '12px',
+                                                                        fontWeight: 500,
+                                                                        display: 'block',
+                                                                        mb: 1
+                                                                    }}>
+                                                                        TOTAL ADDITIONAL COST
+                                                                    </Typography.Text>
+                                                                    <Typography.Title level={3} style={{
+                                                                        margin: 0,
+                                                                        color: '#d97706',
+                                                                        fontWeight: 700
+                                                                    }}>
+                                                                        {extraRevisionCost.toLocaleString('vi-VN')} VND
+                                                                    </Typography.Title>
+                                                                </Box>
+
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    backgroundColor: '#f0fdf4',
+                                                                    borderRadius: 2,
+                                                                    border: '1px solid #bbf7d0',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'space-between'
+                                                                }}>
+                                                                    <Box sx={{
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        gap: 2
+                                                                    }}>
+                                                                        <CheckCircleOutlined style={{
+                                                                            color: '#16a34a',
+                                                                            fontSize: '14px'
+                                                                        }}/>
+                                                                        <Typography.Text style={{
+                                                                            color: '#166534',
+                                                                            fontSize: '12px',
+                                                                            fontWeight: 500
+                                                                        }}>
+                                                                            {extraRevision} additional
+                                                                            revision{extraRevision > 1 ? 's' : ''} selected
+                                                                        </Typography.Text>
+                                                                    </Box>
+                                                                    <Typography.Text style={{
+                                                                        color: '#059669',
+                                                                        fontSize: '13px',
+                                                                        fontWeight: 600
+                                                                    }}>
+                                                                        {selectedDesigner?.extraRevisionPrice?.toLocaleString('vi-VN')} VND
+                                                                        each
+                                                                    </Typography.Text>
+                                                                </Box>
+                                                            </Box>
                                                         </Box>
                                                     </Box>
-                                                </Box>
-                                            </Box>
-                                        )}
+                                                )}
 
-                                        <Box sx={{
-                                            p: 2.5,
-                                            backgroundColor: '#ffffff',
-                                            borderRadius: 2,
-                                            border: '1px solid #e2e8f0'
-                                        }}>
-                                            <Typography.Text style={{ fontWeight: 700, color: '#1e293b' }}>
-                                                Payment Summary
-                                            </Typography.Text>
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                                                <Typography.Text style={{ color: '#475569' }}>Base price</Typography.Text>
-                                                <Typography.Text style={{ color: '#1e293b', fontWeight: 600 }}>
-                                                    {baseAndExtra.base.toLocaleString('vi-VN')} VND
-                                                </Typography.Text>
-                                            </Box>
-                                            {!isUnlimitedRevisions && (
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
-                                                    <Typography.Text style={{ color: '#475569' }}>Extra revisions</Typography.Text>
-                                                    <Typography.Text style={{ color: '#1e293b', fontWeight: 600 }}>
-                                                        {baseAndExtra.extra.toLocaleString('vi-VN')} VND
+                                                <Box sx={{
+                                                    p: 2.5,
+                                                    backgroundColor: '#ffffff',
+                                                    borderRadius: 2,
+                                                    border: '1px solid #e2e8f0'
+                                                }}>
+                                                    <Typography.Text style={{fontWeight: 700, color: '#1e293b'}}>
+                                                        Payment Summary
                                                     </Typography.Text>
+                                                    <Box sx={{display: 'flex', justifyContent: 'space-between', mt: 1}}>
+                                                        <Typography.Text style={{color: '#475569'}}>Base
+                                                            price</Typography.Text>
+                                                        <Typography.Text style={{color: '#1e293b', fontWeight: 600}}>
+                                                            {baseAndExtra.base.toLocaleString('vi-VN')} VND
+                                                        </Typography.Text>
+                                                    </Box>
+                                                    {!isUnlimitedRevisions && (
+                                                        <Box sx={{
+                                                            display: 'flex',
+                                                            justifyContent: 'space-between',
+                                                            mt: 0.5
+                                                        }}>
+                                                            <Typography.Text style={{color: '#475569'}}>Extra
+                                                                revisions</Typography.Text>
+                                                            <Typography.Text
+                                                                style={{color: '#1e293b', fontWeight: 600}}>
+                                                                {baseAndExtra.extra.toLocaleString('vi-VN')} VND
+                                                            </Typography.Text>
+                                                        </Box>
+                                                    )}
+                                                    <Box sx={{
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        mt: 0.5
+                                                    }}>
+                                                        <Typography.Text style={{color: '#475569'}}>
+                                                            Service
+                                                            fee {baseAndExtra.base + baseAndExtra.extra <= 10000000 ? '(2% total)' : ''}
+                                                        </Typography.Text>
+                                                        <Typography.Text style={{color: '#1e293b', fontWeight: 600}}>
+                                                            {feeAmount.toLocaleString('vi-VN')} VND
+                                                        </Typography.Text>
+                                                    </Box>
+                                                    <Divider sx={{my: 1}}/>
+                                                    <Box sx={{
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        alignItems: 'center'
+                                                    }}>
+                                                        <Typography.Text style={{
+                                                            color: '#1e293b',
+                                                            fontWeight: 700
+                                                        }}>Total</Typography.Text>
+                                                        <Typography.Title level={4}
+                                                                          style={{margin: 0, color: '#16a34a'}}>
+                                                            {totalCost.toLocaleString('vi-VN')} VND
+                                                        </Typography.Title>
+                                                    </Box>
+                                                    {exceedsCap && (
+                                                        <Typography.Text style={{color: '#dc2626', fontSize: 12}}>
+                                                            Total exceeds the maximum allowed (200,000,000 VND). Please
+                                                            reduce extra revisions.
+                                                        </Typography.Text>
+                                                    )}
                                                 </Box>
-                                            )}
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
-                                                <Typography.Text style={{ color: '#475569' }}>
-                                                    Service fee {baseAndExtra.base + baseAndExtra.extra <= 10000000 ? '(2% total)' : ''}
-                                                </Typography.Text>
-                                                <Typography.Text style={{ color: '#1e293b', fontWeight: 600 }}>
-                                                    {feeAmount.toLocaleString('vi-VN')} VND
-                                                </Typography.Text>
                                             </Box>
-                                            <Divider sx={{ my: 1 }} />
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <Typography.Text style={{ color: '#1e293b', fontWeight: 700 }}>Total</Typography.Text>
-                                                <Typography.Title level={4} style={{ margin: 0, color: '#16a34a' }}>
-                                                    {totalCost.toLocaleString('vi-VN')} VND
-                                                </Typography.Title>
-                                            </Box>
-                                            {exceedsCap && (
-                                                <Typography.Text style={{ color: '#dc2626', fontSize: 12 }}>
-                                                    Total exceeds the maximum allowed (200,000,000 VND). Please reduce extra revisions.
-                                                </Typography.Text>
-                                            )}
                                         </Box>
                                     </Box>
-                                </Box>
-                            </Box>
                                 );
                             })()}
                         </Box>
@@ -1447,7 +1579,8 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                 onCancel={handleClosePaymentModal}
                 selectedQuotationDetails={paymentDetails}
             />
-            <DesignerProfileModal open={profileModalOpen} onClose={() => setProfileModalOpen(false)} designer={profileDesigner} />
+            <DesignerProfileModal open={profileModalOpen} onClose={() => setProfileModalOpen(false)}
+                                  designer={profileDesigner}/>
         </Modal>
     );
 }

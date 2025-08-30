@@ -37,7 +37,7 @@ import {
 import {useNavigate} from 'react-router-dom';
 import {getOrderDetailBySchool} from '../../../services/OrderService';
 import {getPaymentUrl} from '../../../services/PaymentService';
-import {calculateFee} from '../../../services/ShippingService';
+import {calculateFee, getShippingInfo} from '../../../services/ShippingService';
 import {parseID} from '../../../utils/ParseIDUtil';
 import {useSnackbar} from 'notistack';
 import DisplayImage from '../../ui/DisplayImage';
@@ -170,6 +170,11 @@ export default function OrderTrackingStatus() {
     const [shippingFeeLoading, setShippingFeeLoading] = useState(false);
     const [shippingFeeError, setShippingFeeError] = useState(null);
 
+    // Shipping info states
+    const [shippingInfo, setShippingInfo] = useState(null);
+    const [shippingInfoLoading, setShippingInfoLoading] = useState(false);
+    const [shippingInfoError, setShippingInfoError] = useState(null);
+
     const orderId = sessionStorage.getItem('trackingOrderId');
 
     const fetchOrderDetail = async (showLoading = true) => {
@@ -202,6 +207,14 @@ export default function OrderTrackingStatus() {
     useEffect(() => {
         fetchOrderDetail();
     }, [orderId]);
+
+    // Refresh the component when shipping info is loaded
+    useEffect(() => {
+        // This will trigger a re-render when shipping info changes
+        if (shippingInfo) {
+            console.log('Shipping info loaded:', shippingInfo);
+        }
+    }, [shippingInfo]);
 
     const handleRetry = () => {
         setIsRetrying(true);
@@ -236,6 +249,11 @@ export default function OrderTrackingStatus() {
         setHoveredMilestone(milestone);
         setPopoverAnchor(event.currentTarget);
 
+        // If hovering over delivering phase and we don't have shipping info yet, fetch it
+        if (milestone.title === 'Delivering' && !shippingInfo && !shippingInfoLoading && orderDetail?.shippingCode) {
+            fetchShippingInfo();
+        }
+
         const rect = event.currentTarget.getBoundingClientRect();
         const windowWidth = window.innerWidth;
         const windowHeight = window.innerHeight;
@@ -263,6 +281,32 @@ export default function OrderTrackingStatus() {
     const handleMilestoneLeave = () => {
         setHoveredMilestone(null);
         setPopoverAnchor(null);
+    };
+
+    // Fetch shipping information
+    const fetchShippingInfo = async () => {
+        if (!orderDetail?.shippingCode) {
+            setShippingInfoError('No shipping code available');
+            return;
+        }
+
+        try {
+            setShippingInfoLoading(true);
+            setShippingInfoError(null);
+
+            const response = await getShippingInfo(orderDetail.shippingCode);
+
+            if (response && response.data && response.data.code === 200) {
+                setShippingInfo(response.data.data);
+            } else {
+                setShippingInfoError('Failed to fetch shipping information');
+            }
+        } catch (error) {
+            console.error('Error fetching shipping info:', error);
+            setShippingInfoError('Error fetching shipping information');
+        } finally {
+            setShippingInfoLoading(false);
+        }
     };
 
     // Calculate shipping fee
@@ -474,25 +518,25 @@ export default function OrderTrackingStatus() {
         const deliveringPhase = {
             title: 'Delivering',
             description: 'Order is being shipped to your location',
-            isCompleted: false,
+            isCompleted: orderDetail.status === 'completed',
             isActive: orderDetail.status === 'delivering',
-            isNotStarted: orderDetail.status !== 'delivering',
+            isNotStarted: orderDetail.status !== 'delivering' && orderDetail.status !== 'completed',
             isPaymentRequired: orderDetail.status === 'processing' && allApiPhasesCompleted,
-            startDate: null,
-            endDate: null,
-            completedDate: null,
+            startDate: shippingInfo?.pickup_time || null,
+            endDate: shippingInfo?.leadtime || null,
+            completedDate: orderDetail.status === 'completed' ? shippingInfo?.leadtime : null,
             stage: apiMilestones.length + 2
         };
 
         const completedPhase = {
             title: 'Completed',
             description: 'Order has been delivered successfully',
-            isCompleted: false,
+            isCompleted: orderDetail.status === 'completed',
             isActive: false,
-            isNotStarted: true,
-            startDate: null,
+            isNotStarted: orderDetail.status !== 'completed',
+            startDate: orderDetail.status === 'completed' ? shippingInfo?.leadtime : null,
             endDate: null,
-            completedDate: null,
+            completedDate: orderDetail.status === 'completed' ? shippingInfo?.leadtime : null,
             stage: apiMilestones.length + 3
         };
 
@@ -3320,14 +3364,47 @@ export default function OrderTrackingStatus() {
                             </Box>
                         </Box>
 
-                        {(hoveredMilestone.startDate || hoveredMilestone.endDate || hoveredMilestone.completedDate) && (
+                        {/* Show loading state for shipping info when hovering over Delivering milestone */}
+                        {hoveredMilestone.title === 'Delivering' && shippingInfoLoading && (
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                p: 3,
+                                mb: 3
+                            }}>
+                                <CircularProgress size={24} sx={{color: '#3b82f6', mr: 1}}/>
+                                <Typography variant="body2" sx={{color: '#64748b'}}>
+                                    Loading shipping information...
+                                </Typography>
+                            </Box>
+                        )}
+
+                        {/* Show shipping error if failed to load */}
+                        {hoveredMilestone.title === 'Delivering' && shippingInfoError && (
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                p: 2,
+                                mb: 3,
+                                borderRadius: 2,
+                                backgroundColor: '#fee2e2',
+                                border: '1px solid rgba(239, 68, 68, 0.2)'
+                            }}>
+                                <Typography variant="body2" sx={{color: '#dc2626', fontSize: '0.9rem'}}>
+                                    {shippingInfoError}
+                                </Typography>
+                            </Box>
+                        )}
+
+                        {(hoveredMilestone.startDate || hoveredMilestone.endDate || hoveredMilestone.completedDate || (hoveredMilestone.title === 'Delivering' && shippingInfo && (shippingInfo.pickup_time || shippingInfo.leadtime))) && (
                             <Box sx={{
                                 display: 'flex',
                                 flexDirection: 'column',
                                 gap: 2,
                                 mb: 3
                             }}>
-                                {hoveredMilestone.completedDate && (
+                                {(hoveredMilestone.completedDate || (hoveredMilestone.title === 'Delivering' && orderDetail.status === 'completed' && shippingInfo?.leadtime)) && (
                                     <Box sx={{
                                         display: 'flex',
                                         alignItems: 'center',
@@ -3345,19 +3422,19 @@ export default function OrderTrackingStatus() {
                                                 textTransform: 'uppercase',
                                                 fontSize: '0.7rem'
                                             }}>
-                                                Completed
+                                                {hoveredMilestone.title === 'Delivering' ? 'Delivered' : 'Completed'}
                                             </Typography>
                                             <Typography variant="body2" sx={{
                                                 color: '#065f46',
                                                 fontWeight: 600
                                             }}>
-                                                {formatDate(hoveredMilestone.completedDate)}
+                                                {formatDate(hoveredMilestone.completedDate || shippingInfo?.leadtime)}
                                             </Typography>
                                         </Box>
                                     </Box>
                                 )}
 
-                                {hoveredMilestone.startDate && (
+                                {(hoveredMilestone.startDate || (hoveredMilestone.title === 'Delivering' && (orderDetail.status === 'delivering' || orderDetail.status === 'completed') && shippingInfo?.pickup_time)) && (
                                     <Box sx={{
                                         display: 'flex',
                                         alignItems: 'center',
@@ -3375,19 +3452,19 @@ export default function OrderTrackingStatus() {
                                                 textTransform: 'uppercase',
                                                 fontSize: '0.7rem'
                                             }}>
-                                                Start Date
+                                                {hoveredMilestone.title === 'Delivering' ? 'Pickup Date' : 'Start Date'}
                                             </Typography>
                                             <Typography variant="body2" sx={{
                                                 color: '#92400e',
                                                 fontWeight: 600
                                             }}>
-                                                {formatDate(hoveredMilestone.startDate)}
+                                                {formatDate(hoveredMilestone.startDate || shippingInfo?.pickup_time)}
                                             </Typography>
                                         </Box>
                                     </Box>
                                 )}
 
-                                {hoveredMilestone.endDate && !hoveredMilestone.completedDate && (
+                                {((hoveredMilestone.endDate && !hoveredMilestone.completedDate) || (hoveredMilestone.title === 'Delivering' && orderDetail.status === 'delivering' && shippingInfo?.leadtime)) && (
                                     <Box sx={{
                                         display: 'flex',
                                         alignItems: 'center',
@@ -3405,13 +3482,13 @@ export default function OrderTrackingStatus() {
                                                 textTransform: 'uppercase',
                                                 fontSize: '0.7rem'
                                             }}>
-                                                End Date
+                                                {hoveredMilestone.title === 'Delivering' ? 'Expected Delivery' : 'End Date'}
                                             </Typography>
                                             <Typography variant="body2" sx={{
                                                 color: '#1e40af',
                                                 fontWeight: 600
                                             }}>
-                                                {formatDate(hoveredMilestone.endDate)}
+                                                {formatDate(hoveredMilestone.endDate || shippingInfo?.leadtime)}
                                             </Typography>
                                         </Box>
                                     </Box>

@@ -19,9 +19,6 @@ import {
 import MenuIcon from '@mui/icons-material/Menu';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
-import FacebookIcon from '@mui/icons-material/Facebook';
-import TwitterIcon from '@mui/icons-material/Twitter';
-import InstagramIcon from '@mui/icons-material/Instagram';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import LogoutIcon from '@mui/icons-material/Logout';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -109,10 +106,10 @@ function MainHeader() {
     const handleLogout = async () => {
         const response = await signout()
         if (response && response.status === 200) {
-            if (localStorage.length > 0){
+            if (localStorage.length > 0) {
                 localStorage.clear();
             }
-            if(sessionStorage.length > 0){
+            if (sessionStorage.length > 0) {
                 sessionStorage.clear()
             }
             enqueueSnackbar(response.data.message, {variant: 'success', autoHideDuration: 1000})
@@ -148,7 +145,7 @@ function MainHeader() {
                              alt="UniSew"
                              onClick={() => window.location.href = "/home"}
                              sx={{
-                                 cursor:"pointer",
+                                 cursor: "pointer",
                                  height: 50,
                                  width: 50,
                                  borderRadius: '50%',
@@ -156,7 +153,8 @@ function MainHeader() {
                                  boxShadow: '0 4px 12px rgba(25,118,210,0.3)'
                              }}
                         />
-                        <Typography onClick={() => window.location.href = "/home"} variant="h5" sx={{cursor:"pointer", fontWeight: 800, color: '#1976d2', letterSpacing: 1}}>
+                        <Typography onClick={() => window.location.href = "/home"} variant="h5"
+                                    sx={{cursor: "pointer", fontWeight: 800, color: '#1976d2', letterSpacing: 1}}>
                             UniSew
                         </Typography>
                     </Box>

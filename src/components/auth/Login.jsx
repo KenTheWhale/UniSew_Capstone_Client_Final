@@ -17,7 +17,7 @@ export default function Login() {
             if (loginResponse && loginResponse.status === 200) {
                 const accessData = await getAccess()
 
-                if(accessData && accessData.status === 200){
+                if (accessData && accessData.status === 200) {
                     const data = accessData.data.body
                     console.log("Access: ", data.access)
                     localStorage.setItem('user', JSON.stringify(loginResponse.data.body));
@@ -119,8 +119,8 @@ export default function Login() {
                     borderRadius: "50%",
                     animation: "float 6s ease-in-out infinite",
                     "@keyframes float": {
-                        "0%, 100%": { transform: "translateY(0px) rotate(0deg)" },
-                        "50%": { transform: "translateY(-20px) rotate(180deg)" }
+                        "0%, 100%": {transform: "translateY(0px) rotate(0deg)"},
+                        "50%": {transform: "translateY(-20px) rotate(180deg)"}
                     }
                 }}
             />
@@ -258,7 +258,7 @@ export default function Login() {
                     <Button
                         variant="contained"
                         size="large"
-                        startIcon={isLoading ? null : <GoogleIcon sx={{ fontSize: 20 }} />}
+                        startIcon={isLoading ? null : <GoogleIcon sx={{fontSize: 20}}/>}
                         onClick={() => !isLoading && login()}
                         disabled={isLoading}
                         sx={{
