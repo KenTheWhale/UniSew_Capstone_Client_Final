@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     Avatar,
     Box,
@@ -12,21 +12,11 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
-    Divider,
     FormControl,
-    Grid,
     IconButton,
     MenuItem,
-    Paper,
     Select,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
     TextField,
-    Tooltip,
     Typography
 } from '@mui/material';
 import {
@@ -37,30 +27,27 @@ import {
     CheckCircle as CheckCircleIcon,
     Checkroom as CheckroomIcon,
     Close as CloseIcon,
+    DesignServices as DesignServicesIcon,
     Email as EmailIcon,
-    Factory as FactoryIcon,
     Info as InfoIcon,
     LocalShipping as ShippingIcon,
     Person as PersonIcon,
     Phone as PhoneIcon,
     Place as PlaceIcon,
     Schedule as ScheduleIcon,
-    StickyNote2 as NoteIcon,
-    AttachMoney as MoneyIcon,
-    RequestQuote as QuoteIcon,
     Send as SendIcon,
-    TableChart as TableChartIcon,
-    DesignServices as DesignServicesIcon,
-    LocationOn as LocationOnIcon
+    StickyNote2 as NoteIcon,
+    TableChart as TableChartIcon
 } from '@mui/icons-material';
-import { PiPantsFill, PiShirtFoldedFill } from "react-icons/pi";
-import { GiSkirt } from "react-icons/gi";
-import { parseID } from "../../../utils/ParseIDUtil.jsx";
+import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
+import {GiSkirt} from "react-icons/gi";
+import {parseID} from "../../../utils/ParseIDUtil.jsx";
 import DisplayImage from "../../ui/DisplayImage.jsx";
-import { createQuotation, getSizes } from "../../../services/OrderService.jsx";
-import { enqueueSnackbar } from "notistack";
+import {createQuotation, getSizes} from "../../../services/OrderService.jsx";
+import {calculateShippingTime} from "../../../services/ShippingService.jsx";
+import {enqueueSnackbar} from "notistack";
 
-const StatusChip = ({ status }) => {
+const StatusChip = ({status}) => {
     const getStatusConfig = (status) => {
         switch (status?.toLowerCase()) {
             case 'pending':
@@ -68,21 +55,21 @@ const StatusChip = ({ status }) => {
                     label: 'Pending',
                     color: '#fff',
                     bgColor: '#f59e0b',
-                    icon: <ScheduleIcon sx={{ fontSize: 16 }} />
+                    icon: <ScheduleIcon sx={{fontSize: 16}}/>
                 };
             case 'processing':
                 return {
                     label: 'Processing',
                     color: '#fff',
                     bgColor: '#3b82f6',
-                    icon: <ShippingIcon sx={{ fontSize: 16 }} />
+                    icon: <ShippingIcon sx={{fontSize: 16}}/>
                 };
             case 'completed':
                 return {
                     label: 'Completed',
                     color: '#fff',
                     bgColor: '#10b981',
-                    icon: <CheckCircleIcon sx={{ fontSize: 16 }} />
+                    icon: <CheckCircleIcon sx={{fontSize: 16}}/>
                 };
             case 'cancelled':
             case 'canceled':
@@ -90,14 +77,14 @@ const StatusChip = ({ status }) => {
                     label: 'Cancelled',
                     color: '#fff',
                     bgColor: '#ef4444',
-                    icon: <CancelIcon sx={{ fontSize: 16 }} />
+                    icon: <CancelIcon sx={{fontSize: 16}}/>
                 };
             default:
                 return {
                     label: 'Unknown',
                     color: '#374151',
                     bgColor: '#f3f4f6',
-                    icon: <InfoIcon sx={{ fontSize: 16 }} />
+                    icon: <InfoIcon sx={{fontSize: 16}}/>
                 };
         }
     };
@@ -132,17 +119,17 @@ const getItemIcon = (itemType) => {
     const type = itemType?.toLowerCase() || '';
 
     if (type.includes('shirt') || type.includes('áo')) {
-        return <PiShirtFoldedFill size={24} color="#3b82f6" />;
+        return <PiShirtFoldedFill size={24} color="#3b82f6"/>;
     } else if (type.includes('pants') || type.includes('quần')) {
-        return <PiPantsFill size={24} color="#059669" />;
+        return <PiPantsFill size={24} color="#059669"/>;
     } else if (type.includes('skirt') || type.includes('váy')) {
-        return <GiSkirt size={24} color="#ec4899" />;
+        return <GiSkirt size={24} color="#ec4899"/>;
     } else {
-        return <CheckroomIcon sx={{ fontSize: 24, color: '#6b7280' }} />;
+        return <CheckroomIcon sx={{fontSize: 24, color: '#6b7280'}}/>;
     }
 };
 
-export default function GarmentCreateQuotation({ visible, onCancel, order }) {
+export default function GarmentCreateQuotation({visible, onCancel, order}) {
     const [updateStatusDialogOpen, setUpdateStatusDialogOpen] = useState(false);
     const [newStatus, setNewStatus] = useState('');
     const [statusNote, setStatusNote] = useState('');
@@ -168,6 +155,9 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
 
     const [showQuantityDetailsDialog, setShowQuantityDetailsDialog] = useState(false);
     const [selectedQuantityDetails, setSelectedQuantityDetails] = useState(null);
+    const [shippingLeadTime, setShippingLeadTime] = useState(null);
+    const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
+    const [shippingCalculationError, setShippingCalculationError] = useState('');
 
     const mergedOrderData = order || {};
 
@@ -197,6 +187,84 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
         return mergedOrderData.orderDetails?.reduce((sum, detail) => sum + detail.quantity, 0) || 0;
     };
 
+    const calculateShippingLeadTime = async () => {
+        try {
+            setIsCalculatingShipping(true);
+            setShippingCalculationError('');
+
+            // Lấy shippingUID từ localStorage
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const garmentShippingUID = user?.partner?.shippingUID;
+
+            if (!garmentShippingUID) {
+                setShippingCalculationError('Shipping UID not found. Please contact support.');
+                return;
+            }
+
+            // Lấy địa chỉ trường học
+            const schoolAddress = mergedOrderData.selectedDesign?.designRequest?.school?.address;
+            if (!schoolAddress) {
+                setShippingCalculationError('School address not found.');
+                return;
+            }
+
+            const response = await calculateShippingTime(
+                garmentShippingUID,
+                schoolAddress
+            );
+
+            if (response && response.data.code === 200) {
+                const leadtime = response.data.data.leadtime;
+                setShippingLeadTime(leadtime);
+                console.log('Shipping estimated time:', leadtime);
+            } else {
+                setShippingCalculationError('Failed to calculate shipping time. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error calculating shipping time:', error);
+            setShippingCalculationError('An error occurred while calculating shipping time.');
+        } finally {
+            setIsCalculatingShipping(false);
+        }
+    };
+
+    const getMaxDeliveryTime = () => {
+        if (!shippingLeadTime || !mergedOrderData.deadline) return null;
+
+        try {
+            // Kiểm tra nếu shippingLeadTime là timestamp hợp lệ
+            const currentTime = Math.floor(Date.now() / 1000); // Timestamp hiện tại
+
+            if (shippingLeadTime > currentTime) {
+                // Nếu shippingLeadTime lớn hơn thời gian hiện tại, có thể đây là timestamp trong tương lai
+                // Tính số ngày từ hiện tại đến shippingLeadTime
+                const leadtimeDays = Math.ceil((shippingLeadTime - currentTime) / (24 * 60 * 60));
+
+                // Tính deadline - leadtime - 1 ngày
+                const deadlineDate = new Date(mergedOrderData.deadline);
+                const maxDeliveryDate = new Date(deadlineDate);
+                maxDeliveryDate.setDate(maxDeliveryDate.getDate() - 1); // Trừ 1 ngày
+                maxDeliveryDate.setDate(maxDeliveryDate.getDate() - leadtimeDays); // Trừ leadtime
+
+                return maxDeliveryDate;
+            } else {
+                // Nếu shippingLeadTime nhỏ hơn thời gian hiện tại, có thể đây là số ngày
+                const leadtimeDays = shippingLeadTime;
+
+                // Tính deadline - leadtime - 1 ngày
+                const deadlineDate = new Date(mergedOrderData.deadline);
+                const maxDeliveryDate = new Date(deadlineDate);
+                maxDeliveryDate.setDate(maxDeliveryDate.getDate() - 1); // Trừ 1 ngày
+                maxDeliveryDate.setDate(maxDeliveryDate.getDate() - leadtimeDays); // Trừ leadtime
+
+                return maxDeliveryDate;
+            }
+        } catch (error) {
+            console.error('Error calculating max delivery time:', error);
+            return null;
+        }
+    };
+
     const getUniqueTypes = () => {
         return mergedOrderData.orderDetails?.length || 0;
     };
@@ -206,7 +274,6 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
     };
 
     const handleStatusUpdate = () => {
-        console.log('Updating status to:', newStatus, 'with note:', statusNote);
         setUpdateStatusDialogOpen(false);
         setNewStatus('');
         setStatusNote('');
@@ -224,13 +291,9 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
 
     const fetchSizes = async () => {
         try {
-            console.log('Fetching sizes from API...');
             const response = await getSizes();
             if (response && response.status === 200) {
-                console.log("Sizes fetched successfully: ", response.data.body);
                 setSizes(response.data.body || []);
-            } else {
-                console.log("API response not successful:", response);
             }
         } catch (err) {
             console.error("Error fetching sizes:", err);
@@ -243,28 +306,23 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
     };
 
     const handleOpenSizeSpecsForItem = (designItem) => {
-        console.log('handleOpenSizeSpecsForItem called with:', designItem);
 
         if (!designItem) {
-            console.log('No design item provided, using default values');
             setSelectedSizeSpecs({
                 type: 'regular',
                 gender: 'male'
             });
         } else {
-            console.log('Setting size specs with design item data');
             setSelectedSizeSpecs({
                 type: designItem.deliveryItem?.designItem?.category || 'regular',
                 gender: designItem.deliveryItem?.designItem?.gender === 'boy' ? 'male' : 'female'
             });
         }
 
-        console.log('Opening size specs dialog');
         setShowSizeSpecsDialog(true);
     };
 
     const handleOpenLogoPositionDialog = () => {
-        console.log('Opening logo position dialog');
         setShowLogoPositionDialog(true);
     };
 
@@ -272,8 +330,13 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
         setShowLogoPositionDialog(false);
     };
 
-    const handleCreateQuotation = () => {
+    const handleCreateQuotation = async () => {
         setShowQuotationForm(true);
+
+        // Gọi calculateShippingLeadTime khi bấm Create Quotation
+        if (mergedOrderData.deadline && mergedOrderData.selectedDesign?.designRequest?.school?.address) {
+            await calculateShippingLeadTime();
+        }
     };
 
     const handleSubmitQuotation = async () => {
@@ -282,20 +345,20 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
 
             const price = parseInt(quotationData.totalPrice);
             if (price < 10000) {
-                enqueueSnackbar('Total price must be at least 10,000 VND', { variant: 'error' });
+                enqueueSnackbar('Total price must be at least 10,000 VND', {variant: 'error'});
                 setSubmittingQuotation(false);
                 return;
             }
 
             if (price > 200000000) {
-                enqueueSnackbar('Total price cannot exceed 200,000,000 VND', { variant: 'error' });
+                enqueueSnackbar('Total price cannot exceed 200,000,000 VND', {variant: 'error'});
                 setSubmittingQuotation(false);
                 return;
             }
 
             const deliveryDays = parseInt(quotationData.deliveryTime);
             if (deliveryOption === 'days' && deliveryDays < 1) {
-                enqueueSnackbar('Delivery time must be at least 1 day', { variant: 'error' });
+                enqueueSnackbar('Delivery time must be at least 1 day', {variant: 'error'});
                 setSubmittingQuotation(false);
                 return;
             }
@@ -311,7 +374,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
             tomorrow.setHours(0, 0, 0, 0);
 
             if (validUntilDate < tomorrow) {
-                enqueueSnackbar('Valid until date must be from tomorrow onwards', { variant: 'error' });
+                enqueueSnackbar('Valid until date must be from tomorrow onwards', {variant: 'error'});
                 setSubmittingQuotation(false);
                 return;
             }
@@ -331,14 +394,14 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                 twoDaysBeforeDelivery.setHours(23, 59, 59, 999);
 
                 if (validUntilDate > twoDaysBeforeDelivery) {
-                    enqueueSnackbar(`Valid until date must be at least 2 days before delivery date (${formatDate(deliveryDate.toISOString().split('T')[0])})`, { variant: 'error' });
+                    enqueueSnackbar(`Valid until date must be at least 2 days before delivery date (${formatDate(deliveryDate.toISOString().split('T')[0])})`, {variant: 'error'});
                     setSubmittingQuotation(false);
                     return;
                 }
             }
 
             if (validUntilDate > dayBeforeDeadline) {
-                enqueueSnackbar(`Valid until date must be before order deadline (${formatDate(mergedOrderData.deadline)})`, { variant: 'error' });
+                enqueueSnackbar(`Valid until date must be before order deadline (${formatDate(mergedOrderData.deadline)})`, {variant: 'error'});
                 setSubmittingQuotation(false);
                 return;
             }
@@ -353,13 +416,13 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
             }
 
             if (deliveryOption === 'days') {
-            const orderDeadline = new Date(mergedOrderData.deadline);
-            orderDeadline.setHours(23, 59, 59, 999);
+                const orderDeadline = new Date(mergedOrderData.deadline);
+                orderDeadline.setHours(23, 59, 59, 999);
 
-            if (earlyDeliveryDate > orderDeadline) {
-                enqueueSnackbar(`Delivery time cannot exceed the order deadline (${formatDate(mergedOrderData.deadline)})`, { variant: 'error' });
-                setSubmittingQuotation(false);
-                return;
+                if (earlyDeliveryDate > orderDeadline) {
+                    enqueueSnackbar(`Delivery time cannot exceed the order deadline (${formatDate(mergedOrderData.deadline)})`, {variant: 'error'});
+                    setSubmittingQuotation(false);
+                    return;
                 }
             }
 
@@ -371,12 +434,10 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                 note: quotationData.note || ''
             };
 
-            console.log('Submitting quotation:', quotationPayload);
-
             const response = await createQuotation(quotationPayload);
 
             if (response && response.status === 200) {
-                enqueueSnackbar('Quotation sent successfully!', { variant: 'success' });
+                enqueueSnackbar('Quotation sent successfully!', {variant: 'success'});
                 setShowQuotationForm(false);
                 setQuotationData({
                     totalPrice: '',
@@ -386,10 +447,10 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                 });
                 window.location.reload()
             } else {
-                enqueueSnackbar('Failed to send quotation. Please try again.', { variant: 'error' });
+                enqueueSnackbar('Failed to send quotation. Please try again.', {variant: 'error'});
             }
         } catch (error) {
-            enqueueSnackbar(error.response.data.message, { variant: 'error' });
+            enqueueSnackbar(error.response.data.message, {variant: 'error'});
         } finally {
             setSubmittingQuotation(false);
         }
@@ -446,6 +507,15 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
         const orderDeadline = new Date(mergedOrderData.deadline);
         orderDeadline.setHours(23, 59, 59, 999);
 
+        // Kiểm tra với shipping lead time nếu có
+        if (shippingLeadTime) {
+            const maxDeliveryTime = getMaxDeliveryTime();
+            if (maxDeliveryTime && earlyDeliveryDate > maxDeliveryTime) {
+                setDeliveryTimeError(`Delivery time must be before ${formatDate(maxDeliveryTime.toISOString().split('T')[0])} to account for shipping time`);
+                return;
+            }
+        }
+
         if (earlyDeliveryDate > orderDeadline) {
             setDeliveryTimeError(`Cannot exceed order deadline (${formatDate(mergedOrderData.deadline)})`);
             return;
@@ -492,6 +562,15 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
             return;
         }
 
+        // Kiểm tra với shipping lead time nếu có
+        if (shippingLeadTime) {
+            const maxDeliveryTime = getMaxDeliveryTime();
+            if (maxDeliveryTime && selectedDate > maxDeliveryTime) {
+                setDeliveryTimeError(`Delivery date must be before ${formatDate(maxDeliveryTime.toISOString().split('T')[0])} to account for shipping time`);
+                return;
+            }
+        }
+
         if (selectedDate > dayBeforeDeadline) {
             setDeliveryTimeError(`Delivery date must be before deadline (${formatDate(mergedOrderData.deadline)})`);
             return;
@@ -526,7 +605,6 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
 
     useEffect(() => {
         if (visible) {
-            console.log('Component visible, fetching sizes...');
             fetchSizes();
         }
     }, [visible]);
@@ -656,36 +734,36 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                 alignItems: 'center',
                 justifyContent: 'space-between'
             }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                     <Avatar sx={{
                         backgroundColor: 'rgba(255, 255, 255, 0.2)',
                         width: 48,
                         height: 48
                     }}>
-                        <AssignmentIcon sx={{ fontSize: 24 }} />
+                        <AssignmentIcon sx={{fontSize: 24}}/>
                     </Avatar>
                     <Box>
-                        <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
+                        <Typography variant="h5" sx={{fontWeight: 700, mb: 0.5}}>
                             Order Details
                         </Typography>
-                        <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
+                        <Typography variant="body2" sx={{opacity: 0.9, fontWeight: 500}}>
                             {parseID(mergedOrderData.id, 'ord')}
                         </Typography>
                     </Box>
                 </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <IconButton onClick={onCancel} sx={{ color: 'white' }}>
-                        <CloseIcon />
+                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                    <IconButton onClick={onCancel} sx={{color: 'white'}}>
+                        <CloseIcon/>
                     </IconButton>
                 </Box>
             </Box>
 
             {}
-            <DialogContent sx={{ p: 0, overflow: 'auto' }}>
-                <Container maxWidth={false} sx={{ p: 3 }}>
-                    <Box sx={{ display: 'flex', gap: 3, flexDirection: { xs: 'column', lg: 'row' } }}>
+            <DialogContent sx={{p: 0, overflow: 'auto'}}>
+                <Container maxWidth={false} sx={{p: 3}}>
+                    <Box sx={{display: 'flex', gap: 3, flexDirection: {xs: 'column', lg: 'row'}}}>
                         {}
-                        <Box sx={{ flex: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        <Box sx={{flex: 2, display: 'flex', flexDirection: 'column', gap: 3}}>
                             {}
                             <Card sx={{
                                 mb: 3,
@@ -717,7 +795,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                         background: 'rgba(255, 255, 255, 0.1)',
                                         borderRadius: '50%',
                                         transform: 'translate(30px, -30px)'
-                                    }} />
+                                    }}/>
                                     <Typography variant="h6" sx={{
                                         fontWeight: 700,
                                         color: 'white',
@@ -735,24 +813,24 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                             alignItems: 'center',
                                             justifyContent: 'center'
                                         }}>
-                                            <InfoIcon sx={{ fontSize: 20 }} />
+                                            <InfoIcon sx={{fontSize: 20}}/>
                                         </Box>
                                         Order Information
                                     </Typography>
                                 </Box>
-                                <CardContent sx={{ p: 4 }}>
+                                <CardContent sx={{p: 4}}>
                                     {}
                                     <Box sx={{
                                         display: 'flex',
                                         gap: 3,
                                         height: '100%',
-                                        flexWrap: { xs: 'wrap', sm: 'nowrap' }
+                                        flexWrap: {xs: 'wrap', sm: 'nowrap'}
                                     }}>
                                         {}
                                         <Box sx={{
                                             flex: 1,
                                             height: '100%',
-                                            minWidth: { xs: '100%', sm: 'auto' }
+                                            minWidth: {xs: '100%', sm: 'auto'}
                                         }}>
                                             <Box sx={{
                                                 p: 3,
@@ -781,7 +859,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                     mx: 'auto',
                                                     mb: 2
                                                 }}>
-                                                    <CalendarIcon sx={{ color: '#3f51b5', fontSize: 24 }} />
+                                                    <CalendarIcon sx={{color: '#3f51b5', fontSize: 24}}/>
                                                 </Box>
                                                 <Typography variant="body2" sx={{
                                                     color: '#64748b',
@@ -815,7 +893,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                         <Box sx={{
                                             flex: 1,
                                             height: '100%',
-                                            minWidth: { xs: '100%', sm: 'auto' }
+                                            minWidth: {xs: '100%', sm: 'auto'}
                                         }}>
                                             <Box sx={{
                                                 p: 3,
@@ -844,7 +922,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                     mx: 'auto',
                                                     mb: 2
                                                 }}>
-                                                    <ScheduleIcon sx={{ color: '#f59e0b', fontSize: 24 }} />
+                                                    <ScheduleIcon sx={{color: '#f59e0b', fontSize: 24}}/>
                                                 </Box>
                                                 <Typography variant="body2" sx={{
                                                     color: '#64748b',
@@ -884,12 +962,11 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                         </Box>
 
 
-
                                         {}
                                         <Box sx={{
                                             flex: 1,
                                             height: '100%',
-                                            minWidth: { xs: '100%', sm: 'auto' }
+                                            minWidth: {xs: '100%', sm: 'auto'}
                                         }}>
                                             <Box sx={{
                                                 p: 3,
@@ -918,7 +995,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                     mx: 'auto',
                                                     mb: 2
                                                 }}>
-                                                    <CheckroomIcon sx={{ color: '#8b5cf6', fontSize: 24 }} />
+                                                    <CheckroomIcon sx={{color: '#8b5cf6', fontSize: 24}}/>
                                                 </Box>
                                                 <Typography variant="body2" sx={{
                                                     color: '#64748b',
@@ -952,7 +1029,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                         <Box sx={{
                                             flex: 1,
                                             height: '100%',
-                                            minWidth: { xs: '100%', sm: 'auto' }
+                                            minWidth: {xs: '100%', sm: 'auto'}
                                         }}>
                                             <Box sx={{
                                                 p: 3,
@@ -981,7 +1058,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                     mx: 'auto',
                                                     mb: 2
                                                 }}>
-                                                    <InfoIcon sx={{ color: '#10b981', fontSize: 24 }} />
+                                                    <InfoIcon sx={{color: '#10b981', fontSize: 24}}/>
                                                 </Box>
                                                 <Typography variant="body2" sx={{
                                                     color: '#64748b',
@@ -1038,7 +1115,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                             border: '1px solid rgba(245, 158, 11, 0.15)',
                                             borderLeft: '4px solid #f59e0b'
                                         }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
                                                 <Box sx={{
                                                     p: 1,
                                                     borderRadius: 2,
@@ -1047,7 +1124,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                     alignItems: 'center',
                                                     justifyContent: 'center'
                                                 }}>
-                                                    <NoteIcon sx={{ color: '#d97706', fontSize: 20 }} />
+                                                    <NoteIcon sx={{color: '#d97706', fontSize: 20}}/>
                                                 </Box>
                                                 <Typography variant="subtitle1" sx={{
                                                     fontWeight: 600,
@@ -1098,7 +1175,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                         background: 'rgba(255, 255, 255, 0.1)',
                                         borderRadius: '50%',
                                         transform: 'translate(30px, -30px)'
-                                    }} />
+                                    }}/>
                                     <Typography variant="h6" sx={{
                                         fontWeight: 700,
                                         color: 'white',
@@ -1116,13 +1193,13 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                             alignItems: 'center',
                                             justifyContent: 'center'
                                         }}>
-                                            <BusinessIcon sx={{ fontSize: 20 }} />
+                                            <BusinessIcon sx={{fontSize: 20}}/>
                                         </Box>
                                         School Information
                                     </Typography>
                                 </Box>
-                                <CardContent sx={{ p: 3 }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 3 }}>
+                                <CardContent sx={{p: 3}}>
+                                    <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 3}}>
                                         {}
                                         <Avatar sx={{
                                             width: 80,
@@ -1135,10 +1212,10 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                     src={mergedOrderData.school.avatar}
                                                     alt="School Logo"
                                                     referrerPolicy="no-referrer"
-                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                    style={{width: '100%', height: '100%', objectFit: 'cover'}}
                                                 />
                                             ) : (
-                                                <BusinessIcon sx={{ fontSize: 40, color: '#3f51b5' }} />
+                                                <BusinessIcon sx={{fontSize: 40, color: '#3f51b5'}}/>
                                             )}
                                         </Avatar>
 
@@ -1146,52 +1223,52 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                         <Box sx={{
                                             flex: 1,
                                             display: 'grid',
-                                            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+                                            gridTemplateColumns: {xs: '1fr', sm: 'repeat(2, 1fr)'},
                                             gap: 2
                                         }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                <BusinessIcon sx={{ color: '#3f51b5', fontSize: 20 }} />
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                <BusinessIcon sx={{color: '#3f51b5', fontSize: 20}}/>
                                                 <Box>
                                                     <Typography variant="body2" color="text.secondary">
                                                         School Name
                                                     </Typography>
-                                                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                    <Typography variant="body1" sx={{fontWeight: 600}}>
                                                         {mergedOrderData.school?.business || 'School Name'}
                                                     </Typography>
                                                 </Box>
                                             </Box>
 
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                <PersonIcon sx={{ color: '#3b82f6', fontSize: 20 }} />
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                <PersonIcon sx={{color: '#3b82f6', fontSize: 20}}/>
                                                 <Box>
                                                     <Typography variant="body2" color="text.secondary">
                                                         Contact Person
                                                     </Typography>
-                                                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                    <Typography variant="body1" sx={{fontWeight: 600}}>
                                                         {mergedOrderData.school?.name || 'Contact Person'}
                                                     </Typography>
                                                 </Box>
                                             </Box>
 
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                <EmailIcon sx={{ color: '#8b5cf6', fontSize: 20 }} />
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                <EmailIcon sx={{color: '#8b5cf6', fontSize: 20}}/>
                                                 <Box>
                                                     <Typography variant="body2" color="text.secondary">
                                                         Email
                                                     </Typography>
-                                                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                    <Typography variant="body1" sx={{fontWeight: 600}}>
                                                         {mergedOrderData.school?.account?.email || 'email@school.edu'}
                                                     </Typography>
                                                 </Box>
                                             </Box>
 
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                <PhoneIcon sx={{ color: '#f59e0b', fontSize: 20 }} />
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                <PhoneIcon sx={{color: '#f59e0b', fontSize: 20}}/>
                                                 <Box>
                                                     <Typography variant="body2" color="text.secondary">
                                                         Phone
                                                     </Typography>
-                                                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                    <Typography variant="body1" sx={{fontWeight: 600}}>
                                                         {mergedOrderData.school?.phone || 'Phone Number'}
                                                     </Typography>
                                                 </Box>
@@ -1202,14 +1279,14 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                     display: 'flex',
                                                     alignItems: 'flex-start',
                                                     gap: 2,
-                                                    gridColumn: { xs: '1', sm: '1 / -1' }
+                                                    gridColumn: {xs: '1', sm: '1 / -1'}
                                                 }}>
-                                                    <PlaceIcon sx={{ color: '#ef4444', fontSize: 20, mt: 0.2 }} />
+                                                    <PlaceIcon sx={{color: '#ef4444', fontSize: 20, mt: 0.2}}/>
                                                     <Box>
                                                         <Typography variant="body2" color="text.secondary">
                                                             Address
                                                         </Typography>
-                                                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                        <Typography variant="body1" sx={{fontWeight: 600}}>
                                                             {mergedOrderData.school.address}
                                                         </Typography>
                                                     </Box>
@@ -1249,47 +1326,47 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                         background: 'rgba(255, 255, 255, 0.1)',
                                         borderRadius: '50%',
                                         transform: 'translate(30px, -30px)'
-                                    }} />
+                                    }}/>
                                     <Box sx={{
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'space-between'
                                     }}>
-                                    <Typography variant="h6" sx={{
-                                        fontWeight: 700,
-                                        color: 'white',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 1.5,
-                                        position: 'relative',
-                                        zIndex: 1
-                                    }}>
-                                        <Box sx={{
-                                            p: 1,
-                                            borderRadius: 2,
-                                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                        <Typography variant="h6" sx={{
+                                            fontWeight: 700,
+                                            color: 'white',
                                             display: 'flex',
                                             alignItems: 'center',
-                                            justifyContent: 'center'
+                                            gap: 1.5,
+                                            position: 'relative',
+                                            zIndex: 1
                                         }}>
-                                            <CheckroomIcon sx={{ fontSize: 20 }} />
-                                        </Box>
-                                        Order Items
-                                        <Chip
-                                            label={`${groupItemsByCategory(mergedOrderData.orderDetails).length} items`}
-                                            size="small"
-                                            sx={{
+                                            <Box sx={{
+                                                p: 1,
+                                                borderRadius: 2,
                                                 backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                                                color: 'white',
-                                                fontWeight: 600,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}>
+                                                <CheckroomIcon sx={{fontSize: 20}}/>
+                                            </Box>
+                                            Order Items
+                                            <Chip
+                                                label={`${groupItemsByCategory(mergedOrderData.orderDetails).length} items`}
+                                                size="small"
+                                                sx={{
+                                                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                                    color: 'white',
+                                                    fontWeight: 600,
                                                     ml: 2
-                                            }}
-                                        />
-                                    </Typography>
-                                        <Box sx={{ display: 'flex', gap: 2 }}>
+                                                }}
+                                            />
+                                        </Typography>
+                                        <Box sx={{display: 'flex', gap: 2}}>
                                             <Button
                                                 variant="outlined"
-                                                startIcon={<CheckroomIcon />}
+                                                startIcon={<CheckroomIcon/>}
                                                 onClick={handleOpenLogoPositionDialog}
                                                 sx={{
                                                     px: 2.5,
@@ -1316,11 +1393,8 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                             </Button>
                                             <Button
                                                 variant="outlined"
-                                                startIcon={<TableChartIcon />}
+                                                startIcon={<TableChartIcon/>}
                                                 onClick={() => {
-                                                    console.log('Opening size specs dialog');
-                                                    console.log('Order details:', mergedOrderData.orderDetails);
-                                                    console.log('First order detail:', mergedOrderData.orderDetails?.[0]);
                                                     handleOpenSizeSpecsForItem(mergedOrderData.orderDetails?.[0]);
                                                 }}
                                                 sx={{
@@ -1350,15 +1424,15 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                     </Box>
                                 </Box>
 
-                                <Box sx={{ p: 3 }}>
+                                <Box sx={{p: 3}}>
                                     {mergedOrderData.orderDetails?.length === 0 ? (
                                         <Box sx={{
                                             textAlign: 'center',
                                             py: 6,
                                             color: '#64748b'
                                         }}>
-                                            <CheckroomIcon sx={{ fontSize: 48, mb: 2, opacity: 0.5 }} />
-                                            <Typography variant="h6" sx={{ mb: 1 }}>
+                                            <CheckroomIcon sx={{fontSize: 48, mb: 2, opacity: 0.5}}/>
+                                            <Typography variant="h6" sx={{mb: 1}}>
                                                 No Items Found
                                             </Typography>
                                             <Typography variant="body2">
@@ -1555,62 +1629,11 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                     const rows = [];
 
                                                     groupedItems.forEach((groupedItem, index) => {
-                                                                rows.push(
-                                                            <React.Fragment key={`${groupedItem.category}-${groupedItem.gender}-${groupedItem.type}-${index}`}>
+                                                        rows.push(
+                                                            <React.Fragment
+                                                                key={`${groupedItem.category}-${groupedItem.gender}-${groupedItem.type}-${index}`}>
                                                                 {}
                                                                 {groupedItem.isFirstInCategory && (
-                                                                            <Box sx={{
-                                                                                p: 2,
-                                                                                borderRight: '1px solid #000000',
-                                                                                borderBottom: '1px solid #000000',
-                                                                                backgroundColor: '#f8fafc',
-                                                                                display: 'flex',
-                                                                                alignItems: 'center',
-                                                                                justifyContent: 'center',
-                                                                        gridRow: `span ${groupedItem.categoryRowSpan}`,
-                                                                        minHeight: `${60 * groupedItem.categoryRowSpan}px`
-                                                                            }}>
-                                                                                <Chip
-                                                                            label={groupedItem.category === 'pe' ? 'PE' : 'Regular'}
-                                                                                    size="small"
-                                                                                    sx={{
-                                                                                backgroundColor: groupedItem.category === 'pe' ? '#dcfce7' : '#dbeafe',
-                                                                                color: groupedItem.category === 'pe' ? '#065f46' : '#1e40af',
-                                                                                        fontWeight: 600,
-                                                                                        fontSize: '11px',
-                                                                                        height: 20
-                                                                                    }}
-                                                                                />
-                                                                            </Box>
-                                                                        )}
-
-                                                                {}
-                                                                {groupedItem.isFirstInGender && (
-                                                                            <Box sx={{
-                                                                                p: 2,
-                                                                                borderRight: '1px solid #000000',
-                                                                                borderBottom: '1px solid #000000',
-                                                                                backgroundColor: '#f8fafc',
-                                                                                display: 'flex',
-                                                                                alignItems: 'center',
-                                                                                justifyContent: 'center',
-                                                                        gridRow: `span ${groupedItem.genderRowSpan}`,
-                                                                        minHeight: `${60 * groupedItem.genderRowSpan}px`
-                                                                            }}>
-                                                                                <Typography variant="body2" sx={{
-                                                                                    fontWeight: 600,
-                                                                                    color: '#374151',
-                                                                                    fontSize: '13px',
-                                                                                    textTransform: 'capitalize'
-                                                                                }}>
-                                                                            {groupedItem.gender === 'boy' ? 'Boy' :
-                                                                             groupedItem.gender === 'girl' ? 'Girl' :
-                                                                             groupedItem.gender || 'Unknown'}
-                                                                                </Typography>
-                                                                            </Box>
-                                                                        )}
-
-                                                                    {}
                                                                     <Box sx={{
                                                                         p: 2,
                                                                         borderRight: '1px solid #000000',
@@ -1618,7 +1641,36 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                         backgroundColor: '#f8fafc',
                                                                         display: 'flex',
                                                                         alignItems: 'center',
-                                                                        justifyContent: 'center'
+                                                                        justifyContent: 'center',
+                                                                        gridRow: `span ${groupedItem.categoryRowSpan}`,
+                                                                        minHeight: `${60 * groupedItem.categoryRowSpan}px`
+                                                                    }}>
+                                                                        <Chip
+                                                                            label={groupedItem.category === 'pe' ? 'PE' : 'Regular'}
+                                                                            size="small"
+                                                                            sx={{
+                                                                                backgroundColor: groupedItem.category === 'pe' ? '#dcfce7' : '#dbeafe',
+                                                                                color: groupedItem.category === 'pe' ? '#065f46' : '#1e40af',
+                                                                                fontWeight: 600,
+                                                                                fontSize: '11px',
+                                                                                height: 20
+                                                                            }}
+                                                                        />
+                                                                    </Box>
+                                                                )}
+
+                                                                {}
+                                                                {groupedItem.isFirstInGender && (
+                                                                    <Box sx={{
+                                                                        p: 2,
+                                                                        borderRight: '1px solid #000000',
+                                                                        borderBottom: '1px solid #000000',
+                                                                        backgroundColor: '#f8fafc',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        gridRow: `span ${groupedItem.genderRowSpan}`,
+                                                                        minHeight: `${60 * groupedItem.genderRowSpan}px`
                                                                     }}>
                                                                         <Typography variant="body2" sx={{
                                                                             fontWeight: 600,
@@ -1626,44 +1678,67 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                             fontSize: '13px',
                                                                             textTransform: 'capitalize'
                                                                         }}>
+                                                                            {groupedItem.gender === 'boy' ? 'Boy' :
+                                                                                groupedItem.gender === 'girl' ? 'Girl' :
+                                                                                    groupedItem.gender || 'Unknown'}
+                                                                        </Typography>
+                                                                    </Box>
+                                                                )}
+
+                                                                {}
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    borderRight: '1px solid #000000',
+                                                                    borderBottom: '1px solid #000000',
+                                                                    backgroundColor: '#f8fafc',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center'
+                                                                }}>
+                                                                    <Typography variant="body2" sx={{
+                                                                        fontWeight: 600,
+                                                                        color: '#374151',
+                                                                        fontSize: '13px',
+                                                                        textTransform: 'capitalize'
+                                                                    }}>
                                                                         {groupedItem.type || 'Item'}
-                                                                        </Typography>
-                                                                    </Box>
+                                                                    </Typography>
+                                                                </Box>
 
                                                                 {}
-                                                                    <Box sx={{
-                                                                        p: 2,
-                                                                        borderRight: '1px solid #000000',
-                                                                        borderBottom: '1px solid #000000',
-                                                                        backgroundColor: '#f8fafc',
-                                                                        display: 'flex',
-                                                                        alignItems: 'center',
-                                                                        justifyContent: 'center'
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    borderRight: '1px solid #000000',
+                                                                    borderBottom: '1px solid #000000',
+                                                                    backgroundColor: '#f8fafc',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center'
+                                                                }}>
+                                                                    <Typography variant="body2" sx={{
+                                                                        fontWeight: 600,
+                                                                        color: '#3f51b5',
+                                                                        fontSize: '13px'
                                                                     }}>
-                                                                        <Typography variant="body2" sx={{
-                                                                            fontWeight: 600,
-                                                                            color: '#3f51b5',
-                                                                            fontSize: '13px'
-                                                                        }}>
                                                                         {sortSizes([...groupedItem.sizes]).join(', ')}
-                                                                        </Typography>
-                                                                    </Box>
+                                                                    </Typography>
+                                                                </Box>
 
                                                                 {}
-                                                                    <Box sx={{
-                                                                        p: 2,
-                                                                        borderRight: '1px solid #000000',
-                                                                        borderBottom: '1px solid #000000',
-                                                                        backgroundColor: '#f8fafc',
-                                                                        display: 'flex',
-                                                                        alignItems: 'center',
-                                                                        justifyContent: 'center'
-                                                                    }}>
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    borderRight: '1px solid #000000',
+                                                                    borderBottom: '1px solid #000000',
+                                                                    backgroundColor: '#f8fafc',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center'
+                                                                }}>
                                                                     <Button
                                                                         variant="outlined"
                                                                         size="small"
                                                                         onClick={() => handleOpenQuantityDetails(groupedItem)}
-                                                                        startIcon={<InfoIcon />}
+                                                                        startIcon={<InfoIcon/>}
                                                                         sx={{
                                                                             borderColor: '#3f51b5',
                                                                             color: '#3f51b5',
@@ -1679,45 +1754,45 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                     >
                                                                         View
                                                                     </Button>
-                                                                    </Box>
+                                                                </Box>
 
-                                                                    {}
-                                                                    <Box sx={{
-                                                                        p: 2,
-                                                                        borderRight: '1px solid #000000',
-                                                                        borderBottom: '1px solid #000000',
-                                                                        backgroundColor: '#f8fafc',
-                                                                        display: 'flex',
+                                                                {}
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    borderRight: '1px solid #000000',
+                                                                    borderBottom: '1px solid #000000',
+                                                                    backgroundColor: '#f8fafc',
+                                                                    display: 'flex',
                                                                     flexDirection: 'column',
-                                                                        alignItems: 'center',
-                                                                        justifyContent: 'center',
-                                                                        gap: 1
-                                                                    }}>
-                                                                        <Box sx={{
-                                                                        width: 26,
-                                                                            height: 16,
-                                                                        backgroundColor: groupedItem.color || '#000',
-                                                                            borderRadius: 0.5,
-                                                                            border: '1px solid #e5e7eb'
-                                                                        }} />
-                                                                        <Typography variant="caption" sx={{
-                                                                            color: '#64748b',
-                                                                            fontSize: '12px'
-                                                                        }}>
-                                                                        {groupedItem.color || '#000'}
-                                                                        </Typography>
-                                                                    </Box>
-
-                                                                    {}
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    gap: 1
+                                                                }}>
                                                                     <Box sx={{
-                                                                        p: 2,
-                                                                        borderRight: '1px solid #000000',
-                                                                        borderBottom: '1px solid #000000',
-                                                                        backgroundColor: '#f8fafc',
-                                                                        display: 'flex',
-                                                                        alignItems: 'center',
-                                                                        justifyContent: 'center'
+                                                                        width: 26,
+                                                                        height: 16,
+                                                                        backgroundColor: groupedItem.color || '#000',
+                                                                        borderRadius: 0.5,
+                                                                        border: '1px solid #e5e7eb'
+                                                                    }}/>
+                                                                    <Typography variant="caption" sx={{
+                                                                        color: '#64748b',
+                                                                        fontSize: '12px'
                                                                     }}>
+                                                                        {groupedItem.color || '#000'}
+                                                                    </Typography>
+                                                                </Box>
+
+                                                                {}
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    borderRight: '1px solid #000000',
+                                                                    borderBottom: '1px solid #000000',
+                                                                    backgroundColor: '#f8fafc',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center'
+                                                                }}>
                                                                     {(() => {
                                                                         const logoPosition = groupedItem.logoPosition;
                                                                         const logoHeight = groupedItem.baseLogoHeight || 0;
@@ -1725,13 +1800,13 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
 
                                                                         if (logoPosition && logoHeight > 0 && logoWidth > 0) {
                                                                             return (
-                                                                        <Typography variant="body2" sx={{
-                                                                            fontWeight: 500,
-                                                                            color: '#1e293b',
-                                                                            fontSize: '12px'
-                                                                        }}>
+                                                                                <Typography variant="body2" sx={{
+                                                                                    fontWeight: 500,
+                                                                                    color: '#1e293b',
+                                                                                    fontSize: '12px'
+                                                                                }}>
                                                                                     {logoPosition}
-                                                                        </Typography>
+                                                                                </Typography>
                                                                             );
                                                                         } else {
                                                                             return (
@@ -1745,16 +1820,16 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                             );
                                                                         }
                                                                     })()}
-                                                                    </Box>
+                                                                </Box>
 
                                                                 {}
-                                                                    <Box sx={{
-                                                                        p: 2,
+                                                                <Box sx={{
+                                                                    p: 2,
                                                                     borderRight: '1px solid #000000',
-                                                                        borderBottom: '1px solid #000000',
-                                                                        backgroundColor: '#f8fafc',
-                                                                        display: 'flex',
-                                                                        alignItems: 'center',
+                                                                    borderBottom: '1px solid #000000',
+                                                                    backgroundColor: '#f8fafc',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
                                                                     justifyContent: 'center'
                                                                 }}>
                                                                     {(() => {
@@ -1787,10 +1862,10 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                             );
                                                                         }
                                                                     })()}
-                                                                                </Box>
+                                                                </Box>
 
                                                                 {}
-                                                                                <Box sx={{
+                                                                <Box sx={{
                                                                     p: 2,
                                                                     borderBottom: '1px solid #000000',
                                                                     backgroundColor: '#f8fafc',
@@ -1802,7 +1877,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                         variant="outlined"
                                                                         size="small"
                                                                         onClick={() => handleViewImages(groupedItem)}
-                                                                        startIcon={<InfoIcon />}
+                                                                        startIcon={<InfoIcon/>}
                                                                         sx={{
                                                                             borderColor: '#3f51b5',
                                                                             color: '#3f51b5',
@@ -1810,7 +1885,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                             py: 0.5,
                                                                             px: 1.5,
                                                                             minWidth: 'auto',
-                                                                                    '&:hover': {
+                                                                            '&:hover': {
                                                                                 borderColor: '#303f9f',
                                                                                 backgroundColor: 'rgba(63, 81, 181, 0.1)'
                                                                             }
@@ -1818,13 +1893,13 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                     >
                                                                         View Images
                                                                     </Button>
-                                                                    </Box>
-                                                                </React.Fragment>
-                                                            );
-                                                });
+                                                                </Box>
+                                                            </React.Fragment>
+                                                        );
+                                                    });
 
-                                                return rows;
-                                            })()}
+                                                    return rows;
+                                                })()}
                                             </Box>
                                         </Box>
                                     )}
@@ -1833,7 +1908,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                         </Box>
 
                         {}
-                        <Box sx={{ flex: 1 }}>
+                        <Box sx={{flex: 1}}>
 
                             {}
                             <Card sx={{
@@ -1855,18 +1930,18 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                     }}>
                                         Wanna to get this order ?
                                     </Typography>
-                                        <Typography variant="body2" sx={{
-                                            opacity: 0.9,
-                                            textAlign: 'center',
-                                            mt: 0.5,
-                                            color: 'white'
-                                        }}>
-                                            Provide your quotation for this order
-                                        </Typography>
+                                    <Typography variant="body2" sx={{
+                                        opacity: 0.9,
+                                        textAlign: 'center',
+                                        mt: 0.5,
+                                        color: 'white'
+                                    }}>
+                                        Provide your quotation for this order
+                                    </Typography>
                                 </Box>
-                                <CardContent sx={{ p: 3 }}>
+                                <CardContent sx={{p: 3}}>
                                     {!showQuotationForm ? (
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
                                             <Button
                                                 variant="contained"
                                                 fullWidth
@@ -1890,7 +1965,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                             </Button>
                                         </Box>
                                     ) : (
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
                                             {}
                                             <Box>
                                                 <Typography variant="body2" sx={{
@@ -1931,9 +2006,6 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                 />
                                             </Box>
 
-
-
-                                            {}
                                             <Box>
                                                 <Typography variant="body2" sx={{
                                                     fontWeight: 600,
@@ -1943,9 +2015,89 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                     Delivery Time *
                                                 </Typography>
 
+                                                {/* Shipping Lead Time Information */}
+                                                {isCalculatingShipping && (
+                                                    <Box sx={{
+                                                        mb: 2,
+                                                        p: 1.5,
+                                                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                                        borderRadius: 1,
+                                                        border: '1px solid rgba(59, 130, 246, 0.2)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 1
+                                                    }}>
+                                                        <CircularProgress size={16} sx={{color: '#3b82f6'}}/>
+                                                        <Typography variant="caption" sx={{
+                                                            color: '#1e40af',
+                                                            fontWeight: 500
+                                                        }}>
+                                                            Calculating shipping time...
+                                                        </Typography>
+                                                    </Box>
+                                                )}
+
+                                                {shippingCalculationError && (
+                                                    <Box sx={{
+                                                        mb: 2,
+                                                        p: 1.5,
+                                                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                                        borderRadius: 1,
+                                                        border: '1px solid rgba(239, 68, 68, 0.2)'
+                                                    }}>
+                                                        <Typography variant="caption" sx={{
+                                                            color: '#dc2626',
+                                                            fontWeight: 500,
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: 1
+                                                        }}>
+                                                            <InfoIcon sx={{fontSize: 14}}/>
+                                                            {shippingCalculationError}
+                                                        </Typography>
+                                                    </Box>
+                                                )}
+
+                                                {shippingLeadTime && !shippingCalculationError && (
+                                                    <Box sx={{
+                                                        mb: 2,
+                                                        p: 1.5,
+                                                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                                        borderRadius: 1,
+                                                        border: '1px solid rgba(16, 185, 129, 0.2)'
+                                                    }}>
+                                                        <Typography variant="caption" sx={{
+                                                            color: '#065f46',
+                                                            fontWeight: 500,
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: 1
+                                                        }}>
+                                                            <InfoIcon sx={{fontSize: 14}}/>
+                                                            Shipping Lead Time: {(() => {
+                                                            const currentTime = Math.floor(Date.now() / 1000);
+                                                            if (shippingLeadTime > currentTime) {
+                                                                // Nếu là timestamp trong tương lai, tính số ngày từ hiện tại
+                                                                return Math.ceil((shippingLeadTime - currentTime) / (24 * 60 * 60));
+                                                            } else {
+                                                                // Nếu là số ngày
+                                                                return shippingLeadTime;
+                                                            }
+                                                        })()} days
+                                                            {(() => {
+                                                                const maxDeliveryTime = getMaxDeliveryTime();
+                                                                if (maxDeliveryTime) {
+                                                                    return ` • Latest delivery: ${formatDate(maxDeliveryTime.toISOString().split('T')[0])}`;
+                                                                }
+                                                                return '';
+                                                            })()}
+                                                        </Typography>
+                                                    </Box>
+                                                )}
+
                                                 {}
-                                                <Box sx={{ mb: 2 }}>
-                                                    <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+                                                <Box sx={{mb: 2}}>
+                                                    <Box sx={{display: 'flex', gap: 1, mb: 1}}>
                                                         <Button
                                                             variant={deliveryOption === 'date' ? 'contained' : 'outlined'}
                                                             size="small"
@@ -1957,7 +2109,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                 minWidth: 'auto',
                                                                 ...(deliveryOption === 'date' && {
                                                                     backgroundColor: '#3f51b5',
-                                                                    '&:hover': { backgroundColor: '#303f9f' }
+                                                                    '&:hover': {backgroundColor: '#303f9f'}
                                                                 })
                                                             }}
                                                         >
@@ -1974,7 +2126,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                 minWidth: 'auto',
                                                                 ...(deliveryOption === 'days' && {
                                                                     backgroundColor: '#3f51b5',
-                                                                    '&:hover': { backgroundColor: '#303f9f' }
+                                                                    '&:hover': {backgroundColor: '#303f9f'}
                                                                 })
                                                             }}
                                                         >
@@ -1993,7 +2145,16 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                         fullWidth
                                                         placeholder="Select delivery date"
                                                         error={!!deliveryTimeError}
-                                                        helperText={deliveryTimeError || 'Select a date from tomorrow until before deadline'}
+                                                        helperText={deliveryTimeError || (() => {
+                                                            if (shippingLeadTime) {
+                                                                const maxDeliveryTime = getMaxDeliveryTime();
+                                                                if (maxDeliveryTime) {
+                                                                    return `Select a date
+                                                                            from tomorrow until ${formatDate(maxDeliveryTime.toISOString().split('T')[0])} (accounting for shipping time)`;
+                                                                }
+                                                            }
+                                                            return 'Select a date from tomorrow until before deadline';
+                                                        })()}
                                                         inputProps={{
                                                             min: (() => {
                                                                 const tomorrow = new Date();
@@ -2001,6 +2162,14 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                 return tomorrow.toISOString().split('T')[0];
                                                             })(),
                                                             max: (() => {
+                                                                // Sử dụng shipping lead time nếu có, nếu không thì dùng deadline - 1 ngày
+                                                                if (shippingLeadTime) {
+                                                                    const maxDeliveryTime = getMaxDeliveryTime();
+                                                                    if (maxDeliveryTime) {
+                                                                        return maxDeliveryTime.toISOString().split('T')[0];
+                                                                    }
+                                                                }
+
                                                                 const orderDeadline = new Date(mergedOrderData.deadline);
                                                                 orderDeadline.setDate(orderDeadline.getDate() - 1);
                                                                 return orderDeadline.toISOString().split('T')[0];
@@ -2031,36 +2200,73 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                 {}
                                                 {deliveryOption === 'days' && (
                                                     <Box>
-                                                <TextField
-                                                    type="number"
-                                                    value={quotationData.deliveryTime}
-                                                    onChange={(e) => handleDeliveryTimeChange(e.target.value)}
-                                                    size="small"
-                                                    fullWidth
+                                                        <TextField
+                                                            type="number"
+                                                            value={quotationData.deliveryTime}
+                                                            onChange={(e) => handleDeliveryTimeChange(e.target.value)}
+                                                            size="small"
+                                                            fullWidth
                                                             placeholder="Enter number of days needed"
-                                                    inputProps={{ min: 1 }}
-                                                    error={!!deliveryTimeError}
-                                                            helperText={deliveryTimeError || `Order date: ${formatDate(mergedOrderData.orderDate)}`}
-                                                    sx={{
-                                                        '& .MuiOutlinedInput-root': {
-                                                            background: 'rgba(255, 255, 255, 0.9)',
-                                                            '& fieldset': {
-                                                                borderColor: deliveryTimeError ? '#ef4444' : 'rgba(63, 81, 181, 0.3)'
-                                                            },
-                                                            '&:hover fieldset': {
-                                                                borderColor: deliveryTimeError ? '#ef4444' : 'rgba(63, 81, 181, 0.5)'
-                                                            },
-                                                            '&.Mui-focused fieldset': {
-                                                                borderColor: deliveryTimeError ? '#ef4444' : '#3f51b5'
-                                                            }
-                                                        },
-                                                        '& .MuiFormHelperText-root': {
+                                                            error={!!deliveryTimeError}
+                                                            helperText={deliveryTimeError || (() => {
+                                                                if (shippingLeadTime) {
+                                                                    const currentTime = Math.floor(Date.now() / 1000);
+                                                                    let maxDays;
+                                                                    if (shippingLeadTime > currentTime) {
+                                                                        // Nếu là timestamp trong tương lai, tính số ngày từ hiện tại
+                                                                        maxDays = Math.ceil((shippingLeadTime - currentTime) / (24 * 60 * 60));
+                                                                    } else {
+                                                                        // Nếu là số ngày
+                                                                        maxDays = shippingLeadTime;
+                                                                    }
+                                                                    
+                                                                    const orderDate = new Date(mergedOrderData.orderDate);
+                                                                    const deadlineDate = new Date(mergedOrderData.deadline);
+                                                                    const maxDeliveryDays = Math.ceil((deadlineDate - orderDate) / (1000 * 60 * 60 * 24)) - maxDays - 1;
+                                                                    
+                                                                    return `Order date: ${formatDate(mergedOrderData.orderDate)} • Max: ${maxDeliveryDays} days (accounting for shipping time)`;
+                                                                }
+                                                                return `Order date: ${formatDate(mergedOrderData.orderDate)}`;
+                                                            })()}
+                                                            inputProps={{
+                                                                min: 1,
+                                                                max: (() => {
+                                                                    if (shippingLeadTime) {
+                                                                        const currentTime = Math.floor(Date.now() / 1000);
+                                                                        let maxDays;
+                                                                        if (shippingLeadTime > currentTime) {
+                                                                            maxDays = Math.ceil((shippingLeadTime - currentTime) / (24 * 60 * 60));
+                                                                        } else {
+                                                                            maxDays = shippingLeadTime;
+                                                                        }
+                                                                        
+                                                                        const orderDate = new Date(mergedOrderData.orderDate);
+                                                                        const deadlineDate = new Date(mergedOrderData.deadline);
+                                                                        return Math.ceil((deadlineDate - orderDate) / (1000 * 60 * 60 * 24)) - maxDays - 1;
+                                                                    }
+                                                                    return Math.ceil((new Date(mergedOrderData.deadline) - new Date(mergedOrderData.orderDate)) / (1000 * 60 * 60 * 24)) - 1;
+                                                                })()
+                                                            }}
+                                                            sx={{
+                                                                '& .MuiOutlinedInput-root': {
+                                                                    background: 'rgba(255, 255, 255, 0.9)',
+                                                                    '& fieldset': {
+                                                                        borderColor: deliveryTimeError ? '#ef4444' : 'rgba(63, 81, 181, 0.3)'
+                                                                    },
+                                                                    '&:hover fieldset': {
+                                                                        borderColor: deliveryTimeError ? '#ef4444' : 'rgba(63, 81, 181, 0.5)'
+                                                                    },
+                                                                    '&.Mui-focused fieldset': {
+                                                                        borderColor: deliveryTimeError ? '#ef4444' : '#3f51b5'
+                                                                    }
+                                                                },
+                                                                '& .MuiFormHelperText-root': {
                                                                     color: deliveryTimeError ? '#ef4444' : '#64748b',
-                                                            fontSize: '0.75rem',
-                                                            marginTop: 0.5
-                                                        }
-                                                    }}
-                                                />
+                                                                    fontSize: '0.75rem',
+                                                                    marginTop: 0.5
+                                                                }
+                                                            }}
+                                                        />
                                                         {quotationData.deliveryTime && !deliveryTimeError && (
                                                             <Box sx={{
                                                                 mt: 1,
@@ -2074,7 +2280,8 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                                     fontWeight: 500,
                                                                     display: 'block'
                                                                 }}>
-                                                                    Estimated Delivery Date: {formatDate(getCalculatedDeliveryDate())}
+                                                                    Estimated Delivery
+                                                                    Date: {formatDate(getCalculatedDeliveryDate())}
                                                                 </Typography>
                                                             </Box>
                                                         )}
@@ -2097,7 +2304,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                     onChange={(e) => {
                                                         const selectedDate = e.target.value;
                                                         setQuotationData({
-                                                        ...quotationData,
+                                                            ...quotationData,
                                                             validUntil: selectedDate
                                                         });
 
@@ -2150,9 +2357,9 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                     }}
                                                     size="small"
                                                     fullWidth
-                                                    InputLabelProps={{ shrink: true }}
+                                                    InputLabelProps={{shrink: true}}
                                                     error={!!validUntilError}
-                                                    helperText={validUntilError || 'Select a date at least 2 days before delivery date and before order deadline'}
+                                                    helperText={validUntilError || 'Select a date at least 2 days before delivery date'}
                                                     inputProps={{
                                                         min: (() => {
                                                             const tomorrow = new Date();
@@ -2244,7 +2451,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                             </Box>
 
                                             {}
-                                            <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                                            <Box sx={{display: 'flex', gap: 2, mt: 2}}>
                                                 <Button
                                                     variant="outlined"
                                                     fullWidth
@@ -2263,15 +2470,17 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                 <Button
                                                     variant="contained"
                                                     fullWidth
-                                                    startIcon={submittingQuotation ? <CircularProgress size={16} sx={{ color: 'white' }} /> : <SendIcon />}
+                                                    startIcon={submittingQuotation ?
+                                                        <CircularProgress size={16} sx={{color: 'white'}}/> :
+                                                        <SendIcon/>}
                                                     onClick={handleSubmitQuotation}
                                                     disabled={!quotationData.totalPrice ||
-                                                             !!priceError ||
-                                                             (deliveryOption === 'date' ? !selectedDeliveryDate : !quotationData.deliveryTime) ||
-                                                             !quotationData.validUntil ||
-                                                             !!validUntilError ||
-                                                             !!deliveryTimeError ||
-                                                             submittingQuotation}
+                                                        !!priceError ||
+                                                        (deliveryOption === 'date' ? !selectedDeliveryDate : !quotationData.deliveryTime) ||
+                                                        !quotationData.validUntil ||
+                                                        !!validUntilError ||
+                                                        !!deliveryTimeError ||
+                                                        submittingQuotation}
                                                     sx={{
                                                         background: 'linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)',
                                                         '&:hover': {
@@ -2305,17 +2514,17 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                 fullWidth
             >
                 <DialogTitle>
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    <Typography variant="h6" sx={{fontWeight: 600}}>
                         Update Order Status
                     </Typography>
                 </DialogTitle>
                 <DialogContent>
-                    <Box sx={{ mt: 2 }}>
-                        <Typography variant="body2" sx={{ mb: 2 }}>
+                    <Box sx={{mt: 2}}>
+                        <Typography variant="body2" sx={{mb: 2}}>
                             Select new status for order {parseID(mergedOrderData.id, 'ord')}:
                         </Typography>
 
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 3 }}>
+                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 1, mb: 3}}>
                             {['pending', 'processing', 'completed'].map((status) => (
                                 <Button
                                     key={status}
@@ -2383,16 +2592,16 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                     color: 'white',
                     borderRadius: '12px 12px 0 0'
                 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <InfoIcon />
-                        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                        <InfoIcon/>
+                        <Typography variant="h6" sx={{fontWeight: 700}}>
                             Item Images
                         </Typography>
                     </Box>
                 </DialogTitle>
-                <DialogContent sx={{ p: 3 }}>
+                <DialogContent sx={{p: 3}}>
                     {selectedItemImages && (
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
 
                             {}
                             {selectedItemImages.type === 'shirt' && (
@@ -2402,7 +2611,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                     borderRadius: 2,
                                     border: '1px solid rgba(63, 81, 181, 0.1)'
                                 }}>
-                                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#3f51b5' }}>
+                                    <Typography variant="h6" sx={{fontWeight: 600, mb: 2, color: '#3f51b5'}}>
                                         Logo Image
                                     </Typography>
                                     {selectedItemImages.logoImageUrl ? (
@@ -2432,7 +2641,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                             borderRadius: 2,
                                             backgroundColor: '#f9fafb'
                                         }}>
-                                            <Typography variant="body1" sx={{ color: '#9ca3af', fontStyle: 'italic' }}>
+                                            <Typography variant="body1" sx={{color: '#9ca3af', fontStyle: 'italic'}}>
                                                 No Logo Image Available
                                             </Typography>
                                         </Box>
@@ -2447,13 +2656,13 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                 borderRadius: 2,
                                 border: '1px solid rgba(63, 81, 181, 0.1)'
                             }}>
-                                <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#3f51b5' }}>
+                                <Typography variant="h6" sx={{fontWeight: 600, mb: 2, color: '#3f51b5'}}>
                                     Design Images
                                 </Typography>
-                                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                                <Box sx={{display: 'flex', gap: 2, flexWrap: 'wrap'}}>
                                     {}
-                                    <Box sx={{ flex: 1, minWidth: 250 }}>
-                                        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: '#10b981' }}>
+                                    <Box sx={{flex: 1, minWidth: 250}}>
+                                        <Typography variant="subtitle2" sx={{fontWeight: 600, mb: 1, color: '#10b981'}}>
                                             Front Design
                                         </Typography>
                                         {selectedItemImages.frontImageUrl ? (
@@ -2485,7 +2694,8 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                 alignItems: 'center',
                                                 minHeight: 200
                                             }}>
-                                                <Typography variant="body2" sx={{ color: '#9ca3af', fontStyle: 'italic' }}>
+                                                <Typography variant="body2"
+                                                            sx={{color: '#9ca3af', fontStyle: 'italic'}}>
                                                     No Front Design
                                                 </Typography>
                                             </Box>
@@ -2493,8 +2703,8 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                     </Box>
 
                                     {}
-                                    <Box sx={{ flex: 1, minWidth: 250 }}>
-                                        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: '#8b5cf6' }}>
+                                    <Box sx={{flex: 1, minWidth: 250}}>
+                                        <Typography variant="subtitle2" sx={{fontWeight: 600, mb: 1, color: '#8b5cf6'}}>
                                             Back Design
                                         </Typography>
                                         {selectedItemImages.backImageUrl ? (
@@ -2526,7 +2736,8 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                 alignItems: 'center',
                                                 minHeight: 200
                                             }}>
-                                                <Typography variant="body2" sx={{ color: '#9ca3af', fontStyle: 'italic' }}>
+                                                <Typography variant="body2"
+                                                            sx={{color: '#9ca3af', fontStyle: 'italic'}}>
                                                     No Back Design
                                                 </Typography>
                                             </Box>
@@ -2537,7 +2748,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                         </Box>
                     )}
                 </DialogContent>
-                <DialogActions sx={{ p: 3 }}>
+                <DialogActions sx={{p: 3}}>
                     <Button
                         onClick={handleCloseImagesDialog}
                         variant="contained"
@@ -2572,15 +2783,15 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                     color: 'white',
                     borderRadius: '12px 12px 0 0'
                 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <CheckroomIcon sx={{ fontSize: 20 }} />
-                        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                        <CheckroomIcon sx={{fontSize: 20}}/>
+                        <Typography variant="h6" sx={{fontWeight: 700}}>
                             Logo Position Guide
                         </Typography>
                     </Box>
                 </DialogTitle>
-                <DialogContent sx={{ p: 3 }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <DialogContent sx={{p: 3}}>
+                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
                         <Box sx={{
                             display: 'flex',
                             justifyContent: 'center',
@@ -2606,7 +2817,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
 
                     </Box>
                 </DialogContent>
-                <DialogActions sx={{ p: 3 }}>
+                <DialogActions sx={{p: 3}}>
                     <Button
                         onClick={handleCloseLogoPositionDialog}
                         variant="contained"
@@ -2636,23 +2847,21 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                     }
                 }}
             >
-                {console.log('Size specs dialog open state:', showSizeSpecsDialog)}
-                {console.log('Selected size specs:', selectedSizeSpecs)}
-                {console.log('Sizes data:', sizes)}
+
                 <DialogTitle sx={{
                     background: 'linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)',
                     color: 'white',
                     borderRadius: '12px 12px 0 0'
                 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <TableChartIcon sx={{ fontSize: 20 }} />
-                        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                        <TableChartIcon sx={{fontSize: 20}}/>
+                        <Typography variant="h6" sx={{fontWeight: 700}}>
                             Size Specifications - {selectedSizeSpecs?.gender === 'male' ? 'Boy' : 'Girl'}
                         </Typography>
                     </Box>
                 </DialogTitle>
-                <DialogContent sx={{ p: 3 }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <DialogContent sx={{p: 3}}>
+                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
                         {}
                         <Box sx={{
                             p: 3,
@@ -2668,13 +2877,13 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                 alignItems: 'center',
                                 gap: 1
                             }}>
-                                <TableChartIcon sx={{ fontSize: 20 }} />
+                                <TableChartIcon sx={{fontSize: 20}}/>
                                 Select Specifications to View
                             </Typography>
 
-                            <Box sx={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                            <Box sx={{display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'flex-end'}}>
                                 {}
-                                <Box sx={{ minWidth: 200 }}>
+                                <Box sx={{minWidth: 200}}>
                                     <Typography variant="body2" sx={{
                                         fontWeight: 600,
                                         color: '#374151',
@@ -2703,7 +2912,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                 </Box>
 
                                 {}
-                                <Box sx={{ minWidth: 200 }}>
+                                <Box sx={{minWidth: 200}}>
                                     <Typography variant="body2" sx={{
                                         fontWeight: 600,
                                         color: '#374151',
@@ -2790,26 +2999,47 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                 borderRadius: 3,
                                 boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)'
                             }}>
-                                <CardContent sx={{ p: 3 }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                                        <DesignServicesIcon sx={{ color: '#3f51b5' }} />
-                                        <Typography variant="h6" sx={{ fontWeight: 600, color: '#3f51b5' }}>
+                                <CardContent sx={{p: 3}}>
+                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
+                                        <DesignServicesIcon sx={{color: '#3f51b5'}}/>
+                                        <Typography variant="h6" sx={{fontWeight: 600, color: '#3f51b5'}}>
                                             {selectedSizeSpecs.gender === 'male' ? 'Boy' : 'Girl'} {selectedSizeSpecs.type === 'regular' ? 'Regular' : 'Physical Education'} Sizes
                                         </Typography>
                                     </Box>
-                                    <Box sx={{ overflowX: 'auto' }}>
-                                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                    <Box sx={{overflowX: 'auto'}}>
+                                        <table style={{width: '100%', borderCollapse: 'collapse'}}>
                                             <thead>
-                                                <tr style={{ backgroundColor: '#f8fafc' }}>
-                                                    <th style={{
-                                                        padding: '12px',
-                                                        textAlign: 'center',
-                                                        borderBottom: '1px solid #e2e8f0',
-                                                        fontWeight: 600,
-                                                        fontSize: '14px',
-                                                        color: '#1e293b'
-                                                    }}>Size
-                                                    </th>
+                                            <tr style={{backgroundColor: '#f8fafc'}}>
+                                                <th style={{
+                                                    padding: '12px',
+                                                    textAlign: 'center',
+                                                    borderBottom: '1px solid #e2e8f0',
+                                                    fontWeight: 600,
+                                                    fontSize: '14px',
+                                                    color: '#1e293b'
+                                                }}>Size
+                                                </th>
+                                                <th style={{
+                                                    padding: '12px',
+                                                    textAlign: 'center',
+                                                    borderBottom: '1px solid #e2e8f0',
+                                                    fontWeight: 600,
+                                                    fontSize: '14px',
+                                                    color: '#1e293b',
+                                                    borderLeft: '1px solid #e2e8f0'
+                                                }} colSpan="2">Shirt
+                                                </th>
+                                                <th style={{
+                                                    padding: '12px',
+                                                    textAlign: 'center',
+                                                    borderBottom: '1px solid #e2e8f0',
+                                                    fontWeight: 600,
+                                                    fontSize: '14px',
+                                                    color: '#1e293b',
+                                                    borderLeft: '1px solid #e2e8f0'
+                                                }} colSpan="2">Pants
+                                                </th>
+                                                {selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' && (
                                                     <th style={{
                                                         padding: '12px',
                                                         textAlign: 'center',
@@ -2818,210 +3048,190 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                                         fontSize: '14px',
                                                         color: '#1e293b',
                                                         borderLeft: '1px solid #e2e8f0'
-                                                    }} colSpan="2">Shirt
-                                                    </th>
-                                                    <th style={{
-                                                        padding: '12px',
-                                                        textAlign: 'center',
-                                                        borderBottom: '1px solid #e2e8f0',
-                                                        fontWeight: 600,
-                                                        fontSize: '14px',
-                                                        color: '#1e293b',
-                                                        borderLeft: '1px solid #e2e8f0'
-                                                    }} colSpan="2">Pants
-                                                    </th>
-                                                    {selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' && (
+                                                    }} colSpan="2">Skirt</th>
+                                                )}
+                                            </tr>
+                                            <tr style={{backgroundColor: '#f1f5f9'}}>
+                                                <th style={{
+                                                    padding: '8px',
+                                                    textAlign: 'center',
+                                                    borderBottom: '1px solid #e2e8f0',
+                                                    fontWeight: 500,
+                                                    fontSize: '12px',
+                                                    color: '#64748b'
+                                                }}></th>
+                                                <th style={{
+                                                    padding: '8px',
+                                                    textAlign: 'center',
+                                                    borderBottom: '1px solid #e2e8f0',
+                                                    fontWeight: 500,
+                                                    fontSize: '12px',
+                                                    color: '#64748b',
+                                                    borderLeft: '1px solid #e2e8f0'
+                                                }}>Height (cm)
+                                                </th>
+                                                <th style={{
+                                                    padding: '8px',
+                                                    textAlign: 'center',
+                                                    borderBottom: '1px solid #e2e8f0',
+                                                    fontWeight: 500,
+                                                    fontSize: '12px',
+                                                    color: '#64748b'
+                                                }}>Weight (kg)
+                                                </th>
+                                                <th style={{
+                                                    padding: '8px',
+                                                    textAlign: 'center',
+                                                    borderBottom: '1px solid #e2e8f0',
+                                                    fontWeight: 500,
+                                                    fontSize: '12px',
+                                                    color: '#64748b'
+                                                }}>Height (cm)
+                                                </th>
+                                                <th style={{
+                                                    padding: '8px',
+                                                    textAlign: 'center',
+                                                    borderBottom: '1px solid #e2e8f0',
+                                                    fontWeight: 500,
+                                                    fontSize: '12px',
+                                                    color: '#64748b'
+                                                }}>Weight (kg)
+                                                </th>
+                                                {selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' && (
+                                                    <>
                                                         <th style={{
-                                                            padding: '12px',
+                                                            padding: '8px',
                                                             textAlign: 'center',
                                                             borderBottom: '1px solid #e2e8f0',
-                                                            fontWeight: 600,
-                                                            fontSize: '14px',
-                                                            color: '#1e293b',
+                                                            fontWeight: 500,
+                                                            fontSize: '12px',
+                                                            color: '#64748b',
                                                             borderLeft: '1px solid #e2e8f0'
-                                                        }} colSpan="2">Skirt</th>
-                                                    )}
-                                                </tr>
-                                                <tr style={{ backgroundColor: '#f1f5f9' }}>
-                                                    <th style={{
-                                                        padding: '8px',
-                                                        textAlign: 'center',
-                                                        borderBottom: '1px solid #e2e8f0',
-                                                        fontWeight: 500,
-                                                        fontSize: '12px',
-                                                        color: '#64748b'
-                                                    }}></th>
-                                                    <th style={{
-                                                        padding: '8px',
-                                                        textAlign: 'center',
-                                                        borderBottom: '1px solid #e2e8f0',
-                                                        fontWeight: 500,
-                                                        fontSize: '12px',
-                                                        color: '#64748b',
-                                                        borderLeft: '1px solid #e2e8f0'
-                                                    }}>Height (cm)
-                                                    </th>
-                                                    <th style={{
-                                                        padding: '8px',
-                                                        textAlign: 'center',
-                                                        borderBottom: '1px solid #e2e8f0',
-                                                        fontWeight: 500,
-                                                        fontSize: '12px',
-                                                        color: '#64748b'
-                                                    }}>Weight (kg)
-                                                    </th>
-                                                    <th style={{
-                                                        padding: '8px',
-                                                        textAlign: 'center',
-                                                        borderBottom: '1px solid #e2e8f0',
-                                                        fontWeight: 500,
-                                                        fontSize: '12px',
-                                                        color: '#64748b'
-                                                    }}>Height (cm)
-                                                    </th>
-                                                    <th style={{
-                                                        padding: '8px',
-                                                        textAlign: 'center',
-                                                        borderBottom: '1px solid #e2e8f0',
-                                                        fontWeight: 500,
-                                                        fontSize: '12px',
-                                                        color: '#64748b'
-                                                    }}>Weight (kg)
-                                                    </th>
-                                                    {selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' && (
-                                                        <>
-                                                            <th style={{
-                                                                padding: '8px',
-                                                                textAlign: 'center',
-                                                                borderBottom: '1px solid #e2e8f0',
-                                                                fontWeight: 500,
-                                                                fontSize: '12px',
-                                                                color: '#64748b',
-                                                                borderLeft: '1px solid #e2e8f0'
-                                                            }}>Height (cm)
-                                                            </th>
-                                                            <th style={{
-                                                                padding: '8px',
-                                                                textAlign: 'center',
-                                                                borderBottom: '1px solid #e2e8f0',
-                                                                fontWeight: 500,
-                                                                fontSize: '12px',
-                                                                color: '#64748b'
-                                                            }}>Weight (kg)
-                                                            </th>
-                                                        </>
-                                                    )}
-                                                </tr>
+                                                        }}>Height (cm)
+                                                        </th>
+                                                        <th style={{
+                                                            padding: '8px',
+                                                            textAlign: 'center',
+                                                            borderBottom: '1px solid #e2e8f0',
+                                                            fontWeight: 500,
+                                                            fontSize: '12px',
+                                                            color: '#64748b'
+                                                        }}>Weight (kg)
+                                                        </th>
+                                                    </>
+                                                )}
+                                            </tr>
                                             </thead>
                                             <tbody>
-                                                {(() => {
-                                                    const shirtSizes = sizes.filter(size =>
-                                                        size.gender === selectedSizeSpecs.gender &&
-                                                        size.type === 'shirt'
-                                                    );
+                                            {(() => {
+                                                const shirtSizes = sizes.filter(size =>
+                                                    size.gender === selectedSizeSpecs.gender &&
+                                                    size.type === 'shirt'
+                                                );
 
-                                                    console.log('Shirt sizes:', shirtSizes);
-
-                                                    if (shirtSizes.length === 0) {
-                                                        return (
-                                                            <tr>
-                                                                <td colSpan={selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' ? 7 : 5} style={{
+                                                if (shirtSizes.length === 0) {
+                                                    return (
+                                                        <tr>
+                                                            <td colSpan={selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' ? 7 : 5}
+                                                                style={{
                                                                     padding: '20px',
                                                                     textAlign: 'center',
                                                                     color: '#666',
                                                                     fontStyle: 'italic'
                                                                 }}>
-                                                                    No size data available for {selectedSizeSpecs.gender === 'male' ? 'Boy' : 'Girl'} {selectedSizeSpecs.type === 'regular' ? 'Regular' : 'Physical Education'}
-                                                                </td>
-                                                            </tr>
-                                                        );
-                                                    }
+                                                                No size data available
+                                                                for {selectedSizeSpecs.gender === 'male' ? 'Boy' : 'Girl'} {selectedSizeSpecs.type === 'regular' ? 'Regular' : 'Physical Education'}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                }
 
-                                                    return shirtSizes.map((shirtSize) => {
-                                                        const pantsSize = sizes.find(s =>
-                                                            s.gender === selectedSizeSpecs.gender &&
-                                                            s.type === 'pants' &&
-                                                            s.size === shirtSize.size
-                                                        );
+                                                return shirtSizes.map((shirtSize) => {
+                                                    const pantsSize = sizes.find(s =>
+                                                        s.gender === selectedSizeSpecs.gender &&
+                                                        s.type === 'pants' &&
+                                                        s.size === shirtSize.size
+                                                    );
 
-                                                        const skirtSize = selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' ? sizes.find(s =>
-                                                            s.gender === selectedSizeSpecs.gender &&
-                                                            s.type === 'skirt' &&
-                                                            s.size === shirtSize.size
-                                                        ) : null;
+                                                    const skirtSize = selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' ? sizes.find(s =>
+                                                        s.gender === selectedSizeSpecs.gender &&
+                                                        s.type === 'skirt' &&
+                                                        s.size === shirtSize.size
+                                                    ) : null;
 
-                                                        return (
-                                                            <tr key={`${shirtSize.type}-${shirtSize.size}-${shirtSize.gender}`} style={{
+                                                    return (
+                                                        <tr key={`${shirtSize.type}-${shirtSize.size}-${shirtSize.gender}`}
+                                                            style={{
                                                                 borderBottom: '1px solid #f1f5f9',
                                                                 backgroundColor: '#ffffff'
                                                             }}>
-                                                                <td style={{
-                                                                    padding: '12px',
-                                                                    fontWeight: 600,
-                                                                    textAlign: 'center',
-                                                                    fontSize: '14px',
-                                                                    color: '#1e293b',
-                                                                    backgroundColor: '#f8fafc'
-                                                                }}>{shirtSize.size}</td>
-                                                                <td style={{
-                                                                    padding: '12px',
-                                                                    textAlign: 'center',
-                                                                    fontSize: '13px',
-                                                                    color: '#374151',
-                                                                    borderLeft: '1px solid #e2e8f0'
-                                                                }}>
-                                                                    {`${shirtSize.minHeight}-${shirtSize.maxHeight}`}
-                                                                </td>
-                                                                <td style={{
-                                                                    padding: '12px',
-                                                                    textAlign: 'center',
-                                                                    fontSize: '13px',
-                                                                    color: '#374151'
-                                                                }}>
-                                                                    {`${shirtSize.minWeight}-${shirtSize.maxWeight}`}
-                                                                </td>
-                                                                <td style={{
-                                                                    padding: '12px',
-                                                                    textAlign: 'center',
-                                                                    fontSize: '13px',
-                                                                    color: '#374151',
-                                                                    borderLeft: '1px solid #e2e8f0'
-                                                                }}>
-                                                                    {pantsSize ? `${pantsSize.minHeight}-${pantsSize.maxHeight}` : '-'}
-                                                                </td>
-                                                                <td style={{
-                                                                    padding: '12px',
-                                                                    textAlign: 'center',
-                                                                    fontSize: '13px',
-                                                                    color: '#374151'
-                                                                }}>
-                                                                    {pantsSize ? `${pantsSize.minWeight}-${pantsSize.maxWeight}` : '-'}
-                                                                </td>
-                                                                {selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' && (
-                                                                    <>
-                                                                        <td style={{
-                                                                            padding: '12px',
-                                                                            textAlign: 'center',
-                                                                            fontSize: '13px',
-                                                                            color: '#374151',
-                                                                            borderLeft: '1px solid #e2e8f0'
-                                                                        }}>
-                                                                            {skirtSize ? `${skirtSize.minHeight}-${skirtSize.maxHeight}` : '-'}
-                                                                        </td>
-                                                                        <td style={{
-                                                                            padding: '12px',
-                                                                            textAlign: 'center',
-                                                                            fontSize: '13px',
-                                                                            color: '#374151'
-                                                                        }}>
-                                                                            {skirtSize ? `${skirtSize.minWeight}-${skirtSize.maxWeight}` : '-'}
-                                                                        </td>
-                                                                    </>
-                                                                )}
-                                                            </tr>
-                                                        );
-                                                    });
-                                                })()}
+                                                            <td style={{
+                                                                padding: '12px',
+                                                                fontWeight: 600,
+                                                                textAlign: 'center',
+                                                                fontSize: '14px',
+                                                                color: '#1e293b',
+                                                                backgroundColor: '#f8fafc'
+                                                            }}>{shirtSize.size}</td>
+                                                            <td style={{
+                                                                padding: '12px',
+                                                                textAlign: 'center',
+                                                                fontSize: '13px',
+                                                                color: '#374151',
+                                                                borderLeft: '1px solid #e2e8f0'
+                                                            }}>
+                                                                {`${shirtSize.minHeight}-${shirtSize.maxHeight}`}
+                                                            </td>
+                                                            <td style={{
+                                                                padding: '12px',
+                                                                textAlign: 'center',
+                                                                fontSize: '13px',
+                                                                color: '#374151'
+                                                            }}>
+                                                                {`${shirtSize.minWeight}-${shirtSize.maxWeight}`}
+                                                            </td>
+                                                            <td style={{
+                                                                padding: '12px',
+                                                                textAlign: 'center',
+                                                                fontSize: '13px',
+                                                                color: '#374151',
+                                                                borderLeft: '1px solid #e2e8f0'
+                                                            }}>
+                                                                {pantsSize ? `${pantsSize.minHeight}-${pantsSize.maxHeight}` : '-'}
+                                                            </td>
+                                                            <td style={{
+                                                                padding: '12px',
+                                                                textAlign: 'center',
+                                                                fontSize: '13px',
+                                                                color: '#374151'
+                                                            }}>
+                                                                {pantsSize ? `${pantsSize.minWeight}-${pantsSize.maxWeight}` : '-'}
+                                                            </td>
+                                                            {selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' && (
+                                                                <>
+                                                                    <td style={{
+                                                                        padding: '12px',
+                                                                        textAlign: 'center',
+                                                                        fontSize: '13px',
+                                                                        color: '#374151',
+                                                                        borderLeft: '1px solid #e2e8f0'
+                                                                    }}>
+                                                                        {skirtSize ? `${skirtSize.minHeight}-${skirtSize.maxHeight}` : '-'}
+                                                                    </td>
+                                                                    <td style={{
+                                                                        padding: '12px',
+                                                                        textAlign: 'center',
+                                                                        fontSize: '13px',
+                                                                        color: '#374151'
+                                                                    }}>
+                                                                        {skirtSize ? `${skirtSize.minWeight}-${skirtSize.maxWeight}` : '-'}
+                                                                    </td>
+                                                                </>
+                                                            )}
+                                                        </tr>
+                                                    );
+                                                });
+                                            })()}
                                             </tbody>
                                         </table>
                                     </Box>
@@ -3030,7 +3240,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                         )}
                     </Box>
                 </DialogContent>
-                <DialogActions sx={{ p: 3 }}>
+                <DialogActions sx={{p: 3}}>
                     <Button
                         onClick={handleCloseSizeSpecs}
                         variant="contained"
@@ -3076,12 +3286,12 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                         alignItems: 'center',
                         justifyContent: 'center'
                     }}>
-                        <InfoIcon sx={{ fontSize: 20 }} />
+                        <InfoIcon sx={{fontSize: 20}}/>
                     </Box>
                     Quantity Details
                 </DialogTitle>
 
-                <DialogContent sx={{ p: 3 }}>
+                <DialogContent sx={{p: 3}}>
                     {selectedQuantityDetails && (
                         <Box>
                             {}
@@ -3091,8 +3301,8 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                 borderRadius: 2,
                                 mb: 3
                             }}>
-                                <CardContent sx={{ p: 2.5 }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                                <CardContent sx={{p: 2.5}}>
+                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
                                         <Chip
                                             label={selectedQuantityDetails.category === 'pe' ? 'PE' : 'Regular'}
                                             size="small"
@@ -3123,7 +3333,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                         />
                                     </Box>
 
-                                    <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b' }}>
+                                    <Typography variant="h6" sx={{fontWeight: 600, color: '#1e293b'}}>
                                         Total Quantity: {selectedQuantityDetails.totalQuantity}
                                     </Typography>
                                 </CardContent>
@@ -3142,13 +3352,13 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                     alignItems: 'center',
                                     gap: 1.5
                                 }}>
-                                    <TableChartIcon sx={{ color: 'white', fontSize: 20 }} />
-                                    <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
+                                    <TableChartIcon sx={{color: 'white', fontSize: 20}}/>
+                                    <Typography variant="h6" sx={{color: 'white', fontWeight: 600}}>
                                         Size Breakdown
                                     </Typography>
                                 </Box>
 
-                                <Box sx={{ p: 0 }}>
+                                <Box sx={{p: 0}}>
                                     <Box sx={{
                                         display: 'grid',
                                         gridTemplateColumns: '1fr 1fr',
@@ -3162,7 +3372,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                             alignItems: 'center',
                                             justifyContent: 'center'
                                         }}>
-                                            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1e293b' }}>
+                                            <Typography variant="subtitle2" sx={{fontWeight: 700, color: '#1e293b'}}>
                                                 Size
                                             </Typography>
                                         </Box>
@@ -3173,7 +3383,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                                             alignItems: 'center',
                                             justifyContent: 'center'
                                         }}>
-                                            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1e293b' }}>
+                                            <Typography variant="subtitle2" sx={{fontWeight: 700, color: '#1e293b'}}>
                                                 Quantity
                                             </Typography>
                                         </Box>
@@ -3227,7 +3437,7 @@ export default function GarmentCreateQuotation({ visible, onCancel, order }) {
                     )}
                 </DialogContent>
 
-                <DialogActions sx={{ p: 3 }}>
+                <DialogActions sx={{p: 3}}>
                     <Button
                         onClick={handleCloseQuantityDetails}
                         variant="contained"

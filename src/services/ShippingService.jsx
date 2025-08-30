@@ -53,25 +53,67 @@ export const createShipping = async (garmentShippingUID, receiverName, senderBus
     return response || null
 }
 
-export const calculateShippingTime = async (garmentShippingUID, garmentDistrictId, garmentWardCode, schoolDistrictId, schoolWardCode) => {
-    const response = await axios.post("https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/leadtime",
-        {
-            'from_district_id': garmentDistrictId,
-            'from_ward_code': garmentWardCode,
-            'to_district_id': schoolDistrictId,
-            'to_ward_code': schoolWardCode,
-            'service_id': 5
-        },
-        {
-            headers: {
-                'Content-Type': 'application/json',
-                'ShopId': garmentShippingUID,
-                'Token': token
+export const calculateShippingTime = async (garmentShippingUID = '', schoolAddress = '') => {
+
+    const storesResponse = await getStore()
+
+    if(storesResponse && storesResponse.data.code === 200){
+        const store = storesResponse.data.data.shops.find(shop => shop._id === parseInt(garmentShippingUID))
+        if(store){
+            const garmentDistrictId = store.district_id
+
+            let schoolDistrictId = 0
+
+            let schoolWardCode = ''
+
+            const splitAddress = schoolAddress.split(',').map(a => a.trim())
+
+            const wardName = splitAddress[1]
+
+            const districtName = splitAddress[2]
+
+            const provinceName = splitAddress[3]
+
+            const provinceResponse = await getProvinces()
+
+            if(provinceResponse && provinceResponse.data.code === 200){
+                const provinceID = provinceResponse.data.data.find(p => p.ProvinceName === provinceName).ProvinceID
+                const districtResponse = await getDistricts(provinceID)
+
+                if(districtResponse && districtResponse.data.code === 200){
+                    schoolDistrictId = districtResponse.data.data.find(d => d.DistrictName === districtName).DistrictID
+
+                    const wardResponse = await getWards(schoolDistrictId)
+
+                    if(wardResponse && wardResponse.data.code === 200){
+                        schoolWardCode = wardResponse.data.data.find(w => w.WardName === wardName).WardCode
+
+                        if(schoolDistrictId !== 0 && schoolWardCode !== ''){
+                            const response = await axios.post("https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/leadtime",
+                                {
+                                    'from_district_id': garmentDistrictId,
+                                    'to_district_id': schoolDistrictId,
+                                    'to_ward_code': schoolWardCode,
+                                    'service_id': 5
+                                },
+                                {
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'ShopId': parseInt(garmentShippingUID),
+                                        'Token': token
+                                    }
+                                }
+                            )
+
+                            return response || null
+                        }
+                    }
+                }
             }
         }
-    )
+    }
 
-    return response || null
+    return null
 }
 
 export const getShippingInfo = async (orderShippingCode) => {

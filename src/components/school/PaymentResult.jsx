@@ -152,7 +152,7 @@ export default function PaymentResult() {
         let partnerType, partnerName, itemId;
         
         if (paymentType === 'design' || paymentType === 'revision') {
-            partnerType = 'designer';
+            partnerType = 'Designer';
             if (paymentType === 'design' && quotationDetails?.quotation?.designer?.customer?.name) {
                 partnerName = quotationDetails.quotation.designer.customer.name;
             } else if (paymentType === 'revision' && revisionPurchaseDetails?.designerId) {
@@ -164,7 +164,7 @@ export default function PaymentResult() {
                 parseID(quotationDetails?.request?.id, "dr") :
                 parseID(revisionPurchaseDetails?.requestId, "dr");
         } else if (paymentType === 'order' || paymentType === 'deposit') {
-            partnerType = 'garment factory';
+            partnerType = 'Garment factory';
             if (orderDetails?.quotation?.garment?.customer?.business) {
                 partnerName = orderDetails.quotation.garment.customer.business;
             } else {
@@ -186,9 +186,9 @@ export default function PaymentResult() {
             receiverEmail: userEmail,
             receiverName: userBusinessName,
             amount: formatAmountToVND(amount),
-            paymentType: paymentType,
-            partnerType: partnerType,
-            partnerName: partnerName,
+            paymentType: paymentType.charAt(0).toUpperCase() + paymentType.slice(1),
+            partnerType: partnerType.charAt(0).toUpperCase() + partnerType.slice(1),
+            partnerName: partnerName.charAt(0).toUpperCase() + partnerName.slice(1),
             itemId: itemId,
             paymentDate: paymentDate,
             paymentTime: paymentTime,

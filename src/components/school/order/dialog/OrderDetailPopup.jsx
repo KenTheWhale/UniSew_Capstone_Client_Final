@@ -1637,7 +1637,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                                                         <Typography variant="body2" sx={{
                                                                                             fontWeight: 600,
                                                                                             color: '#1976d2',
-                                                                                            fontSize: '13px',
+                                                                                            fontSize: '11px',
                                                                                             backgroundColor: 'rgba(25, 118, 210, 0.1)',
                                                                                             padding: '4px 8px',
                                                                                             borderRadius: '4px',

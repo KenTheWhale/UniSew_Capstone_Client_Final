@@ -63,309 +63,10 @@ const getItemIcon = (itemType) => {
     }
 };
 
-function ResultDeliveryModal({visible, onCancel, resultDelivery}) {
-    if (!resultDelivery) return null;
-
-    const {Text} = Typography;
-
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('vi-VN', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
-    };
-
-    return (
-        <Dialog
-            open={visible}
-            onClose={onCancel}
-            maxWidth="xl"
-            fullWidth
-            slotProps={{
-                paper: {
-                    sx: {
-                        borderRadius: 3,
-                        boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
-                        maxHeight: '90vh'
-                    }
-                }
-            }}
-        >
-            <DialogTitle sx={{
-                borderBottom: '1px solid #f0f0f0',
-                padding: '16px 24px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
-                color: 'white'
-            }}>
-                <CheckCircleOutlined style={{color: 'white', fontSize: '18px'}}/>
-                <span style={{fontWeight: 600, fontSize: '16px'}}>
-                    Final Design Result
-                </span>
-            </DialogTitle>
-            <DialogContent sx={{padding: '20px', overflowY: 'auto'}}>
-                <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
-
-                    {}
-                    <Card
-                        size="small"
-                        style={{
-                            background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(27, 94, 32, 0.08) 100%)',
-                            border: '1px solid rgba(46, 125, 50, 0.2)',
-                            borderRadius: 8
-                        }}
-                    >
-                        <Row gutter={[16, 8]} align="middle">
-                            <Col span={8}>
-                                <Space direction="vertical" size="small">
-                                    <Text style={{fontWeight: 600, fontSize: '16px', color: '#1e293b'}}>
-                                        {resultDelivery.name}
-                                    </Text>
-                                    <Text style={{color: '#64748b', fontSize: '12px'}}>
-                                        Submitted: {formatDate(resultDelivery.submitDate)}
-                                    </Text>
-                                </Space>
-                            </Col>
-                            <Col span={8} style={{textAlign: 'center'}}>
-                                <Space direction="vertical" size="small">
-                                    <Text style={{fontSize: '12px', color: '#64748b'}}>
-                                        Final Delivery
-                                    </Text>
-                                    <Text style={{fontSize: '10px', color: '#94a3b8'}}>
-                                        Design Result
-                                    </Text>
-                                </Space>
-                            </Col>
-                            <Col span={8} style={{display: 'flex', justifyContent: 'flex-end', textAlign: 'right'}}>
-                                <Space direction="vertical" size="small">
-                                    <Tag color="success" style={{margin: 0}}>
-                                        <CheckCircleOutlined/> Completed
-                                    </Tag>
-                                    <Text style={{color: '#64748b', fontSize: '12px'}}>
-                                        ID: {parseID(resultDelivery.id, 'dd')}
-                                    </Text>
-                                </Space>
-                            </Col>
-                        </Row>
-                    </Card>
-
-                    {}
-                    {resultDelivery.note && (
-                        <Card
-                            title={
-                                <Space>
-                                    <InfoCircleOutlined style={{color: '#2e7d32'}}/>
-                                    <span style={{fontWeight: 600, fontSize: '14px'}}>Designer Note</span>
-                                </Space>
-                            }
-                            size="small"
-                            style={{
-                                border: '1px solid #e2e8f0',
-                                borderRadius: 8,
-                                background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(27, 94, 32, 0.08) 100%)'
-                            }}
-                        >
-                            <Box sx={{
-                                p: 1.5,
-                                bgcolor: 'rgba(46, 125, 50, 0.1)',
-                                borderRadius: 6,
-                                border: '1px solid rgba(46, 125, 50, 0.2)'
-                            }}>
-                                <Text style={{color: '#1e293b', fontSize: '14px', lineHeight: 1.6}}>
-                                    {resultDelivery.note}
-                                </Text>
-                            </Box>
-                        </Card>
-                    )}
-
-                    {}
-                    <Card
-                        title={
-                            <Space>
-                                <FileTextOutlined style={{color: '#2e7d32'}}/>
-                                <span style={{
-                                    fontWeight: 600,
-                                    fontSize: '14px'
-                                }}>Final Design Items ({resultDelivery.items?.length || 0})</span>
-                            </Space>
-                        }
-                        size="small"
-                        style={{
-                            border: '1px solid #e2e8f0',
-                            borderRadius: 8
-                        }}
-                    >
-                        <Row gutter={[16, 16]}>
-                            {resultDelivery.items?.map((item, index) => (
-                                <Col span={12} key={index}>
-                                    <Box sx={{
-                                        p: 3,
-                                        border: '1px solid #e2e8f0',
-                                        borderRadius: 8,
-                                        background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
-                                        height: '100%',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        transition: 'all 0.3s ease',
-                                        '&:hover': {
-                                            borderColor: '#2e7d32',
-                                            boxShadow: '0 4px 15px rgba(46, 125, 50, 0.1)'
-                                        }
-                                    }}>
-                                        {}
-                                        <Box sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 2,
-                                            mb: 2
-                                        }}>
-                                            <Box sx={{
-                                                display: 'flex',
-                                                justifyContent: 'center',
-                                                alignItems: 'center',
-                                                width: 40,
-                                                height: 40,
-                                                borderRadius: '50%',
-                                                background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
-                                                color: 'white',
-                                                flexShrink: 0
-                                            }}>
-                                                {getItemIcon(item.designItem?.type)}
-                                            </Box>
-                                            <Box sx={{flex: 1}}>
-                                                <Text strong
-                                                      style={{fontSize: '14px', color: '#1e293b', display: 'block'}}>
-                                                    {item.designItem?.type?.charAt(0).toUpperCase() + item.designItem?.type?.slice(1)} - {item.designItem?.category}
-                                                </Text>
-                                                <Text style={{fontSize: '11px', color: '#64748b'}}>
-                                                    Item #{index + 1}
-                                                </Text>
-                                            </Box>
-                                        </Box>
-
-                                        {}
-                                        <Box sx={{flex: 1, display: 'flex', flexDirection: 'column', gap: 1, mb: 2}}>
-                                            <Text style={{fontSize: '12px', color: '#64748b'}}>
-                                                Fabric: {item.designItem?.fabricName}
-                                            </Text>
-
-                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                                                <Text style={{fontSize: '12px', color: '#475569'}}>
-                                                    Color: {item.designItem?.color}
-                                                </Text>
-                                                <Box sx={{
-                                                    width: 12,
-                                                    height: 12,
-                                                    borderRadius: '50%',
-                                                    bgcolor: item.designItem?.color,
-                                                    border: '1px solid #e0e0e0'
-                                                }}/>
-                                            </Box>
-
-                                            {item.designItem?.logoPosition && (
-                                                <Text style={{fontSize: '12px', color: '#64748b'}}>
-                                                    Logo Position: {item.designItem.logoPosition}
-                                                </Text>
-                                            )}
-
-                                            {}
-                                            {item.designItem?.type?.toLowerCase().includes('shirt') && (
-                                                <Box sx={{display: 'flex', gap: 2}}>
-                                                    <Text style={{fontSize: '11px', color: '#64748b'}}>
-                                                        Logo Size: {item.baseLogoHeight}cm Ã— {item.baseLogoWidth}cm
-                                                    </Text>
-                                                </Box>
-                                            )}
-
-
-                                            {item.designItem?.note && (
-                                                <Text style={{fontSize: '11px', fontStyle: 'italic', color: '#64748b'}}>
-                                                    Note: {item.designItem.note}
-                                                </Text>
-                                            )}
-                                        </Box>
-
-                                        {}
-                                        <Box sx={{mt: 'auto'}}>
-                                            <Row gutter={[8, 8]}>
-                                                <Col span={12}>
-                                                    <Box sx={{
-                                                        p: 1,
-                                                        background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.1) 0%, rgba(27, 94, 32, 0.15) 100%)',
-                                                        borderRadius: 4,
-                                                        border: '1px solid rgba(46, 125, 50, 0.2)',
-                                                        textAlign: 'center'
-                                                    }}>
-                                                        <Text style={{
-                                                            fontSize: '10px',
-                                                            color: '#2e7d32',
-                                                            display: 'block',
-                                                            mb: 0.5,
-                                                            fontWeight: 600
-                                                        }}>
-                                                            Front Design
-                                                        </Text>
-                                                        <DisplayImage
-                                                            imageUrl={item.frontImageUrl}
-                                                            alt="Front Design"
-                                                            width="100%"
-                                                            height="120px"
-                                                            style={{borderRadius: 4, objectFit: 'cover'}}
-                                                        />
-                                                    </Box>
-                                                </Col>
-                                                <Col span={12}>
-                                                    <Box sx={{
-                                                        p: 1,
-                                                        background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(245, 124, 0, 0.15) 100%)',
-                                                        borderRadius: 4,
-                                                        border: '1px solid rgba(255, 152, 0, 0.2)',
-                                                        textAlign: 'center'
-                                                    }}>
-                                                        <Text style={{
-                                                            fontSize: '10px',
-                                                            color: '#f57c00',
-                                                            display: 'block',
-                                                            mb: 0.5,
-                                                            fontWeight: 600
-                                                        }}>
-                                                            Back Design
-                                                        </Text>
-                                                        <DisplayImage
-                                                            imageUrl={item.backImageUrl}
-                                                            alt="Back Design"
-                                                            width="100%"
-                                                            height="120px"
-                                                            style={{borderRadius: 4, objectFit: 'cover'}}
-                                                        />
-                                                    </Box>
-                                                </Col>
-                                            </Row>
-                                        </Box>
-                                    </Box>
-                                </Col>
-                            ))}
-                        </Row>
-                    </Card>
-                </Box>
-            </DialogContent>
-            <DialogActions sx={{padding: '16px 24px', borderTop: '1px solid #f0f0f0'}}>
-                <Button onClick={onCancel}>
-                    Close
-                </Button>
-            </DialogActions>
-        </Dialog>
-    );
-}
-
 export default function RequestDetailPopup({visible, onCancel, request, hideFooterButtons = false}) {
     const [extraRevision, setExtraRevision] = useState(0);
     const [showExtraRevisionModal, setShowExtraRevisionModal] = useState(false);
-    const [showResultDeliveryModal, setShowResultDeliveryModal] = useState(false);
+
 
     if (!request) {
         return (
@@ -395,26 +96,9 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                     </Button>
                 );
                 break;
-            case 'completed':
-                if (request.resultDelivery) {
-                    buttons.push(
-                        <Button
-                            key="viewFinal"
-                            type="default"
-                            icon={<EyeOutlined/>}
-                            onClick={() => setShowResultDeliveryModal(true)}
-                            style={{
-                                backgroundColor: '#2e7d32',
-                                borderColor: '#2e7d32',
-                                color: 'white'
-                            }}
-                        >
-                            View Final Design
-                        </Button>
-                    );
-                }
-                break;
+
             case 'processing':
+            case 'completed':
                 buttons.push(
                     <Button key="chat" type="primary" onClick={() => {
                         localStorage.setItem('currentDesignRequestId', request.id);
@@ -424,7 +108,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                         backgroundColor: '#2e7d32',
                         borderColor: '#2e7d32'
                     }}>
-                        Chat with designer
+                        {status === 'completed' ? 'View designer chat' : 'Chat with designer'}
                     </Button>
                 );
                 break;
@@ -483,7 +167,6 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                 <DialogContent sx={{padding: '20px', overflowY: 'auto'}}>
                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
 
-                        {}
                         <Card
                             size="small"
                             style={{
@@ -522,7 +205,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                             </Row>
                         </Card>
 
-                        {}
+
                         <Box sx={{
                             display: 'flex',
                             flexDirection: 'row',
@@ -531,281 +214,278 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                             alignItems: 'stretch'
                         }}>
 
-                                    {}
-                                    {request.finalDesignQuotation && (
+
+                            {request.finalDesignQuotation && (
                                 <Box sx={{flex: 1}}>
-                                        <Card
-                                            title={
-                                                <Space>
-                                                    <UserOutlined style={{color: '#2e7d32'}}/>
-                                                    <span style={{
-                                                        fontWeight: 600,
-                                                        fontSize: '14px'
-                                                    }}>Selected Designer</span>
-                                                </Space>
-                                            }
-                                            size="small"
-                                            style={{
-                                                border: '1px solid #e2e8f0',
+                                    <Card
+                                        title={
+                                            <Space>
+                                                <UserOutlined style={{color: '#2e7d32'}}/>
+                                                <span style={{
+                                                    fontWeight: 600,
+                                                    fontSize: '14px'
+                                                }}>Selected Designer</span>
+                                            </Space>
+                                        }
+                                        size="small"
+                                        style={{
+                                            border: '1px solid #e2e8f0',
                                             borderRadius: 8,
                                             height: '100%'
-                                            }}
-                                        >
-                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
-                                                <Avatar
-                                                    size={48}
-                                                    src={request.finalDesignQuotation.designer.customer.avatar || request.finalDesignQuotation.designer.customer.name.charAt(0)}
-                                                    style={{
-                                                        border: '2px solid #2e7d32',
-                                                        backgroundColor: '#2e7d32'
-                                                    }}
-                                                >
-                                                    {request.finalDesignQuotation.designer.customer.name.charAt(0)}
-                                                </Avatar>
-                                                <Box sx={{flex: 1}}>
-                                                    <Text style={{fontWeight: 600, fontSize: '14px', color: '#1e293b'}}>
-                                                        {request.finalDesignQuotation.designer.customer.name}
+                                        }}
+                                    >
+                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                            <Avatar
+                                                size={48}
+                                                src={request.finalDesignQuotation.designer.customer.avatar || request.finalDesignQuotation.designer.customer.name.charAt(0)}
+                                                style={{
+                                                    border: '2px solid #2e7d32',
+                                                    backgroundColor: '#2e7d32'
+                                                }}
+                                            >
+                                                {request.finalDesignQuotation.designer.customer.name.charAt(0)}
+                                            </Avatar>
+                                            <Box sx={{flex: 1}}>
+                                                <Text style={{fontWeight: 600, fontSize: '14px', color: '#1e293b'}}>
+                                                    {request.finalDesignQuotation.designer.customer.name}
+                                                </Text>
+                                                <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mt: 0.5}}>
+                                                    <Rate
+                                                        disabled
+                                                        defaultValue={request.finalDesignQuotation.designer.rating}
+                                                        style={{fontSize: '10px'}}
+                                                    />
+                                                    <Text style={{fontSize: '10px', color: '#64748b'}}>
+                                                        ({request.finalDesignQuotation.designer.rating})
                                                     </Text>
-                                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mt: 0.5}}>
-                                                        <Rate
-                                                            disabled
-                                                            defaultValue={request.finalDesignQuotation.designer.rating}
-                                                            style={{fontSize: '10px'}}
-                                                        />
-                                                        <Text style={{fontSize: '10px', color: '#64748b'}}>
-                                                            ({request.finalDesignQuotation.designer.rating})
-                                                        </Text>
-                                                    </Box>
                                                 </Box>
                                             </Box>
+                                        </Box>
 
-                                            <Row gutter={[8, 8]}>
-                                                <Col span={12}>
-                                                    <Space direction="vertical" size="small">
-                                                        <Space>
-                                                            <ShopOutlined style={{color: '#2e7d32', fontSize: '12px'}}/>
-                                                            <Text style={{fontSize: '12px'}}>
-                                                                {request.finalDesignQuotation.designer.customer.business}
-                                                            </Text>
-                                                        </Space>
-                                                        <Space>
-                                                            <PhoneOutlined
-                                                                style={{color: '#2e7d32', fontSize: '12px'}}/>
-                                                            <Text style={{fontSize: '12px', color: '#64748b'}}>
-                                                                {request.finalDesignQuotation.designer.customer.phone}
-                                                            </Text>
-                                                        </Space>
+                                        <Row gutter={[8, 8]}>
+                                            <Col span={12}>
+                                                <Space direction="vertical" size="small">
+                                                    <Space>
+                                                        <ShopOutlined style={{color: '#2e7d32', fontSize: '12px'}}/>
+                                                        <Text style={{fontSize: '12px'}}>
+                                                            {request.finalDesignQuotation.designer.customer.business}
+                                                        </Text>
                                                     </Space>
-                                                </Col>
-                                                <Col span={12}>
-                                                    <Space direction="vertical" size="small">
-                                                        <Space>
-                                                            <EnvironmentOutlined
-                                                                style={{color: '#64748b', fontSize: '12px'}}/>
-                                                            <Text style={{fontSize: '12px', color: '#64748b'}}>
-                                                                {request.finalDesignQuotation.designer.customer.address}
-                                                            </Text>
-                                                        </Space>
-                                                        <Space>
-                                                            <ClockCircleOutlined
-                                                                style={{color: '#2e7d32', fontSize: '12px'}}/>
-                                                            <Text style={{fontSize: '12px', color: '#64748b'}}>
-                                                                {(() => {
-                                                                    const formatTime = (timeString) => {
-                                                                        if (!timeString) return 'N/A';
-                                                                        const time = new Date(`2000-01-01T${timeString}`);
-                                                                        return time.toLocaleTimeString('vi-VN', {
-                                                                            hour: '2-digit',
-                                                                            minute: '2-digit',
-                                                                            hour12: false
-                                                                        });
-                                                                    };
-                                                                    return `${formatTime(request.finalDesignQuotation.designer.startTime)} - ${formatTime(request.finalDesignQuotation.designer.endTime)}`;
-                                                                })()}
-                                                            </Text>
-                                                        </Space>
+                                                    <Space>
+                                                        <PhoneOutlined
+                                                            style={{color: '#2e7d32', fontSize: '12px'}}/>
+                                                        <Text style={{fontSize: '12px', color: '#64748b'}}>
+                                                            {request.finalDesignQuotation.designer.customer.phone}
+                                                        </Text>
                                                     </Space>
-                                                </Col>
-                                            </Row>
-                                        </Card>
-                                </Box>
-                                    )}
-
-                                    {}
-                                    {request.finalDesignQuotation && (
-                                <Box sx={{flex: 1}}>
-                                        <Card
-                                            title={
-                                                <Space>
-                                                    <DollarOutlined style={{color: '#2e7d32'}}/>
-                                                    <span style={{
-                                                        fontWeight: 600,
-                                                        fontSize: '14px'
-                                                    }}>Service Summary</span>
                                                 </Space>
-                                            }
-                                            size="small"
-                                            style={{
-                                                border: '1px solid #e2e8f0',
+                                            </Col>
+                                            <Col span={12}>
+                                                <Space direction="vertical" size="small">
+                                                    <Space>
+                                                        <EnvironmentOutlined
+                                                            style={{color: '#64748b', fontSize: '12px'}}/>
+                                                        <Text style={{fontSize: '12px', color: '#64748b'}}>
+                                                            {request.finalDesignQuotation.designer.customer.address}
+                                                        </Text>
+                                                    </Space>
+                                                    <Space>
+                                                        <ClockCircleOutlined
+                                                            style={{color: '#2e7d32', fontSize: '12px'}}/>
+                                                        <Text style={{fontSize: '12px', color: '#64748b'}}>
+                                                            {(() => {
+                                                                const formatTime = (timeString) => {
+                                                                    if (!timeString) return 'N/A';
+                                                                    const time = new Date(`2000-01-01T${timeString}`);
+                                                                    return time.toLocaleTimeString('vi-VN', {
+                                                                        hour: '2-digit',
+                                                                        minute: '2-digit',
+                                                                        hour12: false
+                                                                    });
+                                                                };
+                                                                return `${formatTime(request.finalDesignQuotation.designer.startTime)} - ${formatTime(request.finalDesignQuotation.designer.endTime)}`;
+                                                            })()}
+                                                        </Text>
+                                                    </Space>
+                                                </Space>
+                                            </Col>
+                                        </Row>
+                                    </Card>
+                                </Box>
+                            )}
+
+                            {request.finalDesignQuotation && (
+                                <Box sx={{flex: 1}}>
+                                    <Card
+                                        title={
+                                            <Space>
+                                                <DollarOutlined style={{color: '#2e7d32'}}/>
+                                                <span style={{
+                                                    fontWeight: 600,
+                                                    fontSize: '14px'
+                                                }}>Service Summary</span>
+                                            </Space>
+                                        }
+                                        size="small"
+                                        style={{
+                                            border: '1px solid #e2e8f0',
                                             borderRadius: 8,
                                             height: '100%'
-                                            }}
-                                        >
-                                            <Row gutter={[8, 8]} style={{display: 'flex'}}>
-                                                <Col span={8} style={{display: 'flex'}}>
-                                                    <Box sx={{
-                                                        p: 1.5,
-                                                        background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.1) 0%, rgba(27, 94, 32, 0.15) 100%)',
-                                                        borderRadius: 6,
-                                                        border: '1px solid rgba(46, 125, 50, 0.2)',
-                                                        textAlign: 'center',
-                                                        width: '100%',
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        justifyContent: 'center'
-                                                    }}>
-                                                        <Text style={{
-                                                            fontSize: '10px',
-                                                            color: '#2e7d32',
-                                                            fontWeight: 600
-                                                        }}>
-                                                            PRICE (VND)
-                                                        </Text>
-                                                        <Title level={4} style={{
-                                                            margin: '4px 0 0 0',
-                                                            color: '#2e7d32',
-                                                            fontWeight: 700
-                                                        }}>
-                                                            {formatCurrency(request.price)}
-                                                        </Title>
-                                                    </Box>
-                                                </Col>
-                                                <Col span={8} style={{display: 'flex'}}>
-                                                    <Box sx={{
-                                                        p: 1.5,
-                                                        background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(245, 124, 0, 0.15) 100%)',
-                                                        borderRadius: 6,
-                                                        border: '1px solid rgba(255, 152, 0, 0.2)',
-                                                        textAlign: 'center',
-                                                        width: '100%',
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        justifyContent: 'center'
-                                                    }}>
-                                                        <Text style={{
-                                                            fontSize: '10px',
-                                                            color: '#f57c00',
-                                                            fontWeight: 600
-                                                        }}>
-                                                            DELIVERY
-                                                        </Text>
-                                                        <Title level={4} style={{
-                                                            margin: '4px 0 0 0',
-                                                            color: '#f57c00',
-                                                            fontWeight: 700
-                                                        }}>
-                                                            {request.finalDesignQuotation.deliveryWithIn} days
-                                                        </Title>
-                                                    </Box>
-                                                </Col>
-                                                <Col span={8} style={{display: 'flex'}}>
-                                                    <Box sx={{
-                                                        p: 1.5,
-                                                        background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(91, 33, 182, 0.15) 100%)',
-                                                        borderRadius: 6,
-                                                        border: '1px solid rgba(124, 58, 237, 0.2)',
-                                                        textAlign: 'center',
-                                                        width: '100%',
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        justifyContent: 'center'
-                                                    }}>
-                                                        <Text style={{
-                                                            fontSize: '10px',
-                                                            color: '#7c3aed',
-                                                            fontWeight: 600
-                                                        }}>
-                                                            REVISIONS
-                                                        </Text>
-                                                        <Title level={4} style={{
-                                                            margin: '4px 0 0 0',
-                                                            color: '#7c3aed',
-                                                            fontWeight: 700
-                                                        }}>
-                                                            {request.revisionTime === 9999 ? 'Unlimited' : request.revisionTime}
-                                                        </Title>
-                                                    </Box>
-                                                </Col>
-                                            </Row>
-                                            {request.finalDesignQuotation.note && (
+                                        }}
+                                    >
+                                        <Row gutter={[8, 8]} style={{display: 'flex'}}>
+                                            <Col span={8} style={{display: 'flex'}}>
                                                 <Box sx={{
-                                                    mt: 1.5,
                                                     p: 1.5,
-                                                    bgcolor: 'rgba(46, 125, 50, 0.05)',
+                                                    background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.1) 0%, rgba(27, 94, 32, 0.15) 100%)',
                                                     borderRadius: 6,
-                                                    border: '1px solid rgba(46, 125, 50, 0.1)'
+                                                    border: '1px solid rgba(46, 125, 50, 0.2)',
+                                                    textAlign: 'center',
+                                                    width: '100%',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    justifyContent: 'center'
                                                 }}>
                                                     <Text style={{
-                                                        fontStyle: 'italic',
-                                                        color: '#475569',
-                                                        fontSize: '12px'
+                                                        fontSize: '10px',
+                                                        color: '#2e7d32',
+                                                        fontWeight: 600
                                                     }}>
-                                                        <strong>Note:</strong> {request.finalDesignQuotation.note}
+                                                        PRICE (VND)
                                                     </Text>
+                                                    <Title level={4} style={{
+                                                        margin: '4px 0 0 0',
+                                                        color: '#2e7d32',
+                                                        fontWeight: 700
+                                                    }}>
+                                                        {formatCurrency(request.price)}
+                                                    </Title>
                                                 </Box>
-                                            )}
-                                        </Card>
+                                            </Col>
+                                            <Col span={8} style={{display: 'flex'}}>
+                                                <Box sx={{
+                                                    p: 1.5,
+                                                    background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(245, 124, 0, 0.15) 100%)',
+                                                    borderRadius: 6,
+                                                    border: '1px solid rgba(255, 152, 0, 0.2)',
+                                                    textAlign: 'center',
+                                                    width: '100%',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    justifyContent: 'center'
+                                                }}>
+                                                    <Text style={{
+                                                        fontSize: '10px',
+                                                        color: '#f57c00',
+                                                        fontWeight: 600
+                                                    }}>
+                                                        DELIVERY
+                                                    </Text>
+                                                    <Title level={4} style={{
+                                                        margin: '4px 0 0 0',
+                                                        color: '#f57c00',
+                                                        fontWeight: 700
+                                                    }}>
+                                                        {request.finalDesignQuotation.deliveryWithIn} days
+                                                    </Title>
+                                                </Box>
+                                            </Col>
+                                            <Col span={8} style={{display: 'flex'}}>
+                                                <Box sx={{
+                                                    p: 1.5,
+                                                    background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(91, 33, 182, 0.15) 100%)',
+                                                    borderRadius: 6,
+                                                    border: '1px solid rgba(124, 58, 237, 0.2)',
+                                                    textAlign: 'center',
+                                                    width: '100%',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    justifyContent: 'center'
+                                                }}>
+                                                    <Text style={{
+                                                        fontSize: '10px',
+                                                        color: '#7c3aed',
+                                                        fontWeight: 600
+                                                    }}>
+                                                        REVISIONS
+                                                    </Text>
+                                                    <Title level={4} style={{
+                                                        margin: '4px 0 0 0',
+                                                        color: '#7c3aed',
+                                                        fontWeight: 700
+                                                    }}>
+                                                        {request.revisionTime === 9999 ? 'Unlimited' : request.revisionTime}
+                                                    </Title>
+                                                </Box>
+                                            </Col>
+                                        </Row>
+                                        {request.finalDesignQuotation.note && (
+                                            <Box sx={{
+                                                mt: 1.5,
+                                                p: 1.5,
+                                                bgcolor: 'rgba(46, 125, 50, 0.05)',
+                                                borderRadius: 6,
+                                                border: '1px solid rgba(46, 125, 50, 0.1)'
+                                            }}>
+                                                <Text style={{
+                                                    fontStyle: 'italic',
+                                                    color: '#475569',
+                                                    fontSize: '12px'
+                                                }}>
+                                                    <strong>Note:</strong> {request.finalDesignQuotation.note}
+                                                </Text>
+                                            </Box>
+                                        )}
+                                    </Card>
                                 </Box>
-                                    )}
+                            )}
                         </Box>
 
-                        {}
-                                    {request.logoImage && (
-                                        <Card
-                                            title={
-                                                <Space>
-                                                    <PictureOutlined style={{color: '#2e7d32'}}/>
-                                                    <span style={{fontWeight: 600, fontSize: '14px'}}>Logo Image</span>
-                                                </Space>
-                                            }
-                                            size="small"
-                                            style={{
-                                                border: '1px solid #e2e8f0',
+                        {request.logoImage && (
+                            <Card
+                                title={
+                                    <Space>
+                                        <PictureOutlined style={{color: '#2e7d32'}}/>
+                                        <span style={{fontWeight: 600, fontSize: '14px'}}>Logo Image</span>
+                                    </Space>
+                                }
+                                size="small"
+                                style={{
+                                    border: '1px solid #e2e8f0',
                                     borderRadius: 8,
                                     marginTop: '16px'
-                                            }}
-                                        >
-                                            <Box sx={{display: 'flex', justifyContent: 'center', p: 1}}>
-                                                <DisplayImage
-                                                    imageUrl={request.logoImage}
-                                                    alt="Logo Design"
-                                                    width="150px"
-                                                    height="150px"
-                                                />
-                                            </Box>
-                                        </Card>
-                                    )}
+                                }}
+                            >
+                                <Box sx={{display: 'flex', justifyContent: 'center', p: 1}}>
+                                    <DisplayImage
+                                        imageUrl={request.logoImage}
+                                        alt="Logo Design"
+                                        width="150px"
+                                        height="150px"
+                                    />
+                                </Box>
+                            </Card>
+                        )}
 
-                        {}
-                                <Card
-                                    title={
-                                        <Space>
-                                            <FileTextOutlined style={{color: '#2e7d32'}}/>
-                                            <span style={{
-                                                fontWeight: 600,
-                                                fontSize: '14px'
-                                            }}>Requested Design Items ({request.items?.length || 0})</span>
-                                        </Space>
-                                    }
-                                    size="small"
-                                    style={{
-                                        border: '1px solid #e2e8f0',
-                                        borderRadius: 8,
+                        <Card
+                            title={
+                                <Space>
+                                    <FileTextOutlined style={{color: '#2e7d32'}}/>
+                                    <span style={{
+                                        fontWeight: 600,
+                                        fontSize: '14px'
+                                    }}>Requested Design Items ({request.items?.length || 0})</span>
+                                </Space>
+                            }
+                            size="small"
+                            style={{
+                                border: '1px solid #e2e8f0',
+                                borderRadius: 8,
                                 height: 'fit-content',
                                 marginTop: '16px'
-                                    }}
-                                >
-                                                <Box sx={{
+                            }}
+                        >
+                            <Box sx={{
                                 display: 'flex',
                                 flexDirection: 'row',
                                 gap: 2,
@@ -862,10 +542,10 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                         <Box sx={{
                                                             p: 1.5,
                                                             background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(22, 163, 74, 0.08) 100%)',
-                                                    borderRadius: 8,
+                                                            borderRadius: 8,
                                                             border: '1px solid rgba(34, 197, 94, 0.15)',
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
                                                             gap: 1,
                                                             height: '100%'
                                                         }}>
@@ -920,47 +600,47 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                             border: '1px solid rgba(34, 197, 94, 0.2)',
                                                                             borderRadius: 8,
                                                                             background: 'linear-gradient(135deg, #ffffff 0%, rgba(34, 197, 94, 0.02) 100%)',
-                                                    transition: 'all 0.3s ease',
+                                                                            transition: 'all 0.3s ease',
                                                                             position: 'relative',
                                                                             height: '100%',
                                                                             display: 'flex',
                                                                             flexDirection: 'column',
-                                                    '&:hover': {
+                                                                            '&:hover': {
                                                                                 borderColor: '#22c55e',
                                                                                 boxShadow: '0 3px 12px rgba(34, 197, 94, 0.15)',
                                                                                 background: 'linear-gradient(135deg, #ffffff 0%, rgba(34, 197, 94, 0.05) 100%)'
-                                                    }
+                                                                            }
                                                                         }}
                                                                     >
                                                                         {}
-                                                    <Box sx={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: 1,
+                                                                        <Box sx={{
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            gap: 1,
                                                                             mb: 1
-                                                    }}>
-                                                        <Box sx={{
-                                                            display: 'flex',
-                                                            justifyContent: 'center',
-                                                            alignItems: 'center',
+                                                                        }}>
+                                                                            <Box sx={{
+                                                                                display: 'flex',
+                                                                                justifyContent: 'center',
+                                                                                alignItems: 'center',
                                                                                 width: 28,
                                                                                 height: 28,
-                                                            borderRadius: 6,
-                                                            background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
-                                                            color: 'white',
-                                                            flexShrink: 0
-                                                        }}>
-                                                            {getItemIcon(item.type)}
-                                                        </Box>
-                                                        <Box sx={{flex: 1}}>
-                                                            <Text strong style={{
+                                                                                borderRadius: 6,
+                                                                                background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
+                                                                                color: 'white',
+                                                                                flexShrink: 0
+                                                                            }}>
+                                                                                {getItemIcon(item.type)}
+                                                                            </Box>
+                                                                            <Box sx={{flex: 1}}>
+                                                                                <Text strong style={{
                                                                                     fontSize: '12px',
-                                                                color: '#1e293b',
+                                                                                    color: '#1e293b',
                                                                                     display: 'block',
                                                                                     fontWeight: 600
-                                                            }}>
+                                                                                }}>
                                                                                     {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {item.category}
-                                                            </Text>
+                                                                                </Text>
                                                                             </Box>
                                                                             <Tag
                                                                                 color="green"
@@ -1046,13 +726,13 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                         fontWeight: 500
                                                                                     }}>
                                                                                         {item.color}
-                                                            </Text>
-                                                        </Box>
-                                                    </Box>
+                                                                                    </Text>
+                                                                                </Box>
+                                                                            </Box>
 
                                                                             {}
                                                                             {item.logoPosition ? (
-                                                    <Box sx={{
+                                                                                <Box sx={{
                                                                                     p: 1,
                                                                                     background: 'rgba(255, 152, 0, 0.08)',
                                                                                     borderRadius: 4,
@@ -1159,9 +839,9 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                         <Box sx={{
                                                                             pt: 1,
                                                                             borderTop: '1px solid #f1f5f9',
-                                                        flex: 1,
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
+                                                                            flex: 1,
+                                                                            display: 'flex',
+                                                                            flexDirection: 'column',
                                                                             justifyContent: item.sampleImages && item.sampleImages.length > 0 ? 'flex-start' : 'center'
                                                                         }}>
                                                                             <Text style={{
@@ -1174,7 +854,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                             }}>
                                                                                 Samples
                                                                                 {item.sampleImages && item.sampleImages.length > 0 ? ` (${item.sampleImages.length})` : ' (0)'}
-                                                        </Text>
+                                                                            </Text>
                                                                             {item.sampleImages && item.sampleImages.length > 0 ? (
                                                                                 <Box sx={{
                                                                                     display: 'flex',
@@ -1240,9 +920,9 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                             gap: 1
                                                         }}>
                                                             {}
-                                                        <Box sx={{
-                                                            display: 'flex',
-                                                            alignItems: 'center',
+                                                            <Box sx={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
                                                                 gap: 1,
                                                                 p: 0.75,
                                                                 background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.15) 100%)',
@@ -1262,7 +942,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                     fontSize: '10px',
                                                                     fontWeight: 600
                                                                 }}>
-                                                                    âš?
+                                                                    ï¿½?
                                                                 </Box>
                                                                 <Text style={{
                                                                     fontSize: '11px',
@@ -1272,7 +952,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                     letterSpacing: '0.3px'
                                                                 }}>
                                                                     Physical Education Uniform ({peItems.length} cloths)
-                                                            </Text>
+                                                                </Text>
                                                             </Box>
                                                             <Box sx={{
                                                                 display: 'flex',
@@ -1388,8 +1068,8 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                 <Box sx={{
                                                                                     width: 12,
                                                                                     height: 12,
-                                                                borderRadius: '50%',
-                                                                bgcolor: item.color,
+                                                                                    borderRadius: '50%',
+                                                                                    bgcolor: item.color,
                                                                                     border: '1px solid #ffffff',
                                                                                     boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
                                                                                     flexShrink: 0
@@ -1413,7 +1093,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                         {item.color}
                                                                                     </Text>
                                                                                 </Box>
-                                                        </Box>
+                                                                            </Box>
 
                                                                             {}
                                                                             <Box sx={{
@@ -1556,9 +1236,9 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
 
                                         return (
                                             <Box sx={{flex: 1}}>
-                                                            <Box sx={{
-                                                                display: 'flex',
-                                                                alignItems: 'center',
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
                                                     gap: 1,
                                                     mb: 1,
                                                     p: 1,
@@ -1914,7 +1594,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                             {item.sampleImages && item.sampleImages.length > 0 ? (
                                                                                 <Box sx={{
                                                                                     display: 'flex',
-                                                                gap: 0.5,
+                                                                                    gap: 0.5,
                                                                                     flexWrap: 'wrap'
                                                                                 }}>
                                                                                     {item.sampleImages.map((image, imgIndex) => (
@@ -1953,7 +1633,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                         fontStyle: 'italic'
                                                                                     }}>
                                                                                         No samples available
-                                                                </Text>
+                                                                                    </Text>
                                                                                 </Box>
                                                                             )}
                                                                         </Box>
@@ -1961,8 +1641,8 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                 ))}
                                                             </Box>
                                                         </Box>
-                                                            </Box>
-                                                        )}
+                                                    </Box>
+                                                )}
 
                                                 {}
                                                 {peItems.length > 0 && (
@@ -1999,7 +1679,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                     fontSize: '10px',
                                                                     fontWeight: 600
                                                                 }}>
-                                                                    âš?
+                                                                    ï¿½?
                                                                 </Box>
                                                                 <Text style={{
                                                                     fontSize: '11px',
@@ -2178,7 +1858,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                 </Text>
                                                                             </Box>
 
-                                                                                                                                                        {}
+                                                                            {}
                                                                             <Box sx={{
                                                                                 p: 1,
                                                                                 background: 'rgba(236, 72, 153, 0.08)',
@@ -2205,9 +1885,9 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                     {item.note || 'No note'}
                                                                                 </Text>
                                                                             </Box>
-                                                    </Box>
+                                                                        </Box>
 
-                                                                                                                                                {}
+                                                                        {}
                                                                         <Box sx={{
                                                                             pt: 1,
                                                                             borderTop: '1px solid #f1f5f9'
@@ -2272,7 +1952,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                 </Box>
                                                                             )}
                                                                         </Box>
-                                                </Box>
+                                                                    </Box>
                                                                 ))}
                                                             </Box>
                                                         </Box>
@@ -2284,7 +1964,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                     return null;
                                 })()}
                             </Box>
-                                </Card>
+                        </Card>
 
                         {}
                         {request.feedback && (
@@ -2313,17 +1993,21 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                             {request.feedback}
                                         </Text>
                                     ) : request.feedback && typeof request.feedback === 'object' ? (
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
                                             {request.feedback.rating && (
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                    <Text style={{color: '#92400e', fontSize: '12px', fontWeight: 'bold'}}>
+                                                <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                                    <Text style={{
+                                                        color: '#92400e',
+                                                        fontSize: '12px',
+                                                        fontWeight: 'bold'
+                                                    }}>
                                                         Rating:
                                                     </Text>
                                                     <Rate
                                                         disabled
                                                         defaultValue={request.feedback.rating}
                                                         size="small"
-                                                        style={{ fontSize: '12px' }}
+                                                        style={{fontSize: '12px'}}
                                                     />
                                                 </Box>
                                             )}
@@ -2450,15 +2134,6 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                     </Button>
                 </DialogActions>
             </Dialog>
-
-            {}
-            {request.resultDelivery && (
-                <ResultDeliveryModal
-                    visible={showResultDeliveryModal}
-                    onCancel={() => setShowResultDeliveryModal(false)}
-                    resultDelivery={request.resultDelivery}
-                />
-            )}
         </>
     );
 }

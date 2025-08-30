@@ -632,12 +632,13 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                 </Typography>
                 
                 {/* Step Indicator */}
-                <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mt: 2}}>
+                <Box sx={{display: 'flex', alignItems: 'center', width: '100%', mt: 2, px: 10}}>
                     <Box sx={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: 1,
-                        color: currentStep >= 1 ? '#1976d2' : '#9e9e9e'
+                        color: currentStep >= 1 ? '#1976d2' : '#9e9e9e',
+                        flex: 1
                     }}>
                         <Box sx={{
                             width: 24,
@@ -659,16 +660,19 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                     </Box>
                     
                     <Box sx={{
-                        width: 40,
+                        flex: 1,
                         height: 2,
-                        backgroundColor: currentStep >= 2 ? '#1976d2' : '#e0e0e0'
+                        backgroundColor: currentStep >= 2 ? '#1976d2' : '#e0e0e0',
+                        mx: 2
                     }} />
                     
                     <Box sx={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: 1,
-                        color: currentStep >= 2 ? '#1976d2' : '#9e9e9e'
+                        color: currentStep >= 2 ? '#1976d2' : '#9e9e9e',
+                        flex: 1,
+                        justifyContent: 'flex-end'
                     }}>
                         <Box sx={{
                             width: 24,
@@ -719,9 +723,9 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                             Address Information
                         </Typography>
 
-                        <Grid container spacing={3}>
-                            <Grid item xs={12} md={4}>
-                                <FormControl fullWidth error={!!errors.province}>
+                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                            <Box sx={{display: 'flex', gap: 2}}>
+                                <FormControl sx={{flex: 1}} error={!!errors.province}>
                                     <InputLabel>Province</InputLabel>
                                     <Select
                                         value={formData.province}
@@ -748,10 +752,8 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                                         </Typography>
                                     )}
                                 </FormControl>
-                            </Grid>
 
-                            <Grid item xs={12} md={4}>
-                                <FormControl fullWidth error={!!errors.district} disabled={!formData.province || loadingDistricts}>
+                                <FormControl sx={{flex: 1}} error={!!errors.district} disabled={!formData.province || loadingDistricts}>
                                     <InputLabel>District</InputLabel>
                                     <Select
                                         value={formData.district}
@@ -777,10 +779,8 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                                         </Typography>
                                     )}
                                 </FormControl>
-                            </Grid>
 
-                            <Grid item xs={12} md={4}>
-                                <FormControl fullWidth error={!!errors.ward} disabled={!formData.district || loadingWards}>
+                                <FormControl sx={{flex: 1}} error={!!errors.ward} disabled={!formData.district || loadingWards}>
                                     <InputLabel>Ward</InputLabel>
                                     <Select
                                         value={formData.ward}
@@ -806,26 +806,25 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                                         </Typography>
                                     )}
                                 </FormControl>
-                            </Grid>
+                            </Box>
 
-                            <Grid item xs={12}>
-                                <TextField
-                                    fullWidth
-                                    label="Street address"
-                                    value={formData.street}
-                                    onChange={(e) => handleInputChange('street', e.target.value)}
-                                    error={!!errors.street}
-                                    helperText={errors.street || 'Enter detailed street address'}
-                                    slotProps={{
-                                        input: {
-                                            startAdornment: <LocationOn sx={{mr: 1, color: 'text.secondary'}}/>
-                                        }
-                                    }}
-                                    placeholder="Enter street address (e.g., 123 Nguyen Hue Street)"
-                                    disabled={!formData.ward}
-                                />
-                            </Grid>
-                        </Grid>
+                            <TextField
+                                fullWidth
+                                label="Street address"
+                                value={formData.street}
+                                onChange={(e) => handleInputChange('street', e.target.value)}
+                                error={!!errors.street}
+                                helperText={errors.street || 'Enter detailed street address'}
+                                slotProps={{
+                                    input: {
+                                        startAdornment: <LocationOn sx={{mr: 1, color: 'text.secondary'}}/>
+                                    }
+                                }}
+                                placeholder="Enter street address (e.g., 123 Nguyen Hue Street)"
+                                disabled={!formData.ward}
+                                sx={{flex: 2}}
+                            />
+                        </Box>
                     </Box>
                 )}
 
@@ -840,42 +839,42 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                                 </Typography>
                             </Alert>
                         )}
-                        <TextField
-                            fullWidth
-                            label="Tax code"
-                            value={formData.taxCode === 'N/A' ? '' : formData.taxCode}
-                            onChange={(e) => handleInputChange('taxCode', e.target.value)}
-                            error={!!errors.taxCode}
-                                                    helperText={
-                            errors.taxCode || 
-                            (isTaxCodeFromServer ? 
-                             '✅ Tax code from existing school (verified by server)' :
-                             validatingTaxCode ? 'Validating tax code...' : 
-                             taxCodeValid === true ? '✅ Tax code is valid' :
-                             taxCodeValid === false ? '❌ Tax code is not valid' :
-                             'Enter business tax code (10-13 digits)')
-                        }
-                            slotProps={{
-                                input: {
-                                    startAdornment: <Receipt sx={{mr: 1, color: 'text.secondary'}}/>
+                        <Box sx={{display: 'flex', gap: 2, alignItems: 'flex-start'}}>
+                            <TextField
+                                sx={{flex: 1}}
+                                label="Tax code"
+                                value={formData.taxCode === 'N/A' ? '' : formData.taxCode}
+                                onChange={(e) => handleInputChange('taxCode', e.target.value)}
+                                error={!!errors.taxCode}
+                                helperText={
+                                    errors.taxCode || 
+                                    (isTaxCodeFromServer ? 
+                                     '✅ Tax code from existing school (verified by server)' :
+                                     validatingTaxCode ? 'Validating tax code...' : 
+                                     taxCodeValid === true ? '✅ Tax code is valid' :
+                                     taxCodeValid === false ? '❌ Tax code is not valid' :
+                                     'Enter business tax code (10-13 digits)')
                                 }
-                            }}
-                            InputProps={{
-                                endAdornment: validatingTaxCode ? (
-                                    <CircularProgress size={20} sx={{mr: 1}} />
-                                ) : taxCodeValid === true ? (
-                                    <Box sx={{color: 'success.main', mr: 1}}>✅</Box>
-                                ) : taxCodeValid === false ? (
-                                    <Box sx={{color: 'error.main', mr: 1}}>❌</Box>
-                                ) : null
-                            }}
-                            placeholder="Enter tax code (10-13 digits)"
-                            disabled={isTaxCodeFromServer}
-                        />
-                        
-                        {/* Check Tax Code Button - Only show when tax code is not from existing school */}
-                        {!isTaxCodeFromServer && (
-                            <Box sx={{mt: 2, display: 'flex', justifyContent: 'center'}}>
+                                slotProps={{
+                                    input: {
+                                        startAdornment: <Receipt sx={{mr: 1, color: 'text.secondary'}}/>
+                                    }
+                                }}
+                                InputProps={{
+                                    endAdornment: validatingTaxCode ? (
+                                        <CircularProgress size={20} sx={{mr: 1}} />
+                                    ) : taxCodeValid === true ? (
+                                        <Box sx={{color: 'success.main', mr: 1}}>✅</Box>
+                                    ) : taxCodeValid === false ? (
+                                        <Box sx={{color: 'error.main', mr: 1}}>❌</Box>
+                                    ) : null
+                                }}
+                                placeholder="Enter tax code (10-13 digits)"
+                                disabled={isTaxCodeFromServer}
+                            />
+                            
+                            {/* Check Tax Code Button - Only show when tax code is not from existing school */}
+                            {!isTaxCodeFromServer && (
                                 <Button
                                     variant="outlined"
                                     onClick={async () => {
@@ -892,12 +891,16 @@ export default function UpdateSchoolInfoDialog({open, onClose, onUpdate, initial
                                     }}
                                     disabled={!formData.taxCode || validatingTaxCode}
                                     startIcon={validatingTaxCode ? <CircularProgress size={16} /> : <Receipt />}
-                                    sx={{minWidth: 150}}
+                                    sx={{
+                                        width: 200,
+                                        height: 56,
+                                        flexShrink: 0
+                                    }}
                                 >
                                     {validatingTaxCode ? 'Checking...' : 'Check Tax Code'}
                                 </Button>
-                            </Box>
-                        )}
+                            )}
+                        </Box>
                         
                         {/* Validation Status - Only show when tax code is not from existing school */}
                         {!isTaxCodeFromServer && (
