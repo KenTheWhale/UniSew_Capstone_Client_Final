@@ -13,6 +13,7 @@ import {parseID} from "../../../../utils/ParseIDUtil.jsx";
 import {getPaymentUrl} from "../../../../services/PaymentService.jsx";
 import {enqueueSnackbar} from "notistack";
 import {serviceFee} from "../../../../configs/FixedVariables.jsx";
+import {getPhoneLink} from "../../../../utils/PhoneUtil.jsx";
 
 export default function OrderPaymentPopup({ visible, onCancel, selectedQuotationDetails }) {
 
@@ -193,7 +194,22 @@ export default function OrderPaymentPopup({ visible, onCancel, selectedQuotation
                         </Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                             <Typography.Text style={{ color: '#475569', fontSize: '14px' }}>
-                                <strong>Phone:</strong> {quotation?.garment?.customer?.phone || 'N/A'}
+                                <strong>Phone:</strong> {quotation?.garment?.customer?.phone ? (
+                                    <span 
+                                        style={{ 
+                                            color: '#2e7d32', 
+                                            cursor: 'pointer', 
+                                            textDecoration: 'none',
+                                            fontWeight: '500'
+                                        }}
+                                        onClick={() => {
+                                            const phoneLink = getPhoneLink(quotation.garment.customer.phone);
+                                            window.open(phoneLink, '_blank');
+                                        }}
+                                    >
+                                        {quotation.garment.customer.phone}
+                                    </span>
+                                ) : 'N/A'}
                             </Typography.Text>
                         </Box>
                     </Box>
@@ -387,7 +403,30 @@ export default function OrderPaymentPopup({ visible, onCancel, selectedQuotation
                     </Typography.Text>
                 </Paper>
 
-                {}
+                {/* Shipping Note */}
+                <Paper
+                    elevation={0}
+                    sx={{
+                        p: 3,
+                        mb: 3,
+                        background: "linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(217, 119, 6, 0.08) 100%)",
+                        borderRadius: 3,
+                        border: '1px solid rgba(245, 158, 11, 0.15)',
+                        borderLeft: '4px solid #f57c00'
+                    }}
+                >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                        <InfoCircleOutlined style={{ color: '#f57c00', fontSize: '18px' }} />
+                        <Typography.Title level={6} style={{ margin: 0, color: '#f57c00' }}>
+                            Important Note
+                        </Typography.Title>
+                    </Box>
+                    <Typography.Text type="secondary" style={{ fontSize: '13px', color: '#92400e' }}>
+                        The total price shown above does not include shipping costs. Shipping fees will be calculated and added separately during the delivery process.
+                    </Typography.Text>
+                </Paper>
+
+                {/* Deposit Amount */}
                 <Paper
                     elevation={0}
                     sx={{

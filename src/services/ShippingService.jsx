@@ -3,63 +3,99 @@ import {parseID} from "../utils/ParseIDUtil.jsx";
 
 const token = import.meta.env.VITE_GHN_TOKEN
 
-export const createShipping = async (garmentShippingUID, receiverName, senderBusinessName, senderPhone, senderAddress, senderWardName, senderDistrictName, senderProvinceName, receiverPhone, receiverAddress, receiverWardCode, receiverDistrictId, senderNote, orderId, orderPrice) => {
-    const response = await axios.post("https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create",
-        {
-            'to_name': receiverName,
-            'from_name': senderBusinessName,
-            'from_phone': senderPhone,
-            'from_address': senderAddress,
-            'from_ward_name': senderWardName,
-            'from_district_name': senderDistrictName,
-            'from_province_name': senderProvinceName,
-            'to_phone': receiverPhone,
-            'to_address': receiverAddress,
-            'to_ward_code': receiverWardCode,
-            'to_district_id': receiverDistrictId,
-            'weight': 100,
-            'length': 1,
-            'width': 10,
-            'height': 10,
-            'service_type_id': 5,
-            'payment_type_id': 2,
-            'note': senderNote,
-            'required_note': 'CHOTHUHANG',
-            'items': [
-                {
-                    'name': 'Order ' + orderId,
-                    'code': parseID(orderId, 'ord'),
-                    'quantity': 1,
-                    'price': orderPrice,
-                    'length': 10,
-                    'weight': 10,
-                    'width': 10,
-                    'height': 10,
-                    'category': {
-                        'level1': 'order'
+export const createShipping = async (garmentShippingUID, receiverName, receiverPhone, receiverAddress, orderId, orderPrice) => {
+
+    const storesResponse = await getStore()
+
+    if (storesResponse && storesResponse.data.code === 200) {
+        const store = storesResponse.data.data.shops.find(shop => shop._id === parseInt(garmentShippingUID))
+        if (store) {
+            let schoolDistrictId = 0
+
+            let schoolWardCode = ''
+
+            const splitAddress = receiverAddress.split(',').map(a => a.trim())
+
+            const streetName = splitAddress[0]
+
+            const wardName = splitAddress[1]
+
+            const districtName = splitAddress[2]
+
+            const provinceName = splitAddress[3]
+
+            const provinceResponse = await getProvinces()
+
+            if (provinceResponse && provinceResponse.data.code === 200) {
+                const provinceID = provinceResponse.data.data.find(p => p.ProvinceName === provinceName).ProvinceID
+                const districtResponse = await getDistricts(provinceID)
+
+                if (districtResponse && districtResponse.data.code === 200) {
+                    schoolDistrictId = districtResponse.data.data.find(d => d.DistrictName === districtName).DistrictID
+
+                    const wardResponse = await getWards(schoolDistrictId)
+
+                    if (wardResponse && wardResponse.data.code === 200) {
+                        schoolWardCode = wardResponse.data.data.find(w => w.WardName === wardName).WardCode
+
+                        if (schoolDistrictId !== 0 && schoolWardCode !== '') {
+
+                            const response = await axios.post("https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create",
+                                {
+                                    'to_name': receiverName,
+                                    'to_phone': receiverPhone,
+                                    'to_address': streetName,
+                                    'to_ward_code': schoolWardCode,
+                                    'to_district_id': schoolDistrictId,
+                                    'weight': 1,
+                                    'length': 1,
+                                    'width': 1,
+                                    'height': 1,
+                                    'service_type_id': 5,
+                                    'payment_type_id': 2,
+                                    'required_note': 'CHOTHUHANG',
+                                    'items': [
+                                        {
+                                            'name': 'Order ' + parseID(orderId, 'ord'),
+                                            'code': parseID(orderId, 'ord'),
+                                            'quantity': 1,
+                                            'price': orderPrice,
+                                            'length': 1,
+                                            'weight': 1,
+                                            'width': 1,
+                                            'height': 1,
+                                            'category': {
+                                                'level1': 'order'
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'ShopId': garmentShippingUID,
+                                        'Token': token
+                                    }
+                                }
+                            )
+                            return response || null
+                        }
                     }
                 }
-            ]
-        },
-        {
-            headers: {
-                'Content-Type': 'application/json',
-                'ShopId': garmentShippingUID,
-                'Token': token
             }
         }
-    )
+    }
+    return null
 
-    return response || null
 }
 
 export const calculateShippingTime = async (garmentShippingUID = '', schoolAddress = '') => {
 
     const storesResponse = await getStore()
 
-    if(storesResponse && storesResponse.data.code === 200){
+    if (storesResponse && storesResponse.data.code === 200) {
         const store = storesResponse.data.data.shops.find(shop => shop._id === parseInt(garmentShippingUID))
-        if(store){
+        if (store) {
             const garmentDistrictId = store.district_id
 
             let schoolDistrictId = 0
@@ -76,19 +112,19 @@ export const calculateShippingTime = async (garmentShippingUID = '', schoolAddre
 
             const provinceResponse = await getProvinces()
 
-            if(provinceResponse && provinceResponse.data.code === 200){
+            if (provinceResponse && provinceResponse.data.code === 200) {
                 const provinceID = provinceResponse.data.data.find(p => p.ProvinceName === provinceName).ProvinceID
                 const districtResponse = await getDistricts(provinceID)
 
-                if(districtResponse && districtResponse.data.code === 200){
+                if (districtResponse && districtResponse.data.code === 200) {
                     schoolDistrictId = districtResponse.data.data.find(d => d.DistrictName === districtName).DistrictID
 
                     const wardResponse = await getWards(schoolDistrictId)
 
-                    if(wardResponse && wardResponse.data.code === 200){
+                    if (wardResponse && wardResponse.data.code === 200) {
                         schoolWardCode = wardResponse.data.data.find(w => w.WardName === wardName).WardCode
 
-                        if(schoolDistrictId !== 0 && schoolWardCode !== ''){
+                        if (schoolDistrictId !== 0 && schoolWardCode !== '') {
                             const response = await axios.post("https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/leadtime",
                                 {
                                     'from_district_id': garmentDistrictId,
@@ -215,41 +251,69 @@ export const getWards = async (districtId) => {
     return response || null
 }
 
-export const calculateFee = async (garmentShippingUID, fromDistrictId, fromWardCode, toDistrictId, toWardCode, value) => {
-    const response = await axios.post("https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee",
-        {
-            'from_district_id': fromDistrictId,
-            'from_ward_code': fromWardCode,
-            'to_district_id': toDistrictId,
-            'to_ward_code': toWardCode,
-            'height': 50,
-            'length': 20,
-            'weight': 200,
-            'width': 20,
-            'insurance_value': value,
-            'service_id': 5,
-            'coupon': null,
-            'items': [
-                {
-                    'name': "TEST1",
-                    'quantity': 1,
-                    'height': 200,
-                    'weight': 1000,
-                    'length': 200,
-                    'width': 200
+export const calculateFee = async (garmentShippingUID = '', schoolAddress) => {
+
+    const storesResponse = await getStore()
+
+    if (storesResponse && storesResponse.data.code === 200) {
+        const store = storesResponse.data.data.shops.find(shop => shop._id === parseInt(garmentShippingUID))
+        if (store) {
+            let schoolDistrictId = 0
+
+            let schoolWardCode = ''
+
+            const splitAddress = schoolAddress.split(',').map(a => a.trim())
+
+            const wardName = splitAddress[1]
+
+            const districtName = splitAddress[2]
+
+            const provinceName = splitAddress[3]
+
+            const provinceResponse = await getProvinces()
+
+            if (provinceResponse && provinceResponse.data.code === 200) {
+                const provinceID = provinceResponse.data.data.find(p => p.ProvinceName === provinceName).ProvinceID
+                const districtResponse = await getDistricts(provinceID)
+
+                if (districtResponse && districtResponse.data.code === 200) {
+                    schoolDistrictId = districtResponse.data.data.find(d => d.DistrictName === districtName).DistrictID
+
+                    const wardResponse = await getWards(schoolDistrictId)
+
+                    if (wardResponse && wardResponse.data.code === 200) {
+                        schoolWardCode = wardResponse.data.data.find(w => w.WardName === wardName).WardCode
+
+                        if (schoolDistrictId !== 0 && schoolWardCode !== '') {
+
+                            const response = await axios.post("https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee",
+                                {
+                                    'to_district_id': schoolDistrictId,
+                                    'to_ward_code': schoolWardCode,
+                                    'service_type_id': 5,
+                                    "weight": 1,
+                                    "items": [
+                                        {
+                                            "weight": 1
+                                        }
+                                    ]
+                                },
+                                {
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'ShopId': parseInt(garmentShippingUID),
+                                        'Token': token
+                                    }
+                                }
+                            )
+
+                            return response || null
+                        }
+                    }
                 }
-            ]
-        },
-        {
-            headers: {
-                'Content-Type': 'application/json',
-                'ShopId': garmentShippingUID,
-                'Token': token
             }
         }
-    )
-
-    return response || null
+    }
 }
 
 export const getBanks = async () => {
