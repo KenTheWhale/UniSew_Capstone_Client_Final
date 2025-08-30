@@ -2,7 +2,7 @@ import axios from "axios"
 import {refreshToken} from "../services/AuthService.jsx";
 
 // axios.defaults.baseURL = "http://localhost:8080/api/v1"
-axios.defaults.baseURL = "https://unisew.onrender.com/api/v1"
+axios.defaults.baseURL = "https://unisew-server.onrender.com/api/v1"
 
 const axiosClient = axios.create({
     baseURL: axios.defaults.baseURL,
