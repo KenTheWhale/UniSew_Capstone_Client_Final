@@ -46,6 +46,7 @@ const GarmentPendingOrders = lazy(() => import("./components/garment/GarmentPend
 const AdminReport = lazy(() => import("./components/admin/AdminReport.jsx"));
 
 import { LoadingProvider, GlobalLoadingOverlay } from './contexts/LoadingContext.jsx';
+import GarmentProfile from "./components/garment/profile/GarmentProfile.jsx";
 
 const LoadingFallback = () => {
     // Không cần hiển thị loading ở đây nữa vì sẽ dùng GlobalLoadingOverlay
@@ -438,6 +439,14 @@ const router = createBrowserRouter([
                 element: (
                     <Suspense fallback={<LoadingFallback />}>
                         <GarmentFeedback />
+                    </Suspense>
+                )
+            },
+            {
+                path: 'profile',
+                element: (
+                    <Suspense fallback={<LoadingFallback />}>
+                        <GarmentProfile />
                     </Suspense>
                 )
             }

@@ -45,3 +45,13 @@ export const checkSchoolInitData = async (schoolName, taxCode, phone, address, s
     })
     return response || null;
 }
+
+export const updateSchoolProfile = async (data) => {
+    const response = await axiosClient.put("/account/data/customer", data)
+    return response || null;
+}
+
+export const updatePartnerProfile = async (data) => {
+    const response = await axiosClient.put("/account/partner/profile", data)
+    return response || null;
+}
