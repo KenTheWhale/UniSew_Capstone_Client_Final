@@ -124,7 +124,6 @@ export function UseDesignerChatMessages(roomId) {
         if (!roomId) return;
         console.log("Auth: ", auth)
         console.log("Auth user: ", auth.currentUser)
-        const displayName = auth.currentUser?.displayName || "Designer";
 
         let cookie = await getAccessCookie()
         if (!cookie) {
@@ -132,6 +131,7 @@ export function UseDesignerChatMessages(roomId) {
         }
         const accountId = cookie.id;
         const email = cookie.email || "designer@unknown";
+        const displayName = cookie.email || "Designer";
         const payload =
             typeof textOrPayload === "string"
                 ? {text: textOrPayload}
