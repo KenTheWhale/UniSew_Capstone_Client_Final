@@ -10,7 +10,8 @@ import {
     Tooltip,
     Typography,
     Menu,
-    MenuItem
+    MenuItem,
+    CircularProgress
 } from '@mui/material';
 import { DataLoadingState, ErrorState, EmptyState } from '../../ui/LoadingSpinner.jsx';
 import { useLoading } from '../../../contexts/LoadingContext.jsx';
@@ -211,6 +212,16 @@ export default function SchoolOrderList() {
         setSelectedOrder(null);
     };
 
+    const handleOpenMenu = (event, rowId) => {
+        setMenuAnchorEl(event.currentTarget);
+        setMenuRowId(rowId);
+    };
+
+    const handleCloseMenu = () => {
+        setMenuAnchorEl(null);
+        setMenuRowId(null);
+    };
+
     const handleOpenFeedback = useCallback((order) => {
         if (order.status !== 'completed') {
             enqueueSnackbar('Feedback is only available for completed orders', { variant: 'warning' });
@@ -397,121 +408,87 @@ export default function SchoolOrderList() {
             },
         },
         {
-            title: 'Actions',
-            key: 'actions',
+            title: 'Detail',
+            key: 'details',
             align: 'center',
-            width: 280,
+            width: 80,
+            render: (_, record) => (
+                <Tooltip title="View Details">
+                    <IconButton
+                        onClick={() => handleViewDetail(record)}
+                        sx={{
+                            color: '#2e7d32',
+                            '&:hover': {
+                                backgroundColor: 'rgba(46, 125, 50, 0.1)',
+                                transform: 'scale(1.1)'
+                            },
+                            transition: 'all 0.2s ease'
+                        }}
+                        size="small"
+                    >
+                        <InfoIcon/>
+                    </IconButton>
+                </Tooltip>
+            ),
+        },
+        {
+            title: 'More',
+            key: 'more',
+            align: 'center',
+            width: 80,
             fixed: 'right',
             render: (_, record) => (
-                <Space size="small">
-                    <Tooltip title="View Details">
-                        <IconButton
-                            onClick={() => handleViewDetail(record)}
-                            sx={{
-                                color: '#2e7d32',
-                                '&:hover': {
-                                    backgroundColor: 'rgba(46, 125, 50, 0.1)',
-                                    transform: 'scale(1.1)'
-                                },
-                                transition: 'all 0.2s ease'
-                            }}
-                            size="small"
+                <>
+                    <IconButton
+                        onClick={e => handleOpenMenu(e, record.id)}
+                        size="small"
+                        sx={{
+                            color: '#64748b',
+                            '&:hover': {
+                                backgroundColor: '#f1f5f9',
+                                color: '#1e293b'
+                            }
+                        }}
+                    >
+                        <MoreVertIcon />
+                    </IconButton>
+                    {menuRowId === record.id && (
+                        <Menu
+                            anchorEl={menuAnchorEl}
+                            open={Boolean(menuAnchorEl) && menuRowId === record.id}
+                            onClose={handleCloseMenu}
+                            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                         >
-                            <InfoIcon/>
-                        </IconButton>
-                    </Tooltip>
-                    <Tooltip title={
-                        record.status !== 'completed' ? "Feedback only available for completed orders" :
-                        record.feedback ? "Feedback already submitted" :
-                        "Give Feedback"
-                    }>
-                        <IconButton
-                            onClick={() => handleOpenFeedback(record)}
-                            disabled={record.status !== 'completed' || !!record.feedback}
-                            sx={{
-                                color: (record.status === 'completed' && !record.feedback) ? '#10b981' : '#9ca3af',
-                                '&:hover': {
-                                    backgroundColor: (record.status === 'completed' && !record.feedback) ? '#d1fae5' : 'transparent',
-                                    transform: (record.status === 'completed' && !record.feedback) ? 'scale(1.1)' : 'none'
-                                },
-                                transition: 'all 0.2s ease',
-                                '&:disabled': {
-                                    color: '#9ca3af',
-                                    cursor: 'not-allowed'
-                                }
-                            }}
-                            size="small"
-                        >
-                            <FeedbackIcon />
-                        </IconButton>
-                    </Tooltip>
-                    <Tooltip title={
-                        record.status === 'pending' ? "Report not available for pending orders" :
-                        record.feedback ? "Report not available for feedbacked orders" :
-                        record.report ? "Report already submitted" :
-                        "Report Issue"
-                    }>
-                        <IconButton
-                            onClick={() => handleOpenReport(record)}
-                            disabled={record.status === 'pending' || !!record.feedback || !!record.report}
-                            sx={{
-                                color: (record.status !== 'pending' && !record.feedback && !record.report) ? '#ef4444' : '#9ca3af',
-                                '&:hover': {
-                                    backgroundColor: (record.status !== 'pending' && !record.feedback && !record.report) ? '#fee2e2' : 'transparent',
-                                    transform: (record.status !== 'pending' && !record.feedback && !record.report) ? 'scale(1.1)' : 'none'
-                                },
-                                transition: 'all 0.2s ease',
-                                '&:disabled': {
-                                    color: '#9ca3af',
-                                    cursor: 'not-allowed'
-                                }
-                            }}
-                            size="small"
-                        >
-                            <ReportIcon />
-                        </IconButton>
-                    </Tooltip>
-                    {record.status === 'pending' && (
-                        <Tooltip title="Cancel Order">
-                            <IconButton
-                                onClick={() => handleCancelOrder(record.id)}
-                                disabled={cancellingOrderId === record.id}
-                                sx={{
-                                    color: cancellingOrderId === record.id ? '#bdbdbd' : '#d32f2f',
-                                    '&:hover': {
-                                        backgroundColor: cancellingOrderId === record.id ? 'transparent' : '#ffebee',
-                                        transform: cancellingOrderId === record.id ? 'none' : 'scale(1.1)'
-                                    },
-                                    transition: 'all 0.2s ease',
-                                    '&:disabled': {
-                                        cursor: 'not-allowed'
-                                    }
-                                }}
-                                size="small"
+                            <MenuItem
+                                onClick={() => { handleOpenFeedback(record); handleCloseMenu(); }}
+                                disabled={record.status !== 'completed' || !!record.feedback}
                             >
-                                {cancellingOrderId === record.id ? (
-                                    <Box
-                                        component="span"
-                                        sx={{
-                                            width: 16,
-                                            height: 16,
-                                            border: '2px solid #bdbdbd',
-                                            borderTop: '2px solid transparent',
-                                            borderRadius: '50%',
-                                            animation: 'spin 1s linear infinite',
-                                            '@keyframes spin': {
-                                                '0%': {transform: 'rotate(0deg)'},
-                                                '100%': {transform: 'rotate(360deg)'}
-                                            }
-                                        }}
-                                    />
-                                ) : (
-                                    <CancelIcon/>
-                                )}
-                            </IconButton>
-                        </Tooltip>
+                                <FeedbackIcon fontSize="small" sx={{ mr: 1, color: (record.status === 'completed' && !record.feedback) ? '#10b981' : '#9ca3af' }} />
+                                Feedback
+                            </MenuItem>
+                            <MenuItem
+                                onClick={() => { handleOpenReport(record); handleCloseMenu(); }}
+                                disabled={record.status === 'pending' || !!record.feedback || !!record.report}
+                            >
+                                <ReportIcon fontSize="small" sx={{ mr: 1, color: (record.status !== 'pending' && !record.feedback && !record.report) ? '#ef4444' : '#9ca3af' }} />
+                                Report
+                            </MenuItem>
+                            {record.status === 'pending' && (
+                                <MenuItem
+                                    onClick={async () => { await handleCancelOrder(record.id); handleCloseMenu(); }}
+                                    disabled={cancellingOrderId === record.id}
+                                >
+                                    {cancellingOrderId === record.id ?
+                                        <CircularProgress size={16} sx={{ color: '#9ca3af', mr: 1 }} /> :
+                                        <CancelIcon fontSize="small" sx={{ mr: 1, color: '#f59e0b' }} />
+                                    }
+                                    Cancel
+                                </MenuItem>
+                            )}
+                        </Menu>
                     )}
-                </Space>
+                </>
             ),
         },
     ], [orders, handleViewDetail, handleOpenFeedback, handleOpenReport, handleCancelOrder, cancellingOrderId]);

@@ -30,19 +30,18 @@ import {
     BankOutlined,
     CalendarOutlined,
     CheckCircleOutlined,
+    ClockCircleOutlined,
     CreditCardOutlined,
+    DollarOutlined,
     EditOutlined,
     EnvironmentOutlined,
     IdcardOutlined,
     MailOutlined,
     PhoneOutlined,
-    UserOutlined,
-    SwapOutlined,
-    DollarOutlined,
-    ClockCircleOutlined,
-    WalletOutlined
+    StarOutlined,
+    UserOutlined, WalletOutlined
 } from '@ant-design/icons';
-import {getSchoolProfile, updateSchoolProfile} from '../../../services/AccountService.jsx';
+import {getPartnerProfile, updatePartnerProfile} from '../../../services/AccountService.jsx';
 import {getBanks} from '../../../services/ShippingService.jsx';
 import {getTransactionsForOne} from '../../../services/PaymentService.jsx';
 import {uploadCloudinary} from '../../../services/UploadImageService.jsx';
@@ -50,7 +49,7 @@ import {enqueueSnackbar} from 'notistack';
 import dayjs from 'dayjs';
 import 'dayjs/locale/vi';
 
-export default function SchoolProfile() {
+export default function GarmentProfile() {
     const [profileData, setProfileData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -61,12 +60,12 @@ export default function SchoolProfile() {
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [editFormData, setEditFormData] = useState({
         name: '',
-        business: '',
-        phone: '',
-        avatar: '',
+        businessName: '',
+        ownerName: '',
         bank: '',
-        bankNumber: '',
-        cardOwner: ''
+        bankAccountNumber: '',
+        startTime: '',
+        endTime: ''
     });
     const [editFormErrors, setEditFormErrors] = useState({});
     const [editLoading, setEditLoading] = useState(false);
@@ -85,7 +84,7 @@ export default function SchoolProfile() {
     const fetchProfileData = async () => {
         try {
             setLoading(true);
-            const response = await getSchoolProfile();
+            const response = await getPartnerProfile();
             if (response && response.status === 200) {
                 setProfileData(response.data.body);
             } else {
@@ -186,14 +185,14 @@ export default function SchoolProfile() {
     };
 
     const getTransactionIcon = (type, isReceiver) => {
-        if (type === 'order_return') return <ArrowDownOutlined />;
+        if (type === 'order_return') return <ArrowUpOutlined />;
         if (isReceiver) return <ArrowDownOutlined />;
         return <ArrowUpOutlined />;
     };
 
     const isCurrentUserReceiver = (transaction) => {
         return transaction.receiver && transaction.receiver.account && 
-               transaction.receiver.account.role === 'school';
+               transaction.receiver.account.role === 'garment';
     };
 
     const handleAvatarUpload = async (event) => {
@@ -247,18 +246,23 @@ export default function SchoolProfile() {
 
             // Update profile with new avatar
             const requestData = {
-                name: profileData.profile.name || '',
-                business: profileData.profile.businessName || '',
-                address: profileData.profile.address || '',
-                taxCode: profileData.profile.taxCode || '',
-                phone: profileData.profile.phone || '',
-                avatar: uploadedUrl,
-                bank: profileData.wallet.bank || '',
-                bankNumber: profileData.wallet.bankAccountNumber || '',
-                cardOwner: profileData.wallet.cardOwner || ''
+                wallet: {
+                    ownerName: profileData.wallet.ownerName || '',
+                    bank: profileData.wallet.bank || '',
+                    bankAccountNumber: profileData.wallet.bankAccountNumber || ''
+                },
+                customer: {
+                    name: profileData.profile.name || '',
+                    businessName: profileData.profile.businessName || '',
+                    avatarUrl: uploadedUrl
+                },
+                partner: {
+                    startTime: profileData.profile.partner?.startTime || '',
+                    endTime: profileData.profile.partner?.endTime || ''
+                }
             };
 
-            const response = await updateSchoolProfile(requestData);
+            const response = await updatePartnerProfile(requestData);
             
             if (response && response.status === 200) {
                 // Refresh profile data
@@ -303,12 +307,12 @@ export default function SchoolProfile() {
         if (profileData && profileData.profile) {
             setEditFormData({
                 name: profileData.profile.name || '',
-                business: profileData.profile.businessName || '',
-                phone: profileData.profile.phone || '',
-                avatar: profileData.profile.avatar || '',
+                businessName: profileData.profile.businessName || '',
+                ownerName: profileData.wallet.ownerName || '',
                 bank: profileData.wallet.bank || '',
-                bankNumber: profileData.wallet.bankAccountNumber || '',
-                cardOwner: profileData.wallet.cardOwner || ''
+                bankAccountNumber: profileData.wallet.bankAccountNumber || '',
+                startTime: profileData.profile.partner?.startTime || '',
+                endTime: profileData.profile.partner?.endTime || ''
             });
         }
         setEditDialogOpen(true);
@@ -341,26 +345,38 @@ export default function SchoolProfile() {
             errors.name = 'Name is required';
         }
         
-        if (!editFormData.business.trim()) {
-            errors.business = 'Business name is required';
+        if (!editFormData.businessName.trim()) {
+            errors.businessName = 'Business name is required';
         }
         
-        if (!editFormData.phone.trim()) {
-            errors.phone = 'Phone number is required';
-        } else if (!/^0\d{9}$/.test(editFormData.phone.trim())) {
-            errors.phone = 'Phone number must start with 0 and have 10 digits';
+        if (!editFormData.ownerName.trim()) {
+            errors.ownerName = 'Owner name is required';
         }
         
         if (!editFormData.bank.trim()) {
             errors.bank = 'Bank is required';
         }
         
-        if (!editFormData.bankNumber.trim()) {
-            errors.bankNumber = 'Bank account number is required';
+        if (!editFormData.bankAccountNumber.trim()) {
+            errors.bankAccountNumber = 'Bank account number is required';
         }
         
-        if (!editFormData.cardOwner.trim()) {
-            errors.cardOwner = 'Card owner name is required';
+        if (!editFormData.startTime.trim()) {
+            errors.startTime = 'Start time is required';
+        }
+        
+        if (!editFormData.endTime.trim()) {
+            errors.endTime = 'End time is required';
+        }
+        
+        // Validate time logic
+        if (editFormData.startTime && editFormData.endTime) {
+            const startTime = new Date(`1970-01-01T${editFormData.startTime}:00`);
+            const endTime = new Date(`1970-01-01T${editFormData.endTime}:00`);
+            
+            if (startTime >= endTime) {
+                errors.endTime = 'End time must be after start time';
+            }
         }
         
         setEditFormErrors(errors);
@@ -383,17 +399,23 @@ export default function SchoolProfile() {
         try {
             setEditLoading(true);
             const requestData = {
-                name: editFormData.name,
-                business: editFormData.business,
-                address: profileData.profile.address || '',
-                taxCode: profileData.profile.taxCode || '',
-                phone: editFormData.phone,
-                avatar: profileData.profile.avatar || '',
-                bank: editFormData.bank,
-                bankNumber: editFormData.bankNumber,
-                cardOwner: editFormData.cardOwner
+                wallet: {
+                    ownerName: editFormData.ownerName,
+                    bank: editFormData.bank,
+                    bankAccountNumber: editFormData.bankAccountNumber
+                },
+                customer: {
+                    name: editFormData.name,
+                    businessName: editFormData.businessName,
+                    avatarUrl: profileData.profile.avatar || ''
+                },
+                partner: {
+                    startTime: editFormData.startTime,
+                    endTime: editFormData.endTime
+                }
             };
-            const response = await updateSchoolProfile(requestData);
+
+            const response = await updatePartnerProfile(requestData);
             
             if (response && response.status === 200) {
                 // Refresh profile data
@@ -492,6 +514,7 @@ export default function SchoolProfile() {
             py: 4
         }}>
             <Container maxWidth="xl">
+                {}
                 <Box sx={{mb: 4, textAlign: 'center'}}>
                     <Typography
                         variant="h3"
@@ -505,14 +528,16 @@ export default function SchoolProfile() {
                             WebkitTextFillColor: 'transparent'
                         }}
                     >
-                        School Profile
+                        Garment Profile
                     </Typography>
                     <Typography variant="h6" sx={{color: '#64748b', fontWeight: 500}}>
-                        Manage your school information and account details
+                        Manage your garment information and account details
                     </Typography>
                 </Box>
 
+                {}
                 <Box sx={{display: 'flex', gap: 4}}>
+                    {}
                     <Box sx={{flex: 1}}>
                         <Paper
                             elevation={8}
@@ -536,7 +561,7 @@ export default function SchoolProfile() {
                                 }
                             }}
                         >
-
+                            {}
                             <Box sx={{
                                 display: 'flex',
                                 alignItems: 'center',
@@ -552,7 +577,7 @@ export default function SchoolProfile() {
                                             mb: 1
                                         }}
                                     >
-                                        School Account
+                                        Garment Account
                                     </Typography>
                                     <Typography variant="body2" sx={{color: '#64748b'}}>
                                         Profile information and account status
@@ -574,16 +599,17 @@ export default function SchoolProfile() {
                                 </Tooltip>
                             </Box>
 
+                            {}
                             <Box sx={{textAlign: 'center', mb: 4}}>
                                 <Box sx={{position: 'relative', display: 'inline-block', mb: 3}}>
                                     <input
                                         accept="image/jpeg,image/png,image/gif,image/webp"
                                         style={{display: 'none'}}
-                                        id="avatar-upload-input-school"
+                                        id="avatar-upload-input-garment"
                                         type="file"
                                         onChange={handleAvatarUpload}
                                     />
-                                    <label htmlFor="avatar-upload-input-school">
+                                    <label htmlFor="avatar-upload-input-garment">
                                         <Box sx={{
                                             position: 'relative',
                                             display: 'inline-block',
@@ -700,11 +726,27 @@ export default function SchoolProfile() {
                                     sx={{
                                         color: '#64748b',
                                         fontWeight: 500,
-                                        mb: 3
+                                        mb: 1,
+                                        fontSize: '18px'
                                     }}
                                 >
-                                    School: {profile.businessName}
+                                    Studio: {profile.businessName}
                                 </Typography>
+
+                                {}
+                                {profile.partner && (
+                                    <Box sx={{mb: 3}}>
+                                        <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1}}>
+                                            <Typography variant="caption" sx={{color: '#64748b', fontSize: '18px'}}>
+                                                Rating:
+                                            </Typography>
+                                            <StarOutlined style={{color: '#f59e0b', fontSize: 18}}/>
+                                            <Typography variant="body1" sx={{color: '#1e293b', fontWeight: 600}}>
+                                                {profile.partner.rating}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                )}
                             </Box>
 
                             {}
@@ -895,6 +937,43 @@ export default function SchoolProfile() {
                                             </Typography>
                                         </Box>
                                     </Box>
+
+                                    {}
+                                    {profile.partner && (
+                                        <Box sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            py: 1.5,
+                                            borderBottom: '1px solid #f1f5f9'
+                                        }}>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                width: 32,
+                                                height: 32,
+                                                borderRadius: '50%',
+                                                backgroundColor: 'rgba(25, 118, 210, 0.1)',
+                                                mr: 1.5
+                                            }}>
+                                                <ClockCircleOutlined style={{color: '#1976d2', fontSize: 14}}/>
+                                            </Box>
+                                            <Box sx={{flex: 1}}>
+                                                <Typography variant="body2" sx={{
+                                                    color: '#64748b',
+                                                    fontWeight: 500,
+                                                    mb: 0.25,
+                                                    fontSize: '11px'
+                                                }}>
+                                                    Working Hours
+                                                </Typography>
+                                                <Typography variant="body1"
+                                                            sx={{color: '#1e293b', fontWeight: 600, fontSize: '13px'}}>
+                                                    {profile.partner.startTime} - {profile.partner.endTime}
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+                                    )}
                                 </Box>
                             </Box>
                         </Paper>
@@ -944,8 +1023,21 @@ export default function SchoolProfile() {
                                     <Typography variant="body2" sx={{color: '#64748b', mb: 3}}>
                                         Your payment card details and transaction history
                                     </Typography>
+                                    <Tooltip title="Deposit">
+                                        <IconButton
+                                            sx={{
+                                                backgroundColor: '#e3f2fd',
+                                                color: '#1976d2',
+                                                '&:hover': {
+                                                    backgroundColor: '#bbdefb'
+                                                }
+                                            }}
+                                        >
+                                            <WalletOutlined/>
+                                        </IconButton>
+                                    </Tooltip>
                                 </Box>
-                                <Tooltip title="Deposit">
+                                <Tooltip title="Update Payment Information">
                                     <IconButton
                                         sx={{
                                             backgroundColor: '#e3f2fd',
@@ -955,7 +1047,7 @@ export default function SchoolProfile() {
                                             }
                                         }}
                                     >
-                                        <WalletOutlined/>
+                                        <EditOutlined/>
                                     </IconButton>
                                 </Tooltip>
                             </Box>
@@ -1204,11 +1296,10 @@ export default function SchoolProfile() {
                                                         boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
                                                         transform: 'translateY(-2px)'
                                                     },
-                                                    transition: 'all 0.3s ease',
-                                                    minHeight: '120px'
+                                                    transition: 'all 0.3s ease'
                                                 }}
                                             >
-                                                <CardContent sx={{ p: 4, minHeight: '140px'}}>
+                                                <CardContent sx={{ p: 4, minHeight: '140px' }}>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
                                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                                             <Box sx={{
@@ -1335,12 +1426,12 @@ export default function SchoolProfile() {
                     fontWeight: 700,
                     textAlign: 'center'
                 }}>
-                    Edit School Profile
+                    Edit Garment Profile
                 </DialogTitle>
                 <DialogContent sx={{ 
                     pt: 3, 
                     pb: 2,
-                    minHeight: '400px',
+                    minHeight: '500px',
                     '&::-webkit-scrollbar': {
                         width: '6px',
                     },
@@ -1358,9 +1449,9 @@ export default function SchoolProfile() {
                         gap: 3,
                         py: 1
                     }}>
-                        {/* School Information Section */}
+                        {/* Personal Information Section */}
                         <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b', mb: 1 }}>
-                            School Information
+                            Personal Information
                         </Typography>
                         
                         <TextField
@@ -1371,84 +1462,72 @@ export default function SchoolProfile() {
                             helperText={editFormErrors.name}
                             fullWidth
                             variant="outlined"
-                            sx={{
-                                '& .MuiOutlinedInput-root': {
-                                    '&:hover fieldset': {
-                                        borderColor: '#667eea',
-                                    },
-                                    '&.Mui-focused fieldset': {
-                                        borderColor: '#667eea',
-                                    },
-                                }
-                            }}
                         />
                         
                         <TextField
-                            label="School Name"
-                            value={editFormData.business}
-                            onChange={handleEditFormChange('business')}
-                            error={!!editFormErrors.business}
-                            helperText={editFormErrors.business}
+                            label="Business Name"
+                            value={editFormData.businessName}
+                            onChange={handleEditFormChange('businessName')}
+                            error={!!editFormErrors.businessName}
+                            helperText={editFormErrors.businessName}
                             fullWidth
                             variant="outlined"
-                            sx={{
-                                '& .MuiOutlinedInput-root': {
-                                    '&:hover fieldset': {
-                                        borderColor: '#667eea',
-                                    },
-                                    '&.Mui-focused fieldset': {
-                                        borderColor: '#667eea',
-                                    },
-                                }
-                            }}
                         />
 
-
-                        
-                        <TextField
-                            label="Phone Number"
-                            value={editFormData.phone}
-                            onChange={handleEditFormChange('phone')}
-                            error={!!editFormErrors.phone}
-                            helperText={editFormErrors.phone}
-                            fullWidth
-                            variant="outlined"
-                            inputProps={{ maxLength: 10 }}
-                            sx={{
-                                '& .MuiOutlinedInput-root': {
-                                    '&:hover fieldset': {
-                                        borderColor: '#667eea',
-                                    },
-                                    '&.Mui-focused fieldset': {
-                                        borderColor: '#667eea',
-                                    },
-                                }
-                            }}
-                        />
-
-                        {/* Payment Information Section */}
+                        {/* Working Hours Section */}
                         <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b', mb: 1, mt: 2 }}>
-                            Payment Information
+                            Working Hours
+                        </Typography>
+                        
+                        <Box sx={{ display: 'flex', gap: 2 }}>
+                            <TextField
+                                label="Start Time"
+                                type="time"
+                                value={editFormData.startTime}
+                                onChange={handleEditFormChange('startTime')}
+                                error={!!editFormErrors.startTime}
+                                helperText={editFormErrors.startTime}
+                                fullWidth
+                                variant="outlined"
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                                inputProps={{
+                                    step: 300, // 5 min
+                                }}
+                            />
+                            
+                            <TextField
+                                label="End Time"
+                                type="time"
+                                value={editFormData.endTime}
+                                onChange={handleEditFormChange('endTime')}
+                                error={!!editFormErrors.endTime}
+                                helperText={editFormErrors.endTime}
+                                fullWidth
+                                variant="outlined"
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                                inputProps={{
+                                    step: 300, // 5 min
+                                }}
+                            />
+                        </Box>
+
+                        {/* Wallet Information Section */}
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b', mb: 1, mt: 2 }}>
+                            Wallet Information
                         </Typography>
                         
                         <TextField
-                            label="Card Owner Name"
-                            value={editFormData.cardOwner}
-                            onChange={handleEditFormChange('cardOwner')}
-                            error={!!editFormErrors.cardOwner}
-                            helperText={editFormErrors.cardOwner}
+                            label="Owner Name"
+                            value={editFormData.ownerName}
+                            onChange={handleEditFormChange('ownerName')}
+                            error={!!editFormErrors.ownerName}
+                            helperText={editFormErrors.ownerName}
                             fullWidth
                             variant="outlined"
-                            sx={{
-                                '& .MuiOutlinedInput-root': {
-                                    '&:hover fieldset': {
-                                        borderColor: '#667eea',
-                                    },
-                                    '&.Mui-focused fieldset': {
-                                        borderColor: '#667eea',
-                                    },
-                                }
-                            }}
                         />
                         
                         <FormControl fullWidth variant="outlined" error={!!editFormErrors.bank}>
@@ -1457,14 +1536,6 @@ export default function SchoolProfile() {
                                 value={editFormData.bank}
                                 onChange={handleEditFormChange('bank')}
                                 label="Bank"
-                                sx={{
-                                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                                        borderColor: '#667eea',
-                                    },
-                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                        borderColor: '#667eea',
-                                    },
-                                }}
                             >
                                 {banksData.map((bank) => (
                                     <MenuItem key={bank.code} value={bank.code}>
@@ -1481,22 +1552,12 @@ export default function SchoolProfile() {
                         
                         <TextField
                             label="Bank Account Number"
-                            value={editFormData.bankNumber}
-                            onChange={handleEditFormChange('bankNumber')}
-                            error={!!editFormErrors.bankNumber}
-                            helperText={editFormErrors.bankNumber}
+                            value={editFormData.bankAccountNumber}
+                            onChange={handleEditFormChange('bankAccountNumber')}
+                            error={!!editFormErrors.bankAccountNumber}
+                            helperText={editFormErrors.bankAccountNumber}
                             fullWidth
                             variant="outlined"
-                            sx={{
-                                '& .MuiOutlinedInput-root': {
-                                    '&:hover fieldset': {
-                                        borderColor: '#667eea',
-                                    },
-                                    '&.Mui-focused fieldset': {
-                                        borderColor: '#667eea',
-                                    },
-                                }
-                            }}
                         />
                     </Box>
                 </DialogContent>

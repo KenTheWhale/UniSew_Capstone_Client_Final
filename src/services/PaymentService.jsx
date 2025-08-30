@@ -72,6 +72,11 @@ export const getTransactions = async () => {
     return response || null;
 }
 
+export const getTransactionsForOne = async () => {
+    const response = await axiosClient.post("/payment/transactions")
+    return response || null;
+}
+
 export const refundTransaction = async (data) => {
     const response = await axiosClient.post("/payment/transaction/refund", data)
     return response || null;
