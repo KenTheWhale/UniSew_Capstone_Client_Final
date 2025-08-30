@@ -692,7 +692,7 @@ export default function SchoolCreateOrder() {
                                                     fontWeight: 500,
                                                     mt: 0.5
                                                 }}>
-                                                    âš?{validationErrors.deadline}
+                                                    {validationErrors.deadline}
                                                 </Typography>
                                             )}
                                             <Typography variant="body2" sx={{
@@ -770,7 +770,7 @@ export default function SchoolCreateOrder() {
                             </CardContent>
                         </MuiCard>
 
-                        {}
+                        
                         {selectedDesignId && selectedDesign && (
                             <MuiCard sx={{
                                 background: 'rgba(255, 255, 255, 0.95)',
@@ -887,7 +887,7 @@ export default function SchoolCreateOrder() {
                                                         </Typography>
                                                     </Box>
 
-                                                    {}
+                                                
                                                     <Box sx={{
                                                         p: 2,
                                                         borderRight: '1px solid #000000',
@@ -906,7 +906,7 @@ export default function SchoolCreateOrder() {
                                                         </Typography>
                                                     </Box>
 
-                                                    {}
+                                                   
                                                     {allSizes.map((size, index) => (
                                                         <Box key={`header-${index}`} sx={{
                                                             p: 2,
@@ -1128,7 +1128,7 @@ export default function SchoolCreateOrder() {
                                             alignItems: 'center',
                                             gap: 1
                                         }}>
-                                            âš?Required Fields Missing
+                                            Required Fields Missing
                                         </Typography>
                                         <Box sx={{display: 'flex', flexDirection: 'column', gap: 0.5}}>
                                             {Object.entries(validationErrors)
@@ -1139,7 +1139,7 @@ export default function SchoolCreateOrder() {
                                                         fontSize: '14px',
                                                         fontWeight: 500
                                                     }}>
-                                                        â€?{error}
+                                                        {error}
                                                     </Typography>
                                                 ))}
                                         </Box>

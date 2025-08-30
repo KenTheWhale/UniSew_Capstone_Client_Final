@@ -27,6 +27,7 @@ import {
     UserOutlined
 } from '@ant-design/icons';
 import {getSchoolProfile} from '../../../services/AccountService.jsx';
+import {getBanks} from '../../../services/ShippingService.jsx';
 import dayjs from 'dayjs';
 import 'dayjs/locale/vi';
 
@@ -34,9 +35,12 @@ export default function SchoolProfile() {
     const [profileData, setProfileData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [bankInfo, setBankInfo] = useState(null);
+    const [banksData, setBanksData] = useState([]);
 
     useEffect(() => {
         fetchProfileData();
+        fetchBanksData();
     }, []);
 
     const fetchProfileData = async () => {
@@ -55,6 +59,24 @@ export default function SchoolProfile() {
             setLoading(false);
         }
     };
+
+    const fetchBanksData = async () => {
+        try {
+            const response = await getBanks();
+            if (response && response.status === 200) {
+                setBanksData(response.data.data || []);
+            }
+        } catch (err) {
+            console.error('Error fetching banks data:', err);
+        }
+    };
+
+    useEffect(() => {
+        if (profileData && banksData.length > 0) {
+            const bank = banksData.find(b => b.code === profileData.wallet.bank);
+            setBankInfo(bank);
+        }
+    }, [profileData, banksData]);
 
     const formatDate = (dateString) => {
         try {
@@ -567,6 +589,22 @@ export default function SchoolProfile() {
                                                         flexDirection: 'column',
                                                         justifyContent: 'center'
                                                     }}>
+                                                        <Box sx={{ mb: 2 }}>
+                                                            <Typography variant="body2" sx={{
+                                                                color: '#64748b',
+                                                                mb: 0.5,
+                                                                fontSize: '12px'
+                                                            }}>
+                                                                Bank Name
+                                                            </Typography>
+                                                            <Typography variant="body1" sx={{
+                                                                color: '#475569',
+                                                                fontWeight: 600,
+                                                                fontSize: '14px'
+                                                            }}>
+                                                                {bankInfo ? `${bankInfo.shortName} (${bankInfo.name})` : 'Bank information not available'}
+                                                            </Typography>
+                                                        </Box>
                                                         <Box>
                                                             <Typography variant="body2" sx={{
                                                                 color: '#64748b',
