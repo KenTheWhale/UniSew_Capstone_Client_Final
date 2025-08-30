@@ -558,8 +558,8 @@ export default function PartnerRegister() {
 
                     const emailParam = {
                         title: 'Email Confirmation for Partner Register',
-                        verifiedLink: 'http://localhost:5173/email/confirmation?p=' + res.data.body.encryptData,
-                        // verifiedLink: 'https://unisew.onrender.com/email/confirmation?p=' + res.data.body.encryptData,
+                        // verifiedLink: 'http://localhost:5173/email/confirmation?p=' + res.data.body.encryptData,
+                        verifiedLink: 'https://unisew.onrender.com/email/confirmation?p=' + res.data.body.encryptData,
                         receiver: formData.email
                     }
 
