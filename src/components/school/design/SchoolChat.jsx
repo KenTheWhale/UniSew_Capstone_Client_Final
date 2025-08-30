@@ -606,7 +606,7 @@ export function UseDesignChatMessages(roomId) {
 
     const sendMessage = async (textOrPayload) => {
         if (!roomId) return;
-        const displayName = auth.currentUser?.displayName || "Designer";
+        const displayName = auth.currentUser?.displayName || "School";
         let cookie = await getAccessCookie()
         if (!cookie) {
             return false;
