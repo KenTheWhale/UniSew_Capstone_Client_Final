@@ -24,12 +24,14 @@ import {
     Tooltip,
     Typography
 } from '@mui/material';
+import WalletTopUp from './WalletTopUp.jsx';
 import {
     ArrowDownOutlined,
     ArrowUpOutlined,
     BankOutlined,
     CalendarOutlined,
     CheckCircleOutlined,
+    CloseCircleOutlined,
     ClockCircleOutlined,
     CreditCardOutlined,
     DollarOutlined,
@@ -70,6 +72,7 @@ export default function SchoolProfile() {
     const [editFormErrors, setEditFormErrors] = useState({});
     const [editLoading, setEditLoading] = useState(false);
     const [avatarUploading, setAvatarUploading] = useState(false);
+    const [walletTopUpOpen, setWalletTopUpOpen] = useState(false);
 
     // Image upload constants
     const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5MB
@@ -317,6 +320,14 @@ export default function SchoolProfile() {
     const handleEditDialogClose = () => {
         setEditDialogOpen(false);
         setEditFormErrors({});
+    };
+
+    const handleWalletTopUpOpen = () => {
+        setWalletTopUpOpen(true);
+    };
+
+    const handleWalletTopUpClose = () => {
+        setWalletTopUpOpen(false);
     };
 
     const handleEditFormChange = (field) => (event) => {
@@ -899,7 +910,6 @@ export default function SchoolProfile() {
                         </Paper>
                     </Box>
 
-                    {}
                     <Box sx={{flex: 1}}>
                         <Paper
                             elevation={8}
@@ -927,6 +937,7 @@ export default function SchoolProfile() {
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
+                                height: "100%",
                                 mb: 3
                             }}>
                                 <Box>
@@ -944,8 +955,9 @@ export default function SchoolProfile() {
                                         Your payment card details and transaction history
                                     </Typography>
                                 </Box>
-                                <Tooltip title="Deposit">
+                                <Tooltip title="Top-up Wallet">
                                     <IconButton
+                                        onClick={handleWalletTopUpOpen}
                                         sx={{
                                             backgroundColor: '#e3f2fd',
                                             color: '#1976d2',
@@ -1112,6 +1124,7 @@ export default function SchoolProfile() {
                             sx={{
                                 p: 4,
                                 mt: 4,
+                                height: '62vh',
                                 borderRadius: 4,
                                 border: '2px solid #e2e8f0',
                                 background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
@@ -1573,6 +1586,42 @@ export default function SchoolProfile() {
                         {editLoading ? 'Updating...' : 'Update Profile'}
                     </Button>
                 </DialogActions>
+            </Dialog>
+
+            {/* Wallet Top-up Modal */}
+            <Dialog
+                open={walletTopUpOpen}
+                onClose={handleWalletTopUpClose}
+                maxWidth="md"
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        maxHeight: '90vh',
+                        margin: 2,
+                        borderRadius: 3
+                    }
+                }}
+            >
+                <DialogTitle sx={{
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: 'white',
+                    fontWeight: 700,
+                    textAlign: 'center',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                }}>
+                    <Box sx={{ flex: 1 }} />
+                    <IconButton
+                        onClick={handleWalletTopUpClose}
+                        sx={{ color: 'white' }}
+                    >
+                        <CloseCircleOutlined />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent sx={{ p: 0 }}>
+                    <WalletTopUp />
+                </DialogContent>
             </Dialog>
         </Box>
     );

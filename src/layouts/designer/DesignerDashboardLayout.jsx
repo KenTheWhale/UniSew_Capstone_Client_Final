@@ -547,7 +547,7 @@ export default function DesignerDashboardLayout() {
                     <Box sx={{p: 3, borderBottom: '1px solid', borderColor: 'divider'}}>
                         <TextField
                             fullWidth
-                            placeholder="🔍 Search by request ID or message content..."
+                            placeholder="Search by request ID or message content..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             size="small"

@@ -4,8 +4,8 @@ import { lazy, Suspense } from "react";
 import {GoogleOAuthProvider} from "@react-oauth/google";
 import {SnackbarProvider} from 'notistack';
 import {createTheme, CssBaseline, Slide, ThemeProvider} from '@mui/material';
-import DesignerFeedback from "./components/designer/DesignerFeedback.jsx";
-import GarmentFeedback from "./components/garment/GarmentFeedback.jsx";
+const DesignerFeedback = lazy(() => import("./components/designer/DesignerFeedback.jsx"));
+const GarmentFeedback = lazy(() => import("./components/garment/GarmentFeedback.jsx"));
 
 const WebAppLayout = lazy(() => import("./layouts/ui/WebAppLayout.jsx"));
 const Homepage = lazy(() => import("./components/auth/Homepage.jsx"));
@@ -46,10 +46,9 @@ const GarmentPendingOrders = lazy(() => import("./components/garment/GarmentPend
 const AdminReport = lazy(() => import("./components/admin/AdminReport.jsx"));
 
 import { LoadingProvider, GlobalLoadingOverlay } from './contexts/LoadingContext.jsx';
-import GarmentProfile from "./components/garment/profile/GarmentProfile.jsx";
+const GarmentProfile = lazy(() => import("./components/garment/profile/GarmentProfile.jsx"));
 
 const LoadingFallback = () => {
-    // Không cần hiển thị loading ở đây nữa vì sẽ dùng GlobalLoadingOverlay
     return null;
 };
 

@@ -175,47 +175,6 @@ function Navbar({activeMenu, navigate}) {
                     fontSize: "0.75rem",
                     letterSpacing: "1px"
                 }}>
-                    ANALYTICS
-                </Typography>
-                <Box sx={{mb: 3}}>
-                    <Box
-                        sx={{
-                            borderRadius: 2,
-                            mx: 1,
-                            my: 0.5,
-                            color: activeMenu === 'reports' ? "#FFFFFF" : "#495057",
-                            p: 2,
-                            cursor: "pointer",
-                            transition: "all 0.3s ease",
-                            background: activeMenu === 'reports' ? "linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)" : "transparent",
-                            "&:hover": {
-                                background: "linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)",
-                                color: "#FFFFFF",
-                                transform: "translateY(-1px)",
-                            },
-                        }}
-                        onClick={() => navigate('/garment/reports')}
-                    >
-                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
-                            <Assessment sx={{color: "inherit", fontSize: 20}}/>
-                            <Typography variant="body2" sx={{fontWeight: 500}}>
-                                Reports & Analytics
-                            </Typography>
-                        </Box>
-                    </Box>
-                </Box>
-
-                <Divider sx={{my: 3, borderColor: "#e9ecef"}}/>
-
-                {}
-                <Typography variant="overline" sx={{
-                    px: 2,
-                    pb: 1,
-                    color: "#6c757d",
-                    fontWeight: 700,
-                    fontSize: "0.75rem",
-                    letterSpacing: "1px"
-                }}>
                     PROFILE MANAGEMENT
                 </Typography>
                 <Box sx={{mb: 3}}>

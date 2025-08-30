@@ -11,12 +11,13 @@ import {
     FileTextOutlined,
     PlusOutlined,
     SafetyCertificateOutlined,
-    UserOutlined
+    UserOutlined,
+    WalletOutlined
 } from '@ant-design/icons';
 import {parseID} from "../../utils/ParseIDUtil.jsx";
 import {buyExtraRevision, pickQuotation} from "../../services/DesignService.jsx";
 import {approveQuotation, confirmDeliveryOrder} from "../../services/OrderService.jsx";
-import {createDepositTransaction, createDesignTransaction} from "../../services/PaymentService.jsx";
+import {createDesignTransaction, createDepositTransaction, createDepositWalletTransaction} from "../../services/PaymentService.jsx";
 import {emailType, sendEmail} from "../../services/EmailService.jsx";
 import {createShipping} from "../../services/ShippingService.jsx";
 import {useEffect, useState} from 'react';
@@ -43,29 +44,35 @@ export default function PaymentResult() {
     let quotationDetails = null;
     let orderDetails = null;
     let revisionPurchaseDetails = null;
+    let walletDetails = null;
     let isOrderPayment = paymentType === 'order';
     let isRevisionPurchase = paymentType === 'revision';
     let isDepositPayment = paymentType === 'deposit';
+    let isWalletPayment = paymentType === 'wallet';
 
-    const hasDesignPayment = !isOrderPayment && !isRevisionPurchase && !isDepositPayment && !!sessionStorage.getItem('paymentQuotationDetails');
+    const hasDesignPayment = !isOrderPayment && !isRevisionPurchase && !isDepositPayment && !isWalletPayment && !!sessionStorage.getItem('paymentQuotationDetails');
     const hasOrderPayment = (isOrderPayment || isDepositPayment) && !!sessionStorage.getItem('paymentQuotationDetails');
     const hasRevisionPurchase = isRevisionPurchase && !!sessionStorage.getItem('revisionPurchaseDetails');
+    const hasWalletPayment = isWalletPayment && !!sessionStorage.getItem('walletDetails');
 
     console.log('PaymentResult Debug:', {
         paymentType,
         isOrderPayment,
         isRevisionPurchase,
         isDepositPayment,
+        isWalletPayment,
         hasDesignPayment: !!hasDesignPayment,
         hasOrderPayment: !!hasOrderPayment,
         hasRevisionPurchase: !!hasRevisionPurchase,
+        hasWalletPayment: !!hasWalletPayment,
         revisionPurchaseDetails: sessionStorage.getItem('revisionPurchaseDetails'),
+        walletDetails: sessionStorage.getItem('walletDetails'),
         currentPaymentType: sessionStorage.getItem('currentPaymentType'),
         vnpResponseCode,
         success: vnpResponseCode === '00'
     });
 
-    if (!hasDesignPayment && !hasOrderPayment && !hasRevisionPurchase && vnpResponseCode === null && isInitialRender) {
+    if (!hasDesignPayment && !hasOrderPayment && !hasRevisionPurchase && !hasWalletPayment && vnpResponseCode === null && isInitialRender) {
         console.log('No valid payment data found and no VNPay response on initial render, redirecting to /school/design');
         window.location.href = '/school/design';
     }
@@ -83,6 +90,11 @@ export default function PaymentResult() {
                 const storedRevisionDetails = sessionStorage.getItem('revisionPurchaseDetails');
                 if (storedRevisionDetails) {
                     revisionPurchaseDetails = JSON.parse(storedRevisionDetails);
+                }
+            } else if (isWalletPayment) {
+                const storedWalletDetails = sessionStorage.getItem('walletDetails');
+                if (storedWalletDetails) {
+                    walletDetails = JSON.parse(storedWalletDetails);
                 }
             } else {
                 const storedQuotationDetails = sessionStorage.getItem('paymentQuotationDetails');
@@ -112,6 +124,8 @@ export default function PaymentResult() {
                 window.location.href = '/school/order';
             } else if (isRevisionPurchase) {
                 window.location.href = '/school/chat';
+            } else if (isWalletPayment) {
+                window.location.href = '/school/profile';
             } else {
                 window.location.href = '/school/design';
             }
@@ -172,6 +186,10 @@ export default function PaymentResult() {
                 partnerName = 'N/A';
             }
             itemId = parseID(orderDetails?.order?.id, "ord");
+        } else if (paymentType === 'wallet') {
+            partnerType = 'Wallet';
+            partnerName = 'Wallet Top-up';
+            itemId = 'WALLET';
         }
 
         // Format amount to VND format (e.g., 1,000,000)
@@ -200,6 +218,12 @@ export default function PaymentResult() {
         console.log('Processing successful payment');
 
         try {
+            // For wallet payments, skip email and proceed directly with payment logic
+            if (isWalletPayment && walletDetails) {
+                await handleSuccessfulWallet();
+                return;
+            }
+
             const emailData = buildEmailData(true, paymentType, parseInt(vnpAmount) / 100);
             console.log('Sending success email with data:', emailData);
             const emailResponse = await sendEmail(emailType.PAYMENT, emailData);
@@ -229,6 +253,12 @@ export default function PaymentResult() {
 
     const handleFailedPayment = async () => {
         console.log('Processing failed payment');
+
+        // For wallet payments, skip email and proceed directly with payment logic
+        if (isWalletPayment) {
+            await handleFailedWallet();
+            return;
+        }
 
         // Send failure email FIRST and continue with payment logic only if successful
         try {
@@ -384,6 +414,37 @@ export default function PaymentResult() {
         }
     };
 
+    const handleSuccessfulWallet = async () => {
+        console.log('handleSuccessfulWallet called');
+
+        try {
+            // Get user data from localStorage
+            const userData = localStorage.getItem('user');
+            if (!userData) {
+                console.error('User data not found in localStorage');
+                return;
+            }
+
+            const user = JSON.parse(userData);
+
+            // Call createDepositWalletTransaction API
+            const response = await createDepositWalletTransaction(
+                user.customer.id, // receiverId (user's own ID)
+                parseInt(vnpAmount) / 100, // totalPrice
+                vnpResponseCode // gatewayCode
+            );
+
+            if (response && response.status === 201) {
+                console.log('Wallet top-up transaction created successfully');
+            } else {
+                console.error('Failed to create wallet top-up transaction:', response);
+            }
+
+        } catch (error) {
+            console.error('Error in handleSuccessfulWallet:', error);
+        }
+    };
+
     const handleFailedDeposit = async () => {
         console.log('handleFailedDeposit called');
         if (!orderDetails) return;
@@ -444,6 +505,37 @@ export default function PaymentResult() {
         }
     };
 
+    const handleFailedWallet = async () => {
+        console.log('handleFailedWallet called');
+
+        try {
+            // Get user data from localStorage
+            const userData = localStorage.getItem('user');
+            if (!userData) {
+                console.error('User data not found in localStorage');
+                return;
+            }
+
+            const user = JSON.parse(userData);
+
+            // Call createDepositWalletTransaction API for failed payment
+            const response = await createDepositWalletTransaction(
+                user.customer.id, // receiverId (user's own ID)
+                parseInt(vnpAmount) / 100, // totalPrice
+                vnpResponseCode // gatewayCode
+            );
+
+            if (response && response.status === 201) {
+                console.log('Failed wallet top-up transaction recorded successfully');
+            } else {
+                console.error('Failed to record wallet top-up transaction:', response);
+            }
+
+        } catch (error) {
+            console.error('Error in handleFailedWallet:', error);
+        }
+    };
+
     useEffect(() => {
         setIsInitialRender(false);
     }, []);
@@ -481,7 +573,7 @@ export default function PaymentResult() {
         };
 
         processPayment();
-    }, [success, quotationDetails, hasProcessed, isProcessing, quotation, request, isOrderPayment, quotationId, isRevisionPurchase, revisionPurchaseDetails]);
+    }, [success, quotationDetails, hasProcessed, isProcessing, quotation, request, isOrderPayment, quotationId, isRevisionPurchase, revisionPurchaseDetails, walletDetails]);
 
     return (
         <Box sx={{
@@ -533,7 +625,9 @@ export default function PaymentResult() {
                                             ? 'Your deposit payment for the order has been successfully processed.'
                                             : isRevisionPurchase
                                                 ? 'Your payment for extra revisions has been successfully processed.'
-                                                : 'Your payment for the design quotation has been successfully processed.'
+                                                : isWalletPayment
+                                                    ? 'Your wallet top-up has been successfully processed.'
+                                                    : 'Your payment for the design quotation has been successfully processed.'
                                     }
                                 </Typography.Paragraph>
 
@@ -796,7 +890,7 @@ export default function PaymentResult() {
                     </Paper>
 
                     {}
-                    {success && (quotationDetails || orderDetails || revisionPurchaseDetails) && (
+                    {success && (quotationDetails || orderDetails || revisionPurchaseDetails || walletDetails) && (
                         <Paper
                             elevation={0}
                             sx={{
@@ -822,7 +916,7 @@ export default function PaymentResult() {
                                     <FileTextOutlined style={{fontSize: '18px'}}/>
                                 </Box>
                                 <Typography.Title level={4} style={{margin: 0, color: '#1e293b'}}>
-                                    {isOrderPayment ? 'Order Payment Summary' : isDepositPayment ? 'Deposit Payment Summary' : isRevisionPurchase ? 'Revision Purchase Summary' : 'Design Order Summary'}
+                                    {isOrderPayment ? 'Order Payment Summary' : isDepositPayment ? 'Deposit Payment Summary' : isRevisionPurchase ? 'Revision Purchase Summary' : isWalletPayment ? 'Wallet Top-up Summary' : 'Design Order Summary'}
                                 </Typography.Title>
                             </Box>
 
@@ -971,6 +1065,28 @@ export default function PaymentResult() {
                                             </Typography.Text>
                                         </Box>
                                     </Box>
+                                ) : isWalletPayment ? (
+                                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                                        <Box sx={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            p: 2,
+                                            backgroundColor: '#f8fafc',
+                                            borderRadius: 2
+                                        }}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                <WalletOutlined style={{color: '#64748b', fontSize: '16px'}}/>
+                                                <Typography.Text style={{color: '#475569', fontSize: '14px'}}>
+                                                    <strong>Wallet Top-up:</strong>
+                                                </Typography.Text>
+                                            </Box>
+                                            <Typography.Text
+                                                style={{color: '#1e293b', fontSize: '14px', fontWeight: 600}}>
+                                                {walletDetails?.totalPrice?.toLocaleString('vi-VN')} VND
+                                            </Typography.Text>
+                                        </Box>
+                                    </Box>
                                 ) : (
                                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
                                         <Box sx={{
@@ -1077,7 +1193,7 @@ export default function PaymentResult() {
                                             </>
                                         )}
 
-                                        {!isOrderPayment && !isDepositPayment && !isRevisionPurchase && (
+                                        {!isOrderPayment && !isDepositPayment && !isRevisionPurchase && !isWalletPayment && (
                                             <>
                                                 {}
                                                 {designServiceFee && (
@@ -1237,6 +1353,12 @@ export default function PaymentResult() {
                                     const processedKey = `payment_processed_${vnpTxnRef}`;
                                     localStorage.removeItem(processedKey);
                                     window.location.href = '/school/chat';
+                                } else if (isWalletPayment) {
+                                    sessionStorage.removeItem('walletDetails');
+                                    sessionStorage.removeItem('currentPaymentType');
+                                    const processedKey = `payment_processed_${vnpTxnRef}`;
+                                    localStorage.removeItem(processedKey);
+                                    window.location.href = '/school/profile';
                                 } else {
                                     sessionStorage.removeItem('paymentQuotationDetails');
                                     sessionStorage.removeItem('extraRevision');
@@ -1247,7 +1369,7 @@ export default function PaymentResult() {
                                 }
                             }}
                         >
-                            {isOrderPayment || isDepositPayment ? 'Go to Order Management' : isRevisionPurchase ? 'Go to Design Chat' : 'Go to Design Management'}
+                            {isOrderPayment || isDepositPayment ? 'Go to Order Management' : isRevisionPurchase ? 'Go to Design Chat' : isWalletPayment ? 'Go to Wallet' : 'Go to Design Management'}
                         </Button>
 
                         {!success && (
@@ -1269,6 +1391,8 @@ export default function PaymentResult() {
                                         window.location.href = '/school/order';
                                     } else if (isRevisionPurchase) {
                                         window.location.href = '/school/chat';
+                                    } else if (isWalletPayment) {
+                                        window.location.href = '/school/profile';
                                     } else {
                                         window.location.href = '/school/design';
                                     }
