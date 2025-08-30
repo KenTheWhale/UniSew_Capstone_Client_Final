@@ -1023,33 +1023,7 @@ export default function GarmentProfile() {
                                     <Typography variant="body2" sx={{color: '#64748b', mb: 3}}>
                                         Your payment card details and transaction history
                                     </Typography>
-                                    <Tooltip title="Deposit">
-                                        <IconButton
-                                            sx={{
-                                                backgroundColor: '#e3f2fd',
-                                                color: '#1976d2',
-                                                '&:hover': {
-                                                    backgroundColor: '#bbdefb'
-                                                }
-                                            }}
-                                        >
-                                            <WalletOutlined/>
-                                        </IconButton>
-                                    </Tooltip>
                                 </Box>
-                                <Tooltip title="Update Payment Information">
-                                    <IconButton
-                                        sx={{
-                                            backgroundColor: '#e3f2fd',
-                                            color: '#1976d2',
-                                            '&:hover': {
-                                                backgroundColor: '#bbdefb'
-                                            }
-                                        }}
-                                    >
-                                        <EditOutlined/>
-                                    </IconButton>
-                                </Tooltip>
                             </Box>
 
                             <Grid container spacing={3}>
@@ -1205,6 +1179,7 @@ export default function GarmentProfile() {
                             sx={{
                                 p: 4,
                                 mt: 4,
+                                height: '62vh',
                                 borderRadius: 4,
                                 border: '2px solid #e2e8f0',
                                 background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
@@ -1293,13 +1268,12 @@ export default function GarmentProfile() {
                                                     border: '1px solid #f1f5f9',
                                                     borderRadius: 2,
                                                     '&:hover': {
-                                                        boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
                                                         transform: 'translateY(-2px)'
                                                     },
                                                     transition: 'all 0.3s ease'
                                                 }}
                                             >
-                                                <CardContent sx={{ p: 4, minHeight: '140px' }}>
+                                                <CardContent sx={{ p: 4, minHeight: 'max-content' }}>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
                                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                                             <Box sx={{
@@ -1325,7 +1299,7 @@ export default function GarmentProfile() {
                                                                     color: '#64748b',
                                                                     fontSize: '14px'
                                                                 }}>
-                                                                    {isReceiver ? 'Received from' : 'Sent to'} {otherParty?.name || 'Unknown'}
+                                                                    {isReceiver ? 'Received from' : 'Sent to'} {otherParty?.business || 'Unknown'}
                                                                 </Typography>
                                                             </Box>
                                                         </Box>
@@ -1348,52 +1322,6 @@ export default function GarmentProfile() {
                                                                     fontSize: '11px'
                                                                 }}
                                                             />
-                                                        </Box>
-                                                    </Box>
-
-                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: 3, mt: 2, borderTop: '1px solid #f1f5f9' }}>
-                                                        <Box sx={{ display: 'flex', gap: 3 }}>
-                                                            <Box>
-                                                                <Typography variant="body2" sx={{ color: '#64748b', fontSize: '12px' }}>
-                                                                    Business
-                                                                </Typography>
-                                                                <Typography variant="body2" sx={{ color: '#475569', fontWeight: 500, fontSize: '13px' }}>
-                                                                    {otherParty?.business || 'N/A'}
-                                                                </Typography>
-                                                            </Box>
-                                                            {transaction.serviceFee > 0 && (
-                                                                <Box>
-                                                                    <Typography variant="body2" sx={{ color: '#64748b', fontSize: '12px' }}>
-                                                                        Service Fee
-                                                                    </Typography>
-                                                                    <Typography variant="body2" sx={{ color: '#f59e0b', fontWeight: 600, fontSize: '13px' }}>
-                                                                        {formatCurrency(transaction.serviceFee)}
-                                                                    </Typography>
-                                                                </Box>
-                                                            )}
-                                                            <Box>
-                                                                <Typography variant="body2" sx={{ color: '#64748b', fontSize: '12px' }}>
-                                                                    Balance Type
-                                                                </Typography>
-                                                                <Chip
-                                                                    label={transaction.balanceType}
-                                                                    size="small"
-                                                                    sx={{
-                                                                        backgroundColor: transaction.balanceType === 'balance' ? '#e0f2fe' : '#f3e8ff',
-                                                                        color: transaction.balanceType === 'balance' ? '#0369a1' : '#7c3aed',
-                                                                        fontWeight: 500,
-                                                                        fontSize: '10px',
-                                                                        height: '20px'
-                                                                    }}
-                                                                />
-                                                            </Box>
-                                                        </Box>
-                                                        
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                            <ClockCircleOutlined style={{ color: '#64748b', fontSize: 12 }} />
-                                                            <Typography variant="body2" sx={{ color: '#64748b', fontSize: '13px' }}>
-                                                                {formatDate(transaction.creationDate)}
-                                                            </Typography>
                                                         </Box>
                                                     </Box>
                                                 </CardContent>
