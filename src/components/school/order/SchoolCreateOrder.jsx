@@ -785,7 +785,7 @@ export default function SchoolCreateOrder() {
                             </CardContent>
                         </MuiCard>
 
-                        {}
+                        
                         {selectedDesignId && selectedDesign && (
                             <MuiCard sx={{
                                 background: 'rgba(255, 255, 255, 0.95)',
@@ -902,7 +902,7 @@ export default function SchoolCreateOrder() {
                                                         </Typography>
                                                     </Box>
 
-                                                    {}
+                                                
                                                     <Box sx={{
                                                         p: 2,
                                                         borderRight: '1px solid #000000',
@@ -921,7 +921,7 @@ export default function SchoolCreateOrder() {
                                                         </Typography>
                                                     </Box>
 
-                                                    {}
+                                                   
                                                     {allSizes.map((size, index) => (
                                                         <Box key={`header-${index}`} sx={{
                                                             p: 2,

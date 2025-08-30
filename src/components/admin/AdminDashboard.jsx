@@ -657,11 +657,10 @@ export default function AdminDashboard() {
                 </Tabs>
             </Box>
 
-            {}
+            {/*tab*/}
             {activeTab === 0 && (
                 <>
-                    {}
-                    {}
+                    
                     <Box sx={{ display: 'flex', gap: 3, width: '100%', mb: 4 }}>
                         <Box sx={{ flex: 1 }}>
                             {loading ? (

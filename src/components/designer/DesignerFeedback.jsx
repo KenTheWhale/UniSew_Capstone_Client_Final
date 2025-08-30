@@ -146,17 +146,17 @@ const FeedbackCard = React.memo(({ feedback, onImageClick, isReport = false }) =
             <CardContent sx={{ p: 3 }}>
                 {/* Header */}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                                            <Avatar
-                            src={feedback.sender?.avatar}
-                            alt={feedback.sender?.name}
-                            sx={{ 
-                                width: 56, 
-                                height: 56,
+                    <Avatar
+                        src={feedback.sender?.avatar}
+                        alt={feedback.sender?.name}
+                        sx={{ 
+                            width: 56, 
+                            height: 56,
                                 border: isReport ? '3px solid #ef444420' : '3px solid #7c3aed20'
-                            }}
-                        >
-                            <PersonIcon />
-                        </Avatar>
+                        }}
+                    >
+                        <PersonIcon />
+                    </Avatar>
                     <Box sx={{ flex: 1 }}>
                         <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e293b', mb: 0.5 }}>
                             {feedback.sender?.name}
@@ -574,40 +574,40 @@ export default function DesignerFeedback() {
                     {/* Feedback Tab */}
                     <TabPanel value={activeTab} index={0}>
                         <Box sx={{ p: 3 }}>
-                            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-                                <Typography
-                                    variant="h6"
-                                    sx={{
-                                        fontWeight: 700,
-                                        color: "#1e293b"
-                                    }}
-                                >
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                        <Typography
+                            variant="h6"
+                            sx={{
+                                fontWeight: 700,
+                                color: "#1e293b"
+                            }}
+                        >
                                     Client Feedback
-                                </Typography>
-                                <Chip
+                        </Typography>
+                        <Chip
                                     label={`${stats.totalFeedbacks} Total`}
-                                    sx={{
+                            sx={{
                                         backgroundColor: "#10b98120",
                                         color: "#10b981",
-                                        fontWeight: 600
-                                    }}
-                                />
-                            </Box>
+                                fontWeight: 600
+                            }}
+                        />
+                    </Box>
 
-                            {feedbacks.length === 0 ? (
+                    {feedbacks.length === 0 ? (
                                 <EmptyState isReport={false} />
-                            ) : (
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                                    {feedbacks.map((feedback) => (
-                                        <FeedbackCard
-                                            key={feedback.id}
-                                            feedback={feedback}
-                                            onImageClick={handleImageClick}
+                    ) : (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                            {feedbacks.map((feedback) => (
+                                <FeedbackCard
+                                    key={feedback.id}
+                                    feedback={feedback}
+                                    onImageClick={handleImageClick}
                                             isReport={false}
-                                        />
-                                    ))}
-                                </Box>
-                            )}
+                                />
+                            ))}
+                        </Box>
+                    )}
                         </Box>
                     </TabPanel>
 

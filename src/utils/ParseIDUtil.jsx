@@ -2,7 +2,10 @@ export const prefixes = {
     dr: 'DESR',
     ord: 'ORD',
     dd: 'DESD',
-    rr: 'REV'
+    rr: 'REV',
+    fb: 'FDB',
+    rp: 'RPT',
+    trs : 'TRS'
 };
 
 export const parseID = (id, type) => {

@@ -17,6 +17,7 @@ import { SearchOutlined, UserOutlined, BookOutlined, ToolOutlined, ShopOutlined,
 import { Visibility, AccountBalance } from '@mui/icons-material';
 import { enqueueSnackbar } from 'notistack';
 import { getTransactions } from '../../services/PaymentService.jsx';
+import {parseID} from "../../utils/ParseIDUtil.jsx";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -297,7 +298,7 @@ export default function AdminTransaction() {
 
     const columns = useMemo(() => [
         {
-            title: 'Transaction ID',
+            title: 'ID',
             dataIndex: 'id',
             key: 'id',
             width: 120,
@@ -306,7 +307,7 @@ export default function AdminTransaction() {
             defaultSortOrder: 'descend',
             render: (id) => (
                 <Typography variant="body2" sx={{ fontWeight: 600, color: '#1976d2' }}>
-                    #{id}
+                    {parseID(id, "trs")}
                 </Typography>
             )
         },
@@ -396,7 +397,7 @@ export default function AdminTransaction() {
             dataIndex: 'paymentType',
             key: 'paymentType',
             width: 130,
-            align: 'center',
+            align: 'left',
             filters: [
                 { text: 'Order Payment', value: 'order' },
                 { text: 'Design Payment', value: 'design' },
