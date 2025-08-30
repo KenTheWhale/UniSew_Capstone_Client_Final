@@ -606,6 +606,8 @@ export function UseDesignChatMessages(roomId) {
 
     const sendMessage = async (textOrPayload) => {
         if (!roomId) return;
+        console.log("Auth: ", auth)
+        console.log("Auth user: ", auth.currentUser)
         const displayName = auth.currentUser?.displayName || "School";
         let cookie = await getAccessCookie()
         if (!cookie) {
