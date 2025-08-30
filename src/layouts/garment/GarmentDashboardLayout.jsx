@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {Outlet, useLocation, useNavigate} from 'react-router-dom';
 import {AppBar, Avatar, Badge, Box, CssBaseline, Divider, Popover, Toolbar, Typography} from '@mui/material';
-import {AccountCircle, Assessment, Assignment, Factory, Feedback, Flag, Logout, AccountBox} from '@mui/icons-material';
+import {AccountBox, AccountCircle, Assessment, Assignment, Factory, Feedback, Flag, Logout} from '@mui/icons-material';
 import {Tag} from 'antd';
 import {signout} from "../../services/AccountService.jsx";
 import {enqueueSnackbar} from "notistack";
@@ -22,27 +22,39 @@ function Navbar({activeMenu, navigate}) {
                     overflowY: "auto",
                     msOverflowStyle: "none",
                     scrollbarWidth: "none",
-                    "&::-webkit-scrollbar": { display: "none" },
+                    "&::-webkit-scrollbar": {display: "none"},
                 },
             }}
         >
             {}
-            <Box sx={{ p: 3, background: "linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)", color: "white", textAlign: "center" }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+            <Box sx={{
+                p: 3,
+                background: "linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)",
+                color: "white",
+                textAlign: "center"
+            }}>
+                <Typography variant="h6" sx={{fontWeight: 700, mb: 1}}>
                     Garment Dashboard
                 </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                <Typography variant="body2" sx={{opacity: 0.9}}>
                     Manage Production & Orders
                 </Typography>
             </Box>
 
             {}
-            <Box sx={{ p: 2 }}>
+            <Box sx={{p: 2}}>
                 {}
-                <Typography variant="overline" sx={{ px: 2, pb: 1, color: "#6c757d", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "1px" }}>
+                <Typography variant="overline" sx={{
+                    px: 2,
+                    pb: 1,
+                    color: "#6c757d",
+                    fontWeight: 700,
+                    fontSize: "0.75rem",
+                    letterSpacing: "1px"
+                }}>
                     Order Management
                 </Typography>
-                <Box sx={{ mb: 3 }}>
+                <Box sx={{mb: 3}}>
                     <Box
                         sx={{
                             borderRadius: 2,
@@ -61,22 +73,29 @@ function Navbar({activeMenu, navigate}) {
                         }}
                         onClick={() => navigate('/garment/pending/order')}
                     >
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                            <Assignment sx={{ color: "inherit", fontSize: 20 }} />
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
+                            <Assignment sx={{color: "inherit", fontSize: 20}}/>
+                            <Typography variant="body2" sx={{fontWeight: 500}}>
                                 Pending Orders
                             </Typography>
                         </Box>
                     </Box>
                 </Box>
 
-                <Divider sx={{ my: 3, borderColor: "#e9ecef" }} />
+                <Divider sx={{my: 3, borderColor: "#e9ecef"}}/>
 
                 {}
-                <Typography variant="overline" sx={{ px: 2, pb: 1, color: "#6c757d", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "1px" }}>
+                <Typography variant="overline" sx={{
+                    px: 2,
+                    pb: 1,
+                    color: "#6c757d",
+                    fontWeight: 700,
+                    fontSize: "0.75rem",
+                    letterSpacing: "1px"
+                }}>
                     PRODUCTION
                 </Typography>
-                <Box sx={{ mb: 3 }}>
+                <Box sx={{mb: 3}}>
                     <Box
                         sx={{
                             borderRadius: 2,
@@ -95,22 +114,29 @@ function Navbar({activeMenu, navigate}) {
                         }}
                         onClick={() => navigate('/garment/milestone')}
                     >
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                            <Flag sx={{ color: "inherit", fontSize: 20 }} />
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
+                            <Flag sx={{color: "inherit", fontSize: 20}}/>
+                            <Typography variant="body2" sx={{fontWeight: 500}}>
                                 Milestone Management
                             </Typography>
                         </Box>
                     </Box>
                 </Box>
 
-                <Divider sx={{ my: 3, borderColor: "#e9ecef" }} />
+                <Divider sx={{my: 3, borderColor: "#e9ecef"}}/>
 
                 {}
-                <Typography variant="overline" sx={{ px: 2, pb: 1, color: "#6c757d", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "1px" }}>
+                <Typography variant="overline" sx={{
+                    px: 2,
+                    pb: 1,
+                    color: "#6c757d",
+                    fontWeight: 700,
+                    fontSize: "0.75rem",
+                    letterSpacing: "1px"
+                }}>
                     CUSTOMER FEEDBACK
                 </Typography>
-                <Box sx={{ mb: 3 }}>
+                <Box sx={{mb: 3}}>
                     <Box
                         sx={{
                             borderRadius: 2,
@@ -129,22 +155,29 @@ function Navbar({activeMenu, navigate}) {
                         }}
                         onClick={() => navigate('/garment/feedbacks')}
                     >
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                            <Feedback sx={{ color: "inherit", fontSize: 20 }} />
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
+                            <Feedback sx={{color: "inherit", fontSize: 20}}/>
+                            <Typography variant="body2" sx={{fontWeight: 500}}>
                                 Feedback & Reports
                             </Typography>
                         </Box>
                     </Box>
                 </Box>
 
-                <Divider sx={{ my: 3, borderColor: "#e9ecef" }} />
+                <Divider sx={{my: 3, borderColor: "#e9ecef"}}/>
 
                 {}
-                <Typography variant="overline" sx={{ px: 2, pb: 1, color: "#6c757d", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "1px" }}>
+                <Typography variant="overline" sx={{
+                    px: 2,
+                    pb: 1,
+                    color: "#6c757d",
+                    fontWeight: 700,
+                    fontSize: "0.75rem",
+                    letterSpacing: "1px"
+                }}>
                     ANALYTICS
                 </Typography>
-                <Box sx={{ mb: 3 }}>
+                <Box sx={{mb: 3}}>
                     <Box
                         sx={{
                             borderRadius: 2,
@@ -163,22 +196,29 @@ function Navbar({activeMenu, navigate}) {
                         }}
                         onClick={() => navigate('/garment/reports')}
                     >
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                            <Assessment sx={{ color: "inherit", fontSize: 20 }} />
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
+                            <Assessment sx={{color: "inherit", fontSize: 20}}/>
+                            <Typography variant="body2" sx={{fontWeight: 500}}>
                                 Reports & Analytics
                             </Typography>
                         </Box>
                     </Box>
                 </Box>
 
-                <Divider sx={{ my: 3, borderColor: "#e9ecef" }} />
+                <Divider sx={{my: 3, borderColor: "#e9ecef"}}/>
 
                 {}
-                <Typography variant="overline" sx={{ px: 2, pb: 1, color: "#6c757d", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "1px" }}>
+                <Typography variant="overline" sx={{
+                    px: 2,
+                    pb: 1,
+                    color: "#6c757d",
+                    fontWeight: 700,
+                    fontSize: "0.75rem",
+                    letterSpacing: "1px"
+                }}>
                     PROFILE MANAGEMENT
                 </Typography>
-                <Box sx={{ mb: 3 }}>
+                <Box sx={{mb: 3}}>
                     <Box
                         sx={{
                             borderRadius: 2,
@@ -197,9 +237,9 @@ function Navbar({activeMenu, navigate}) {
                         }}
                         onClick={() => navigate('/garment/profile')}
                     >
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                            <AccountBox sx={{ color: "inherit", fontSize: 20 }} />
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
+                            <AccountBox sx={{color: "inherit", fontSize: 20}}/>
+                            <Typography variant="body2" sx={{fontWeight: 500}}>
                                 Profile
                             </Typography>
                         </Box>
@@ -224,8 +264,8 @@ function Content() {
                 p: 4
             }}
         >
-            <Box sx={{ flex: 1 }}>
-                <Outlet />
+            <Box sx={{flex: 1}}>
+                <Outlet/>
             </Box>
         </Box>
     );
@@ -269,10 +309,10 @@ export default function GarmentDashboardLayout() {
     const handleLogout = async () => {
         const response = await signout()
         if (response && response.status === 200) {
-            if (localStorage.length > 0){
+            if (localStorage.length > 0) {
                 localStorage.clear();
             }
-            if(sessionStorage.length > 0){
+            if (sessionStorage.length > 0) {
                 sessionStorage.clear()
             }
             enqueueSnackbar(response.data.message, {variant: "success", autoHideDuration: 1000})
@@ -293,8 +333,14 @@ export default function GarmentDashboardLayout() {
     const open = Boolean(anchorEl);
 
     return (
-        <Box sx={{display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#fafafa', overflow: 'hidden'}}>
-            <CssBaseline />
+        <Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100vh',
+            backgroundColor: '#fafafa',
+            overflow: 'hidden'
+        }}>
+            <CssBaseline/>
 
             {}
             <AppBar
@@ -305,8 +351,8 @@ export default function GarmentDashboardLayout() {
                     boxShadow: "0 4px 20px rgba(63, 81, 181, 0.3)",
                 }}
             >
-                <Toolbar sx={{ justifyContent: "space-between", py: 1 }}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Toolbar sx={{justifyContent: "space-between", py: 1}}>
+                    <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
                         <Box
                             sx={{
                                 display: "flex",
@@ -318,7 +364,8 @@ export default function GarmentDashboardLayout() {
                                 py: 1,
                             }}
                         >
-                            <Typography onClick={() => window.location.href = "/home"} variant="h5" fontWeight="800" sx={{ cursor:"pointer", color: "#FFFFFF" }}>
+                            <Typography onClick={() => window.location.href = "/home"} variant="h5" fontWeight="800"
+                                        sx={{cursor: "pointer", color: "#FFFFFF"}}>
                                 UNISEW
                             </Typography>
                         </Box>
@@ -339,7 +386,7 @@ export default function GarmentDashboardLayout() {
                         </Tag>
                     </Box>
 
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
                         {/*<Bell />*/}
                         <Box
                             sx={{
@@ -361,13 +408,13 @@ export default function GarmentDashboardLayout() {
                         >
                             <Badge
                                 overlap="circular"
-                                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                                anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
                                 badgeContent={
-                                    <Factory sx={{ fontSize: 16, color: '#3f51b5' }} />
+                                    <Factory sx={{fontSize: 16, color: '#3f51b5'}}/>
                                 }
                             >
                                 <Avatar
-                                    sx={{ width: 32, height: 32, bgcolor: "rgba(255, 255, 255, 0.2)" }}
+                                    sx={{width: 32, height: 32, bgcolor: "rgba(255, 255, 255, 0.2)"}}
                                     src={userObj?.customer?.avatar}
                                     slotProps={{
                                         img: {
@@ -375,7 +422,7 @@ export default function GarmentDashboardLayout() {
                                         }
                                     }}
                                 >
-                                    <AccountCircle />
+                                    <AccountCircle/>
                                 </Avatar>
                             </Badge>
                             <Typography variant="subtitle1" sx={{fontWeight: 600, color: '#FFFFFF'}}>
@@ -405,7 +452,7 @@ export default function GarmentDashboardLayout() {
                                 }
                             }}
                         >
-                            <Box sx={{ p: 2 }}>
+                            <Box sx={{p: 2}}>
                                 <Box sx={{
                                     display: 'flex',
                                     alignItems: 'center',
@@ -415,7 +462,7 @@ export default function GarmentDashboardLayout() {
                                     mb: 1,
                                     background: 'rgba(63, 81, 181, 0.05)'
                                 }}>
-                                    <Avatar sx={{ width: 40, height: 40, bgcolor: "rgba(63, 81, 181, 0.2)" }}
+                                    <Avatar sx={{width: 40, height: 40, bgcolor: "rgba(63, 81, 181, 0.2)"}}
                                             src={userObj?.customer?.avatar}
                                             slotProps={{
                                                 img: {
@@ -423,19 +470,19 @@ export default function GarmentDashboardLayout() {
                                                 }
                                             }}
                                     >
-                                        <AccountCircle />
+                                        <AccountCircle/>
                                     </Avatar>
                                     <Box>
-                                        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                                        <Typography variant="subtitle2" sx={{fontWeight: 600, color: 'text.primary'}}>
                                             {userObj?.customer?.name || userObj?.email || "Garment Factory"}
                                         </Typography>
-                                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                        <Typography variant="caption" sx={{color: 'text.secondary'}}>
                                             Garment Factory
                                         </Typography>
                                     </Box>
                                 </Box>
 
-                                <Divider sx={{ my: 1 }} />
+                                <Divider sx={{my: 1}}/>
 
                                 <Box
                                     sx={{
@@ -456,8 +503,8 @@ export default function GarmentDashboardLayout() {
                                         handleLogout();
                                     }}
                                 >
-                                    <Logout sx={{ fontSize: 20, color: '#dc3545' }} />
-                                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                    <Logout sx={{fontSize: 20, color: '#dc3545'}}/>
+                                    <Typography variant="body2" sx={{fontWeight: 500}}>
                                         Logout
                                     </Typography>
                                 </Box>

@@ -1942,7 +1942,7 @@ export default function SchoolChat() {
                     // Nếu request đã completed và không có delivery nào được đánh dấu là final
                     // Có thể delivery đã được xử lý ở backend hoặc cần được chọn thủ công
                     // Kiểm tra xem có delivery nào có thể là final không
-                    
+
                     // Ưu tiên tìm delivery có version cao nhất hoặc submitDate mới nhất
                     const sortedDeliveries = [...deliveries].sort((a, b) => {
                         // Nếu có version, sắp xếp theo version
@@ -1952,7 +1952,7 @@ export default function SchoolChat() {
                         // Nếu không có version, sắp xếp theo submitDate
                         return new Date(b.submitDate) - new Date(a.submitDate);
                     });
-                    
+
                     const mostRecentDelivery = sortedDeliveries[0];
                     if (mostRecentDelivery) {
                         setFinalDelivery(mostRecentDelivery);
@@ -2064,7 +2064,6 @@ export default function SchoolChat() {
             setShowEmojiPicker(false);
         }
     };
-
 
 
     const onEmojiClick = (emojiData) => {
@@ -2269,7 +2268,13 @@ export default function SchoolChat() {
                                         Request ID: {requestData ? parseID(requestData.id, 'dr') : 'N/A'}
                                     </Typography.Text>
                                     {requestData?.status === 'completed' && (
-                                        <Typography.Text style={{fontSize: '14px', color: '#52c41a', fontWeight: 600, display: 'block', mt: 0.5}}>
+                                        <Typography.Text style={{
+                                            fontSize: '14px',
+                                            color: '#52c41a',
+                                            fontWeight: 600,
+                                            display: 'block',
+                                            mt: 0.5
+                                        }}>
                                             ✅ Request completed - Chat history available for viewing
                                         </Typography.Text>
                                     )}
@@ -2548,7 +2553,7 @@ export default function SchoolChat() {
                                                                 </Tag>
                                                             </Box>
 
-                                                                                                                        <Box sx={{
+                                                            <Box sx={{
                                                                 display: 'flex',
                                                                 flexDirection: 'row',
                                                                 gap: 1,
@@ -2603,9 +2608,9 @@ export default function SchoolChat() {
                                                                                 height: '32px',
                                                                                 backgroundColor: '#52c41a',
                                                                                 borderColor: '#52c41a',
-                                                                        color: 'white',
-                                                                        fontWeight: 600,
-                                                                        boxShadow: '0 2px 8px rgba(82, 196, 26, 0.2)'
+                                                                                color: 'white',
+                                                                                fontWeight: 600,
+                                                                                boxShadow: '0 2px 8px rgba(82, 196, 26, 0.2)'
                                                                             }}
                                                                         >
                                                                             Make final
@@ -2961,14 +2966,17 @@ export default function SchoolChat() {
                                             color: '#64748b',
                                             textAlign: 'center'
                                         }}>
-                                            <CheckCircleOutlined style={{fontSize: '48px', opacity: 0.5, color: '#52c41a'}}/>
+                                            <CheckCircleOutlined
+                                                style={{fontSize: '48px', opacity: 0.5, color: '#52c41a'}}/>
                                             <Typography.Title level={5} style={{margin: '0 0 8px 0', color: '#52c41a'}}>
                                                 Design Request Completed
                                             </Typography.Title>
-                                            <Typography.Text type="secondary" style={{fontSize: '14px', fontWeight: 600}}>
+                                            <Typography.Text type="secondary"
+                                                             style={{fontSize: '14px', fontWeight: 600}}>
                                                 {designDeliveries.length} design{designDeliveries.length !== 1 ? 's' : ''} available
                                             </Typography.Text>
-                                            <Typography.Text type="secondary" style={{fontSize: '12px', color: '#52c41a'}}>
+                                            <Typography.Text type="secondary"
+                                                             style={{fontSize: '12px', color: '#52c41a'}}>
                                                 Select a design as final from the Design section above
                                             </Typography.Text>
                                             <Button

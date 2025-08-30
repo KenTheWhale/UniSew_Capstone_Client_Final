@@ -1,45 +1,29 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
+import {Box, Chip, IconButton, Paper, Tooltip, Typography} from "@mui/material";
+import {DataLoadingState, EmptyState, ErrorState} from '../ui/LoadingSpinner.jsx';
 import {
-    Box,
-    Typography,
-    Container,
-    Divider,
-    IconButton,
-    Paper,
-    Card,
-    CardContent,
-    Chip,
-    Tooltip,
-    Alert,
-    Button
-} from "@mui/material";
-import { DataLoadingState, ErrorState, EmptyState } from '../ui/LoadingSpinner.jsx';
-import {
-    Info as InfoIcon,
-    LocalShipping as ShippingIcon,
     Assignment as OrderIcon,
-    TrendingUp as StatsIcon,
-    Refresh as RefreshIcon,
-    Pending as PendingIcon
+    Info as InfoIcon,
+    Pending as PendingIcon,
+    TrendingUp as StatsIcon
 } from '@mui/icons-material';
-import { Space, Table, Empty } from 'antd';
+import {Space, Table} from 'antd';
 import 'antd/dist/reset.css';
-import { parseID } from "../../utils/ParseIDUtil.jsx";
-import { getOrdersByGarment } from "../../services/OrderService.jsx";
+import {parseID} from "../../utils/ParseIDUtil.jsx";
+import {getOrdersByGarment} from "../../services/OrderService.jsx";
 import GarmentCreateQuotation from "./dialog/GarmentCreateQuotation.jsx";
 
 
-
 const LoadingState = React.memo(() => (
-    <DataLoadingState 
-        text="Loading Pending Orders..." 
-        size={60} 
+    <DataLoadingState
+        text="Loading Pending Orders..."
+        size={60}
         color="#3f51b5"
     />
 ));
 
 const ErrorStateComponent = React.memo(({error, onRetry, isRetrying}) => (
-    <ErrorState 
+    <ErrorState
         error={error}
         onRetry={onRetry}
         isRetrying={isRetrying}
@@ -49,7 +33,7 @@ const ErrorStateComponent = React.memo(({error, onRetry, isRetrying}) => (
 ));
 
 const EmptyStateComponent = React.memo(() => (
-    <EmptyState 
+    <EmptyState
         title="No pending orders available"
         description="There are no pending orders to display"
         icon="📦"
@@ -117,7 +101,6 @@ export default function GarmentPendingOrders() {
     );
 
 
-
     const handleViewDetail = (id) => {
         console.log('View order detail for ID:', id);
         const order = orders.find(ord => ord.id === id);
@@ -133,32 +116,32 @@ export default function GarmentPendingOrders() {
     const getStatusColor = (status) => {
         switch (status) {
             case 'pending':
-                return { color: '#ff9800', bgColor: 'rgba(255, 152, 0, 0.1)' };
+                return {color: '#ff9800', bgColor: 'rgba(255, 152, 0, 0.1)'};
             case 'processing':
-                return { color: '#1976d2', bgColor: '#e3f2fd' };
+                return {color: '#1976d2', bgColor: '#e3f2fd'};
             case 'completed':
-                return { color: '#2e7d32', bgColor: 'rgba(46, 125, 50, 0.1)' };
+                return {color: '#2e7d32', bgColor: 'rgba(46, 125, 50, 0.1)'};
             case 'cancelled':
             case 'canceled':
-                return { color: '#d32f2f', bgColor: '#ffebee' };
+                return {color: '#d32f2f', bgColor: '#ffebee'};
             default:
-                return { color: '#64748b', bgColor: '#f1f5f9' };
+                return {color: '#64748b', bgColor: '#f1f5f9'};
         }
     };
 
     const getStatusIcon = (status) => {
         switch (status) {
             case 'pending':
-                return <PendingIcon />;
+                return <PendingIcon/>;
             case 'processing':
-                return <TrendingUp as StatsIcon />;
+                return <TrendingUp as StatsIcon/>;
             case 'completed':
-                return <StatsIcon />;
+                return <StatsIcon/>;
             case 'cancelled':
             case 'canceled':
-                return <OrderIcon />;
+                return <OrderIcon/>;
             default:
-                return <OrderIcon />;
+                return <OrderIcon/>;
         }
     };
 
@@ -204,7 +187,7 @@ export default function GarmentPendingOrders() {
             align: 'center',
             width: 140,
             render: (status) => {
-                const { color, bgColor } = getStatusColor(status);
+                const {color, bgColor} = getStatusColor(status);
                 return (
                     <Typography
                         variant="body2"
@@ -238,8 +221,8 @@ export default function GarmentPendingOrders() {
                 const daysSinceOrder = Math.ceil((today - orderDate) / (1000 * 60 * 60 * 24));
 
                 return (
-                    <Box sx={{ textAlign: 'center' }}>
-                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                    <Box sx={{textAlign: 'center'}}>
+                        <Typography variant="body2" sx={{color: '#64748b'}}>
                             {formatDate(text)}
                         </Typography>
                         <Typography
@@ -281,8 +264,8 @@ export default function GarmentPendingOrders() {
                 }
 
                 return (
-                    <Box sx={{ textAlign: 'center' }}>
-                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                    <Box sx={{textAlign: 'center'}}>
+                        <Typography variant="body2" sx={{color: '#64748b'}}>
                             {formatDate(text)}
                         </Typography>
                         <Typography
@@ -305,7 +288,7 @@ export default function GarmentPendingOrders() {
             align: 'left',
             width: 300,
             render: (school) => (
-                <Typography variant="body2" sx={{ fontWeight: 500, color: '#1e293b' }}>
+                <Typography variant="body2" sx={{fontWeight: 500, color: '#1e293b'}}>
                     {school?.business || 'School Name'}
                 </Typography>
             ),
@@ -320,7 +303,7 @@ export default function GarmentPendingOrders() {
                 const totalItems = orderDetails?.reduce((sum, detail) => sum + detail.quantity, 0) || 0;
                 const totalUniforms = Math.ceil(totalItems / 2);
                 return (
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>
+                    <Typography variant="body2" sx={{fontWeight: 600, color: '#1e293b'}}>
                         {totalUniforms}
                     </Typography>
                 );
@@ -347,7 +330,7 @@ export default function GarmentPendingOrders() {
                             }}
                             size="small"
                         >
-                            <InfoIcon />
+                            <InfoIcon/>
                         </IconButton>
                     </Tooltip>
                 </Space>
@@ -364,7 +347,7 @@ export default function GarmentPendingOrders() {
     }
 
     return (
-        <Box sx={{ height: '100%', overflowY: 'auto' }}>
+        <Box sx={{height: '100%', overflowY: 'auto'}}>
             {}
             <Box
                 sx={{
@@ -388,14 +371,14 @@ export default function GarmentPendingOrders() {
                     }
                 }}
             >
-                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                    <PendingIcon sx={{ fontSize: 32, mr: 2, color: "#ff9800" }} />
+                <Box sx={{display: "flex", alignItems: "center", mb: 2}}>
+                    <PendingIcon sx={{fontSize: 32, mr: 2, color: "#ff9800"}}/>
                     <Typography
                         variant="h4"
                         sx={{
                             fontWeight: 700,
                             color: "#1e293b",
-                            fontSize: { xs: "1.5rem", md: "2rem" }
+                            fontSize: {xs: "1.5rem", md: "2rem"}
                         }}
                     >
                         Pending Orders
@@ -415,7 +398,6 @@ export default function GarmentPendingOrders() {
             </Box>
 
 
-
             {}
             <Paper
                 elevation={0}
@@ -425,8 +407,8 @@ export default function GarmentPendingOrders() {
                     overflow: "hidden"
                 }}
             >
-                <Box sx={{ p: 3, backgroundColor: "white" }}>
-                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                <Box sx={{p: 3, backgroundColor: "white"}}>
+                    <Box sx={{display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3}}>
                         <Typography
                             variant="h6"
                             sx={{
@@ -459,9 +441,9 @@ export default function GarmentPendingOrders() {
                                 pageSizeOptions: ['5', '10'],
                                 showSizeChanger: true,
                                 showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total} orders`,
-                                style: { marginTop: 16 }
+                                style: {marginTop: 16}
                             }}
-                            scroll={{ x: 'max-content' }}
+                            scroll={{x: 'max-content'}}
                             style={{
                                 backgroundColor: 'white',
                                 borderRadius: '8px'

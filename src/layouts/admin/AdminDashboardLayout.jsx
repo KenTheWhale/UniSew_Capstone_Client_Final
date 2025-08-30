@@ -22,27 +22,39 @@ function Navbar({activeMenu, navigate}) {
                     overflowY: "auto",
                     msOverflowStyle: "none",
                     scrollbarWidth: "none",
-                    "&::-webkit-scrollbar": { display: "none" },
+                    "&::-webkit-scrollbar": {display: "none"},
                 },
             }}
         >
             {}
-            <Box sx={{ p: 3, background: "linear-gradient(135deg, #dc3545 0%, #c82333 100%)", color: "white", textAlign: "center" }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+            <Box sx={{
+                p: 3,
+                background: "linear-gradient(135deg, #dc3545 0%, #c82333 100%)",
+                color: "white",
+                textAlign: "center"
+            }}>
+                <Typography variant="h6" sx={{fontWeight: 700, mb: 1}}>
                     Admin Dashboard
                 </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                <Typography variant="body2" sx={{opacity: 0.9}}>
                     Manage UniSew System
                 </Typography>
             </Box>
 
             {}
-            <Box sx={{ p: 2 }}>
+            <Box sx={{p: 2}}>
                 {}
-                <Typography variant="overline" sx={{ px: 2, pb: 1, color: "#6c757d", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "1px" }}>
+                <Typography variant="overline" sx={{
+                    px: 2,
+                    pb: 1,
+                    color: "#6c757d",
+                    fontWeight: 700,
+                    fontSize: "0.75rem",
+                    letterSpacing: "1px"
+                }}>
                     DASHBOARD FEATURES
                 </Typography>
-                <Box sx={{ mb: 3 }}>
+                <Box sx={{mb: 3}}>
                     <Box
                         sx={{
                             borderRadius: 2,
@@ -61,9 +73,9 @@ function Navbar({activeMenu, navigate}) {
                         }}
                         onClick={() => navigate("/admin/dashboard")}
                     >
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                            <Assessment sx={{ color: "inherit", fontSize: 20 }} />
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
+                            <Assessment sx={{color: "inherit", fontSize: 20}}/>
+                            <Typography variant="body2" sx={{fontWeight: 500}}>
                                 Statistics Report
                             </Typography>
                         </Box>
@@ -87,9 +99,9 @@ function Navbar({activeMenu, navigate}) {
                         }}
                         onClick={() => navigate("/admin/transactions")}
                     >
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                            <Receipt sx={{ color: "inherit", fontSize: 20 }} />
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
+                            <Receipt sx={{color: "inherit", fontSize: 20}}/>
+                            <Typography variant="body2" sx={{fontWeight: 500}}>
                                 Transactions
                             </Typography>
                         </Box>
@@ -113,22 +125,29 @@ function Navbar({activeMenu, navigate}) {
                         }}
                         onClick={() => navigate("/admin/reports")}
                     >
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                            <Assessment sx={{ color: "inherit", fontSize: 20 }} />
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
+                            <Assessment sx={{color: "inherit", fontSize: 20}}/>
+                            <Typography variant="body2" sx={{fontWeight: 500}}>
                                 Reports & Feedback
                             </Typography>
                         </Box>
                     </Box>
                 </Box>
 
-                <Divider sx={{ my: 3, borderColor: "#e9ecef" }} />
+                <Divider sx={{my: 3, borderColor: "#e9ecef"}}/>
 
                 {}
-                <Typography variant="overline" sx={{ px: 2, pb: 1, color: "#6c757d", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "1px" }}>
+                <Typography variant="overline" sx={{
+                    px: 2,
+                    pb: 1,
+                    color: "#6c757d",
+                    fontWeight: 700,
+                    fontSize: "0.75rem",
+                    letterSpacing: "1px"
+                }}>
                     ACCOUNT MANAGEMENT
                 </Typography>
-                <Box sx={{ mb: 3 }}>
+                <Box sx={{mb: 3}}>
                     <Box
                         sx={{
                             borderRadius: 2,
@@ -147,9 +166,9 @@ function Navbar({activeMenu, navigate}) {
                         }}
                         onClick={() => navigate("/admin/accounts")}
                     >
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                            <People sx={{ color: "inherit", fontSize: 20 }} />
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
+                            <People sx={{color: "inherit", fontSize: 20}}/>
+                            <Typography variant="body2" sx={{fontWeight: 500}}>
                                 System Accounts
                             </Typography>
                         </Box>
@@ -176,8 +195,8 @@ function Content() {
                 p: 4
             }}
         >
-            <Box sx={{ flex: 1 }}>
-                <Outlet />
+            <Box sx={{flex: 1}}>
+                <Outlet/>
             </Box>
         </Box>
     );
@@ -217,13 +236,13 @@ export default function AdminDashboardLayout() {
     const handleLogout = async () => {
         const response = await signout();
         if (response && response.status === 200) {
-            if (localStorage.length > 0){
+            if (localStorage.length > 0) {
                 localStorage.clear();
             }
-            if(sessionStorage.length > 0){
+            if (sessionStorage.length > 0) {
                 sessionStorage.clear()
             }
-            enqueueSnackbar(response.data.message, { variant: "success", autoHideDuration: 1000 });
+            enqueueSnackbar(response.data.message, {variant: "success", autoHideDuration: 1000});
             setTimeout(() => (window.location.href = "/home"), 1000);
         }
     };
@@ -239,8 +258,14 @@ export default function AdminDashboardLayout() {
     const open = Boolean(anchorEl);
 
     return (
-        <Box sx={{display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#fafafa', overflow: 'hidden'}}>
-            <CssBaseline />
+        <Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100vh',
+            backgroundColor: '#fafafa',
+            overflow: 'hidden'
+        }}>
+            <CssBaseline/>
 
             {}
             <AppBar
@@ -251,8 +276,8 @@ export default function AdminDashboardLayout() {
                     boxShadow: "0 4px 20px rgba(220, 53, 69, 0.3)",
                 }}
             >
-                <Toolbar sx={{ justifyContent: "space-between", py: 1 }}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Toolbar sx={{justifyContent: "space-between", py: 1}}>
+                    <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
                         <Box
                             sx={{
                                 display: "flex",
@@ -264,7 +289,8 @@ export default function AdminDashboardLayout() {
                                 py: 1,
                             }}
                         >
-                            <Typography onClick={() => window.location.href = "/home"} variant="h5" fontWeight="800" sx={{ cursor:"pointer",  color: "#FFFFFF" }}>
+                            <Typography onClick={() => window.location.href = "/home"} variant="h5" fontWeight="800"
+                                        sx={{cursor: "pointer", color: "#FFFFFF"}}>
                                 UNISEW
                             </Typography>
                         </Box>
@@ -285,7 +311,7 @@ export default function AdminDashboardLayout() {
                         </Tag>
                     </Box>
 
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
                         {/*<Bell />*/}
                         <Box
                             sx={{
@@ -307,13 +333,13 @@ export default function AdminDashboardLayout() {
                         >
                             <Badge
                                 overlap="circular"
-                                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                                anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
                                 badgeContent={
-                                    <AdminPanelSettings sx={{ fontSize: 16, color: '#dc3545' }} />
+                                    <AdminPanelSettings sx={{fontSize: 16, color: '#dc3545'}}/>
                                 }
                             >
                                 <Avatar
-                                    sx={{ width: 32, height: 32, bgcolor: "rgba(255, 255, 255, 0.2)" }}
+                                    sx={{width: 32, height: 32, bgcolor: "rgba(255, 255, 255, 0.2)"}}
                                     src={userObj?.customer?.avatar}
                                     slotProps={{
                                         img: {
@@ -321,7 +347,7 @@ export default function AdminDashboardLayout() {
                                         }
                                     }}
                                 >
-                                    <AccountCircle />
+                                    <AccountCircle/>
                                 </Avatar>
                             </Badge>
                             <Typography variant="subtitle1" sx={{fontWeight: 600, color: '#FFFFFF'}}>
@@ -351,7 +377,7 @@ export default function AdminDashboardLayout() {
                                 }
                             }}
                         >
-                            <Box sx={{ p: 2 }}>
+                            <Box sx={{p: 2}}>
                                 <Box sx={{
                                     display: 'flex',
                                     alignItems: 'center',
@@ -361,7 +387,7 @@ export default function AdminDashboardLayout() {
                                     mb: 1,
                                     background: 'rgba(220, 53, 69, 0.05)'
                                 }}>
-                                    <Avatar sx={{ width: 40, height: 40, bgcolor: "rgba(220, 53, 69, 0.2)" }}
+                                    <Avatar sx={{width: 40, height: 40, bgcolor: "rgba(220, 53, 69, 0.2)"}}
                                             src={userObj?.customer?.avatar}
                                             slotProps={{
                                                 img: {
@@ -369,19 +395,19 @@ export default function AdminDashboardLayout() {
                                                 }
                                             }}
                                     >
-                                        <AccountCircle />
+                                        <AccountCircle/>
                                     </Avatar>
                                     <Box>
-                                        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                                        <Typography variant="subtitle2" sx={{fontWeight: 600, color: 'text.primary'}}>
                                             {userObj?.customer?.name || userObj?.email || "Admin"}
                                         </Typography>
-                                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                        <Typography variant="caption" sx={{color: 'text.secondary'}}>
                                             Administrator
                                         </Typography>
                                     </Box>
                                 </Box>
 
-                                <Divider sx={{ my: 1 }} />
+                                <Divider sx={{my: 1}}/>
 
                                 <Box
                                     sx={{
@@ -402,8 +428,8 @@ export default function AdminDashboardLayout() {
                                         handleLogout();
                                     }}
                                 >
-                                    <Logout sx={{ fontSize: 20, color: '#dc3545' }} />
-                                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                    <Logout sx={{fontSize: 20, color: '#dc3545'}}/>
+                                    <Typography variant="body2" sx={{fontWeight: 500}}>
                                         Logout
                                     </Typography>
                                 </Box>

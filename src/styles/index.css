@@ -1,26 +1,36 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&display=swap');
 
 html, body {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
-  font-family: 'Open Sans', sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    font-family: 'Open Sans', sans-serif;
 }
 
 * {
-  font-family: 'Open Sans', sans-serif;
+    font-family: 'Open Sans', sans-serif;
 }
 
 body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 @keyframes unisew-chat-shake {
-  0% { transform: translateY(-2px) translateX(0); }
-  25% { transform: translateY(-2px) translateX(-1.5px); }
-  50% { transform: translateY(-2px) translateX(1.5px); }
-  75% { transform: translateY(-2px) translateX(-1px); }
-  100% { transform: translateY(-2px) translateX(0); }
+    0% {
+        transform: translateY(-2px) translateX(0);
+    }
+    25% {
+        transform: translateY(-2px) translateX(-1.5px);
+    }
+    50% {
+        transform: translateY(-2px) translateX(1.5px);
+    }
+    75% {
+        transform: translateY(-2px) translateX(-1px);
+    }
+    100% {
+        transform: translateY(-2px) translateX(0);
+    }
 }

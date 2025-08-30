@@ -1,39 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     Accordion,
-    AccordionSummary,
     AccordionDetails,
-    Typography,
-    TextField,
+    AccordionSummary,
+    Box,
     Button,
     Card,
     CardContent,
-    Container,
-    Box,
     Chip,
-    AppBar,
-    Toolbar,
-    Paper,
-    Grid,
+    Container,
     Fab,
+    Grid,
+    Paper,
+    TextField,
+    Typography,
     Zoom
 } from '@mui/material';
 import {
-    ExpandMore as ExpandMoreIcon,
-    Search as SearchIcon,
     Email as EmailIcon,
-    Chat as ChatIcon,
-    School as SchoolIcon,
-    Palette as PaletteIcon,
+    ExpandMore as ExpandMoreIcon,
+    KeyboardArrowUp as KeyboardArrowUpIcon,
     LocalShipping as ShippingIcon,
-    KeyboardArrowUp as KeyboardArrowUpIcon
+    Palette as PaletteIcon,
+    School as SchoolIcon,
+    Search as SearchIcon
 } from '@mui/icons-material';
 
 const UniSewFAQ = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState('design');
     const [showScrollTop, setShowScrollTop] = useState(false);
-
 
 
     useEffect(() => {
@@ -45,7 +41,7 @@ const UniSewFAQ = () => {
     }, []);
 
     const scrollToTop = () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({top: 0, behavior: 'smooth'});
     };
 
     const faqData = {
@@ -55,15 +51,19 @@ const UniSewFAQ = () => {
                 answer: (
                     <Box>
                         <Typography variant="body1" paragraph>
-                            Yes, we fully support custom uniform design according to each school's specific requirements. Our professional design team will work directly with your school to create unique uniform designs that match your school's culture and values.
+                            Yes, we fully support custom uniform design according to each school's specific
+                            requirements. Our professional design team will work directly with your school to create
+                            unique uniform designs that match your school's culture and values.
                         </Typography>
                         <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
                             Our services include:
                         </Typography>
-                        <Box component="ul" sx={{ pl: 2 }}>
+                        <Box component="ul" sx={{pl: 2}}>
                             <Typography component="li" variant="body2">Free design consultation</Typography>
-                            <Typography component="li" variant="body2">Color, logo, and slogan customization</Typography>
-                            <Typography component="li" variant="body2">Multiple design versions for selection</Typography>
+                            <Typography component="li" variant="body2">Color, logo, and slogan
+                                customization</Typography>
+                            <Typography component="li" variant="body2">Multiple design versions for
+                                selection</Typography>
 
                         </Box>
                     </Box>
@@ -76,7 +76,7 @@ const UniSewFAQ = () => {
                         <Typography variant="body1" paragraph>
                             UniSew provides multiple ways for customers to preview designs:
                         </Typography>
-                        <Box component="ul" sx={{ pl: 2 }}>
+                        <Box component="ul" sx={{pl: 2}}>
                             <Typography component="li" variant="body2">
                                 <strong>3D Mockup:</strong> View designs on vivid 3D models
                             </Typography>
@@ -92,20 +92,23 @@ const UniSewFAQ = () => {
                 answer: (
                     <Box>
                         <Typography variant="body1" paragraph>
-                            <strong>Colors:</strong> We have a rich color palette with over 50 basic colors and can mix custom colors according to school requirements.
+                            <strong>Colors:</strong> We have a rich color palette with over 50 basic colors and can mix
+                            custom colors according to school requirements.
                         </Typography>
                         <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
                             Materials:
                         </Typography>
-                        <Box component="ul" sx={{ pl: 2 }}>
+                        <Box component="ul" sx={{pl: 2}}>
                             <Typography component="li" variant="body2">
                                 <strong>100% Cotton:</strong> Breathable, good absorption, suitable for tropical climate
                             </Typography>
                             <Typography component="li" variant="body2">
-                                <strong>Cotton-Polyester blend:</strong> Color-fast, wrinkle-resistant, easy to wash and iron
+                                <strong>Cotton-Polyester blend:</strong> Color-fast, wrinkle-resistant, easy to wash and
+                                iron
                             </Typography>
                             <Typography component="li" variant="body2">
-                                <strong>Kate fabric:</strong> Durable and beautiful, maintains shape well, suitable for long-term uniforms
+                                <strong>Kate fabric:</strong> Durable and beautiful, maintains shape well, suitable for
+                                long-term uniforms
                             </Typography>
                             <Typography component="li" variant="body2">
                                 <strong>Stretch knit fabric:</strong> Comfortable for movement, suitable for PE uniforms
@@ -123,14 +126,21 @@ const UniSewFAQ = () => {
                         <Typography variant="body1" paragraph>
                             UniSew's professional production process includes 7 steps:
                         </Typography>
-                        <Box component="ul" sx={{ pl: 2 }}>
-                            <Typography component="li" variant="body2"><strong>Step 1:</strong> Receive order and confirm design</Typography>
-                            <Typography component="li" variant="body2"><strong>Step 2:</strong> Cut fabric according to approved patterns</Typography>
-                            <Typography component="li" variant="body2"><strong>Step 3:</strong> Sew first sample for inspection</Typography>
-                            <Typography component="li" variant="body2"><strong>Step 4:</strong> Mass production with modern machinery</Typography>
-                            <Typography component="li" variant="body2"><strong>Step 5:</strong> Quality check each product</Typography>
-                            <Typography component="li" variant="body2"><strong>Step 6:</strong> Print/embroider logos and school names as required</Typography>
-                            <Typography component="li" variant="body2"><strong>Step 7:</strong> Package and prepare for delivery</Typography>
+                        <Box component="ul" sx={{pl: 2}}>
+                            <Typography component="li" variant="body2"><strong>Step 1:</strong> Receive order and
+                                confirm design</Typography>
+                            <Typography component="li" variant="body2"><strong>Step 2:</strong> Cut fabric according to
+                                approved patterns</Typography>
+                            <Typography component="li" variant="body2"><strong>Step 3:</strong> Sew first sample for
+                                inspection</Typography>
+                            <Typography component="li" variant="body2"><strong>Step 4:</strong> Mass production with
+                                modern machinery</Typography>
+                            <Typography component="li" variant="body2"><strong>Step 5:</strong> Quality check each
+                                product</Typography>
+                            <Typography component="li" variant="body2"><strong>Step 6:</strong> Print/embroider logos
+                                and school names as required</Typography>
+                            <Typography component="li" variant="body2"><strong>Step 7:</strong> Package and prepare for
+                                delivery</Typography>
                         </Box>
                     </Box>
                 )
@@ -142,10 +152,13 @@ const UniSewFAQ = () => {
                         <Typography variant="body1" paragraph>
                             We have a strict quality control system:
                         </Typography>
-                        <Box component="ul" sx={{ pl: 2 }}>
-                            <Typography component="li" variant="body2"><strong>Material inspection:</strong> Every meter of fabric is checked before use</Typography>
-                            <Typography component="li" variant="body2"><strong>Production monitoring:</strong> Close supervision of every process</Typography>
-                            <Typography component="li" variant="body2"><strong>Certification:</strong> Products meet child safety standards</Typography>
+                        <Box component="ul" sx={{pl: 2}}>
+                            <Typography component="li" variant="body2"><strong>Material inspection:</strong> Every meter
+                                of fabric is checked before use</Typography>
+                            <Typography component="li" variant="body2"><strong>Production monitoring:</strong> Close
+                                supervision of every process</Typography>
+                            <Typography component="li" variant="body2"><strong>Certification:</strong> Products meet
+                                child safety standards</Typography>
                         </Box>
                     </Box>
                 )
@@ -157,9 +170,11 @@ const UniSewFAQ = () => {
                         <Typography variant="body1" paragraph>
                             UniSew uniforms are designed for long-term use with features:
                         </Typography>
-                        <Box component="ul" sx={{ pl: 2 }}>
-                            <Typography component="li" variant="body2"><strong>Fade-resistant fabric:</strong> Using premium dyeing technology, colors remain vibrant after multiple washes</Typography>
-                            <Typography component="li" variant="body2"><strong>Strong stitching:</strong> Using high-quality thread, double-needle stitching for durability</Typography>
+                        <Box component="ul" sx={{pl: 2}}>
+                            <Typography component="li" variant="body2"><strong>Fade-resistant fabric:</strong> Using
+                                premium dyeing technology, colors remain vibrant after multiple washes</Typography>
+                            <Typography component="li" variant="body2"><strong>Strong stitching:</strong> Using
+                                high-quality thread, double-needle stitching for durability</Typography>
                         </Box>
                     </Box>
                 )
@@ -173,12 +188,17 @@ const UniSewFAQ = () => {
                         <Typography variant="body1" paragraph>
                             Simple and transparent ordering process:
                         </Typography>
-                        <Box component="ul" sx={{ pl: 2 }}>
-                            <Typography component="li" variant="body2"><strong>Step 1:</strong> Contact for consultation via hotline 0939-674-767 or email</Typography>
-                            <Typography component="li" variant="body2"><strong>Step 2:</strong> Discuss design, materials, and quantities</Typography>
-                            <Typography component="li" variant="body2"><strong>Step 3:</strong> Receive detailed quotation and production timeline</Typography>
-                            <Typography component="li" variant="body2"><strong>Step 5:</strong> Confirm sample and begin production</Typography>
-                            <Typography component="li" variant="body2"><strong>Step 6:</strong> Pay remaining balance upon delivery</Typography>
+                        <Box component="ul" sx={{pl: 2}}>
+                            <Typography component="li" variant="body2"><strong>Step 1:</strong> Contact for consultation
+                                via hotline 0939-674-767 or email</Typography>
+                            <Typography component="li" variant="body2"><strong>Step 2:</strong> Discuss design,
+                                materials, and quantities</Typography>
+                            <Typography component="li" variant="body2"><strong>Step 3:</strong> Receive detailed
+                                quotation and production timeline</Typography>
+                            <Typography component="li" variant="body2"><strong>Step 5:</strong> Confirm sample and begin
+                                production</Typography>
+                            <Typography component="li" variant="body2"><strong>Step 6:</strong> Pay remaining balance
+                                upon delivery</Typography>
                         </Box>
                     </Box>
                 )
@@ -190,14 +210,19 @@ const UniSewFAQ = () => {
                         <Typography variant="body1" paragraph>
                             Timeline depends on order quantity and complexity:
                         </Typography>
-                        <Box component="ul" sx={{ pl: 2 }}>
-                            <Typography component="li" variant="body2"><strong>50-200 pieces:</strong> 7-10 business days (estimated)</Typography>
-                            <Typography component="li" variant="body2"><strong>200-500 pieces:</strong> 10-15 business days (estimated)</Typography>
-                            <Typography component="li" variant="body2"><strong>500-1000 pieces:</strong> 15-20 business days (estimated)</Typography>
-                            <Typography component="li" variant="body2"><strong>Over 1000 pieces:</strong> 20-25 business days (estimated)</Typography>
+                        <Box component="ul" sx={{pl: 2}}>
+                            <Typography component="li" variant="body2"><strong>50-200 pieces:</strong> 7-10 business
+                                days (estimated)</Typography>
+                            <Typography component="li" variant="body2"><strong>200-500 pieces:</strong> 10-15 business
+                                days (estimated)</Typography>
+                            <Typography component="li" variant="body2"><strong>500-1000 pieces:</strong> 15-20 business
+                                days (estimated)</Typography>
+                            <Typography component="li" variant="body2"><strong>Over 1000 pieces:</strong> 20-25 business
+                                days (estimated)</Typography>
                         </Box>
-                        <Typography variant="body1" sx={{ mt: 2 }}>
-                            <strong>Delivery:</strong> Free nationwide delivery for orders over 100 pieces. Express delivery within 1-3 days.
+                        <Typography variant="body1" sx={{mt: 2}}>
+                            <strong>Delivery:</strong> Free nationwide delivery for orders over 100 pieces. Express
+                            delivery within 1-3 days.
                         </Typography>
                     </Box>
                 )
@@ -209,13 +234,17 @@ const UniSewFAQ = () => {
                         <Typography variant="body1" paragraph>
                             UniSew flexibly serves all needs:
                         </Typography>
-                        <Box component="ul" sx={{ pl: 2 }}>
-                            <Typography component="li" variant="body2"><strong>Small orders:</strong> From 20 pieces (suitable for small classes)</Typography>
-                            <Typography component="li" variant="body2"><strong>Medium orders:</strong> 50-300 pieces (suitable for elementary schools)</Typography>
-                            <Typography component="li" variant="body2"><strong>Large orders:</strong> Over 300 pieces (best pricing available)</Typography>
+                        <Box component="ul" sx={{pl: 2}}>
+                            <Typography component="li" variant="body2"><strong>Small orders:</strong> From 20 pieces
+                                (suitable for small classes)</Typography>
+                            <Typography component="li" variant="body2"><strong>Medium orders:</strong> 50-300 pieces
+                                (suitable for elementary schools)</Typography>
+                            <Typography component="li" variant="body2"><strong>Large orders:</strong> Over 300 pieces
+                                (best pricing available)</Typography>
                         </Box>
-                        <Typography variant="body1" sx={{ mt: 2 }}>
-                            <strong>Note:</strong> Larger orders receive better unit pricing and more complimentary services.
+                        <Typography variant="body1" sx={{mt: 2}}>
+                            <strong>Note:</strong> Larger orders receive better unit pricing and more complimentary
+                            services.
                         </Typography>
                     </Box>
                 )
@@ -227,17 +256,20 @@ const UniSewFAQ = () => {
                         <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
                             Exchange and Return Policy:
                         </Typography>
-                        <Box component="ul" sx={{ pl: 2, mb: 2 }}>
-                            <Typography component="li" variant="body2">Free size exchange if sizing is incorrect</Typography>
+                        <Box component="ul" sx={{pl: 2, mb: 2}}>
+                            <Typography component="li" variant="body2">Free size exchange if sizing is
+                                incorrect</Typography>
                             <Typography component="li" variant="body2">Exchange for manufacturing defects </Typography>
-                            <Typography component="li" variant="body2">Size adjustment support for growing students (reasonable fee applies)</Typography>
+                            <Typography component="li" variant="body2">Size adjustment support for growing students
+                                (reasonable fee applies)</Typography>
                         </Box>
                         <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
                             Warranty:
                         </Typography>
-                        <Box component="ul" sx={{ pl: 2 }}>
+                        <Box component="ul" sx={{pl: 2}}>
                             <Typography component="li" variant="body2">Repair support at preferential rates</Typography>
-                            <Typography component="li" variant="body2">Care consultation to maintain uniform longevity</Typography>
+                            <Typography component="li" variant="body2">Care consultation to maintain uniform
+                                longevity</Typography>
                         </Box>
                     </Box>
                 )
@@ -249,10 +281,13 @@ const UniSewFAQ = () => {
                         <Typography variant="body1" paragraph>
                             UniSew supports various convenient payment methods:
                         </Typography>
-                        <Box component="ul" sx={{ pl: 2 }}>
-                            <Typography component="li" variant="body2"><strong>Bank transfer:</strong> VNPAY</Typography>
-                            <Typography component="li" variant="body2"><strong>Cash on delivery (COD):</strong> For small orders under 50 pieces</Typography>
-                            <Typography component="li" variant="body2"><strong>Cash:</strong> At showroom or upon delivery</Typography>
+                        <Box component="ul" sx={{pl: 2}}>
+                            <Typography component="li" variant="body2"><strong>Bank
+                                transfer:</strong> VNPAY</Typography>
+                            <Typography component="li" variant="body2"><strong>Cash on delivery (COD):</strong> For
+                                small orders under 50 pieces</Typography>
+                            <Typography component="li" variant="body2"><strong>Cash:</strong> At showroom or upon
+                                delivery</Typography>
                         </Box>
                     </Box>
                 )
@@ -262,19 +297,19 @@ const UniSewFAQ = () => {
 
     const categories = [
         {
-            icon: <PaletteIcon />,
+            icon: <PaletteIcon/>,
             title: "Design & Customization",
             description: "Information about design process, color customization, logos, and uniform styles",
             key: "design"
         },
         {
-            icon: <SchoolIcon />,
+            icon: <SchoolIcon/>,
             title: "Production & Quality",
             description: "Details about fabric materials, production process, and quality standards",
             key: "production"
         },
         {
-            icon: <ShippingIcon />,
+            icon: <ShippingIcon/>,
             title: "Orders & Delivery",
             description: "Order guidance, payment, delivery time, and exchange/return policies",
             key: "order"
@@ -294,8 +329,8 @@ const UniSewFAQ = () => {
         const questions = filteredFAQs(categoryKey);
 
         return (
-            <Card key={categoryKey} sx={{ mb: 3, boxShadow: 2 }}>
-                <CardContent sx={{ p: 0 }}>
+            <Card key={categoryKey} sx={{mb: 3, boxShadow: 2}}>
+                <CardContent sx={{p: 0}}>
                     <Box sx={{
                         p: 3,
                         borderBottom: 1,
@@ -304,8 +339,8 @@ const UniSewFAQ = () => {
                         alignItems: 'center',
                         justifyContent: 'space-between'
                     }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <Box sx={{ mr: 2, color: 'primary.main' }}>
+                        <Box sx={{display: 'flex', alignItems: 'center'}}>
+                            <Box sx={{mr: 2, color: 'primary.main'}}>
                                 {icon}
                             </Box>
                             <Typography variant="h5" fontWeight="bold">
@@ -321,16 +356,16 @@ const UniSewFAQ = () => {
                     </Box>
 
                     {questions.length === 0 ? (
-                        <Box sx={{ p: 4, textAlign: 'center' }}>
+                        <Box sx={{p: 4, textAlign: 'center'}}>
                             <Typography variant="body2" color="text.secondary">
                                 No questions match your search in this section.
                             </Typography>
                         </Box>
                     ) : (
                         questions.map((faq, index) => (
-                            <Accordion key={index} sx={{ boxShadow: 'none', borderBottom: 1, borderColor: 'divider' }}>
+                            <Accordion key={index} sx={{boxShadow: 'none', borderBottom: 1, borderColor: 'divider'}}>
                                 <AccordionSummary
-                                    expandIcon={<ExpandMoreIcon />}
+                                    expandIcon={<ExpandMoreIcon/>}
                                     sx={{
                                         '&:hover': {
                                             backgroundColor: 'action.hover'
@@ -341,7 +376,7 @@ const UniSewFAQ = () => {
                                         {faq.question}
                                     </Typography>
                                 </AccordionSummary>
-                                <AccordionDetails sx={{ pt: 0 }}>
+                                <AccordionDetails sx={{pt: 0}}>
                                     {faq.answer}
                                 </AccordionDetails>
                             </Accordion>
@@ -353,7 +388,7 @@ const UniSewFAQ = () => {
     };
 
     return (
-        <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
+        <Box sx={{minHeight: '100vh', bgcolor: 'grey.50'}}>
             {}
 
             {}
@@ -367,12 +402,13 @@ const UniSewFAQ = () => {
                     <Typography variant="h3" fontWeight="bold" gutterBottom>
                         Frequently Asked Questions
                     </Typography>
-                    <Typography variant="h6" sx={{ opacity: 0.9, mb: 4 }}>
-                        Everything you need to know about UniSew's elementary school uniform design and manufacturing services
+                    <Typography variant="h6" sx={{opacity: 0.9, mb: 4}}>
+                        Everything you need to know about UniSew's elementary school uniform design and manufacturing
+                        services
                     </Typography>
 
                     {}
-                    <Box sx={{ maxWidth: 500, mx: 'auto' }}>
+                    <Box sx={{maxWidth: 500, mx: 'auto'}}>
                         <TextField
                             fullWidth
                             variant="outlined"
@@ -380,7 +416,7 @@ const UniSewFAQ = () => {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             InputProps={{
-                                startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+                                startAdornment: <SearchIcon sx={{mr: 1, color: 'text.secondary'}}/>,
                                 sx: {
                                     bgcolor: 'white',
                                     borderRadius: 3,
@@ -395,14 +431,14 @@ const UniSewFAQ = () => {
             </Box>
 
             {}
-            <Paper elevation={1} sx={{ position: 'sticky', top: 0, zIndex: 10, bgcolor: 'white' }}>
+            <Paper elevation={1} sx={{position: 'sticky', top: 0, zIndex: 10, bgcolor: 'white'}}>
                 <Container maxWidth="lg">
                     <Box sx={{
                         display: 'flex',
                         gap: 1,
                         py: 2,
                         overflowX: 'auto',
-                        '&::-webkit-scrollbar': { display: 'none' }
+                        '&::-webkit-scrollbar': {display: 'none'}
                     }}>
                         {categories.map((category) => (
                             <Button
@@ -424,9 +460,9 @@ const UniSewFAQ = () => {
             </Paper>
 
             {}
-            <Container maxWidth="lg" sx={{ py: 6 }}>
+            <Container maxWidth="lg" sx={{py: 6}}>
                 {}
-                <Grid container spacing={3} sx={{ mb: 6 }}>
+                <Grid container spacing={3} sx={{mb: 6}}>
                     {categories.map((category, index) => (
                         <Grid item xs={12} md={4} key={index}>
                             <Card
@@ -441,7 +477,7 @@ const UniSewFAQ = () => {
                                 }}
                                 onClick={() => setActiveCategory(category.key)}
                             >
-                                <CardContent sx={{ textAlign: 'center', p: 4 }}>
+                                <CardContent sx={{textAlign: 'center', p: 4}}>
                                     <Box sx={{
                                         color: 'primary.main',
                                         fontSize: 48,
@@ -481,14 +517,14 @@ const UniSewFAQ = () => {
                     <Typography variant="h4" fontWeight="bold" gutterBottom>
                         Still Have Questions?
                     </Typography>
-                    <Typography variant="h6" sx={{ opacity: 0.9, mb: 4 }}>
+                    <Typography variant="h6" sx={{opacity: 0.9, mb: 4}}>
                         UniSew's consultation team is always ready to support you 24/7
                     </Typography>
-                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <Box sx={{display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap'}}>
                         <Button
                             variant="contained"
                             size="large"
-                            startIcon={<EmailIcon />}
+                            startIcon={<EmailIcon/>}
                             href="mailto:unisewsu2025@gmail.com"
                             sx={{
                                 borderRadius: 3,
@@ -516,7 +552,7 @@ const UniSewFAQ = () => {
                         zIndex: 1000
                     }}
                 >
-                    <KeyboardArrowUpIcon />
+                    <KeyboardArrowUpIcon/>
                 </Fab>
             </Zoom>
         </Box>

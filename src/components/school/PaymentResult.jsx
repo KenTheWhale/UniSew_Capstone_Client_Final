@@ -16,7 +16,7 @@ import {
 import {parseID} from "../../utils/ParseIDUtil.jsx";
 import {buyExtraRevision, pickQuotation} from "../../services/DesignService.jsx";
 import {approveQuotation, confirmDeliveryOrder} from "../../services/OrderService.jsx";
-import {createDesignTransaction, createDepositTransaction} from "../../services/PaymentService.jsx";
+import {createDepositTransaction, createDesignTransaction} from "../../services/PaymentService.jsx";
 import {emailType, sendEmail} from "../../services/EmailService.jsx";
 import {createShipping} from "../../services/ShippingService.jsx";
 import {useEffect, useState} from 'react';
@@ -126,7 +126,7 @@ export default function PaymentResult() {
         const userData = localStorage.getItem('user');
         let userEmail = 'N/A';
         let userBusinessName = 'N/A';
-        
+
         if (userData) {
             try {
                 const user = JSON.parse(userData);
@@ -136,7 +136,7 @@ export default function PaymentResult() {
                 console.error('Error parsing user data from localStorage:', error);
             }
         }
-        
+
         // Get current date and time
         const now = new Date();
         const paymentDate = now.toLocaleDateString('vi-VN', {
@@ -151,7 +151,7 @@ export default function PaymentResult() {
 
         // Determine partner type and name
         let partnerType, partnerName, itemId;
-        
+
         if (paymentType === 'design' || paymentType === 'revision') {
             partnerType = 'Designer';
             if (paymentType === 'design' && quotationDetails?.quotation?.designer?.customer?.name) {
@@ -161,7 +161,7 @@ export default function PaymentResult() {
             } else {
                 partnerName = 'N/A';
             }
-            itemId = paymentType === 'design' ? 
+            itemId = paymentType === 'design' ?
                 parseID(quotationDetails?.request?.id, "dr") :
                 parseID(revisionPurchaseDetails?.requestId, "dr");
         } else if (paymentType === 'order' || paymentType === 'deposit') {
@@ -173,7 +173,7 @@ export default function PaymentResult() {
             }
             itemId = parseID(orderDetails?.order?.id, "ord");
         }
-        
+
         // Format amount to VND format (e.g., 1,000,000)
         const formatAmountToVND = (amount) => {
             if (typeof amount === 'number' || !isNaN(amount)) {
@@ -181,7 +181,7 @@ export default function PaymentResult() {
             }
             return '0';
         };
-        
+
         return {
             result: isSuccess ? 'Successfully' : 'Failed',
             receiverEmail: userEmail,
@@ -203,10 +203,10 @@ export default function PaymentResult() {
             const emailData = buildEmailData(true, paymentType, parseInt(vnpAmount) / 100);
             console.log('Sending success email with data:', emailData);
             const emailResponse = await sendEmail(emailType.PAYMENT, emailData);
-            
+
             if (emailResponse && emailResponse.status === 200) {
                 console.log('Success email sent successfully');
-                
+
                 // Continue with payment logic
                 if (isDepositPayment && quotationId && orderDetails) {
                     await handleSuccessfulDeposit();
@@ -235,10 +235,10 @@ export default function PaymentResult() {
             const emailData = buildEmailData(false, paymentType, parseInt(vnpAmount) / 100);
             console.log('Sending failure email with data:', emailData);
             const emailResponse = await sendEmail(emailType.PAYMENT, emailData);
-            
+
             if (emailResponse && emailResponse.status === 200) {
                 console.log('Failure email sent successfully');
-                
+
                 // Continue with payment logic
                 if (isDepositPayment) {
                     await handleFailedDeposit();
@@ -282,7 +282,7 @@ export default function PaymentResult() {
 
     const handleSuccessfulOrder = async () => {
         console.log('handleSuccessfulOrder called');
-        
+
         try {
             // Get user data from localStorage
             const userData = localStorage.getItem('user');
@@ -290,15 +290,15 @@ export default function PaymentResult() {
                 console.error('User data not found in localStorage');
                 return;
             }
-            
+
             const user = JSON.parse(userData);
-            
+
             // Calculate total order price (base + service + shipping fee)
             const basePrice = orderDetails.order.price || 0;
             const serviceFee = orderDetails.serviceFee || 0;
             const shippingFee = orderDetails.shippingFee || 0;
             const orderPrice = basePrice + serviceFee + shippingFee;
-            
+
             // Call createShipping API FIRST
             console.log('Creating shipping order...');
             const shippingResponse = await createShipping(
@@ -309,16 +309,16 @@ export default function PaymentResult() {
                 orderDetails.order.id, // orderId
                 orderPrice // orderPrice
             );
-            
+
             if (!shippingResponse || shippingResponse.data.code !== 200) {
                 console.error('Failed to create shipping order:', shippingResponse);
                 return;
             }
-            
+
             // Extract order_code from shipping response
             const shippingOrderCode = shippingResponse.data.data.order_code;
             console.log('Shipping order created successfully with code:', shippingOrderCode);
-            
+
             // Now call confirmDeliveryOrder with shippingCode
             const response = await confirmDeliveryOrder(
                 orderDetails.order.id,
@@ -328,13 +328,13 @@ export default function PaymentResult() {
                 shippingOrderCode, // shippingCode from createShipping response
                 orderDetails.shippingFee // shippingFee
             );
-            
+
             if (response && response.status === 200) {
                 console.log('Order delivery confirmed successfully with shipping code:', shippingOrderCode);
             } else {
                 console.error('Failed to confirm order delivery:', response);
             }
-            
+
         } catch (error) {
             console.error('Error in handleSuccessfulOrder:', error);
         }

@@ -6,7 +6,7 @@ axios.defaults.baseURL = "http://localhost:8080/api/v1"
 const axiosClient = axios.create({
     baseURL: axios.defaults.baseURL,
     headers: {
-        "Content-Type" : "application/json"
+        "Content-Type": "application/json"
     },
     withCredentials: true
 })
@@ -25,9 +25,9 @@ axiosClient.interceptors.response.use(
 
             try {
                 const refreshRes = await refreshToken();
-                if(refreshRes.status === 200){
+                if (refreshRes.status === 200) {
                     return axiosClient(originalRequest);
-                }else{
+                } else {
                     window.location.href = "/login";
                 }
             } catch (refreshError) {

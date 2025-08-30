@@ -1,37 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
-    Typography,
-    Container,
     Box,
+    Button,
     Card,
     CardContent,
-    Paper,
-    Button,
-    AppBar,
-    Toolbar,
-    Fab,
-    Zoom,
+    Chip,
+    Container,
     Divider,
+    Fab,
     List,
     ListItem,
-    ListItemText,
     ListItemIcon,
-    Chip,
-    Accordion,
-    AccordionSummary,
-    AccordionDetails
+    ListItemText,
+    Paper,
+    Typography,
+    Zoom
 } from '@mui/material';
 import {
-    School as SchoolIcon,
-    Email as EmailIcon,
-    KeyboardArrowUp as KeyboardArrowUpIcon,
-    ExpandMore as ExpandMoreIcon,
-    Gavel as GavelIcon,
-    Security as SecurityIcon,
-    Payment as PaymentIcon,
     Business as BusinessIcon,
+    Description as DescriptionIcon,
+    Email as EmailIcon,
+    Gavel as GavelIcon,
+    KeyboardArrowUp as KeyboardArrowUpIcon,
+    Payment as PaymentIcon,
     PrivacyTip as PrivacyIcon,
-    Description as DescriptionIcon
+    School as SchoolIcon,
+    Security as SecurityIcon
 } from '@mui/icons-material';
 
 const TermOfServices = () => {
@@ -46,13 +40,13 @@ const TermOfServices = () => {
     }, []);
 
     const scrollToTop = () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({top: 0, behavior: 'smooth'});
     };
 
     const termsData = {
         general: {
             title: "General Terms and Conditions",
-            icon: <GavelIcon />,
+            icon: <GavelIcon/>,
             content: [
                 {
                     subtitle: "1. Acceptance of Terms",
@@ -74,7 +68,7 @@ const TermOfServices = () => {
         },
         orders: {
             title: "Order and Payment Terms",
-            icon: <PaymentIcon />,
+            icon: <PaymentIcon/>,
             content: [
                 {
                     subtitle: "1. Order Process",
@@ -96,7 +90,7 @@ const TermOfServices = () => {
         },
         production: {
             title: "Production and Quality",
-            icon: <BusinessIcon />,
+            icon: <BusinessIcon/>,
             content: [
                 {
                     subtitle: "1. Production Timeline",
@@ -118,7 +112,7 @@ const TermOfServices = () => {
         },
         delivery: {
             title: "Delivery and Returns",
-            icon: <SchoolIcon />,
+            icon: <SchoolIcon/>,
             content: [
                 {
                     subtitle: "1. Delivery Service",
@@ -140,7 +134,7 @@ const TermOfServices = () => {
         },
         privacy: {
             title: "Privacy and Data Protection",
-            icon: <PrivacyIcon />,
+            icon: <PrivacyIcon/>,
             content: [
                 {
                     subtitle: "1. Data Collection",
@@ -162,7 +156,7 @@ const TermOfServices = () => {
         },
         intellectual: {
             title: "Intellectual Property",
-            icon: <DescriptionIcon />,
+            icon: <DescriptionIcon/>,
             content: [
                 {
                     subtitle: "1. Design Ownership",
@@ -184,7 +178,7 @@ const TermOfServices = () => {
         },
         liability: {
             title: "Liability and Disclaimers",
-            icon: <SecurityIcon />,
+            icon: <SecurityIcon/>,
             content: [
                 {
                     subtitle: "1. Service Limitations",
@@ -208,8 +202,8 @@ const TermOfServices = () => {
 
     const renderSection = (sectionKey, sectionData) => {
         return (
-            <Card key={sectionKey} sx={{ mb: 3, boxShadow: 2 }}>
-                <CardContent sx={{ p: 0 }}>
+            <Card key={sectionKey} sx={{mb: 3, boxShadow: 2}}>
+                <CardContent sx={{p: 0}}>
                     <Box sx={{
                         p: 3,
                         borderBottom: 1,
@@ -217,7 +211,7 @@ const TermOfServices = () => {
                         display: 'flex',
                         alignItems: 'center'
                     }}>
-                        <Box sx={{ mr: 2, color: 'primary.main' }}>
+                        <Box sx={{mr: 2, color: 'primary.main'}}>
                             {sectionData.icon}
                         </Box>
                         <Typography variant="h5" fontWeight="bold">
@@ -225,17 +219,17 @@ const TermOfServices = () => {
                         </Typography>
                     </Box>
 
-                    <Box sx={{ p: 3 }}>
+                    <Box sx={{p: 3}}>
                         {sectionData.content.map((item, index) => (
-                            <Box key={index} sx={{ mb: 3 }}>
+                            <Box key={index} sx={{mb: 3}}>
                                 <Typography variant="h6" fontWeight="semibold" gutterBottom color="primary">
                                     {item.subtitle}
                                 </Typography>
-                                <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+                                <Typography variant="body1" color="text.secondary" sx={{lineHeight: 1.6}}>
                                     {item.text}
                                 </Typography>
                                 {index < sectionData.content.length - 1 && (
-                                    <Divider sx={{ mt: 2 }} />
+                                    <Divider sx={{mt: 2}}/>
                                 )}
                             </Box>
                         ))}
@@ -246,24 +240,24 @@ const TermOfServices = () => {
     };
 
     const quickLinks = [
-        { key: 'general', label: 'General Terms', icon: <GavelIcon /> },
-        { key: 'orders', label: 'Orders & Payment', icon: <PaymentIcon /> },
-        { key: 'production', label: 'Production', icon: <BusinessIcon /> },
-        { key: 'delivery', label: 'Delivery', icon: <SchoolIcon /> },
-        { key: 'privacy', label: 'Privacy', icon: <PrivacyIcon /> },
-        { key: 'intellectual', label: 'Intellectual Property', icon: <DescriptionIcon /> },
-        { key: 'liability', label: 'Liability', icon: <SecurityIcon /> }
+        {key: 'general', label: 'General Terms', icon: <GavelIcon/>},
+        {key: 'orders', label: 'Orders & Payment', icon: <PaymentIcon/>},
+        {key: 'production', label: 'Production', icon: <BusinessIcon/>},
+        {key: 'delivery', label: 'Delivery', icon: <SchoolIcon/>},
+        {key: 'privacy', label: 'Privacy', icon: <PrivacyIcon/>},
+        {key: 'intellectual', label: 'Intellectual Property', icon: <DescriptionIcon/>},
+        {key: 'liability', label: 'Liability', icon: <SecurityIcon/>}
     ];
 
     const scrollToSection = (sectionKey) => {
         const element = document.getElementById(`section-${sectionKey}`);
         if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            element.scrollIntoView({behavior: 'smooth', block: 'start'});
         }
     };
 
     return (
-        <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
+        <Box sx={{minHeight: '100vh', bgcolor: 'grey.50'}}>
 
             {}
             <Box sx={{
@@ -276,24 +270,24 @@ const TermOfServices = () => {
                     <Typography variant="h3" fontWeight="bold" gutterBottom>
                         Terms of Service
                     </Typography>
-                    <Typography variant="h6" sx={{ opacity: 0.9, mb: 4 }}>
+                    <Typography variant="h6" sx={{opacity: 0.9, mb: 4}}>
                         Please read these terms carefully before using UniSew's services
                     </Typography>
-                    <Typography variant="body1" sx={{ opacity: 0.8 }}>
+                    <Typography variant="body1" sx={{opacity: 0.8}}>
                         Last updated: August 2025
                     </Typography>
                 </Container>
             </Box>
 
             {}
-            <Paper elevation={1} sx={{ position: 'sticky', top: 0, zIndex: 10, bgcolor: 'white' }}>
+            <Paper elevation={1} sx={{position: 'sticky', top: 0, zIndex: 10, bgcolor: 'white'}}>
                 <Container maxWidth="lg">
                     <Box sx={{
                         display: 'flex',
                         gap: 1,
                         py: 2,
                         overflowX: 'auto',
-                        '&::-webkit-scrollbar': { display: 'none' }
+                        '&::-webkit-scrollbar': {display: 'none'}
                     }}>
                         {quickLinks.map((link) => (
                             <Button
@@ -316,19 +310,21 @@ const TermOfServices = () => {
             </Paper>
 
             {}
-            <Container maxWidth="lg" sx={{ py: 6 }}>
+            <Container maxWidth="lg" sx={{py: 6}}>
                 {}
-                <Card sx={{ mb: 4, boxShadow: 2 }}>
-                    <CardContent sx={{ p: 4 }}>
+                <Card sx={{mb: 4, boxShadow: 2}}>
+                    <CardContent sx={{p: 4}}>
                         <Typography variant="h5" fontWeight="bold" gutterBottom color="primary">
                             Introduction
                         </Typography>
-                        <Typography variant="body1" paragraph sx={{ lineHeight: 1.6 }}>
-                            Welcome to UniSew. These Terms of Service govern your use of our uniform design and manufacturing services.
+                        <Typography variant="body1" paragraph sx={{lineHeight: 1.6}}>
+                            Welcome to UniSew. These Terms of Service govern your use of our uniform design and
+                            manufacturing services.
                             By using our services, you agree to these terms and our Privacy Policy.
                         </Typography>
-                        <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
-                            These terms are legally binding and outline the rights and responsibilities of both UniSew and our customers.
+                        <Typography variant="body1" sx={{lineHeight: 1.6}}>
+                            These terms are legally binding and outline the rights and responsibilities of both UniSew
+                            and our customers.
                             Please read them carefully and contact us if you have any questions.
                         </Typography>
                     </CardContent>
@@ -342,8 +338,8 @@ const TermOfServices = () => {
                 ))}
 
                 {}
-                <Card sx={{ mt: 4, boxShadow: 2 }}>
-                    <CardContent sx={{ p: 4 }}>
+                <Card sx={{mt: 4, boxShadow: 2}}>
+                    <CardContent sx={{p: 4}}>
                         <Typography variant="h5" fontWeight="bold" gutterBottom color="primary">
                             Contact Information
                         </Typography>
@@ -353,7 +349,7 @@ const TermOfServices = () => {
                         <List>
                             <ListItem>
                                 <ListItemIcon>
-                                    <EmailIcon color="primary" />
+                                    <EmailIcon color="primary"/>
                                 </ListItemIcon>
                                 <ListItemText
                                     primary="Email"
@@ -362,7 +358,7 @@ const TermOfServices = () => {
                             </ListItem>
                             <ListItem>
                                 <ListItemIcon>
-                                    <SchoolIcon color="primary" />
+                                    <SchoolIcon color="primary"/>
                                 </ListItemIcon>
                                 <ListItemText
                                     primary="Phone"
@@ -374,15 +370,16 @@ const TermOfServices = () => {
                 </Card>
 
                 {}
-                <Box sx={{ mt: 4, textAlign: 'center' }}>
+                <Box sx={{mt: 4, textAlign: 'center'}}>
                     <Typography variant="h6" gutterBottom>
-                        By using our services, you acknowledge that you have read, understood, and agree to these Terms of Service.
+                        By using our services, you acknowledge that you have read, understood, and agree to these Terms
+                        of Service.
                     </Typography>
                     <Chip
                         label="Terms of Service Accepted"
                         color="primary"
                         variant="outlined"
-                        sx={{ mt: 2 }}
+                        sx={{mt: 2}}
                     />
                 </Box>
             </Container>
@@ -403,7 +400,7 @@ const TermOfServices = () => {
                         zIndex: 1000
                     }}
                 >
-                    <KeyboardArrowUpIcon />
+                    <KeyboardArrowUpIcon/>
                 </Fab>
             </Zoom>
         </Box>

@@ -19,22 +19,22 @@ const templateMapping = {
 
 export const sendEmail = async (emailType, data) => {
     const templateId = templateMapping[emailType];
-    
+
     if (!templateId) {
         throw new Error(`Invalid email type: ${emailType}`);
     }
 
     const response = await axios.post('https://api.emailjs.com/api/v1.0/email/send', {
-        "service_id": serviceId,
-        "template_id": templateId,
-        "user_id": publicKey,
-        "template_params": data
-    }, 
-    {
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
+            "service_id": serviceId,
+            "template_id": templateId,
+            "user_id": publicKey,
+            "template_params": data
+        },
+        {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
 
     return response || null
 }

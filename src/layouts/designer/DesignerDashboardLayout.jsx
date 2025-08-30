@@ -42,7 +42,6 @@ import {signout} from "../../services/AccountService.jsx";
 import {enqueueSnackbar} from "notistack";
 import {useChatRoomsByEmail} from "../../components/designer/UseChatRoomsByEmail.jsx";
 import {getAccessCookie} from "../../utils/CookieUtil.jsx";
-import Bell from "../../components/ui/Bell.jsx";
 
 const drawerWidth = 280;
 
@@ -81,10 +80,10 @@ export default function DesignerDashboardLayout() {
     const handleLogout = async () => {
         const response = await signout();
         if (response && response.status === 200) {
-            if (localStorage.length > 0){
+            if (localStorage.length > 0) {
                 localStorage.clear();
             }
-            if(sessionStorage.length > 0){
+            if (sessionStorage.length > 0) {
                 sessionStorage.clear()
             }
             enqueueSnackbar(response.data.message, {variant: "success", autoHideDuration: 1000});
@@ -140,7 +139,8 @@ export default function DesignerDashboardLayout() {
                             py: 1,
                         }}
                     >
-                        <Typography  onClick={() => window.location.href = "/home"} variant="h5" fontWeight="800" sx={{ cursor:"pointer", color: "#FFFFFF"}}>
+                        <Typography onClick={() => window.location.href = "/home"} variant="h5" fontWeight="800"
+                                    sx={{cursor: "pointer", color: "#FFFFFF"}}>
                             UNISEW
                         </Typography>
                     </Box>

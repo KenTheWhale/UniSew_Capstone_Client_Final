@@ -1,4 +1,3 @@
-
 import axiosClient from '../configs/APIConfig.jsx';
 
 export const getSizes = async () => {
@@ -86,7 +85,7 @@ export const confirmDeliveryOrder = async (orderId, receiverId, totalPrice, gate
         orderId: orderId,
         shippingCode: shippingCode,
         shippingFee: shippingFee,
-        createTransactionRequest:{
+        createTransactionRequest: {
             type: 'order',
             receiverId: receiverId,
             itemId: orderId,

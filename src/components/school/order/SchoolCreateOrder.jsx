@@ -21,18 +21,16 @@ import {
 } from '@mui/material';
 import {
     CalendarToday as CalendarIcon,
-    CheckCircle as CheckCircleIcon,
     DesignServices as DesignServicesIcon,
     Info as InfoIcon,
     InfoOutlined as InfoOutlinedIcon,
     Palette as PaletteIcon,
-    RestartAlt as RestartAltIcon,
     TableChart as TableChartIcon
 } from '@mui/icons-material';
 import {Card, Col, DatePicker, Row, Space, Typography as AntTypography} from 'antd';
 import 'antd/dist/reset.css';
 import {getSchoolDesign} from '../../../services/DesignService.jsx';
-import {getSizes, createOrder} from '../../../services/OrderService.jsx';
+import {createOrder, getSizes} from '../../../services/OrderService.jsx';
 import DisplayImage from '../../ui/DisplayImage.jsx';
 import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
 import {GiSkirt} from "react-icons/gi";
@@ -716,7 +714,8 @@ export default function SchoolCreateOrder() {
                                                 backgroundColor: 'rgba(255, 152, 0, 0.1)',
                                                 border: '1px solid rgba(255, 152, 0, 0.3)'
                                             }}>
-                                                ⚠️ We recommend setting a delivery deadline of 2 months or more to maximize your chances of getting your order accepted.
+                                                ⚠️ We recommend setting a delivery deadline of 2 months or more to
+                                                maximize your chances of getting your order accepted.
                                             </Typography>
                                         </Box>
                                     </Box>
@@ -785,7 +784,7 @@ export default function SchoolCreateOrder() {
                             </CardContent>
                         </MuiCard>
 
-                        
+
                         {selectedDesignId && selectedDesign && (
                             <MuiCard sx={{
                                 background: 'rgba(255, 255, 255, 0.95)',
@@ -902,7 +901,7 @@ export default function SchoolCreateOrder() {
                                                         </Typography>
                                                     </Box>
 
-                                                
+
                                                     <Box sx={{
                                                         p: 2,
                                                         borderRight: '1px solid #000000',
@@ -921,7 +920,7 @@ export default function SchoolCreateOrder() {
                                                         </Typography>
                                                     </Box>
 
-                                                   
+
                                                     {allSizes.map((size, index) => (
                                                         <Box key={`header-${index}`} sx={{
                                                             p: 2,
@@ -2234,7 +2233,7 @@ export default function SchoolCreateOrder() {
                                             </tr>
                                             </thead>
                                             <tbody>
-                                                                                        {(() => {
+                                            {(() => {
                                                 const shirtSizes = sizes.filter(size =>
                                                     size.gender === selectedSizeSpecs.gender &&
                                                     size.type === 'shirt'
@@ -2245,13 +2244,15 @@ export default function SchoolCreateOrder() {
                                                 if (shirtSizes.length === 0) {
                                                     return (
                                                         <tr>
-                                                            <td colSpan={selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' ? 7 : 5} style={{
-                                                                padding: '20px',
-                                                                textAlign: 'center',
-                                                                color: '#666',
-                                                                fontStyle: 'italic'
-                                                            }}>
-                                                                No size data available for {selectedSizeSpecs.gender === 'male' ? 'Boy' : 'Girl'} {selectedSizeSpecs.type === 'regular' ? 'Regular' : 'Physical Education'}
+                                                            <td colSpan={selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' ? 7 : 5}
+                                                                style={{
+                                                                    padding: '20px',
+                                                                    textAlign: 'center',
+                                                                    color: '#666',
+                                                                    fontStyle: 'italic'
+                                                                }}>
+                                                                No size data available
+                                                                for {selectedSizeSpecs.gender === 'male' ? 'Boy' : 'Girl'} {selectedSizeSpecs.type === 'regular' ? 'Regular' : 'Physical Education'}
                                                             </td>
                                                         </tr>
                                                     );
@@ -2270,77 +2271,78 @@ export default function SchoolCreateOrder() {
                                                         s.size === shirtSize.size
                                                     ) : null;
 
-                                                return (
-                                                    <tr key={`${shirtSize.type}-${shirtSize.size}-${shirtSize.gender}`} style={{
-                                                        borderBottom: '1px solid #f1f5f9',
-                                                        backgroundColor: '#ffffff'
-                                                    }}>
-                                                        <td style={{
-                                                            padding: '12px',
-                                                            fontWeight: 600,
-                                                            textAlign: 'center',
-                                                            fontSize: '14px',
-                                                            color: '#1e293b',
-                                                            backgroundColor: '#f8fafc'
-                                                        }}>{shirtSize.size}</td>
-                                                        <td style={{
-                                                            padding: '12px',
-                                                            textAlign: 'center',
-                                                            fontSize: '13px',
-                                                            color: '#374151',
-                                                            borderLeft: '1px solid #e2e8f0'
-                                                        }}>
-                                                            {`${shirtSize.minHeight}-${shirtSize.maxHeight}`}
-                                                        </td>
-                                                        <td style={{
-                                                            padding: '12px',
-                                                            textAlign: 'center',
-                                                            fontSize: '13px',
-                                                            color: '#374151'
-                                                        }}>
-                                                            {`${shirtSize.minWeight}-${shirtSize.maxWeight}`}
-                                                        </td>
-                                                        <td style={{
-                                                            padding: '12px',
-                                                            textAlign: 'center',
-                                                            fontSize: '13px',
-                                                            color: '#374151',
-                                                            borderLeft: '1px solid #e2e8f0'
-                                                        }}>
-                                                            {pantsSize ? `${pantsSize.minHeight}-${pantsSize.maxHeight}` : '-'}
-                                                        </td>
-                                                        <td style={{
-                                                            padding: '12px',
-                                                            textAlign: 'center',
-                                                            fontSize: '13px',
-                                                            color: '#374151'
-                                                        }}>
-                                                            {pantsSize ? `${pantsSize.minWeight}-${pantsSize.maxWeight}` : '-'}
-                                                        </td>
-                                                        {selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' && (
-                                                            <>
-                                                                <td style={{
-                                                                    padding: '12px',
-                                                                    textAlign: 'center',
-                                                                    fontSize: '13px',
-                                                                    color: '#374151',
-                                                                    borderLeft: '1px solid #e2e8f0'
-                                                                }}>
-                                                                    {skirtSize ? `${skirtSize.minHeight}-${skirtSize.maxHeight}` : '-'}
-                                                                </td>
-                                                                <td style={{
-                                                                    padding: '12px',
-                                                                    textAlign: 'center',
-                                                                    fontSize: '13px',
-                                                                    color: '#374151'
-                                                                }}>
-                                                                    {skirtSize ? `${skirtSize.minWeight}-${skirtSize.maxWeight}` : '-'}
-                                                                </td>
-                                                            </>
-                                                        )}
-                                                    </tr>
-                                                );
-                                            });
+                                                    return (
+                                                        <tr key={`${shirtSize.type}-${shirtSize.size}-${shirtSize.gender}`}
+                                                            style={{
+                                                                borderBottom: '1px solid #f1f5f9',
+                                                                backgroundColor: '#ffffff'
+                                                            }}>
+                                                            <td style={{
+                                                                padding: '12px',
+                                                                fontWeight: 600,
+                                                                textAlign: 'center',
+                                                                fontSize: '14px',
+                                                                color: '#1e293b',
+                                                                backgroundColor: '#f8fafc'
+                                                            }}>{shirtSize.size}</td>
+                                                            <td style={{
+                                                                padding: '12px',
+                                                                textAlign: 'center',
+                                                                fontSize: '13px',
+                                                                color: '#374151',
+                                                                borderLeft: '1px solid #e2e8f0'
+                                                            }}>
+                                                                {`${shirtSize.minHeight}-${shirtSize.maxHeight}`}
+                                                            </td>
+                                                            <td style={{
+                                                                padding: '12px',
+                                                                textAlign: 'center',
+                                                                fontSize: '13px',
+                                                                color: '#374151'
+                                                            }}>
+                                                                {`${shirtSize.minWeight}-${shirtSize.maxWeight}`}
+                                                            </td>
+                                                            <td style={{
+                                                                padding: '12px',
+                                                                textAlign: 'center',
+                                                                fontSize: '13px',
+                                                                color: '#374151',
+                                                                borderLeft: '1px solid #e2e8f0'
+                                                            }}>
+                                                                {pantsSize ? `${pantsSize.minHeight}-${pantsSize.maxHeight}` : '-'}
+                                                            </td>
+                                                            <td style={{
+                                                                padding: '12px',
+                                                                textAlign: 'center',
+                                                                fontSize: '13px',
+                                                                color: '#374151'
+                                                            }}>
+                                                                {pantsSize ? `${pantsSize.minWeight}-${pantsSize.maxWeight}` : '-'}
+                                                            </td>
+                                                            {selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' && (
+                                                                <>
+                                                                    <td style={{
+                                                                        padding: '12px',
+                                                                        textAlign: 'center',
+                                                                        fontSize: '13px',
+                                                                        color: '#374151',
+                                                                        borderLeft: '1px solid #e2e8f0'
+                                                                    }}>
+                                                                        {skirtSize ? `${skirtSize.minHeight}-${skirtSize.maxHeight}` : '-'}
+                                                                    </td>
+                                                                    <td style={{
+                                                                        padding: '12px',
+                                                                        textAlign: 'center',
+                                                                        fontSize: '13px',
+                                                                        color: '#374151'
+                                                                    }}>
+                                                                        {skirtSize ? `${skirtSize.minWeight}-${skirtSize.maxWeight}` : '-'}
+                                                                    </td>
+                                                                </>
+                                                            )}
+                                                        </tr>
+                                                    );
+                                                });
                                             })()}
                                             </tbody>
                                         </table>

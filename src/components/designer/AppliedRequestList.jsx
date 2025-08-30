@@ -1,31 +1,24 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {
-    Alert,
     Box,
     Button,
+    Card,
+    CardContent,
     Chip,
     CircularProgress,
-    Container,
-    Divider,
     IconButton,
     Paper,
     Tooltip,
-    Typography,
-    Card,
-    CardContent
+    Typography
 } from "@mui/material";
-import {
-    Info as InfoIcon,
-    Refresh as RefreshIcon,
-    Assignment as AssignmentIcon
-} from '@mui/icons-material';
-import {Space, Table, Empty} from 'antd';
+import {Assignment as AssignmentIcon, Info as InfoIcon, Refresh as RefreshIcon} from '@mui/icons-material';
+import {Empty, Space, Table} from 'antd';
 import 'antd/dist/reset.css';
 import {statusTag} from '../school/design/dialog/RequestDetailPopup.jsx';
 import AppliedRequestDetail from './AppliedRequestDetail';
 import {parseID} from "../../utils/ParseIDUtil.jsx";
 import {getAppliedDesignerDesignRequests} from "../../services/DesignService.jsx";
-import { useLocation, useNavigate } from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router-dom';
 
 const TABLE_PAGE_SIZE_OPTIONS = ['5', '10'];
 
@@ -214,12 +207,11 @@ const HeaderSection = React.memo(({onRefresh}) => (
 ));
 
 
-
 const TableSection = React.memo(({
-    columns,
-    filteredDesignRequests,
-    loading
-}) => (
+                                     columns,
+                                     filteredDesignRequests,
+                                     loading
+                                 }) => (
     <Paper
         elevation={0}
         sx={{
@@ -303,7 +295,7 @@ export default function AppliedRequestList() {
             handleViewDetail(id);
             openedRef.current = true;
 
-            navigate('/designer/applied/requests', { replace: true });
+            navigate('/designer/applied/requests', {replace: true});
         }
     }, [loading, openIdParam, designRequests, navigate]);
 
@@ -343,7 +335,6 @@ export default function AppliedRequestList() {
     }, []);
 
     const filteredDesignRequests = designRequests;
-
 
 
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -493,7 +484,7 @@ export default function AppliedRequestList() {
             <HeaderSection onRefresh={handleRefresh}/>
 
             <TableSection
-                        columns={columns}
+                columns={columns}
                 filteredDesignRequests={filteredDesignRequests}
                 loading={loading}
             />

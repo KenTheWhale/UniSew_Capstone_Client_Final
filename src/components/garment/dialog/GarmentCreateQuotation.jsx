@@ -416,13 +416,13 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
             }
 
             if (deliveryOption === 'days') {
-            const orderDeadline = new Date(mergedOrderData.deadline);
-            orderDeadline.setHours(23, 59, 59, 999);
+                const orderDeadline = new Date(mergedOrderData.deadline);
+                orderDeadline.setHours(23, 59, 59, 999);
 
-            if (earlyDeliveryDate > orderDeadline) {
+                if (earlyDeliveryDate > orderDeadline) {
                     enqueueSnackbar(`Delivery time cannot exceed the order deadline (${formatDate(mergedOrderData.deadline)})`, {variant: 'error'});
-                setSubmittingQuotation(false);
-                return;
+                    setSubmittingQuotation(false);
+                    return;
                 }
             }
 
@@ -1332,37 +1332,37 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                         alignItems: 'center',
                                         justifyContent: 'space-between'
                                     }}>
-                                    <Typography variant="h6" sx={{
-                                        fontWeight: 700,
-                                        color: 'white',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 1.5,
-                                        position: 'relative',
-                                        zIndex: 1
-                                    }}>
-                                        <Box sx={{
-                                            p: 1,
-                                            borderRadius: 2,
-                                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                        <Typography variant="h6" sx={{
+                                            fontWeight: 700,
+                                            color: 'white',
                                             display: 'flex',
                                             alignItems: 'center',
-                                            justifyContent: 'center'
+                                            gap: 1.5,
+                                            position: 'relative',
+                                            zIndex: 1
                                         }}>
-                                                <CheckroomIcon sx={{fontSize: 20}}/>
-                                        </Box>
-                                        Order Items
-                                        <Chip
-                                            label={`${groupItemsByCategory(mergedOrderData.orderDetails).length} items`}
-                                            size="small"
-                                            sx={{
+                                            <Box sx={{
+                                                p: 1,
+                                                borderRadius: 2,
                                                 backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                                                color: 'white',
-                                                fontWeight: 600,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}>
+                                                <CheckroomIcon sx={{fontSize: 20}}/>
+                                            </Box>
+                                            Order Items
+                                            <Chip
+                                                label={`${groupItemsByCategory(mergedOrderData.orderDetails).length} items`}
+                                                size="small"
+                                                sx={{
+                                                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                                    color: 'white',
+                                                    fontWeight: 600,
                                                     ml: 2
-                                            }}
-                                        />
-                                    </Typography>
+                                                }}
+                                            />
+                                        </Typography>
                                         <Box sx={{display: 'flex', gap: 2}}>
                                             <Button
                                                 variant="outlined"
@@ -1629,63 +1629,11 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                     const rows = [];
 
                                                     groupedItems.forEach((groupedItem, index) => {
-                                                                rows.push(
+                                                        rows.push(
                                                             <React.Fragment
                                                                 key={`${groupedItem.category}-${groupedItem.gender}-${groupedItem.type}-${index}`}>
                                                                 {}
                                                                 {groupedItem.isFirstInCategory && (
-                                                                            <Box sx={{
-                                                                                p: 2,
-                                                                                borderRight: '1px solid #000000',
-                                                                                borderBottom: '1px solid #000000',
-                                                                                backgroundColor: '#f8fafc',
-                                                                                display: 'flex',
-                                                                                alignItems: 'center',
-                                                                                justifyContent: 'center',
-                                                                        gridRow: `span ${groupedItem.categoryRowSpan}`,
-                                                                        minHeight: `${60 * groupedItem.categoryRowSpan}px`
-                                                                            }}>
-                                                                                <Chip
-                                                                            label={groupedItem.category === 'pe' ? 'PE' : 'Regular'}
-                                                                                    size="small"
-                                                                                    sx={{
-                                                                                backgroundColor: groupedItem.category === 'pe' ? '#dcfce7' : '#dbeafe',
-                                                                                color: groupedItem.category === 'pe' ? '#065f46' : '#1e40af',
-                                                                                        fontWeight: 600,
-                                                                                        fontSize: '11px',
-                                                                                        height: 20
-                                                                                    }}
-                                                                                />
-                                                                            </Box>
-                                                                        )}
-
-                                                                {}
-                                                                {groupedItem.isFirstInGender && (
-                                                                            <Box sx={{
-                                                                                p: 2,
-                                                                                borderRight: '1px solid #000000',
-                                                                                borderBottom: '1px solid #000000',
-                                                                                backgroundColor: '#f8fafc',
-                                                                                display: 'flex',
-                                                                                alignItems: 'center',
-                                                                                justifyContent: 'center',
-                                                                        gridRow: `span ${groupedItem.genderRowSpan}`,
-                                                                        minHeight: `${60 * groupedItem.genderRowSpan}px`
-                                                                            }}>
-                                                                                <Typography variant="body2" sx={{
-                                                                                    fontWeight: 600,
-                                                                                    color: '#374151',
-                                                                                    fontSize: '13px',
-                                                                                    textTransform: 'capitalize'
-                                                                                }}>
-                                                                            {groupedItem.gender === 'boy' ? 'Boy' :
-                                                                             groupedItem.gender === 'girl' ? 'Girl' :
-                                                                             groupedItem.gender || 'Unknown'}
-                                                                                </Typography>
-                                                                            </Box>
-                                                                        )}
-
-                                                                    {}
                                                                     <Box sx={{
                                                                         p: 2,
                                                                         borderRight: '1px solid #000000',
@@ -1693,7 +1641,36 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                                         backgroundColor: '#f8fafc',
                                                                         display: 'flex',
                                                                         alignItems: 'center',
-                                                                        justifyContent: 'center'
+                                                                        justifyContent: 'center',
+                                                                        gridRow: `span ${groupedItem.categoryRowSpan}`,
+                                                                        minHeight: `${60 * groupedItem.categoryRowSpan}px`
+                                                                    }}>
+                                                                        <Chip
+                                                                            label={groupedItem.category === 'pe' ? 'PE' : 'Regular'}
+                                                                            size="small"
+                                                                            sx={{
+                                                                                backgroundColor: groupedItem.category === 'pe' ? '#dcfce7' : '#dbeafe',
+                                                                                color: groupedItem.category === 'pe' ? '#065f46' : '#1e40af',
+                                                                                fontWeight: 600,
+                                                                                fontSize: '11px',
+                                                                                height: 20
+                                                                            }}
+                                                                        />
+                                                                    </Box>
+                                                                )}
+
+                                                                {}
+                                                                {groupedItem.isFirstInGender && (
+                                                                    <Box sx={{
+                                                                        p: 2,
+                                                                        borderRight: '1px solid #000000',
+                                                                        borderBottom: '1px solid #000000',
+                                                                        backgroundColor: '#f8fafc',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        gridRow: `span ${groupedItem.genderRowSpan}`,
+                                                                        minHeight: `${60 * groupedItem.genderRowSpan}px`
                                                                     }}>
                                                                         <Typography variant="body2" sx={{
                                                                             fontWeight: 600,
@@ -1701,39 +1678,62 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                                             fontSize: '13px',
                                                                             textTransform: 'capitalize'
                                                                         }}>
+                                                                            {groupedItem.gender === 'boy' ? 'Boy' :
+                                                                                groupedItem.gender === 'girl' ? 'Girl' :
+                                                                                    groupedItem.gender || 'Unknown'}
+                                                                        </Typography>
+                                                                    </Box>
+                                                                )}
+
+                                                                {}
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    borderRight: '1px solid #000000',
+                                                                    borderBottom: '1px solid #000000',
+                                                                    backgroundColor: '#f8fafc',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center'
+                                                                }}>
+                                                                    <Typography variant="body2" sx={{
+                                                                        fontWeight: 600,
+                                                                        color: '#374151',
+                                                                        fontSize: '13px',
+                                                                        textTransform: 'capitalize'
+                                                                    }}>
                                                                         {groupedItem.type || 'Item'}
-                                                                        </Typography>
-                                                                    </Box>
+                                                                    </Typography>
+                                                                </Box>
 
                                                                 {}
-                                                                    <Box sx={{
-                                                                        p: 2,
-                                                                        borderRight: '1px solid #000000',
-                                                                        borderBottom: '1px solid #000000',
-                                                                        backgroundColor: '#f8fafc',
-                                                                        display: 'flex',
-                                                                        alignItems: 'center',
-                                                                        justifyContent: 'center'
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    borderRight: '1px solid #000000',
+                                                                    borderBottom: '1px solid #000000',
+                                                                    backgroundColor: '#f8fafc',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center'
+                                                                }}>
+                                                                    <Typography variant="body2" sx={{
+                                                                        fontWeight: 600,
+                                                                        color: '#3f51b5',
+                                                                        fontSize: '13px'
                                                                     }}>
-                                                                        <Typography variant="body2" sx={{
-                                                                            fontWeight: 600,
-                                                                            color: '#3f51b5',
-                                                                            fontSize: '13px'
-                                                                        }}>
                                                                         {sortSizes([...groupedItem.sizes]).join(', ')}
-                                                                        </Typography>
-                                                                    </Box>
+                                                                    </Typography>
+                                                                </Box>
 
                                                                 {}
-                                                                    <Box sx={{
-                                                                        p: 2,
-                                                                        borderRight: '1px solid #000000',
-                                                                        borderBottom: '1px solid #000000',
-                                                                        backgroundColor: '#f8fafc',
-                                                                        display: 'flex',
-                                                                        alignItems: 'center',
-                                                                        justifyContent: 'center'
-                                                                    }}>
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    borderRight: '1px solid #000000',
+                                                                    borderBottom: '1px solid #000000',
+                                                                    backgroundColor: '#f8fafc',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center'
+                                                                }}>
                                                                     <Button
                                                                         variant="outlined"
                                                                         size="small"
@@ -1754,45 +1754,45 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                                     >
                                                                         View
                                                                     </Button>
-                                                                    </Box>
+                                                                </Box>
 
-                                                                    {}
-                                                                    <Box sx={{
-                                                                        p: 2,
-                                                                        borderRight: '1px solid #000000',
-                                                                        borderBottom: '1px solid #000000',
-                                                                        backgroundColor: '#f8fafc',
-                                                                        display: 'flex',
+                                                                {}
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    borderRight: '1px solid #000000',
+                                                                    borderBottom: '1px solid #000000',
+                                                                    backgroundColor: '#f8fafc',
+                                                                    display: 'flex',
                                                                     flexDirection: 'column',
-                                                                        alignItems: 'center',
-                                                                        justifyContent: 'center',
-                                                                        gap: 1
-                                                                    }}>
-                                                                        <Box sx={{
-                                                                        width: 26,
-                                                                            height: 16,
-                                                                        backgroundColor: groupedItem.color || '#000',
-                                                                            borderRadius: 0.5,
-                                                                            border: '1px solid #e5e7eb'
-                                                                    }}/>
-                                                                        <Typography variant="caption" sx={{
-                                                                            color: '#64748b',
-                                                                            fontSize: '12px'
-                                                                        }}>
-                                                                        {groupedItem.color || '#000'}
-                                                                        </Typography>
-                                                                    </Box>
-
-                                                                    {}
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    gap: 1
+                                                                }}>
                                                                     <Box sx={{
-                                                                        p: 2,
-                                                                        borderRight: '1px solid #000000',
-                                                                        borderBottom: '1px solid #000000',
-                                                                        backgroundColor: '#f8fafc',
-                                                                        display: 'flex',
-                                                                        alignItems: 'center',
-                                                                        justifyContent: 'center'
+                                                                        width: 26,
+                                                                        height: 16,
+                                                                        backgroundColor: groupedItem.color || '#000',
+                                                                        borderRadius: 0.5,
+                                                                        border: '1px solid #e5e7eb'
+                                                                    }}/>
+                                                                    <Typography variant="caption" sx={{
+                                                                        color: '#64748b',
+                                                                        fontSize: '12px'
                                                                     }}>
+                                                                        {groupedItem.color || '#000'}
+                                                                    </Typography>
+                                                                </Box>
+
+                                                                {}
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    borderRight: '1px solid #000000',
+                                                                    borderBottom: '1px solid #000000',
+                                                                    backgroundColor: '#f8fafc',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center'
+                                                                }}>
                                                                     {(() => {
                                                                         const logoPosition = groupedItem.logoPosition;
                                                                         const logoHeight = groupedItem.baseLogoHeight || 0;
@@ -1800,13 +1800,13 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
 
                                                                         if (logoPosition && logoHeight > 0 && logoWidth > 0) {
                                                                             return (
-                                                                        <Typography variant="body2" sx={{
-                                                                            fontWeight: 500,
-                                                                            color: '#1e293b',
-                                                                            fontSize: '12px'
-                                                                        }}>
+                                                                                <Typography variant="body2" sx={{
+                                                                                    fontWeight: 500,
+                                                                                    color: '#1e293b',
+                                                                                    fontSize: '12px'
+                                                                                }}>
                                                                                     {logoPosition}
-                                                                        </Typography>
+                                                                                </Typography>
                                                                             );
                                                                         } else {
                                                                             return (
@@ -1820,16 +1820,16 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                                             );
                                                                         }
                                                                     })()}
-                                                                    </Box>
+                                                                </Box>
 
                                                                 {}
-                                                                    <Box sx={{
-                                                                        p: 2,
+                                                                <Box sx={{
+                                                                    p: 2,
                                                                     borderRight: '1px solid #000000',
-                                                                        borderBottom: '1px solid #000000',
-                                                                        backgroundColor: '#f8fafc',
-                                                                        display: 'flex',
-                                                                        alignItems: 'center',
+                                                                    borderBottom: '1px solid #000000',
+                                                                    backgroundColor: '#f8fafc',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
                                                                     justifyContent: 'center'
                                                                 }}>
                                                                     {(() => {
@@ -1862,10 +1862,10 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                                             );
                                                                         }
                                                                     })()}
-                                                                                </Box>
+                                                                </Box>
 
                                                                 {}
-                                                                                <Box sx={{
+                                                                <Box sx={{
                                                                     p: 2,
                                                                     borderBottom: '1px solid #000000',
                                                                     backgroundColor: '#f8fafc',
@@ -1885,7 +1885,7 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                                             py: 0.5,
                                                                             px: 1.5,
                                                                             minWidth: 'auto',
-                                                                                    '&:hover': {
+                                                                            '&:hover': {
                                                                                 borderColor: '#303f9f',
                                                                                 backgroundColor: 'rgba(63, 81, 181, 0.1)'
                                                                             }
@@ -1893,13 +1893,13 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                                     >
                                                                         View Images
                                                                     </Button>
-                                                                    </Box>
-                                                                </React.Fragment>
-                                                            );
-                                                });
+                                                                </Box>
+                                                            </React.Fragment>
+                                                        );
+                                                    });
 
-                                                return rows;
-                                            })()}
+                                                    return rows;
+                                                })()}
                                             </Box>
                                         </Box>
                                     )}
@@ -1930,14 +1930,14 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                     }}>
                                         Wanna to get this order ?
                                     </Typography>
-                                        <Typography variant="body2" sx={{
-                                            opacity: 0.9,
-                                            textAlign: 'center',
-                                            mt: 0.5,
-                                            color: 'white'
-                                        }}>
-                                            Provide your quotation for this order
-                                        </Typography>
+                                    <Typography variant="body2" sx={{
+                                        opacity: 0.9,
+                                        textAlign: 'center',
+                                        mt: 0.5,
+                                        color: 'white'
+                                    }}>
+                                        Provide your quotation for this order
+                                    </Typography>
                                 </Box>
                                 <CardContent sx={{p: 3}}>
                                     {!showQuotationForm ? (
@@ -2200,14 +2200,14 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                 {}
                                                 {deliveryOption === 'days' && (
                                                     <Box>
-                                                <TextField
-                                                    type="number"
-                                                    value={quotationData.deliveryTime}
-                                                    onChange={(e) => handleDeliveryTimeChange(e.target.value)}
-                                                    size="small"
-                                                    fullWidth
+                                                        <TextField
+                                                            type="number"
+                                                            value={quotationData.deliveryTime}
+                                                            onChange={(e) => handleDeliveryTimeChange(e.target.value)}
+                                                            size="small"
+                                                            fullWidth
                                                             placeholder="Enter number of days needed"
-                                                    error={!!deliveryTimeError}
+                                                            error={!!deliveryTimeError}
                                                             helperText={deliveryTimeError || (() => {
                                                                 if (shippingLeadTime) {
                                                                     const currentTime = Math.floor(Date.now() / 1000);
@@ -2219,11 +2219,11 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                                         // Nếu là số ngày
                                                                         maxDays = shippingLeadTime;
                                                                     }
-                                                                    
+
                                                                     const orderDate = new Date(mergedOrderData.orderDate);
                                                                     const deadlineDate = new Date(mergedOrderData.deadline);
                                                                     const maxDeliveryDays = Math.ceil((deadlineDate - orderDate) / (1000 * 60 * 60 * 24)) - maxDays - 1;
-                                                                    
+
                                                                     return `Order date: ${formatDate(mergedOrderData.orderDate)} • Max: ${maxDeliveryDays} days (accounting for shipping time)`;
                                                                 }
                                                                 return `Order date: ${formatDate(mergedOrderData.orderDate)}`;
@@ -2239,7 +2239,7 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                                         } else {
                                                                             maxDays = shippingLeadTime;
                                                                         }
-                                                                        
+
                                                                         const orderDate = new Date(mergedOrderData.orderDate);
                                                                         const deadlineDate = new Date(mergedOrderData.deadline);
                                                                         return Math.ceil((deadlineDate - orderDate) / (1000 * 60 * 60 * 24)) - maxDays - 1;
@@ -2247,26 +2247,26 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                                     return Math.ceil((new Date(mergedOrderData.deadline) - new Date(mergedOrderData.orderDate)) / (1000 * 60 * 60 * 24)) - 1;
                                                                 })()
                                                             }}
-                                                    sx={{
-                                                        '& .MuiOutlinedInput-root': {
-                                                            background: 'rgba(255, 255, 255, 0.9)',
-                                                            '& fieldset': {
-                                                                borderColor: deliveryTimeError ? '#ef4444' : 'rgba(63, 81, 181, 0.3)'
-                                                            },
-                                                            '&:hover fieldset': {
-                                                                borderColor: deliveryTimeError ? '#ef4444' : 'rgba(63, 81, 181, 0.5)'
-                                                            },
-                                                            '&.Mui-focused fieldset': {
-                                                                borderColor: deliveryTimeError ? '#ef4444' : '#3f51b5'
-                                                            }
-                                                        },
-                                                        '& .MuiFormHelperText-root': {
+                                                            sx={{
+                                                                '& .MuiOutlinedInput-root': {
+                                                                    background: 'rgba(255, 255, 255, 0.9)',
+                                                                    '& fieldset': {
+                                                                        borderColor: deliveryTimeError ? '#ef4444' : 'rgba(63, 81, 181, 0.3)'
+                                                                    },
+                                                                    '&:hover fieldset': {
+                                                                        borderColor: deliveryTimeError ? '#ef4444' : 'rgba(63, 81, 181, 0.5)'
+                                                                    },
+                                                                    '&.Mui-focused fieldset': {
+                                                                        borderColor: deliveryTimeError ? '#ef4444' : '#3f51b5'
+                                                                    }
+                                                                },
+                                                                '& .MuiFormHelperText-root': {
                                                                     color: deliveryTimeError ? '#ef4444' : '#64748b',
-                                                            fontSize: '0.75rem',
-                                                            marginTop: 0.5
-                                                        }
-                                                    }}
-                                                />
+                                                                    fontSize: '0.75rem',
+                                                                    marginTop: 0.5
+                                                                }
+                                                            }}
+                                                        />
                                                         {quotationData.deliveryTime && !deliveryTimeError && (
                                                             <Box sx={{
                                                                 mt: 1,
@@ -2304,7 +2304,7 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                     onChange={(e) => {
                                                         const selectedDate = e.target.value;
                                                         setQuotationData({
-                                                        ...quotationData,
+                                                            ...quotationData,
                                                             validUntil: selectedDate
                                                         });
 
@@ -2475,12 +2475,12 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                         <SendIcon/>}
                                                     onClick={handleSubmitQuotation}
                                                     disabled={!quotationData.totalPrice ||
-                                                             !!priceError ||
-                                                             (deliveryOption === 'date' ? !selectedDeliveryDate : !quotationData.deliveryTime) ||
-                                                             !quotationData.validUntil ||
-                                                             !!validUntilError ||
-                                                             !!deliveryTimeError ||
-                                                             submittingQuotation}
+                                                        !!priceError ||
+                                                        (deliveryOption === 'date' ? !selectedDeliveryDate : !quotationData.deliveryTime) ||
+                                                        !quotationData.validUntil ||
+                                                        !!validUntilError ||
+                                                        !!deliveryTimeError ||
+                                                        submittingQuotation}
                                                     sx={{
                                                         background: 'linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)',
                                                         '&:hover': {
@@ -3010,15 +3010,36 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                         <table style={{width: '100%', borderCollapse: 'collapse'}}>
                                             <thead>
                                             <tr style={{backgroundColor: '#f8fafc'}}>
-                                                    <th style={{
-                                                        padding: '12px',
-                                                        textAlign: 'center',
-                                                        borderBottom: '1px solid #e2e8f0',
-                                                        fontWeight: 600,
-                                                        fontSize: '14px',
-                                                        color: '#1e293b'
-                                                    }}>Size
-                                                    </th>
+                                                <th style={{
+                                                    padding: '12px',
+                                                    textAlign: 'center',
+                                                    borderBottom: '1px solid #e2e8f0',
+                                                    fontWeight: 600,
+                                                    fontSize: '14px',
+                                                    color: '#1e293b'
+                                                }}>Size
+                                                </th>
+                                                <th style={{
+                                                    padding: '12px',
+                                                    textAlign: 'center',
+                                                    borderBottom: '1px solid #e2e8f0',
+                                                    fontWeight: 600,
+                                                    fontSize: '14px',
+                                                    color: '#1e293b',
+                                                    borderLeft: '1px solid #e2e8f0'
+                                                }} colSpan="2">Shirt
+                                                </th>
+                                                <th style={{
+                                                    padding: '12px',
+                                                    textAlign: 'center',
+                                                    borderBottom: '1px solid #e2e8f0',
+                                                    fontWeight: 600,
+                                                    fontSize: '14px',
+                                                    color: '#1e293b',
+                                                    borderLeft: '1px solid #e2e8f0'
+                                                }} colSpan="2">Pants
+                                                </th>
+                                                {selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' && (
                                                     <th style={{
                                                         padding: '12px',
                                                         textAlign: 'center',
@@ -3027,111 +3048,90 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                         fontSize: '14px',
                                                         color: '#1e293b',
                                                         borderLeft: '1px solid #e2e8f0'
-                                                    }} colSpan="2">Shirt
-                                                    </th>
-                                                    <th style={{
-                                                        padding: '12px',
-                                                        textAlign: 'center',
-                                                        borderBottom: '1px solid #e2e8f0',
-                                                        fontWeight: 600,
-                                                        fontSize: '14px',
-                                                        color: '#1e293b',
-                                                        borderLeft: '1px solid #e2e8f0'
-                                                    }} colSpan="2">Pants
-                                                    </th>
-                                                    {selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' && (
+                                                    }} colSpan="2">Skirt</th>
+                                                )}
+                                            </tr>
+                                            <tr style={{backgroundColor: '#f1f5f9'}}>
+                                                <th style={{
+                                                    padding: '8px',
+                                                    textAlign: 'center',
+                                                    borderBottom: '1px solid #e2e8f0',
+                                                    fontWeight: 500,
+                                                    fontSize: '12px',
+                                                    color: '#64748b'
+                                                }}></th>
+                                                <th style={{
+                                                    padding: '8px',
+                                                    textAlign: 'center',
+                                                    borderBottom: '1px solid #e2e8f0',
+                                                    fontWeight: 500,
+                                                    fontSize: '12px',
+                                                    color: '#64748b',
+                                                    borderLeft: '1px solid #e2e8f0'
+                                                }}>Height (cm)
+                                                </th>
+                                                <th style={{
+                                                    padding: '8px',
+                                                    textAlign: 'center',
+                                                    borderBottom: '1px solid #e2e8f0',
+                                                    fontWeight: 500,
+                                                    fontSize: '12px',
+                                                    color: '#64748b'
+                                                }}>Weight (kg)
+                                                </th>
+                                                <th style={{
+                                                    padding: '8px',
+                                                    textAlign: 'center',
+                                                    borderBottom: '1px solid #e2e8f0',
+                                                    fontWeight: 500,
+                                                    fontSize: '12px',
+                                                    color: '#64748b'
+                                                }}>Height (cm)
+                                                </th>
+                                                <th style={{
+                                                    padding: '8px',
+                                                    textAlign: 'center',
+                                                    borderBottom: '1px solid #e2e8f0',
+                                                    fontWeight: 500,
+                                                    fontSize: '12px',
+                                                    color: '#64748b'
+                                                }}>Weight (kg)
+                                                </th>
+                                                {selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' && (
+                                                    <>
                                                         <th style={{
-                                                            padding: '12px',
+                                                            padding: '8px',
                                                             textAlign: 'center',
                                                             borderBottom: '1px solid #e2e8f0',
-                                                            fontWeight: 600,
-                                                            fontSize: '14px',
-                                                            color: '#1e293b',
+                                                            fontWeight: 500,
+                                                            fontSize: '12px',
+                                                            color: '#64748b',
                                                             borderLeft: '1px solid #e2e8f0'
-                                                        }} colSpan="2">Skirt</th>
-                                                    )}
-                                                </tr>
-                                            <tr style={{backgroundColor: '#f1f5f9'}}>
-                                                    <th style={{
-                                                        padding: '8px',
-                                                        textAlign: 'center',
-                                                        borderBottom: '1px solid #e2e8f0',
-                                                        fontWeight: 500,
-                                                        fontSize: '12px',
-                                                        color: '#64748b'
-                                                    }}></th>
-                                                    <th style={{
-                                                        padding: '8px',
-                                                        textAlign: 'center',
-                                                        borderBottom: '1px solid #e2e8f0',
-                                                        fontWeight: 500,
-                                                        fontSize: '12px',
-                                                        color: '#64748b',
-                                                        borderLeft: '1px solid #e2e8f0'
-                                                    }}>Height (cm)
-                                                    </th>
-                                                    <th style={{
-                                                        padding: '8px',
-                                                        textAlign: 'center',
-                                                        borderBottom: '1px solid #e2e8f0',
-                                                        fontWeight: 500,
-                                                        fontSize: '12px',
-                                                        color: '#64748b'
-                                                    }}>Weight (kg)
-                                                    </th>
-                                                    <th style={{
-                                                        padding: '8px',
-                                                        textAlign: 'center',
-                                                        borderBottom: '1px solid #e2e8f0',
-                                                        fontWeight: 500,
-                                                        fontSize: '12px',
-                                                        color: '#64748b'
-                                                    }}>Height (cm)
-                                                    </th>
-                                                    <th style={{
-                                                        padding: '8px',
-                                                        textAlign: 'center',
-                                                        borderBottom: '1px solid #e2e8f0',
-                                                        fontWeight: 500,
-                                                        fontSize: '12px',
-                                                        color: '#64748b'
-                                                    }}>Weight (kg)
-                                                    </th>
-                                                    {selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' && (
-                                                        <>
-                                                            <th style={{
-                                                                padding: '8px',
-                                                                textAlign: 'center',
-                                                                borderBottom: '1px solid #e2e8f0',
-                                                                fontWeight: 500,
-                                                                fontSize: '12px',
-                                                                color: '#64748b',
-                                                                borderLeft: '1px solid #e2e8f0'
-                                                            }}>Height (cm)
-                                                            </th>
-                                                            <th style={{
-                                                                padding: '8px',
-                                                                textAlign: 'center',
-                                                                borderBottom: '1px solid #e2e8f0',
-                                                                fontWeight: 500,
-                                                                fontSize: '12px',
-                                                                color: '#64748b'
-                                                            }}>Weight (kg)
-                                                            </th>
-                                                        </>
-                                                    )}
-                                                </tr>
+                                                        }}>Height (cm)
+                                                        </th>
+                                                        <th style={{
+                                                            padding: '8px',
+                                                            textAlign: 'center',
+                                                            borderBottom: '1px solid #e2e8f0',
+                                                            fontWeight: 500,
+                                                            fontSize: '12px',
+                                                            color: '#64748b'
+                                                        }}>Weight (kg)
+                                                        </th>
+                                                    </>
+                                                )}
+                                            </tr>
                                             </thead>
                                             <tbody>
-                                                {(() => {
-                                                    const shirtSizes = sizes.filter(size =>
-                                                        size.gender === selectedSizeSpecs.gender &&
-                                                        size.type === 'shirt'
-                                                    );
+                                            {(() => {
+                                                const shirtSizes = sizes.filter(size =>
+                                                    size.gender === selectedSizeSpecs.gender &&
+                                                    size.type === 'shirt'
+                                                );
 
-                                                    if (shirtSizes.length === 0) {
-                                                        return (
-                                                            <tr>
+                                                if (shirtSizes.length === 0) {
+                                                    return (
+                                                        <tr>
                                                             <td colSpan={selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' ? 7 : 5}
                                                                 style={{
                                                                     padding: '20px',
@@ -3141,97 +3141,97 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                                 }}>
                                                                 No size data available
                                                                 for {selectedSizeSpecs.gender === 'male' ? 'Boy' : 'Girl'} {selectedSizeSpecs.type === 'regular' ? 'Regular' : 'Physical Education'}
-                                                                </td>
-                                                            </tr>
-                                                        );
-                                                    }
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                }
 
-                                                    return shirtSizes.map((shirtSize) => {
-                                                        const pantsSize = sizes.find(s =>
-                                                            s.gender === selectedSizeSpecs.gender &&
-                                                            s.type === 'pants' &&
-                                                            s.size === shirtSize.size
-                                                        );
+                                                return shirtSizes.map((shirtSize) => {
+                                                    const pantsSize = sizes.find(s =>
+                                                        s.gender === selectedSizeSpecs.gender &&
+                                                        s.type === 'pants' &&
+                                                        s.size === shirtSize.size
+                                                    );
 
-                                                        const skirtSize = selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' ? sizes.find(s =>
-                                                            s.gender === selectedSizeSpecs.gender &&
-                                                            s.type === 'skirt' &&
-                                                            s.size === shirtSize.size
-                                                        ) : null;
+                                                    const skirtSize = selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' ? sizes.find(s =>
+                                                        s.gender === selectedSizeSpecs.gender &&
+                                                        s.type === 'skirt' &&
+                                                        s.size === shirtSize.size
+                                                    ) : null;
 
-                                                        return (
+                                                    return (
                                                         <tr key={`${shirtSize.type}-${shirtSize.size}-${shirtSize.gender}`}
                                                             style={{
                                                                 borderBottom: '1px solid #f1f5f9',
                                                                 backgroundColor: '#ffffff'
                                                             }}>
-                                                                <td style={{
-                                                                    padding: '12px',
-                                                                    fontWeight: 600,
-                                                                    textAlign: 'center',
-                                                                    fontSize: '14px',
-                                                                    color: '#1e293b',
-                                                                    backgroundColor: '#f8fafc'
-                                                                }}>{shirtSize.size}</td>
-                                                                <td style={{
-                                                                    padding: '12px',
-                                                                    textAlign: 'center',
-                                                                    fontSize: '13px',
-                                                                    color: '#374151',
-                                                                    borderLeft: '1px solid #e2e8f0'
-                                                                }}>
-                                                                    {`${shirtSize.minHeight}-${shirtSize.maxHeight}`}
-                                                                </td>
-                                                                <td style={{
-                                                                    padding: '12px',
-                                                                    textAlign: 'center',
-                                                                    fontSize: '13px',
-                                                                    color: '#374151'
-                                                                }}>
-                                                                    {`${shirtSize.minWeight}-${shirtSize.maxWeight}`}
-                                                                </td>
-                                                                <td style={{
-                                                                    padding: '12px',
-                                                                    textAlign: 'center',
-                                                                    fontSize: '13px',
-                                                                    color: '#374151',
-                                                                    borderLeft: '1px solid #e2e8f0'
-                                                                }}>
-                                                                    {pantsSize ? `${pantsSize.minHeight}-${pantsSize.maxHeight}` : '-'}
-                                                                </td>
-                                                                <td style={{
-                                                                    padding: '12px',
-                                                                    textAlign: 'center',
-                                                                    fontSize: '13px',
-                                                                    color: '#374151'
-                                                                }}>
-                                                                    {pantsSize ? `${pantsSize.minWeight}-${pantsSize.maxWeight}` : '-'}
-                                                                </td>
-                                                                {selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' && (
-                                                                    <>
-                                                                        <td style={{
-                                                                            padding: '12px',
-                                                                            textAlign: 'center',
-                                                                            fontSize: '13px',
-                                                                            color: '#374151',
-                                                                            borderLeft: '1px solid #e2e8f0'
-                                                                        }}>
-                                                                            {skirtSize ? `${skirtSize.minHeight}-${skirtSize.maxHeight}` : '-'}
-                                                                        </td>
-                                                                        <td style={{
-                                                                            padding: '12px',
-                                                                            textAlign: 'center',
-                                                                            fontSize: '13px',
-                                                                            color: '#374151'
-                                                                        }}>
-                                                                            {skirtSize ? `${skirtSize.minWeight}-${skirtSize.maxWeight}` : '-'}
-                                                                        </td>
-                                                                    </>
-                                                                )}
-                                                            </tr>
-                                                        );
-                                                    });
-                                                })()}
+                                                            <td style={{
+                                                                padding: '12px',
+                                                                fontWeight: 600,
+                                                                textAlign: 'center',
+                                                                fontSize: '14px',
+                                                                color: '#1e293b',
+                                                                backgroundColor: '#f8fafc'
+                                                            }}>{shirtSize.size}</td>
+                                                            <td style={{
+                                                                padding: '12px',
+                                                                textAlign: 'center',
+                                                                fontSize: '13px',
+                                                                color: '#374151',
+                                                                borderLeft: '1px solid #e2e8f0'
+                                                            }}>
+                                                                {`${shirtSize.minHeight}-${shirtSize.maxHeight}`}
+                                                            </td>
+                                                            <td style={{
+                                                                padding: '12px',
+                                                                textAlign: 'center',
+                                                                fontSize: '13px',
+                                                                color: '#374151'
+                                                            }}>
+                                                                {`${shirtSize.minWeight}-${shirtSize.maxWeight}`}
+                                                            </td>
+                                                            <td style={{
+                                                                padding: '12px',
+                                                                textAlign: 'center',
+                                                                fontSize: '13px',
+                                                                color: '#374151',
+                                                                borderLeft: '1px solid #e2e8f0'
+                                                            }}>
+                                                                {pantsSize ? `${pantsSize.minHeight}-${pantsSize.maxHeight}` : '-'}
+                                                            </td>
+                                                            <td style={{
+                                                                padding: '12px',
+                                                                textAlign: 'center',
+                                                                fontSize: '13px',
+                                                                color: '#374151'
+                                                            }}>
+                                                                {pantsSize ? `${pantsSize.minWeight}-${pantsSize.maxWeight}` : '-'}
+                                                            </td>
+                                                            {selectedSizeSpecs.gender === 'female' && selectedSizeSpecs.type === 'regular' && (
+                                                                <>
+                                                                    <td style={{
+                                                                        padding: '12px',
+                                                                        textAlign: 'center',
+                                                                        fontSize: '13px',
+                                                                        color: '#374151',
+                                                                        borderLeft: '1px solid #e2e8f0'
+                                                                    }}>
+                                                                        {skirtSize ? `${skirtSize.minHeight}-${skirtSize.maxHeight}` : '-'}
+                                                                    </td>
+                                                                    <td style={{
+                                                                        padding: '12px',
+                                                                        textAlign: 'center',
+                                                                        fontSize: '13px',
+                                                                        color: '#374151'
+                                                                    }}>
+                                                                        {skirtSize ? `${skirtSize.minWeight}-${skirtSize.maxWeight}` : '-'}
+                                                                    </td>
+                                                                </>
+                                                            )}
+                                                        </tr>
+                                                    );
+                                                });
+                                            })()}
                                             </tbody>
                                         </table>
                                     </Box>

@@ -89,9 +89,6 @@ export default function Bell() {
     }, [email]);
 
 
-
-
-
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
     };
@@ -148,7 +145,7 @@ export default function Bell() {
                     }
                 }}
             >
-                <NotificationsIcon sx={{ color: 'inherit' }}/>
+                <NotificationsIcon sx={{color: 'inherit'}}/>
                 {}
                 {notifications.filter(n => !n.read).length > 0 && (
                     <span style={{
@@ -303,7 +300,7 @@ export default function Bell() {
                                                         fontSize: '0.7rem'
                                                     }}
                                                 >
-                                                    {notification.read ? 'âœ?read' : 'â—?unread'}
+                                                    {notification.read ? 'ï¿½?read' : 'ï¿½?unread'}
                                                 </Typography>
                                             </div>
                                         </div>

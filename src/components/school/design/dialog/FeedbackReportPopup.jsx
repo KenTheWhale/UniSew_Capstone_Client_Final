@@ -1,36 +1,31 @@
-import React, { useState, useCallback } from 'react';
+import React, {useCallback, useState} from 'react';
 import {
-    Modal,
+    Alert,
     Box,
-    Typography,
     Button,
-    TextField,
-    Rating,
-    IconButton,
-    Paper,
-    Grid,
     Chip,
     CircularProgress,
-    Alert
+    Grid,
+    IconButton,
+    Modal,
+    Paper,
+    Rating,
+    TextField,
+    Typography
 } from '@mui/material';
-import {
-    Close as CloseIcon,
-    CloudUpload as CloudUploadIcon,
-    Delete as DeleteIcon,
-    Add as AddIcon
-} from '@mui/icons-material';
-import { enqueueSnackbar } from 'notistack';
-import { giveFeedback } from '../../../../services/FeedbackService.jsx';
-import { uploadCloudinary } from '../../../../services/UploadImageService.jsx';
+import {Close as CloseIcon, CloudUpload as CloudUploadIcon, Delete as DeleteIcon} from '@mui/icons-material';
+import {enqueueSnackbar} from 'notistack';
+import {giveFeedback} from '../../../../services/FeedbackService.jsx';
+import {uploadCloudinary} from '../../../../services/UploadImageService.jsx';
 import DisplayImage from '../../../ui/DisplayImage.jsx';
 
 export default function FeedbackReportPopup({
-    visible,
-    onCancel,
-    type = 'feedback',
-    requestData,
-    onSuccess
-}) {
+                                                visible,
+                                                onCancel,
+                                                type = 'feedback',
+                                                requestData,
+                                                onSuccess
+                                            }) {
     const [rating, setRating] = useState(0);
     const [content, setContent] = useState('');
     const [images, setImages] = useState([]);
@@ -68,10 +63,10 @@ export default function FeedbackReportPopup({
             setUploadingImages(true);
             const imageUrl = await uploadCloudinary(file);
             return imageUrl;
-                    } catch (err) {
-                console.error('Error uploading image:', err);
-                enqueueSnackbar('Failed to upload image', { variant: 'error' });
-                throw err;
+        } catch (err) {
+            console.error('Error uploading image:', err);
+            enqueueSnackbar('Failed to upload image', {variant: 'error'});
+            throw err;
         } finally {
             setUploadingImages(false);
         }
@@ -84,7 +79,7 @@ export default function FeedbackReportPopup({
         console.log('handleImageChange - current images:', images.length);
 
         if (images.length + files.length > maxImages) {
-            enqueueSnackbar(`Maximum ${maxImages} images allowed`, { variant: 'warning' });
+            enqueueSnackbar(`Maximum ${maxImages} images allowed`, {variant: 'warning'});
             return;
         }
 
@@ -167,7 +162,7 @@ export default function FeedbackReportPopup({
         } catch (error) {
             console.error('Error submitting feedback/report:', error);
             const actionText = isReport ? 'report' : 'feedback';
-            enqueueSnackbar(`Failed to submit ${actionText}`, { variant: 'error' });
+            enqueueSnackbar(`Failed to submit ${actionText}`, {variant: 'error'});
         } finally {
             setSubmitting(false);
         }
@@ -193,7 +188,7 @@ export default function FeedbackReportPopup({
                 top: '50%',
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
-                width: { xs: '95%', sm: '80%', md: '70%' },
+                width: {xs: '95%', sm: '80%', md: '70%'},
                 maxWidth: 800,
                 maxHeight: '90vh',
                 overflowY: 'auto',
@@ -212,8 +207,8 @@ export default function FeedbackReportPopup({
                     borderRadius: '12px 12px 0 0',
                     position: 'relative'
                 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                        <Typography variant="h5" sx={{fontWeight: 'bold'}}>
                             {isReport ? 'Report Issue' : 'Give Feedback'}
                         </Typography>
                         <Chip
@@ -234,12 +229,12 @@ export default function FeedbackReportPopup({
                             color: 'white'
                         }}
                     >
-                        <CloseIcon />
+                        <CloseIcon/>
                     </IconButton>
                 </Box>
 
                 {}
-                <Box sx={{ p: 4 }}>
+                <Box sx={{p: 4}}>
                     {}
                     <Paper elevation={0} sx={{
                         p: 3,
@@ -248,38 +243,38 @@ export default function FeedbackReportPopup({
                         borderRadius: 2,
                         border: '1px solid #e2e8f0'
                     }}>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1e293b' }}>
+                        <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
                             {requestData?.orderId ? 'Order Information' : 'Request Information'}
                         </Typography>
                         <Grid container spacing={2}>
                             <Grid item xs={12} sm={6}>
-                                <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                <Typography variant="body2" sx={{color: '#64748b'}}>
                                     {requestData?.orderId ? 'Order ID' : 'Request ID'}
                                 </Typography>
-                                <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                     {requestData?.orderId ? `#${requestData.orderId}` : (requestData?.id ? `#${requestData.id}` : 'N/A')}
                                 </Typography>
                             </Grid>
                             <Grid item xs={12} sm={6}>
-                                <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                <Typography variant="body2" sx={{color: '#64748b'}}>
                                     {requestData?.orderId ? 'Order Date' : 'Request Name'}
                                 </Typography>
-                                <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                     {requestData?.orderId ? (requestData?.orderDate || 'N/A') : (requestData?.name || 'N/A')}
                                 </Typography>
                             </Grid>
                             {requestData?.orderId && (
                                 <Grid item xs={12} sm={6}>
-                                    <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                    <Typography variant="body2" sx={{color: '#64748b'}}>
                                         Total Uniforms
                                     </Typography>
-                                    <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                    <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                         {requestData?.orderDetails ? Math.ceil(requestData.orderDetails.reduce((sum, detail) => sum + detail.quantity, 0) / 2) : 'N/A'}
                                     </Typography>
                                 </Grid>
                             )}
                             <Grid item xs={12} sm={6}>
-                                <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                <Typography variant="body2" sx={{color: '#64748b'}}>
                                     Status
                                 </Typography>
                                 <Chip
@@ -293,10 +288,10 @@ export default function FeedbackReportPopup({
                             </Grid>
                             {requestData?.orderId && (
                                 <Grid item xs={12} sm={6}>
-                                    <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                    <Typography variant="body2" sx={{color: '#64748b'}}>
                                         Total Uniforms
                                     </Typography>
-                                    <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1e293b' }}>
+                                    <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                         {requestData?.orderDetails
                                             ? Math.ceil(requestData.orderDetails.reduce((sum, item) => sum + item.quantity, 0) / 2)
                                             : 'N/A'
@@ -315,10 +310,10 @@ export default function FeedbackReportPopup({
                         borderRadius: 2,
                         border: '1px solid #e2e8f0'
                     }}>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1e293b' }}>
+                        <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
                             Rating
                         </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                             <Rating
                                 value={rating}
                                 onChange={(event, newValue) => setRating(newValue)}
@@ -332,12 +327,12 @@ export default function FeedbackReportPopup({
                                     }
                                 }}
                             />
-                            <Typography variant="body2" sx={{ color: '#64748b' }}>
+                            <Typography variant="body2" sx={{color: '#64748b'}}>
                                 {rating > 0 ? `${rating} star${rating > 1 ? 's' : ''}` : 'Select rating'}
                             </Typography>
                         </Box>
                         {errors.rating && (
-                            <Alert severity="error" sx={{ mt: 1 }}>
+                            <Alert severity="error" sx={{mt: 1}}>
                                 {errors.rating}
                             </Alert>
                         )}
@@ -351,7 +346,7 @@ export default function FeedbackReportPopup({
                         borderRadius: 2,
                         border: '1px solid #e2e8f0'
                     }}>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1e293b' }}>
+                        <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
                             {isReport ? 'Report Details' : 'Feedback Content'}
                         </Typography>
                         <TextField
@@ -389,15 +384,15 @@ export default function FeedbackReportPopup({
                         borderRadius: 2,
                         border: '1px solid #e2e8f0'
                     }}>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1e293b' }}>
+                        <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
                             {isReport ? 'Evidence Images' : 'Attached Images'}
-                            <Typography component="span" sx={{ color: '#64748b', fontWeight: 'normal' }}>
+                            <Typography component="span" sx={{color: '#64748b', fontWeight: 'normal'}}>
                                 {' '}({images.length}/{maxImages})
                             </Typography>
                         </Typography>
 
                         {images.length > 0 && (
-                            <Grid container spacing={2} sx={{ mb: 3 }}>
+                            <Grid container spacing={2} sx={{mb: 3}}>
                                 {images.map((image) => (
                                     <Grid item xs={12} sm={6} md={4} key={image.id}>
                                         <Box sx={{
@@ -428,7 +423,7 @@ export default function FeedbackReportPopup({
                                                 }}
                                                 size="small"
                                             >
-                                                <DeleteIcon />
+                                                <DeleteIcon/>
                                             </IconButton>
                                         </Box>
                                     </Grid>
@@ -454,24 +449,24 @@ export default function FeedbackReportPopup({
                                     multiple
                                     accept="image/*"
                                     onChange={handleImageChange}
-                                    style={{ display: 'none' }}
+                                    style={{display: 'none'}}
                                     id="image-upload"
                                     disabled={uploadingImages}
                                 />
                                 <label htmlFor="image-upload">
-                                    <Box sx={{ cursor: 'pointer' }}>
-                                        <CloudUploadIcon sx={{ fontSize: 48, color: '#64748b', mb: 2 }} />
-                                        <Typography variant="h6" sx={{ color: '#1e293b', mb: 1 }}>
+                                    <Box sx={{cursor: 'pointer'}}>
+                                        <CloudUploadIcon sx={{fontSize: 48, color: '#64748b', mb: 2}}/>
+                                        <Typography variant="h6" sx={{color: '#1e293b', mb: 1}}>
                                             {uploadingImages ? 'Uploading...' : 'Upload Images'}
                                         </Typography>
-                                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                                        <Typography variant="body2" sx={{color: '#64748b'}}>
                                             {isReport
                                                 ? 'Upload evidence images (JPG, PNG, GIF)'
                                                 : 'Upload images to support your feedback (JPG, PNG, GIF)'
                                             }
                                         </Typography>
                                         {uploadingImages && (
-                                            <CircularProgress size={24} sx={{ mt: 2 }} />
+                                            <CircularProgress size={24} sx={{mt: 2}}/>
                                         )}
                                     </Box>
                                 </label>
@@ -479,13 +474,13 @@ export default function FeedbackReportPopup({
                         )}
 
                         {errors.images && (
-                            <Alert severity="error" sx={{ mt: 2 }}>
+                            <Alert severity="error" sx={{mt: 2}}>
                                 {errors.images}
                             </Alert>
                         )}
                     </Paper>
 
-                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                    <Box sx={{display: 'flex', gap: 2, justifyContent: 'flex-end'}}>
                         <Button
                             onClick={handleClose}
                             variant="outlined"
@@ -523,7 +518,7 @@ export default function FeedbackReportPopup({
                         >
                             {submitting ? (
                                 <>
-                                    <CircularProgress size={16} sx={{ mr: 1, color: 'white' }} />
+                                    <CircularProgress size={16} sx={{mr: 1, color: 'white'}}/>
                                     Submitting...
                                 </>
                             ) : (

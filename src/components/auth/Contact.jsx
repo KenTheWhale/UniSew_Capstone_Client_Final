@@ -8,12 +8,12 @@ export default function Contact() {
     };
 
     return (
-        <Box sx={{ backgroundColor: '#fafafa', minHeight: '100vh' }}>
+        <Box sx={{backgroundColor: '#fafafa', minHeight: '100vh'}}>
             {}
             <Box
                 sx={{
                     background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
-                    py: { xs: 8, md: 12 },
+                    py: {xs: 8, md: 12},
                     color: "white",
                     textAlign: "center",
                     position: "relative",
@@ -31,13 +31,13 @@ export default function Contact() {
                     }
                 }}
             >
-                <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
+                <Container maxWidth="lg" sx={{position: "relative", zIndex: 1}}>
                     <Typography
                         variant="h2"
                         sx={{
                             fontWeight: 800,
                             mb: 2,
-                            fontSize: { xs: "2.5rem", md: "3.5rem" },
+                            fontSize: {xs: "2.5rem", md: "3.5rem"},
                             letterSpacing: "-0.02em"
                         }}
                     >
@@ -47,7 +47,7 @@ export default function Contact() {
                         variant="h5"
                         sx={{
                             opacity: 0.95,
-                            fontSize: { xs: "1.1rem", md: "1.3rem" },
+                            fontSize: {xs: "1.1rem", md: "1.3rem"},
                             maxWidth: 600,
                             mx: "auto",
                             lineHeight: 1.6
@@ -59,18 +59,18 @@ export default function Contact() {
             </Box>
 
             {}
-            <Container maxWidth={false} sx={{ width: '80vw', py: { xs: 6, md: 10 } }}>
-                <Grid container spacing={3} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Container maxWidth={false} sx={{width: '80vw', py: {xs: 6, md: 10}}}>
+                <Grid container spacing={3} sx={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
                     {}
                     <Grid item xs={12}>
-                        <Box sx={{ textAlign: "center", mb: 8 }}>
+                        <Box sx={{textAlign: "center", mb: 8}}>
                             <Typography
                                 variant="h4"
                                 sx={{
                                     fontWeight: 700,
                                     color: "#1e293b",
                                     mb: 2,
-                                    fontSize: { xs: "1.8rem", md: "2.2rem" }
+                                    fontSize: {xs: "1.8rem", md: "2.2rem"}
                                 }}
                             >
                                 Let's Connect
@@ -85,15 +85,16 @@ export default function Contact() {
                                     mx: "auto"
                                 }}
                             >
-                                Have questions about our uniform design services? We're here to help you create the perfect uniforms for your school.
+                                Have questions about our uniform design services? We're here to help you create the
+                                perfect uniforms for your school.
                             </Typography>
                         </Box>
-                                </Grid>
+                    </Grid>
 
                     {}
                     <Grid item xs={12}>
                         <Grid container spacing={3} justifyContent="center">
-                            <Grid item xs={12} sm={6} md={4} sx={{ maxWidth: 350 }}>
+                            <Grid item xs={12} sm={6} md={4} sx={{maxWidth: 350}}>
                                 <Card
                                     elevation={0}
                                     sx={{
@@ -109,7 +110,14 @@ export default function Contact() {
                                         }
                                     }}
                                 >
-                                    <CardContent sx={{ p: 4, textAlign: "center", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                                    <CardContent sx={{
+                                        p: 4,
+                                        textAlign: "center",
+                                        height: "100%",
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        justifyContent: "center"
+                                    }}>
                                         <Box
                                             sx={{
                                                 width: 70,
@@ -123,24 +131,24 @@ export default function Contact() {
                                                 mb: 3
                                             }}
                                         >
-                                            <LocationOn sx={{ color: "#1976d2", fontSize: 36 }} />
+                                            <LocationOn sx={{color: "#1976d2", fontSize: 36}}/>
                                         </Box>
-                                        <Typography variant="h6" sx={{ fontWeight: 600, color: "#1e293b", mb: 1.5 }}>
+                                        <Typography variant="h6" sx={{fontWeight: 600, color: "#1e293b", mb: 1.5}}>
                                             Visit Our Office
                                         </Typography>
-                                        <Typography variant="body2" sx={{ color: "#64748b", mb: 2 }}>
+                                        <Typography variant="body2" sx={{color: "#64748b", mb: 2}}>
                                             UniSew Headquarters
                                         </Typography>
-                                        <Typography variant="body2" sx={{ color: "#475569", lineHeight: 1.6 }}>
-                                            123 Innovation Drive<br />
-                                            Tech District, San Francisco<br />
+                                        <Typography variant="body2" sx={{color: "#475569", lineHeight: 1.6}}>
+                                            123 Innovation Drive<br/>
+                                            Tech District, San Francisco<br/>
                                             CA 94102, United States
                                         </Typography>
                                     </CardContent>
                                 </Card>
-                                </Grid>
+                            </Grid>
 
-                            <Grid item xs={12} sm={6} md={4} sx={{ maxWidth: 350 }}>
+                            <Grid item xs={12} sm={6} md={4} sx={{maxWidth: 350}}>
                                 <Card
                                     elevation={0}
                                     sx={{
@@ -156,7 +164,14 @@ export default function Contact() {
                                         }
                                     }}
                                 >
-                                    <CardContent sx={{ p: 4, textAlign: "center", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                                    <CardContent sx={{
+                                        p: 4,
+                                        textAlign: "center",
+                                        height: "100%",
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        justifyContent: "center"
+                                    }}>
                                         <Box
                                             sx={{
                                                 width: 70,
@@ -170,24 +185,24 @@ export default function Contact() {
                                                 mb: 3
                                             }}
                                         >
-                                            <Email sx={{ color: "#2e7d32", fontSize: 36 }} />
+                                            <Email sx={{color: "#2e7d32", fontSize: 36}}/>
                                         </Box>
-                                        <Typography variant="h6" sx={{ fontWeight: 600, color: "#1e293b", mb: 1.5 }}>
+                                        <Typography variant="h6" sx={{fontWeight: 600, color: "#1e293b", mb: 1.5}}>
                                             Email Us
                                         </Typography>
-                                        <Typography variant="body2" sx={{ color: "#64748b", mb: 2 }}>
+                                        <Typography variant="body2" sx={{color: "#64748b", mb: 2}}>
                                             We'll respond within 24 hours
                                         </Typography>
-                                        <Typography variant="body2" sx={{ color: "#475569", lineHeight: 1.6 }}>
-                                            hello@unisew.com<br />
-                                            support@unisew.com<br />
+                                        <Typography variant="body2" sx={{color: "#475569", lineHeight: 1.6}}>
+                                            hello@unisew.com<br/>
+                                            support@unisew.com<br/>
                                             partnerships@unisew.com
                                         </Typography>
                                     </CardContent>
                                 </Card>
                             </Grid>
 
-                            <Grid item xs={12} sm={6} md={4} sx={{ maxWidth: 350 }}>
+                            <Grid item xs={12} sm={6} md={4} sx={{maxWidth: 350}}>
                                 <Card
                                     elevation={0}
                                     sx={{
@@ -203,7 +218,14 @@ export default function Contact() {
                                         }
                                     }}
                                 >
-                                    <CardContent sx={{ p: 4, textAlign: "center", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                                    <CardContent sx={{
+                                        p: 4,
+                                        textAlign: "center",
+                                        height: "100%",
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        justifyContent: "center"
+                                    }}>
                                         <Box
                                             sx={{
                                                 width: 70,
@@ -217,45 +239,45 @@ export default function Contact() {
                                                 mb: 3
                                             }}
                                         >
-                                            <Phone sx={{ color: "#f57c00", fontSize: 36 }} />
+                                            <Phone sx={{color: "#f57c00", fontSize: 36}}/>
                                         </Box>
-                                        <Typography variant="h6" sx={{ fontWeight: 600, color: "#1e293b", mb: 1.5 }}>
+                                        <Typography variant="h6" sx={{fontWeight: 600, color: "#1e293b", mb: 1.5}}>
                                             Call Us
                                         </Typography>
-                                        <Typography variant="body2" sx={{ color: "#64748b", mb: 2 }}>
+                                        <Typography variant="body2" sx={{color: "#64748b", mb: 2}}>
                                             Business hours: 9AM - 6PM PST
                                         </Typography>
-                                        <Typography variant="body2" sx={{ color: "#475569", lineHeight: 1.6 }}>
-                                            +1 (555) 123-4567<br />
-                                            +1 (555) 987-6543<br />
+                                        <Typography variant="body2" sx={{color: "#475569", lineHeight: 1.6}}>
+                                            +1 (555) 123-4567<br/>
+                                            +1 (555) 987-6543<br/>
                                             Toll-free: 1-800-UNISEW
                                         </Typography>
                                     </CardContent>
                                 </Card>
                             </Grid>
-                                </Grid>
-                            </Grid>
+                        </Grid>
+                    </Grid>
 
-                            {}
+                    {}
                     <Grid item xs={12}>
                         <Paper
                             elevation={0}
                             sx={{
-                                p: { xs: 4, md: 6 },
+                                p: {xs: 4, md: 6},
                                 borderRadius: 4,
                                 border: "1px solid #e2e8f0",
                                 backgroundColor: "white",
                                 height: "100%"
                             }}
                         >
-                            <Box sx={{ mb: 4 }}>
+                            <Box sx={{mb: 4}}>
                                 <Typography
                                     variant="h4"
                                     sx={{
                                         fontWeight: 700,
                                         color: "#1e293b",
                                         mb: 2,
-                                        fontSize: { xs: "1.8rem", md: "2.2rem" }
+                                        fontSize: {xs: "1.8rem", md: "2.2rem"}
                                     }}
                                 >
                                     Send us a Message
@@ -268,7 +290,8 @@ export default function Contact() {
                                         fontSize: "1.1rem"
                                     }}
                                 >
-                                    Tell us about your project and we'll get back to you with a customized solution for your school's uniform needs.
+                                    Tell us about your project and we'll get back to you with a customized solution for
+                                    your school's uniform needs.
                                 </Typography>
                             </Box>
 
@@ -412,12 +435,12 @@ export default function Contact() {
                                     }}
                                 />
 
-                                <Box sx={{ mt: 2 }}>
+                                <Box sx={{mt: 2}}>
                                     <Button
                                         type="submit"
                                         variant="contained"
                                         size="large"
-                                        startIcon={<Send />}
+                                        startIcon={<Send/>}
                                         sx={{
                                             backgroundColor: "#1976d2",
                                             color: "white",
@@ -435,26 +458,26 @@ export default function Contact() {
                                             }
                                         }}
                                     >
-                                    Send Message
-                                </Button>
+                                        Send Message
+                                    </Button>
+                                </Box>
                             </Box>
-                        </Box>
                         </Paper>
                     </Grid>
                 </Grid>
             </Container>
 
             {}
-            <Box sx={{ py: { xs: 6, md: 10 }, backgroundColor: "white", width: '100%' }}>
-                <Container maxWidth={false} sx={{ width: '80vw' }}>
-                    <Box sx={{ textAlign: "center", mb: 6 }}>
+            <Box sx={{py: {xs: 6, md: 10}, backgroundColor: "white", width: '100%'}}>
+                <Container maxWidth={false} sx={{width: '80vw'}}>
+                    <Box sx={{textAlign: "center", mb: 6}}>
                         <Typography
                             variant="h3"
                             sx={{
                                 fontWeight: 800,
                                 mb: 3,
                                 color: "#1e293b",
-                                fontSize: { xs: "2rem", md: "2.5rem" }
+                                fontSize: {xs: "2rem", md: "2.5rem"}
                             }}
                         >
                             Frequently Asked Questions
@@ -492,7 +515,7 @@ export default function Contact() {
                                 answer: "Absolutely! We can work with your existing designs, make modifications, or create completely new designs based on your preferences."
                             }
                         ].map((faq, index) => (
-                            <Grid item xs={12} md={6} key={index} sx={{ width: '100%' }}>
+                            <Grid item xs={12} md={6} key={index} sx={{width: '100%'}}>
                                 <Card
                                     elevation={0}
                                     sx={{
@@ -508,9 +531,9 @@ export default function Contact() {
                                         }
                                     }}
                                 >
-                                    <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+                                    <Box sx={{display: "flex", alignItems: "flex-start", gap: 2}}>
                                         <Box
-                                sx={{
+                                            sx={{
                                                 width: 40,
                                                 height: 40,
                                                 borderRadius: "50%",
@@ -521,17 +544,17 @@ export default function Contact() {
                                                 flexShrink: 0
                                             }}
                                         >
-                                            <ContactSupport sx={{ color: "#1976d2", fontSize: 24 }} />
+                                            <ContactSupport sx={{color: "#1976d2", fontSize: 24}}/>
                                         </Box>
                                         <Box>
-                                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: "#1e293b" }}>
+                                            <Typography variant="h6" sx={{fontWeight: 600, mb: 1, color: "#1e293b"}}>
                                                 {faq.question}
                                             </Typography>
-                                            <Typography variant="body1" sx={{ color: "#64748b", lineHeight: 1.6 }}>
+                                            <Typography variant="body1" sx={{color: "#64748b", lineHeight: 1.6}}>
                                                 {faq.answer}
                                             </Typography>
                                         </Box>
-                        </Box>
+                                    </Box>
                                 </Card>
                             </Grid>
                         ))}

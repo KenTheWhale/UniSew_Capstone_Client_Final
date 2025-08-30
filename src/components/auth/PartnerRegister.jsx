@@ -1,12 +1,13 @@
-import React, {useState, useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {
     Alert,
+    Avatar,
     Box,
     Button,
+    CircularProgress,
     Container,
     FormControl,
-    Grid,
     InputLabel,
     MenuItem,
     Paper,
@@ -15,24 +16,23 @@ import {
     StepLabel,
     Stepper,
     TextField,
-    Typography,
-    Avatar, CircularProgress
+    Typography
 } from '@mui/material';
-import { InlineLoading } from '../ui/LoadingSpinner.jsx';
+import {InlineLoading} from '../ui/LoadingSpinner.jsx';
 import {
+    AccessTime as AccessTimeIcon,
+    AccountBalance as AccountBalanceIcon,
     Business as BusinessIcon,
     CheckCircle as CheckCircleIcon,
     Email as EmailIcon,
     LocationOn as LocationIcon,
     PersonAdd as PersonAddIcon,
     Phone as PhoneIcon,
-    PhotoCamera as PhotoCameraIcon,
-    AccessTime as AccessTimeIcon,
-    AccountBalance as AccountBalanceIcon
+    PhotoCamera as PhotoCameraIcon
 } from '@mui/icons-material';
 import {encryptPartnerData, validatePartnerInfo, validatePartnerTaxCode} from "../../services/AuthService.jsx";
 import {emailType, sendEmail} from '../../services/EmailService.jsx';
-import {getProvinces, getDistricts, getWards, getBanks} from "../../services/ShippingService.jsx";
+import {getBanks, getDistricts, getProvinces, getWards} from "../../services/ShippingService.jsx";
 import {getTaxInfo} from "../../services/TaxService.jsx";
 import {uploadCloudinary} from "../../services/UploadImageService.jsx";
 import {enqueueSnackbar} from "notistack";
@@ -89,24 +89,24 @@ export default function PartnerRegister() {
     useEffect(() => {
         const fetchProvinces = () => {
             setLoadingProvinces(true);
-                    getProvinces()
-            .then(response => {
-                if (response && response.status === 200) {
-                    // Filter out unwanted provinces
-                    const filteredProvinces = response.data.data.filter(province => {
-                        const unwantedNames = [
-                            'Hà Nội 02',
-                            'Test - Alert - Tỉnh - 001', 
-                            'Ngoc test',
-                            'Test'
-                        ];
-                        return !unwantedNames.some(name => 
-                            province.ProvinceName.includes(name)
-                        );
-                    });
-                    setProvinces(filteredProvinces);
-                }
-            })
+            getProvinces()
+                .then(response => {
+                    if (response && response.status === 200) {
+                        // Filter out unwanted provinces
+                        const filteredProvinces = response.data.data.filter(province => {
+                            const unwantedNames = [
+                                'Hà Nội 02',
+                                'Test - Alert - Tỉnh - 001',
+                                'Ngoc test',
+                                'Test'
+                            ];
+                            return !unwantedNames.some(name =>
+                                province.ProvinceName.includes(name)
+                            );
+                        });
+                        setProvinces(filteredProvinces);
+                    }
+                })
                 .catch(error => {
                     console.error('Error fetching provinces:', error);
                 })
@@ -130,7 +130,7 @@ export default function PartnerRegister() {
                     setLoadingBanks(false);
                 });
         };
-        
+
         fetchProvinces();
         fetchBanks();
     }, []);
@@ -194,12 +194,11 @@ export default function PartnerRegister() {
     };
 
 
-
     const validateTaxCodeWithAPI = async (taxCode) => {
         if (!taxCode || taxCode.length < 10 || taxCode.length > 13) {
             return false;
         }
-        
+
         setValidatingTaxCode(true);
         try {
             // First, validate tax code with tax authority
@@ -208,7 +207,7 @@ export default function PartnerRegister() {
                 const isValid = taxResponse.code === "00";
                 console.log("Tax valid")
                 setTaxCodeValid(isValid);
-                
+
                 if (isValid) {
                     // If tax code is valid, check if it's already registered
                     try {
@@ -360,18 +359,18 @@ export default function PartnerRegister() {
             setFormData(prev => ({...prev, district: '', ward: ''}));
             setDistricts([]);
             setWards([]);
-            
+
             // Fetch districts for selected province
             if (value) {
                 fetchDistricts(value);
             }
         }
-        
+
         // Clear ward when district changes
         if (field === 'district') {
             setFormData(prev => ({...prev, ward: ''}));
             setWards([]);
-            
+
             // Fetch wards for selected district
             if (value) {
                 fetchWards(value);
@@ -379,7 +378,6 @@ export default function PartnerRegister() {
         }
 
 
-        
         // Auto-validate tax code when user types
         if (field === 'taxCode') {
             // Clear validation state when user types
@@ -401,7 +399,7 @@ export default function PartnerRegister() {
             if (formData.endTime) {
                 const endTimeError = validateField('endTime', formData.endTime);
                 setErrors(prev => ({...prev, endTime: endTimeError}));
-                
+
                 // If endTime is now invalid (before new startTime), reset it
                 if (endTimeError) {
                     setFormData(prev => ({...prev, endTime: ''}));
@@ -421,7 +419,7 @@ export default function PartnerRegister() {
             console.log('validatePhone(formData.phone):', validatePhone(formData.phone));
             return isValid;
         }
-        
+
         switch (step) {
             case 0:
                 return formData.email && formData.phone && validateEmailFormat(formData.email) && validatePhone(formData.phone);
@@ -433,8 +431,8 @@ export default function PartnerRegister() {
                 return !errors.taxCode && formData.taxCode && taxCodeValid === true && taxCodeRegistered === false;
             case 4:
                 return formData.name && formData.businessName && formData.avatar &&
-                       formData.startTime && formData.endTime && formData.bank &&
-                       formData.bankAccountNumber && formData.cardOwner;
+                    formData.startTime && formData.endTime && formData.bank &&
+                    formData.bankAccountNumber && formData.cardOwner;
             default:
                 return false;
         }
@@ -448,21 +446,21 @@ export default function PartnerRegister() {
                     const response = await validatePartnerInfo(formData.email, formData.phone);
                     if (response && response.status === 200) {
                         if (response.data.body.existed) {
-                            enqueueSnackbar('This email or phone is already used', { variant: 'error' });
+                            enqueueSnackbar('This email or phone is already used', {variant: 'error'});
                         } else {
                             setActiveStep(prev => prev + 1);
                         }
                     }
                 } catch (error) {
                     console.error('Error validating email:', error);
-                    enqueueSnackbar('Error validating email. Please try again.', { variant: 'error' });
+                    enqueueSnackbar('Error validating email. Please try again.', {variant: 'error'});
                 }
             } else {
                 // Email or phone format không hợp lệ
                 if (!formData.email || !validateEmailFormat(formData.email)) {
-                    enqueueSnackbar('Please enter a valid email address', { variant: 'error' });
+                    enqueueSnackbar('Please enter a valid email address', {variant: 'error'});
                 } else if (!formData.phone || !validatePhone(formData.phone)) {
-                    enqueueSnackbar('Please enter a valid phone number (10-11 digits starting with 0)', { variant: 'error' });
+                    enqueueSnackbar('Please enter a valid phone number (10-11 digits starting with 0)', {variant: 'error'});
                 }
             }
         } else if (isStepValid(activeStep)) {
@@ -476,7 +474,7 @@ export default function PartnerRegister() {
 
     const handleSubmit = async () => {
         // Validate all fields
-        const newErrors = {}; 
+        const newErrors = {};
         // Special handling for tax code validation
         if (formData.taxCode) {
             if (!validateTaxCode(formData.taxCode)) {
@@ -497,7 +495,7 @@ export default function PartnerRegister() {
                 newErrors.taxCode = 'Tax code is already registered by another partner';
             }
         }
-        
+
         // Validate other fields
         Object.keys(formData).forEach(field => {
             if (field !== 'taxCode') { // Skip tax code as we handled it above
@@ -584,7 +582,7 @@ export default function PartnerRegister() {
         switch (step) {
             case 0:
                 return (
-                    <Box >
+                    <Box>
                         {/* Header */}
                         <Box sx={{mb: 3}}>
                             <Typography variant="h6" sx={{mb: 1, color: 'text.primary', fontWeight: 600}}>
@@ -665,7 +663,7 @@ export default function PartnerRegister() {
                                         }}>
                                         {loadingProvinces ? (
                                             <MenuItem disabled>
-                                                <CircularProgress size={20} sx={{mr: 1}} />
+                                                <CircularProgress size={20} sx={{mr: 1}}/>
                                                 Loading provinces...
                                             </MenuItem>
                                         ) : (
@@ -697,12 +695,13 @@ export default function PartnerRegister() {
                                             disabled={loadingDistricts}
                                             inputProps={{
                                                 input: {
-                                                    startAdornment: <LocationIcon sx={{mr: 1, color: 'text.secondary'}}/>
+                                                    startAdornment: <LocationIcon
+                                                        sx={{mr: 1, color: 'text.secondary'}}/>
                                                 }
                                             }}>
                                             {loadingDistricts ? (
                                                 <MenuItem disabled>
-                                                    <CircularProgress size={20} sx={{mr: 1}} />
+                                                    <CircularProgress size={20} sx={{mr: 1}}/>
                                                     Loading districts...
                                                 </MenuItem>
                                             ) : (
@@ -714,7 +713,8 @@ export default function PartnerRegister() {
                                             )}
                                         </Select>
                                         {errors.district && (
-                                            <Typography variant="caption" color="error" sx={{mt: 0.5, display: 'block'}}>
+                                            <Typography variant="caption" color="error"
+                                                        sx={{mt: 0.5, display: 'block'}}>
                                                 {errors.district}
                                             </Typography>
                                         )}
@@ -735,12 +735,13 @@ export default function PartnerRegister() {
                                             disabled={loadingWards}
                                             slotProps={{
                                                 input: {
-                                                    startAdornment: <LocationIcon sx={{mr: 1, color: 'text.secondary'}}/>
+                                                    startAdornment: <LocationIcon
+                                                        sx={{mr: 1, color: 'text.secondary'}}/>
                                                 }
                                             }}>
                                             {loadingWards ? (
                                                 <MenuItem disabled>
-                                                    <CircularProgress size={20} sx={{mr: 1}} />
+                                                    <CircularProgress size={20} sx={{mr: 1}}/>
                                                     Loading wards...
                                                 </MenuItem>
                                             ) : (
@@ -752,7 +753,8 @@ export default function PartnerRegister() {
                                             )}
                                         </Select>
                                         {errors.ward && (
-                                            <Typography variant="caption" color="error" sx={{mt: 0.5, display: 'block'}}>
+                                            <Typography variant="caption" color="error"
+                                                        sx={{mt: 0.5, display: 'block'}}>
                                                 {errors.ward}
                                             </Typography>
                                         )}
@@ -871,12 +873,12 @@ export default function PartnerRegister() {
                                 onChange={(e) => handleInputChange('taxCode', e.target.value)}
                                 error={!!errors.taxCode}
                                 helperText={
-                                    errors.taxCode || 
-                                    (validatingTaxCode ? 'Validating tax code...' : 
-                                     taxCodeValid === true && taxCodeRegistered === false ? '✅ Tax code is valid and available' :
-                                     taxCodeValid === true && taxCodeRegistered === true ? '❌ Tax code is already registered by another partner' :
-                                     taxCodeValid === false ? '❌ Tax code is not valid' :
-                                     'Enter business tax code (10-13 digits)')
+                                    errors.taxCode ||
+                                    (validatingTaxCode ? 'Validating tax code...' :
+                                        taxCodeValid === true && taxCodeRegistered === false ? '✅ Tax code is valid and available' :
+                                            taxCodeValid === true && taxCodeRegistered === true ? '❌ Tax code is already registered by another partner' :
+                                                taxCodeValid === false ? '❌ Tax code is not valid' :
+                                                    'Enter business tax code (10-13 digits)')
                                 }
                                 slotProps={{
                                     input: {
@@ -885,7 +887,7 @@ export default function PartnerRegister() {
                                 }}
                                 InputProps={{
                                     endAdornment: validatingTaxCode ? (
-                                        <CircularProgress size={20} sx={{mr: 1}} />
+                                        <CircularProgress size={20} sx={{mr: 1}}/>
                                     ) : taxCodeValid === true ? (
                                         <Box sx={{color: 'success.main', mr: 1}}>✅</Box>
                                     ) : taxCodeValid === false ? (
@@ -893,7 +895,7 @@ export default function PartnerRegister() {
                                     ) : null
                                 }}
                             />
-                            
+
                             {/* Check Tax Code Button */}
                             <Box sx={{mt: 2, display: 'flex', justifyContent: 'center'}}>
                                 <Button
@@ -904,50 +906,95 @@ export default function PartnerRegister() {
                                             if (isValid) {
                                                 setErrors(prev => ({...prev, taxCode: ''}));
                                             } else {
-                                                setErrors(prev => ({...prev, taxCode: 'Tax code is not valid according to tax authority'}));
+                                                setErrors(prev => ({
+                                                    ...prev,
+                                                    taxCode: 'Tax code is not valid according to tax authority'
+                                                }));
                                             }
                                         } else {
-                                            setErrors(prev => ({...prev, taxCode: 'Please enter a valid tax code (10-13 digits)'}));
+                                            setErrors(prev => ({
+                                                ...prev,
+                                                taxCode: 'Please enter a valid tax code (10-13 digits)'
+                                            }));
                                         }
                                     }}
                                     disabled={!formData.taxCode || validatingTaxCode}
-                                    startIcon={validatingTaxCode ? <InlineLoading size={16} /> : <BusinessIcon />}
+                                    startIcon={validatingTaxCode ? <InlineLoading size={16}/> : <BusinessIcon/>}
                                     sx={{minWidth: 150}}
                                 >
                                     {validatingTaxCode ? 'Checking...' : 'Check Tax Code'}
                                 </Button>
                             </Box>
-                            
+
                             {/* Validation Status */}
                             {validatingTaxCode && (
                                 <Box sx={{mt: 1, display: 'flex', alignItems: 'center', gap: 1}}>
-                                    <CircularProgress size={16} />
+                                    <CircularProgress size={16}/>
                                     <Typography variant="caption" sx={{color: 'text.secondary'}}>
                                         Validating with tax authority...
                                     </Typography>
                                 </Box>
                             )}
-                            
+
                             {taxCodeValid === true && taxCodeRegistered === false && (
-                                <Box sx={{mt: 1, p: 1.5, bgcolor: 'success.50', borderRadius: 1, border: '1px solid', borderColor: 'success.200'}}>
-                                    <Typography variant="caption" sx={{color: 'success.700', display: 'flex', alignItems: 'center', gap: 1}}>
-                                        ✅ <strong>Verified:</strong> This tax code is valid and available for registration.
+                                <Box sx={{
+                                    mt: 1,
+                                    p: 1.5,
+                                    bgcolor: 'success.50',
+                                    borderRadius: 1,
+                                    border: '1px solid',
+                                    borderColor: 'success.200'
+                                }}>
+                                    <Typography variant="caption" sx={{
+                                        color: 'success.700',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1
+                                    }}>
+                                        ✅ <strong>Verified:</strong> This tax code is valid and available for
+                                        registration.
                                     </Typography>
                                 </Box>
                             )}
-                            
+
                             {taxCodeValid === true && taxCodeRegistered === true && (
-                                <Box sx={{mt: 1, p: 1.5, bgcolor: 'error.50', borderRadius: 1, border: '1px solid', borderColor: 'error.200'}}>
-                                    <Typography variant="caption" sx={{color: 'error.700', display: 'flex', alignItems: 'center', gap: 1}}>
-                                        ❌ <strong>Already Registered:</strong> This tax code is already registered by another partner.
+                                <Box sx={{
+                                    mt: 1,
+                                    p: 1.5,
+                                    bgcolor: 'error.50',
+                                    borderRadius: 1,
+                                    border: '1px solid',
+                                    borderColor: 'error.200'
+                                }}>
+                                    <Typography variant="caption" sx={{
+                                        color: 'error.700',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1
+                                    }}>
+                                        ❌ <strong>Already Registered:</strong> This tax code is already registered by
+                                        another partner.
                                     </Typography>
                                 </Box>
                             )}
-                            
+
                             {taxCodeValid === false && (
-                                <Box sx={{mt: 1, p: 1.5, bgcolor: 'error.50', borderRadius: 1, border: '1px solid', borderColor: 'error.200'}}>
-                                    <Typography variant="caption" sx={{color: 'error.700', display: 'flex', alignItems: 'center', gap: 1}}>
-                                        ❌ <strong>Invalid:</strong> This tax code is not valid according to the tax authority.
+                                <Box sx={{
+                                    mt: 1,
+                                    p: 1.5,
+                                    bgcolor: 'error.50',
+                                    borderRadius: 1,
+                                    border: '1px solid',
+                                    borderColor: 'error.200'
+                                }}>
+                                    <Typography variant="caption" sx={{
+                                        color: 'error.700',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1
+                                    }}>
+                                        ❌ <strong>Invalid:</strong> This tax code is not valid according to the tax
+                                        authority.
                                     </Typography>
                                     <Typography variant="caption" sx={{color: 'error.600', mt: 0.5, display: 'block'}}>
                                         Please check your tax code and try again.
@@ -1020,7 +1067,7 @@ export default function PartnerRegister() {
                                         <Button
                                             variant="outlined"
                                             component="span"
-                                            startIcon={<PhotoCameraIcon />}
+                                            startIcon={<PhotoCameraIcon/>}
                                             disabled={uploadingImage}
                                             sx={{mr: 1}}
                                         >
@@ -1113,13 +1160,14 @@ export default function PartnerRegister() {
                                         variant='outlined'
                                         slotProps={{
                                             input: {
-                                                startAdornment: <AccountBalanceIcon sx={{mr: 1, color: 'text.secondary'}}/>
+                                                startAdornment: <AccountBalanceIcon
+                                                    sx={{mr: 1, color: 'text.secondary'}}/>
                                             }
                                         }}
                                     >
                                         {loadingBanks ? (
                                             <MenuItem disabled>
-                                                <CircularProgress size={20} sx={{mr: 1}} />
+                                                <CircularProgress size={20} sx={{mr: 1}}/>
                                                 Loading banks...
                                             </MenuItem>
                                         ) : (
@@ -1230,7 +1278,7 @@ export default function PartnerRegister() {
                     <Stepper activeStep={activeStep} sx={{mb: 4}}>
                         {steps.map((label) => (
                             <Step key={label}>
-                                <StepLabel 
+                                <StepLabel
                                     sx={{
                                         flexDirection: 'column', // Đặt icon và text theo chiều dọc
                                         '& .MuiStepLabel-label': {
@@ -1272,10 +1320,10 @@ export default function PartnerRegister() {
                                     startIcon={loading ? <InlineLoading size={20}/> : <PersonAddIcon/>}
                                     sx={{borderRadius: 2, px: 4}}
                                 >
-                                    {loading ? 'Sending...' : 
-                                     formData.partnerType === 'designer' ? 'Create designer account' :
-                                     formData.partnerType === 'garment' ? 'Create garment factory account' :
-                                     'Create account'
+                                    {loading ? 'Sending...' :
+                                        formData.partnerType === 'designer' ? 'Create designer account' :
+                                            formData.partnerType === 'garment' ? 'Create garment factory account' :
+                                                'Create account'
                                     }
                                 </Button>
                             ) : (
