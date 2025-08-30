@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Avatar, Badge, Button, Col, Form, Input, Modal, Row, Tag, Typography} from 'antd';
 import JSZip from 'jszip';
-import { saveAs } from 'file-saver';
+import {saveAs} from 'file-saver';
 import {
     CheckCircleOutlined,
     CheckCircleOutlined as CheckCircleOutlinedIcon,
@@ -18,7 +18,6 @@ import {
     SendOutlined,
     SmileOutlined,
     SyncOutlined,
-    UploadOutlined,
     UserOutlined,
     UserSwitchOutlined
 } from '@ant-design/icons';
@@ -57,6 +56,32 @@ import {getAccessCookie} from "../../../utils/CookieUtil.jsx";
 
 const {TextArea} = Input;
 
+export function statusTag(status) {
+    let color;
+    let icon = null;
+    switch (status) {
+        case 'pending':
+            color = 'blue';
+            icon = <ClockCircleOutlined/>;
+            break;
+        case 'processing':
+            color = 'green';
+            icon = <SyncOutlined/>;
+            break;
+        case 'completed':
+            color = 'success';
+            icon = <CheckCircleOutlinedIcon/>;
+            break;
+        case 'canceled':
+            color = 'red';
+            icon = <CloseCircleOutlined/>;
+            break;
+        default:
+            color = 'default';
+            break;
+    }
+    return <Tag style={{margin: 0}} color={color}>{icon} {status}</Tag>;
+}
 
 const formatCategory = (category) => {
     const v = (category || '').toLowerCase();
@@ -67,7 +92,7 @@ const formatCategory = (category) => {
 const downloadDesignAsZip = async (delivery) => {
     try {
         const zip = new JSZip();
-        
+
         // Helper function to fetch image and convert to blob
         const fetchImageAsBlob = async (imageUrl) => {
             try {
@@ -80,7 +105,7 @@ const downloadDesignAsZip = async (delivery) => {
                 return null;
             }
         };
-        
+
         // Group items by gender and category
         const boyItems = delivery.deliveryItems?.filter(item =>
             item.designItem?.gender?.toLowerCase() === 'boy'
@@ -88,38 +113,38 @@ const downloadDesignAsZip = async (delivery) => {
         const girlItems = delivery.deliveryItems?.filter(item =>
             item.designItem?.gender?.toLowerCase() === 'girl'
         ) || [];
-        
+
         // Process Boy uniforms
         if (boyItems.length > 0) {
             const boyFolder = zip.folder("boy");
-            
+
             // Group by category (regular, physical education)
-            const boyRegular = boyItems.filter(item => 
+            const boyRegular = boyItems.filter(item =>
                 item.designItem?.category?.toLowerCase() === 'regular'
             );
-            const boyPE = boyItems.filter(item => 
+            const boyPE = boyItems.filter(item =>
                 item.designItem?.category?.toLowerCase() === 'pe'
             );
-            
+
             // Add regular uniforms
             if (boyRegular.length > 0) {
                 const regularFolder = boyFolder.folder("regular uniform");
-                
+
                 // Group by cloth type (shirt, pants, skirt, etc.)
-                const shirtItems = boyRegular.filter(item => 
+                const shirtItems = boyRegular.filter(item =>
                     item.designItem?.type?.toLowerCase().includes('shirt')
                 );
-                const pantsItems = boyRegular.filter(item => 
+                const pantsItems = boyRegular.filter(item =>
                     item.designItem?.type?.toLowerCase().includes('pant')
                 );
-                const skirtItems = boyRegular.filter(item => 
+                const skirtItems = boyRegular.filter(item =>
                     item.designItem?.type?.toLowerCase().includes('skirt')
                 );
                 const otherItems = boyRegular.filter(item => {
                     const type = item.designItem?.type?.toLowerCase();
                     return !type.includes('shirt') && !type.includes('pant') && !type.includes('skirt');
                 });
-                
+
                 // Add shirt items
                 if (shirtItems.length > 0) {
                     const shirtFolder = regularFolder.folder("shirt");
@@ -139,7 +164,7 @@ const downloadDesignAsZip = async (delivery) => {
                         }
                     }
                 }
-                
+
                 // Add pants items
                 if (pantsItems.length > 0) {
                     const pantsFolder = regularFolder.folder("pants");
@@ -159,7 +184,7 @@ const downloadDesignAsZip = async (delivery) => {
                         }
                     }
                 }
-                
+
                 // Add skirt items
                 if (skirtItems.length > 0) {
                     const skirtFolder = regularFolder.folder("skirt");
@@ -179,7 +204,7 @@ const downloadDesignAsZip = async (delivery) => {
                         }
                     }
                 }
-                
+
                 // Add other items
                 if (otherItems.length > 0) {
                     const otherFolder = regularFolder.folder("other");
@@ -200,26 +225,26 @@ const downloadDesignAsZip = async (delivery) => {
                     }
                 }
             }
-            
+
             // Add physical education uniforms
             if (boyPE.length > 0) {
                 const peFolder = boyFolder.folder("physical education uniform");
-                
+
                 // Group by cloth type (shirt, pants, skirt, etc.)
-                const shirtItems = boyPE.filter(item => 
+                const shirtItems = boyPE.filter(item =>
                     item.designItem?.type?.toLowerCase().includes('shirt')
                 );
-                const pantsItems = boyPE.filter(item => 
+                const pantsItems = boyPE.filter(item =>
                     item.designItem?.type?.toLowerCase().includes('pant')
                 );
-                const skirtItems = boyPE.filter(item => 
+                const skirtItems = boyPE.filter(item =>
                     item.designItem?.type?.toLowerCase().includes('skirt')
                 );
                 const otherItems = boyPE.filter(item => {
                     const type = item.designItem?.type?.toLowerCase();
                     return !type.includes('shirt') && !type.includes('pant') && !type.includes('skirt');
                 });
-                
+
                 // Add shirt items
                 if (shirtItems.length > 0) {
                     const shirtFolder = peFolder.folder("shirt");
@@ -239,7 +264,7 @@ const downloadDesignAsZip = async (delivery) => {
                         }
                     }
                 }
-                
+
                 // Add pants items
                 if (pantsItems.length > 0) {
                     const pantsFolder = peFolder.folder("pants");
@@ -259,7 +284,7 @@ const downloadDesignAsZip = async (delivery) => {
                         }
                     }
                 }
-                
+
                 // Add skirt items
                 if (skirtItems.length > 0) {
                     const skirtFolder = peFolder.folder("skirt");
@@ -279,7 +304,7 @@ const downloadDesignAsZip = async (delivery) => {
                         }
                     }
                 }
-                
+
                 // Add other items
                 if (otherItems.length > 0) {
                     const otherFolder = peFolder.folder("other");
@@ -301,38 +326,38 @@ const downloadDesignAsZip = async (delivery) => {
                 }
             }
         }
-        
+
         // Process Girl uniforms
         if (girlItems.length > 0) {
             const girlFolder = zip.folder("girl");
-            
+
             // Group by category (regular, physical education)
-            const girlRegular = girlItems.filter(item => 
+            const girlRegular = girlItems.filter(item =>
                 item.designItem?.category?.toLowerCase() === 'regular'
             );
-            const girlPE = girlItems.filter(item => 
+            const girlPE = girlItems.filter(item =>
                 item.designItem?.category?.toLowerCase() === 'pe'
             );
-            
+
             // Add regular uniforms
             if (girlRegular.length > 0) {
                 const regularFolder = girlFolder.folder("regular uniform");
-                
+
                 // Group by cloth type (shirt, pants, skirt, etc.)
-                const shirtItems = girlRegular.filter(item => 
+                const shirtItems = girlRegular.filter(item =>
                     item.designItem?.type?.toLowerCase().includes('shirt')
                 );
-                const pantsItems = girlRegular.filter(item => 
+                const pantsItems = girlRegular.filter(item =>
                     item.designItem?.type?.toLowerCase().includes('pant')
                 );
-                const skirtItems = girlRegular.filter(item => 
+                const skirtItems = girlRegular.filter(item =>
                     item.designItem?.type?.toLowerCase().includes('skirt')
                 );
                 const otherItems = girlRegular.filter(item => {
                     const type = item.designItem?.type?.toLowerCase();
                     return !type.includes('shirt') && !type.includes('pant') && !type.includes('skirt');
                 });
-                
+
                 // Add shirt items
                 if (shirtItems.length > 0) {
                     const shirtFolder = regularFolder.folder("shirt");
@@ -352,7 +377,7 @@ const downloadDesignAsZip = async (delivery) => {
                         }
                     }
                 }
-                
+
                 // Add pants items
                 if (pantsItems.length > 0) {
                     const pantsFolder = regularFolder.folder("pants");
@@ -372,7 +397,7 @@ const downloadDesignAsZip = async (delivery) => {
                         }
                     }
                 }
-                
+
                 // Add skirt items
                 if (skirtItems.length > 0) {
                     const skirtFolder = regularFolder.folder("skirt");
@@ -392,7 +417,7 @@ const downloadDesignAsZip = async (delivery) => {
                         }
                     }
                 }
-                
+
                 // Add other items
                 if (otherItems.length > 0) {
                     const otherFolder = regularFolder.folder("other");
@@ -413,26 +438,26 @@ const downloadDesignAsZip = async (delivery) => {
                     }
                 }
             }
-            
+
             // Add physical education uniforms
             if (girlPE.length > 0) {
                 const peFolder = girlFolder.folder("physical education uniform");
-                
+
                 // Group by cloth type (shirt, pants, skirt, etc.)
-                const shirtItems = girlPE.filter(item => 
+                const shirtItems = girlPE.filter(item =>
                     item.designItem?.type?.toLowerCase().includes('shirt')
                 );
-                const pantsItems = girlPE.filter(item => 
+                const pantsItems = girlPE.filter(item =>
                     item.designItem?.type?.toLowerCase().includes('pant')
                 );
-                const skirtItems = girlPE.filter(item => 
+                const skirtItems = girlPE.filter(item =>
                     item.designItem?.type?.toLowerCase().includes('skirt')
                 );
                 const otherItems = girlPE.filter(item => {
                     const type = item.designItem?.type?.toLowerCase();
                     return !type.includes('shirt') && !type.includes('pant') && !type.includes('skirt');
                 });
-                
+
                 // Add shirt items
                 if (shirtItems.length > 0) {
                     const shirtFolder = peFolder.folder("shirt");
@@ -452,7 +477,7 @@ const downloadDesignAsZip = async (delivery) => {
                         }
                     }
                 }
-                
+
                 // Add pants items
                 if (pantsItems.length > 0) {
                     const pantsFolder = peFolder.folder("pants");
@@ -472,7 +497,7 @@ const downloadDesignAsZip = async (delivery) => {
                         }
                     }
                 }
-                
+
                 // Add skirt items
                 if (skirtItems.length > 0) {
                     const skirtFolder = peFolder.folder("skirt");
@@ -492,7 +517,7 @@ const downloadDesignAsZip = async (delivery) => {
                         }
                     }
                 }
-                
+
                 // Add other items
                 if (otherItems.length > 0) {
                     const otherFolder = peFolder.folder("other");
@@ -514,12 +539,12 @@ const downloadDesignAsZip = async (delivery) => {
                 }
             }
         }
-        
+
         // Generate and download ZIP file
         const content = await zip.generateAsync({type: "blob"});
         const fileName = `${delivery.name}_UniSew.zip`;
         saveAs(content, fileName);
-        
+
         return true;
     } catch (error) {
         console.error('Error creating ZIP file:', error);
@@ -588,7 +613,6 @@ export function UseDesignChatMessages(roomId) {
             return false;
         }
         const accountId = cookie.id;
-        console.log("accountId", accountId);
 
         const payload =
             typeof textOrPayload === "string"
@@ -600,7 +624,7 @@ export function UseDesignChatMessages(roomId) {
             createdAt: serverTimestamp(),
             user: displayName,
             senderEmail: email,
-            accountId: accountId ? accountId : 0,
+            accountId: accountId,
             room: roomId,
             read: false,
         });
@@ -639,7 +663,6 @@ export function UseDesignChatMessages(roomId) {
 
     return {chatMessages, unreadCount, sendMessage, markAsRead};
 }
-
 
 function DeliveryDetailModal({visible, onCancel, delivery}) {
     if (!delivery) return null;
@@ -777,7 +800,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                                     </Tag>
                                 </Box>
                             </Box>
-                            
+
                             {/* Download Design Button */}
                             <Box sx={{
                                 mt: 3,
@@ -786,7 +809,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                             }}>
                                 <Button
                                     type="primary"
-                                    icon={<DownloadOutlined />}
+                                    icon={<DownloadOutlined/>}
                                     onClick={async () => {
                                         try {
                                             await downloadDesignAsZip(delivery);
@@ -1886,6 +1909,7 @@ export default function SchoolChat() {
     const [newMessage, setNewMessage] = useState('');
     const [isChatOpen, setIsChatOpen] = useState(false);
     const isViewOnly = (isFinalDesignSet || requestData?.status === 'completed');
+    const canAccessChat = requestData?.status !== 'canceled'; // Cho phép vào chat nếu không bị canceled
     const designerName = requestData?.finalDesignQuotation?.designer?.customer?.name
         || requestData?.designer?.customer?.name
         || 'Designer';
@@ -1909,10 +1933,31 @@ export default function SchoolChat() {
                 const deliveries = response.data.body || [];
                 setDesignDeliveries(deliveries);
 
+                // Tìm delivery đã được set làm final
                 const finalDelivery = deliveries.find(delivery => delivery.isFinal);
                 if (finalDelivery) {
                     setFinalDelivery(finalDelivery);
                     setIsFinalDesignSet(true);
+                } else if (requestData?.status === 'completed' && deliveries.length > 0) {
+                    // Nếu request đã completed và không có delivery nào được đánh dấu là final
+                    // Có thể delivery đã được xử lý ở backend hoặc cần được chọn thủ công
+                    // Kiểm tra xem có delivery nào có thể là final không
+                    
+                    // Ưu tiên tìm delivery có version cao nhất hoặc submitDate mới nhất
+                    const sortedDeliveries = [...deliveries].sort((a, b) => {
+                        // Nếu có version, sắp xếp theo version
+                        if (a.version && b.version) {
+                            return b.version - a.version;
+                        }
+                        // Nếu không có version, sắp xếp theo submitDate
+                        return new Date(b.submitDate) - new Date(a.submitDate);
+                    });
+                    
+                    const mostRecentDelivery = sortedDeliveries[0];
+                    if (mostRecentDelivery) {
+                        setFinalDelivery(mostRecentDelivery);
+                        setIsFinalDesignSet(true);
+                    }
                 }
             } else {
                 console.log("No deliveries found or error occurred");
@@ -1975,6 +2020,27 @@ export default function SchoolChat() {
         }
     }, []);
 
+    // Effect để cập nhật finalDelivery khi requestData thay đổi
+    useEffect(() => {
+        if (requestData?.status === 'completed' && designDeliveries.length > 0 && !finalDelivery) {
+            // Nếu request đã completed và có deliveries nhưng chưa có finalDelivery
+            // Kiểm tra xem có delivery nào được set làm final không
+            const finalDeliveryFromList = designDeliveries.find(delivery => delivery.isFinal);
+            if (finalDeliveryFromList) {
+                setFinalDelivery(finalDeliveryFromList);
+                setIsFinalDesignSet(true);
+            } else if (designDeliveries.length > 0) {
+                // Nếu không có delivery nào được đánh dấu là final, 
+                // có thể lấy delivery cuối cùng hoặc delivery đầu tiên
+                const lastDelivery = designDeliveries[designDeliveries.length - 1];
+                if (lastDelivery) {
+                    setFinalDelivery(lastDelivery);
+                    setIsFinalDesignSet(true);
+                }
+            }
+        }
+    }, [requestData, designDeliveries, finalDelivery]);
+
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
@@ -1998,6 +2064,7 @@ export default function SchoolChat() {
             setShowEmojiPicker(false);
         }
     };
+
 
 
     const onEmojiClick = (emojiData) => {
@@ -2092,7 +2159,7 @@ export default function SchoolChat() {
                     setFinalDelivery(deliveryToMakeFinal);
                     setIsFinalDesignSet(true);
 
-                    enqueueSnackbar(`'${deliveryToMakeFinal.name}' has been set as Final Delivery!`, {variant: 'success'});
+                    enqueueSnackbar(`'${deliveryToMakeFinal.name}' has been set as Final Design!`, {variant: 'success'});
                     handleCloseConfirmFinalModal();
 
                     if (requestData?.id) {
@@ -2111,11 +2178,11 @@ export default function SchoolChat() {
                         console.error('Error fetching latest request data:', error);
                     }
                 } else {
-                    enqueueSnackbar('Failed to set final delivery. Please try again.', {variant: 'error'});
+                    enqueueSnackbar('Failed to set final design. Please try again.', {variant: 'error'});
                 }
             } catch (error) {
-                console.error('Error setting final delivery:', error);
-                enqueueSnackbar('Error setting final delivery. Please try again.', {variant: 'error'});
+                console.error('Error setting final design:', error);
+                enqueueSnackbar('Error setting final design. Please try again.', {variant: 'error'});
             }
         }
     };
@@ -2201,6 +2268,11 @@ export default function SchoolChat() {
                                     <Typography.Text type="secondary" style={{fontSize: '16px', fontWeight: 500}}>
                                         Request ID: {requestData ? parseID(requestData.id, 'dr') : 'N/A'}
                                     </Typography.Text>
+                                    {requestData?.status === 'completed' && (
+                                        <Typography.Text style={{fontSize: '14px', color: '#52c41a', fontWeight: 600, display: 'block', mt: 0.5}}>
+                                            ✅ Request completed - Chat history available for viewing
+                                        </Typography.Text>
+                                    )}
                                 </Box>
                             </Box>
                             <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
@@ -2317,7 +2389,7 @@ export default function SchoolChat() {
                                                                           color: '#1e293b',
                                                                           fontWeight: 600
                                                                       }}>
-                                                        Design Deliveries
+                                                        Design
                                                     </Typography.Title>
                                                     <Typography.Text type="secondary"
                                                                      style={{fontSize: '12px', color: '#64748b'}}>
@@ -2333,22 +2405,22 @@ export default function SchoolChat() {
                                                 alignItems: 'center',
                                                 gap: 2
                                             }}>
-                                            <Box sx={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                minWidth: 32,
-                                                height: 32,
-                                                px: 2,
-                                                borderRadius: '16px',
-                                                background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
-                                                color: 'white',
-                                                fontSize: '14px',
-                                                fontWeight: 600,
-                                                boxShadow: '0 2px 8px rgba(46, 125, 50, 0.3)',
-                                                border: '2px solid rgba(255, 255, 255, 0.2)'
-                                            }}>
-                                                Amount: {designDeliveries.length}
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    minWidth: 32,
+                                                    height: 32,
+                                                    px: 2,
+                                                    borderRadius: '16px',
+                                                    background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
+                                                    color: 'white',
+                                                    fontSize: '14px',
+                                                    fontWeight: 600,
+                                                    boxShadow: '0 2px 8px rgba(46, 125, 50, 0.3)',
+                                                    border: '2px solid rgba(255, 255, 255, 0.2)'
+                                                }}>
+                                                    Amount: {designDeliveries.length}
                                                 </Box>
                                                 {requestData?.revisionTime === 0 && requestData?.status !== 'completed' && (
                                                     <Button
@@ -2398,30 +2470,31 @@ export default function SchoolChat() {
                                                 gap: 2
                                             }}>
                                                 <Typography.Text type="secondary" style={{fontSize: '14px'}}>
-                                                    Loading deliveries...
+                                                    Loading designs...
                                                 </Typography.Text>
                                             </Box>
                                         ) : designDeliveries.length === 0 ? (
-                                                    <Box sx={{
-                                                        display: 'flex',
-                                                        justifyContent: 'center',
-                                                        alignItems: 'center',
-                                                        height: '100%',
-                                                        flexDirection: 'column',
-                                                        gap: 2,
-                                                        color: '#64748b'
-                                                    }}>
-                                                        <FileTextOutlined style={{fontSize: '48px', opacity: 0.5}}/>
-                                                        <Typography.Text type="secondary" style={{fontSize: '14px'}}>
-                                                            No deliveries yet. Designer will add deliveries here.
-                                                        </Typography.Text>
-                                                    </Box>
-                                                ) : (
                                             <Box sx={{
-                                                display: 'grid',
-                                                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                height: '100%',
+                                                flexDirection: 'column',
                                                 gap: 2,
-                                                p: 1
+                                                color: '#64748b'
+                                            }}>
+                                                <FileTextOutlined style={{fontSize: '48px', opacity: 0.5}}/>
+                                                <Typography.Text type="secondary" style={{fontSize: '14px'}}>
+                                                    No designs yet. Designer will add designs here.
+                                                </Typography.Text>
+                                            </Box>
+                                        ) : (
+                                            <Box sx={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: 2,
+                                                p: 1,
+                                                width: '100%'
                                             }}>
                                                 {
                                                     designDeliveries.map(item => (
@@ -2436,6 +2509,7 @@ export default function SchoolChat() {
                                                                 transition: 'all 0.3s ease',
                                                                 height: 'fit-content',
                                                                 minHeight: '120px',
+                                                                width: '100%',
                                                                 display: 'flex',
                                                                 flexDirection: 'column',
                                                                 '&:hover': {
@@ -2474,9 +2548,9 @@ export default function SchoolChat() {
                                                                 </Tag>
                                                             </Box>
 
-                                                            <Box sx={{
+                                                                                                                        <Box sx={{
                                                                 display: 'flex',
-                                                                flexDirection: 'column',
+                                                                flexDirection: 'row',
                                                                 gap: 1,
                                                                 justifyContent: 'center',
                                                                 mt: 'auto'
@@ -2487,7 +2561,7 @@ export default function SchoolChat() {
                                                                     onClick={() => handleOpenDeliveryDetailModal(item)}
                                                                     style={{
                                                                         borderRadius: '8px',
-                                                                        width: '100%',
+                                                                        flex: 1,
                                                                         height: '32px',
                                                                         background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
                                                                         border: 'none',
@@ -2507,7 +2581,7 @@ export default function SchoolChat() {
                                                                                 onClick={() => handleOpenRevisionModal(item.id)}
                                                                                 style={{
                                                                                     borderRadius: '8px',
-                                                                                    width: '100%',
+                                                                                    flex: 1,
                                                                                     height: '32px',
                                                                                     backgroundColor: '#722ed1',
                                                                                     borderColor: '#722ed1',
@@ -2525,13 +2599,13 @@ export default function SchoolChat() {
                                                                             onClick={() => handleMakeFinal(item)}
                                                                             style={{
                                                                                 borderRadius: '8px',
-                                                                                width: '100%',
+                                                                                flex: 1,
                                                                                 height: '32px',
                                                                                 backgroundColor: '#52c41a',
                                                                                 borderColor: '#52c41a',
-                                                                                color: 'white',
-                                                                                fontWeight: 600,
-                                                                                boxShadow: '0 2px 8px rgba(82, 196, 26, 0.2)'
+                                                                        color: 'white',
+                                                                        fontWeight: 600,
+                                                                        boxShadow: '0 2px 8px rgba(82, 196, 26, 0.2)'
                                                                             }}
                                                                         >
                                                                             Make final
@@ -2571,7 +2645,7 @@ export default function SchoolChat() {
                                         backgroundColor: 'linear-gradient(135deg, #fff5f0 0%, #ffe4d6 100%)',
                                         position: 'relative'
                                     }}>
-                                            <Box sx={{
+                                        <Box sx={{
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'space-between'
@@ -2580,17 +2654,17 @@ export default function SchoolChat() {
                                                 <Box sx={{
                                                     width: 40,
                                                     height: 40,
-                                                borderRadius: '50%',
-                                                background: 'linear-gradient(135deg, #ff6b35, #ff8c42)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                color: 'white',
+                                                    borderRadius: '50%',
+                                                    background: 'linear-gradient(135deg, #ff6b35, #ff8c42)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    color: 'white',
                                                     fontSize: '16px',
-                                                boxShadow: '0 4px 12px rgba(255, 107, 53, 0.3)'
-                                            }}>
-                                                <EditOutlined/>
-                                            </Box>
+                                                    boxShadow: '0 4px 12px rgba(255, 107, 53, 0.3)'
+                                                }}>
+                                                    <EditOutlined/>
+                                                </Box>
                                                 <Box>
                                                     <Typography.Title level={4}
                                                                       style={{
@@ -2598,17 +2672,17 @@ export default function SchoolChat() {
                                                                           color: '#ff6b35',
                                                                           fontWeight: 600
                                                                       }}>
-                                                Revision Requests
-                                            </Typography.Title>
+                                                        Revision Requests
+                                                    </Typography.Title>
                                                     <Typography.Text type="secondary"
                                                                      style={{fontSize: '12px', color: '#ff6b35'}}>
                                                         Track your revision requests
                                                     </Typography.Text>
-                                        </Box>
-                                    </Box>
-                                    <Box sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
+                                                </Box>
+                                            </Box>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
                                                 justifyContent: 'center',
                                                 minWidth: 32,
                                                 height: 32,
@@ -2678,54 +2752,54 @@ export default function SchoolChat() {
                                             }}>
                                                 {
                                                     revisionRequests.map((revision, index) => (
-                                                    <Paper
-                                                        key={revision.id}
-                                                        elevation={0}
-                                                        sx={{
+                                                        <Paper
+                                                            key={revision.id}
+                                                            elevation={0}
+                                                            sx={{
                                                                 p: 2.5,
-                                                            border: '1px solid #e2e8f0',
+                                                                border: '1px solid #e2e8f0',
                                                                 borderRadius: 3,
-                                                            backgroundColor: 'white',
-                                                            transition: 'all 0.3s ease',
+                                                                backgroundColor: 'white',
+                                                                transition: 'all 0.3s ease',
                                                                 height: 'fit-content',
                                                                 minHeight: '120px',
                                                                 display: 'flex',
                                                                 flexDirection: 'column',
-                                                            '&:hover': {
-                                                                borderColor: '#ff6b35',
+                                                                '&:hover': {
+                                                                    borderColor: '#ff6b35',
                                                                     boxShadow: '0 4px 12px rgba(255, 107, 53, 0.15)',
                                                                     transform: 'translateY(-2px)'
-                                                            }
-                                                        }}
-                                                    >
-                                                        <Box sx={{
-                                                            display: 'flex',
-                                                            justifyContent: 'space-between',
-                                                            alignItems: 'flex-start',
+                                                                }
+                                                            }}
+                                                        >
+                                                            <Box sx={{
+                                                                display: 'flex',
+                                                                justifyContent: 'space-between',
+                                                                alignItems: 'flex-start',
                                                                 mb: 2,
                                                                 flex: 1
-                                                        }}>
-                                                            <Box sx={{flex: 1}}>
-                                                                <Typography.Title level={5}
+                                                            }}>
+                                                                <Box sx={{flex: 1}}>
+                                                                    <Typography.Title level={5}
                                                                                       style={{
                                                                                           margin: 0,
                                                                                           color: '#1e293b'
                                                                                       }}>
-                                                                    Revision #{index + 1}
-                                                                </Typography.Title>
-                                                                <Typography.Text type="secondary"
-                                                                                 style={{fontSize: '12px'}}>
-                                                                    {new Date(revision.requestDate).toLocaleDateString('vi-VN', {
-                                                                        day: '2-digit',
-                                                                        month: '2-digit',
-                                                                        year: 'numeric'
-                                                                    })}
-                                                                </Typography.Text>
+                                                                        Revision {index + 1}
+                                                                    </Typography.Title>
+                                                                    <Typography.Text type="secondary"
+                                                                                     style={{fontSize: '12px'}}>
+                                                                        {new Date(revision.requestDate).toLocaleDateString('vi-VN', {
+                                                                            day: '2-digit',
+                                                                            month: '2-digit',
+                                                                            year: 'numeric'
+                                                                        })}
+                                                                    </Typography.Text>
+                                                                </Box>
+                                                                <Tag color="orange" style={{margin: 0}}>
+                                                                    {parseID(revision.deliveryId, 'rr')}
+                                                                </Tag>
                                                             </Box>
-                                                            <Tag color="orange" style={{margin: 0}}>
-                                                                {parseID(revision.deliveryId, 'rr')}
-                                                            </Tag>
-                                                        </Box>
 
                                                             <Box sx={{
                                                                 display: 'flex',
@@ -2734,9 +2808,9 @@ export default function SchoolChat() {
                                                                 justifyContent: 'center',
                                                                 mt: 'auto'
                                                             }}>
-                                                        <Typography.Text style={{
-                                                            fontSize: '13px',
-                                                            color: '#475569',
+                                                                <Typography.Text style={{
+                                                                    fontSize: '13px',
+                                                                    color: '#475569',
                                                                     lineHeight: 1.5,
                                                                     display: '-webkit-box',
                                                                     WebkitLineClamp: 2,
@@ -2744,18 +2818,18 @@ export default function SchoolChat() {
                                                                     overflow: 'hidden',
                                                                     textOverflow: 'ellipsis',
                                                                     mb: 1
-                                                        }}>
-                                                            {revision.note}
-                                                        </Typography.Text>
-                                                            <Button
-                                                                size="small"
-                                                                icon={<EyeOutlined/>}
-                                                                onClick={() => {
-                                                                    const delivery = designDeliveries.find(d => d.id === revision.deliveryId);
-                                                                    if (delivery) {
-                                                                        handleOpenDeliveryDetailModal(delivery);
-                                                                    }
-                                                                }}
+                                                                }}>
+                                                                    {revision.note}
+                                                                </Typography.Text>
+                                                                <Button
+                                                                    size="small"
+                                                                    icon={<EyeOutlined/>}
+                                                                    onClick={() => {
+                                                                        const delivery = designDeliveries.find(d => d.id === revision.deliveryId);
+                                                                        if (delivery) {
+                                                                            handleOpenDeliveryDetailModal(delivery);
+                                                                        }
+                                                                    }}
                                                                     style={{
                                                                         borderRadius: '8px',
                                                                         width: '100%',
@@ -2766,11 +2840,11 @@ export default function SchoolChat() {
                                                                         fontWeight: 600,
                                                                         boxShadow: '0 2px 8px rgba(255, 107, 53, 0.2)'
                                                                     }}
-                                                            >
-                                                                View Delivery
-                                                            </Button>
-                                                        </Box>
-                                                    </Paper>
+                                                                >
+                                                                    View Delivery
+                                                                </Button>
+                                                            </Box>
+                                                        </Paper>
                                                     ))
                                                 }
                                             </Box>
@@ -2781,116 +2855,167 @@ export default function SchoolChat() {
                         </Box>
 
                         {}
-                        <Paper
-                            elevation={0}
-                            sx={{
-                                width: '100%',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                backgroundColor: 'white',
-                                borderRadius: 4,
-                                border: '2px solid #52c41a',
-                                overflow: 'hidden',
-                                boxShadow: '0 8px 32px rgba(82, 196, 26, 0.15)',
-                                position: 'relative',
-                                height: 'max-content',
-                                flex: 1
-                            }}
-                        >
-                            {}
-                            <Box sx={{
-                                py: 2,
-                                px: 3,
-                                borderBottom: '2px solid #e2e8f0',
-                                backgroundColor: 'linear-gradient(135deg, #f6ffed 0%, #d9f7be 100%)',
-                                position: 'relative'
-                            }}>
-                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
-                                    <Box sx={{
-                                        width: 32,
-                                        height: 32,
-                                        borderRadius: '50%',
-                                        background: 'linear-gradient(135deg, #52c41a, #73d13d)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        color: 'white',
-                                        fontSize: '14px',
-                                        boxShadow: '0 4px 12px rgba(82, 196, 26, 0.3)'
-                                    }}>
-                                        <CheckCircleOutlined/>
-                                    </Box>
-                                    <Typography.Title level={5}
-                                                      style={{margin: 0, color: '#52c41a', fontWeight: 600}}>
-                                        Final Delivery
-                                    </Typography.Title>
-                                </Box>
-                            </Box>
-
-                            {}
-                            <Box sx={{
-                                p: 3,
-                                flex: 1,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                height: 'max-content'
-                            }}>
-                                {finalDelivery ? (
-                                    <>
-                                        <Typography.Title level={5} style={{margin: '0 0 8px 0', color: '#1e293b'}}>
-                                            {finalDelivery.name}
+                        {designDeliveries.length > 0 && (
+                            <Paper
+                                elevation={0}
+                                sx={{
+                                    width: '100%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    backgroundColor: 'white',
+                                    borderRadius: 4,
+                                    border: '2px solid #52c41a',
+                                    overflow: 'hidden',
+                                    boxShadow: '0 8px 32px rgba(82, 196, 26, 0.15)',
+                                    position: 'relative',
+                                    height: 'max-content',
+                                    flex: 1
+                                }}
+                            >
+                                {}
+                                <Box sx={{
+                                    py: 2,
+                                    px: 3,
+                                    borderBottom: '2px solid #e2e8f0',
+                                    backgroundColor: 'linear-gradient(135deg, #f6ffed 0%, #d9f7be 100%)',
+                                    position: 'relative'
+                                }}>
+                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                        <Box sx={{
+                                            width: 32,
+                                            height: 32,
+                                            borderRadius: '50%',
+                                            background: 'linear-gradient(135deg, #52c41a, #73d13d)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'white',
+                                            fontSize: '14px',
+                                            boxShadow: '0 4px 12px rgba(82, 196, 26, 0.3)'
+                                        }}>
+                                            <CheckCircleOutlined/>
+                                        </Box>
+                                        <Typography.Title level={5}
+                                                          style={{margin: 0, color: '#52c41a', fontWeight: 600}}>
+                                            Final Design
                                         </Typography.Title>
-                                        <Typography.Text type="secondary"
-                                                         style={{fontSize: '12px', display: 'block', mb: 1}}>
-                                            {requestData?.status === 'completed' ? 'Final delivery - Design completed' :
-                                                finalDelivery.note || 'Final delivery selected'}
-                                        </Typography.Text>
-                                        <Typography.Text type="secondary"
-                                                         style={{fontSize: '11px', display: 'block', mb: 2}}>
-                                            {new Date(finalDelivery.submitDate).toLocaleDateString('vi-VN', {
-                                                day: '2-digit',
-                                                month: '2-digit',
-                                                year: 'numeric'
-                                            })}
-                                        </Typography.Text>
-                                        <Button
-                                            type="primary"
-                                            icon={<EyeOutlined/>}
-                                            onClick={() => handleOpenDeliveryDetailModal(finalDelivery)}
-                                            size="small"
-                                            style={{
-                                                backgroundColor: '#52c41a',
-                                                borderColor: '#52c41a',
-                                                borderRadius: '6px',
-                                                height: '32px',
-                                                fontSize: '12px',
-                                                fontWeight: 600,
-                                                marginTop: '8px'
-                                            }}
-                                        >
-                                            View Details
-                                        </Button>
-                                    </>
-                                ) : (
-                                    <Box sx={{
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        height: '100%',
-                                        flexDirection: 'column',
-                                        gap: 2,
-                                        color: '#64748b'
-                                    }}>
-                                        <FileTextOutlined style={{fontSize: '48px', opacity: 0.5}}/>
-                                        <Typography.Text type="secondary" style={{fontSize: '14px'}}>
-                                            {requestData?.status === 'completed' ? 'Design completed' : 'No data'}
-                                        </Typography.Text>
                                     </Box>
-                                )}
-                            </Box>
-                        </Paper>
+                                </Box>
+
+                                {}
+                                <Box sx={{
+                                    p: 3,
+                                    flex: 1,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    height: 'max-content'
+                                }}>
+                                    {finalDelivery ? (
+                                        <>
+                                            <Typography.Title level={5} style={{margin: '0 0 8px 0', color: '#1e293b'}}>
+                                                {finalDelivery.name}
+                                            </Typography.Title>
+                                            <Typography.Text type="secondary"
+                                                             style={{fontSize: '12px', display: 'block', mb: 1}}>
+                                                {requestData?.status === 'completed' ? 'Final design - Design completed' :
+                                                    finalDelivery.note || 'Final design selected'}
+                                            </Typography.Text>
+                                            <Typography.Text type="secondary"
+                                                             style={{fontSize: '11px', display: 'block', mb: 2}}>
+                                                {new Date(finalDelivery.submitDate).toLocaleDateString('vi-VN', {
+                                                    day: '2-digit',
+                                                    month: '2-digit',
+                                                    year: 'numeric'
+                                                })}
+                                            </Typography.Text>
+                                            <Button
+                                                type="primary"
+                                                icon={<EyeOutlined/>}
+                                                onClick={() => handleOpenDeliveryDetailModal(finalDelivery)}
+                                                size="small"
+                                                style={{
+                                                    backgroundColor: '#52c41a',
+                                                    borderColor: '#52c41a',
+                                                    borderRadius: '6px',
+                                                    height: '32px',
+                                                    fontSize: '12px',
+                                                    fontWeight: 600,
+                                                    marginTop: '8px'
+                                                }}
+                                            >
+                                                View Details
+                                            </Button>
+                                        </>
+                                    ) : requestData?.status === 'completed' ? (
+                                        // Nếu request đã completed và có deliveries nhưng chưa có finalDelivery
+                                        // Hiển thị thông báo và có thể cho phép chọn delivery làm final
+                                        <Box sx={{
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            height: '100%',
+                                            flexDirection: 'column',
+                                            gap: 2,
+                                            color: '#64748b',
+                                            textAlign: 'center'
+                                        }}>
+                                            <CheckCircleOutlined style={{fontSize: '48px', opacity: 0.5, color: '#52c41a'}}/>
+                                            <Typography.Title level={5} style={{margin: '0 0 8px 0', color: '#52c41a'}}>
+                                                Design Request Completed
+                                            </Typography.Title>
+                                            <Typography.Text type="secondary" style={{fontSize: '14px', fontWeight: 600}}>
+                                                {designDeliveries.length} design{designDeliveries.length !== 1 ? 's' : ''} available
+                                            </Typography.Text>
+                                            <Typography.Text type="secondary" style={{fontSize: '12px', color: '#52c41a'}}>
+                                                Select a design as final from the Design section above
+                                            </Typography.Text>
+                                            <Button
+                                                type="default"
+                                                icon={<CheckCircleOutlined/>}
+                                                onClick={() => {
+                                                    // Tự động chọn delivery đầu tiên làm final
+                                                    if (designDeliveries.length > 0) {
+                                                        const firstDelivery = designDeliveries[0];
+                                                        setFinalDelivery(firstDelivery);
+                                                        setIsFinalDesignSet(true);
+                                                        enqueueSnackbar(`'${firstDelivery.name}' has been set as Final Design!`, {variant: 'success'});
+                                                    }
+                                                }}
+                                                size="small"
+                                                style={{
+                                                    borderColor: '#52c41a',
+                                                    color: '#52c41a',
+                                                    borderRadius: '6px',
+                                                    height: '32px',
+                                                    fontSize: '12px',
+                                                    fontWeight: 600,
+                                                    marginTop: '8px'
+                                                }}
+                                            >
+                                                Set First Design as Final
+                                            </Button>
+                                        </Box>
+                                    ) : (
+                                        <Box sx={{
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            height: '100%',
+                                            flexDirection: 'column',
+                                            gap: 2,
+                                            color: '#64748b'
+                                        }}>
+                                            <FileTextOutlined style={{fontSize: '48px', opacity: 0.5}}/>
+                                            <Typography.Text type="secondary" style={{fontSize: '14px'}}>
+                                                No final design selected yet
+                                            </Typography.Text>
+                                        </Box>
+                                    )}
+                                </Box>
+                            </Paper>
+                        )}
                     </Box>
                 </Box>
             </Container>
@@ -2928,7 +3053,7 @@ export default function SchoolChat() {
                     <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                         <CheckCircleOutlined style={{color: '#52c41a', fontSize: '18px'}}/>
                         <Typography.Title level={5} style={{margin: 0, color: '#1e293b'}}>
-                            Confirm Final Delivery
+                            Confirm Final Design
                         </Typography.Title>
                     </Box>
                 }
@@ -2951,7 +3076,7 @@ export default function SchoolChat() {
                 }}
             >
                 <Typography.Text style={{fontSize: '14px', color: '#475569'}}>
-                    Are you sure you want to set this design as the final delivery? This action cannot be reversed.
+                    Are you sure you want to set this design as the final design? This action cannot be reversed.
                 </Typography.Text>
                 {deliveryToMakeFinal && (
                     <Box sx={{
@@ -2969,197 +3094,200 @@ export default function SchoolChat() {
             </Modal>
 
             {}
-            <Box sx={{position: 'fixed', bottom: 24, right: 24, zIndex: 2000}}>
-                {isChatOpen ? (
-                    <Paper
-                        elevation={4}
-                        sx={{
-                            width: 380,
-                            height: '65vh',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            borderRadius: 3,
-                            overflow: 'hidden',
-                            border: '2px solid #2e7d32',
-                            boxShadow: '0 8px 24px rgba(46, 125, 50, 0.3)',
-                            opacity: 1
-                        }}
-                    >
-                        <Box sx={{
-                            py: 1,
-                            px: 2,
-                            borderBottom: '2px solid #e2e8f0',
-                            background: 'linear-gradient(135deg, #f8fafc 0%, #e3f2fd 100%)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between'
-                        }}>
-                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1.5}}>
-                                <UserSwitchOutlined/>
-                                <Typography.Text style={{fontWeight: 600}}>
-                                    Designer: {designerName}
-                                </Typography.Text>
-                            </Box>
-                            <Button type="text" icon={<CloseCircleOutlined style={{color: '#ff4d4f'}}/>}
-                                    onClick={() => setIsChatOpen(false)}/>
-                        </Box>
-
-                        <Box sx={{flex: 1, p: 2, overflowY: 'auto', backgroundColor: '#f8fafc'}}>
-                            {chatMessages.length === 0 ? (
-                                <Box sx={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    height: '100%',
-                                    color: '#64748b'
-                                }}>
-                                    <MessageOutlined style={{fontSize: '36px', marginBottom: '12px'}}/>
-                                    <Typography.Text type="secondary" style={{fontSize: '14px'}}>
-                                        No messages yet. Start the conversation!
+            {canAccessChat && (
+                <Box sx={{position: 'fixed', bottom: 24, right: 24, zIndex: 2000}}>
+                    {isChatOpen ? (
+                        <Paper
+                            elevation={4}
+                            sx={{
+                                width: 380,
+                                height: '65vh',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                borderRadius: 3,
+                                overflow: 'hidden',
+                                border: '2px solid #2e7d32',
+                                boxShadow: '0 8px 24px rgba(46, 125, 50, 0.3)',
+                                opacity: 1
+                            }}
+                        >
+                            <Box sx={{
+                                py: 1,
+                                px: 2,
+                                borderBottom: '2px solid #e2e8f0',
+                                background: 'linear-gradient(135deg, #f8fafc 0%, #e3f2fd 100%)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between'
+                            }}>
+                                <Box sx={{display: 'flex', alignItems: 'center', gap: 1.5}}>
+                                    <UserSwitchOutlined/>
+                                    <Typography.Text style={{fontWeight: 600}}>
+                                        Designer: {designerName}
                                     </Typography.Text>
                                 </Box>
-                            ) : (
-                                <Box sx={{display: 'flex', flexDirection: 'column', gap: 1.5}}>
-                                    {chatMessages.map((msg, index) => (
-                                        <Box
-                                            key={msg.id || index}
-                                            sx={{
-                                                display: 'flex',
-                                                justifyContent: msg.user === (auth.currentUser?.displayName || "User") ? 'flex-end' : 'flex-start'
-                                            }}
-                                        >
-                                            <Box sx={{
-                                                display: 'flex',
-                                                alignItems: 'flex-end',
-                                                gap: 0.5,
-                                                maxWidth: '80%'
-                                            }}>
-                                                {msg.user !== (auth.currentUser?.displayName || "User") && (
-                                                    <Avatar size="small" style={{backgroundColor: '#1976d2'}}
-                                                            icon={<UserSwitchOutlined/>}/>
-                                                )}
+                                <Button type="text" icon={<CloseCircleOutlined style={{color: '#ff4d4f'}}/>}
+                                        onClick={() => setIsChatOpen(false)}/>
+                            </Box>
+
+                            <Box sx={{flex: 1, p: 2, overflowY: 'auto', backgroundColor: '#f8fafc'}}>
+                                {chatMessages.length === 0 ? (
+                                    <Box sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        height: '100%',
+                                        color: '#64748b'
+                                    }}>
+                                        <MessageOutlined style={{fontSize: '36px', marginBottom: '12px'}}/>
+                                        <Typography.Text type="secondary" style={{fontSize: '14px'}}>
+                                            {requestData?.status === 'completed' ? 'Chat history available for completed requests' : 'No messages yet. Start the conversation!'}
+                                        </Typography.Text>
+                                    </Box>
+                                ) : (
+                                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 1.5}}>
+                                        {chatMessages.map((msg, index) => (
+                                            <Box
+                                                key={msg.id || index}
+                                                sx={{
+                                                    display: 'flex',
+                                                    justifyContent: msg.user === (auth.currentUser?.displayName || "User") ? 'flex-end' : 'flex-start'
+                                                }}
+                                            >
                                                 <Box sx={{
-                                                    p: 1.5,
-                                                    borderRadius: 3,
-                                                    background: msg.user === (auth.currentUser?.displayName || "User")
-                                                        ? 'linear-gradient(135deg, #2e7d32, #4caf50)'
-                                                        : 'white',
-                                                    color: msg.user === (auth.currentUser?.displayName || "User") ? 'white' : '#1e293b',
-                                                    border: msg.user !== (auth.currentUser?.displayName || "User") ? '1px solid #e2e8f0' : 'none',
-                                                    boxShadow: msg.user === (auth.currentUser?.displayName || "User")
-                                                        ? '0 2px 8px rgba(46, 125, 50, 0.3)'
-                                                        : '0 1px 4px rgba(0,0,0,0.1)'
+                                                    display: 'flex',
+                                                    alignItems: 'flex-end',
+                                                    gap: 0.5,
+                                                    maxWidth: '80%'
                                                 }}>
-                                                    <Typography.Text style={{
-                                                        fontSize: '10px',
-                                                        color: msg.user === (auth.currentUser?.displayName || "User") ? 'rgba(255,255,255,0.8)' : '#94a3b8'
+                                                    {msg.user !== (auth.currentUser?.displayName || "User") && (
+                                                        <Avatar size="small" style={{backgroundColor: '#1976d2'}}
+                                                                icon={<UserSwitchOutlined/>}/>
+                                                    )}
+                                                    <Box sx={{
+                                                        p: 1.5,
+                                                        borderRadius: 3,
+                                                        background: msg.user === (auth.currentUser?.displayName || "User")
+                                                            ? 'linear-gradient(135deg, #2e7d32, #4caf50)'
+                                                            : 'white',
+                                                        color: msg.user === (auth.currentUser?.displayName || "User") ? 'white' : '#1e293b',
+                                                        border: msg.user !== (auth.currentUser?.displayName || "User") ? '1px solid #e2e8f0' : 'none',
+                                                        boxShadow: msg.user === (auth.currentUser?.displayName || "User")
+                                                            ? '0 2px 8px rgba(46, 125, 50, 0.3)'
+                                                            : '0 1px 4px rgba(0,0,0,0.1)'
                                                     }}>
-                                                        {msg.createdAt?.seconds ? new Date(msg.createdAt.seconds * 1000).toLocaleString() : ''}
-                                                    </Typography.Text>
-                                                    {msg.text && (
                                                         <Typography.Text style={{
-                                                            fontSize: '14px',
-                                                            display: 'block',
-                                                            color: (msg.user === (auth.currentUser?.displayName || "User")) ? 'white' : '#1e293b'
+                                                            fontSize: '10px',
+                                                            color: msg.user === (auth.currentUser?.displayName || "User") ? 'rgba(255,255,255,0.8)' : '#94a3b8'
                                                         }}>
-                                                            {msg.text}
+                                                            {msg.createdAt?.seconds ? new Date(msg.createdAt.seconds * 1000).toLocaleString() : ''}
                                                         </Typography.Text>
+                                                        {msg.text && (
+                                                            <Typography.Text style={{
+                                                                fontSize: '14px',
+                                                                display: 'block',
+                                                                color: (msg.user === (auth.currentUser?.displayName || "User")) ? 'white' : '#1e293b'
+                                                            }}>
+                                                                {msg.text}
+                                                            </Typography.Text>
+                                                        )}
+                                                    </Box>
+                                                    {msg.user === (auth.currentUser?.displayName || "User") && (
+                                                        <Avatar size="small" style={{backgroundColor: '#52c41a'}}
+                                                                icon={<UserOutlined/>}/>
                                                     )}
                                                 </Box>
-                                                {msg.user === (auth.currentUser?.displayName || "User") && (
-                                                    <Avatar size="small" style={{backgroundColor: '#52c41a'}}
-                                                            icon={<UserOutlined/>}/>
-                                                )}
                                             </Box>
-                                        </Box>
-                                    ))}
-                                </Box>
-                            )}
-                        </Box>
-
-                        <Box sx={{
-                            p: 1.5,
-                            borderTop: '2px solid #e2e8f0',
-                            background: 'linear-gradient(135deg, #f8fafc 0%, #e3f2fd 100%)'
-                        }}>
-                            <Box sx={{display: 'flex', gap: 1, alignItems: 'center'}}>
-                                <Box sx={{flex: 1, position: 'relative'}}>
-                                    <Input
-                                        size="large"
-                                        placeholder="Type your message..."
-                                        value={newMessage}
-                                        onChange={(e) => setNewMessage(e.target.value)}
-                                        onPressEnter={handleSendMessage}
-                                        disabled={isViewOnly}
-                                        style={{
-                                            borderRadius: '24px',
-                                            padding: '14px 18px',
-                                            border: '1px solid #e2e8f0',
-                                            height: 48
-                                        }}
-                                    />
-                                    {showEmojiPicker && (
-                                        <Box
-                                            ref={emojiPickerRef}
-                                            sx={{
-                                            position: 'absolute',
-                                            bottom: '46px',
-                                                left: 0,
-                                            zIndex: 10,
-                                            borderRadius: '8px',
-                                            overflow: 'hidden',
-                                            boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
-                                            }}
-                                        >
-                                            <EmojiPicker onEmojiClick={onEmojiClick} height={300} width={280}/>
-                                        </Box>
-                                    )}
-                                </Box>
-                                <Button disabled={isViewOnly} shape="circle" size="large" icon={<SmileOutlined/>}
-                                        onClick={() => setShowEmojiPicker(prev => !prev)} style={{
-                                    width: 48,
-                                    height: 48,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}/>
-                                <Button disabled={isViewOnly} type="primary" shape="circle" size="large"
-                                        icon={<SendOutlined/>} onClick={handleSendMessage} style={{
-                                    width: 48,
-                                    height: 48,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}/>
+                                        ))}
+                                    </Box>
+                                )}
                             </Box>
-                        </Box>
-                    </Paper>
-                ) : (
-                    <Badge count={unreadCount} overflowCount={99} offset={[-6, 6]}>
-                        <Button
-                            type="primary"
-                            shape="circle"
-                            size="large"
-                            icon={<MessageOutlined/>}
-                            onClick={() => setIsChatOpen(true)}
-                            style={{
-                                width: isOpenButtonHover ? '60px' : '56px',
-                                height: isOpenButtonHover ? '60px' : '56px',
-                                transform: isOpenButtonHover ? 'translateY(-2px)' : 'none',
-                                transition: 'all 150ms ease',
-                                boxShadow: isOpenButtonHover ? '0 10px 28px rgba(46, 125, 50, 0.5)' : '0 8px 24px rgba(46, 125, 50, 0.4)',
-                                background: isOpenButtonHover ? 'linear-gradient(135deg, #2e7d32, #43a047)' : 'linear-gradient(135deg, #2e7d32, #4caf50)',
-                                animation: isOpenButtonHover ? 'unisew-chat-shake 220ms ease-in-out' : 'none',
-                                willChange: 'transform',
-                                border: 'none'
-                            }}
-                            onMouseEnter={() => setIsOpenButtonHover(true)}
-                            onMouseLeave={() => setIsOpenButtonHover(false)}
-                        />
-                    </Badge>
-                )}
-            </Box>
+
+                            <Box sx={{
+                                p: 1.5,
+                                borderTop: '2px solid #e2e8f0',
+                                background: 'linear-gradient(135deg, #f8fafc 0%, #e3f2fd 100%)'
+                            }}>
+                                <Box sx={{display: 'flex', gap: 1, alignItems: 'center'}}>
+                                    <Box sx={{flex: 1, position: 'relative'}}>
+                                        <Input
+                                            size="large"
+                                            placeholder={requestData?.status === 'completed' ? 'Chat is read-only for completed requests' : 'Type your message...'}
+                                            value={newMessage}
+                                            onChange={(e) => setNewMessage(e.target.value)}
+                                            onPressEnter={handleSendMessage}
+                                            disabled={isViewOnly}
+                                            style={{
+                                                borderRadius: '24px',
+                                                padding: '14px 18px',
+                                                border: '1px solid #e2e8f0',
+                                                height: 48
+                                            }}
+                                        />
+                                        {showEmojiPicker && (
+                                            <Box
+                                                ref={emojiPickerRef}
+                                                sx={{
+                                                    position: 'absolute',
+                                                    bottom: '46px',
+                                                    left: 0,
+                                                    zIndex: 10,
+                                                    borderRadius: '8px',
+                                                    overflow: 'hidden',
+                                                    boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+                                                }}
+                                            >
+                                                <EmojiPicker onEmojiClick={onEmojiClick} height={300} width={280}/>
+                                            </Box>
+                                        )}
+                                    </Box>
+
+                                    <Button disabled={isViewOnly} shape="circle" size="large" icon={<SmileOutlined/>}
+                                            onClick={() => setShowEmojiPicker(prev => !prev)} style={{
+                                        width: 48,
+                                        height: 48,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}/>
+                                    <Button disabled={isViewOnly} type="primary" shape="circle" size="large"
+                                            icon={<SendOutlined/>} onClick={handleSendMessage} style={{
+                                        width: 48,
+                                        height: 48,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}/>
+                                </Box>
+                            </Box>
+                        </Paper>
+                    ) : (
+                        <Badge count={unreadCount} overflowCount={99} offset={[-6, 6]}>
+                            <Button
+                                type="primary"
+                                shape="circle"
+                                size="large"
+                                icon={<MessageOutlined/>}
+                                onClick={() => setIsChatOpen(true)}
+                                style={{
+                                    width: isOpenButtonHover ? '60px' : '56px',
+                                    height: isOpenButtonHover ? '60px' : '56px',
+                                    transform: isOpenButtonHover ? 'translateY(-2px)' : 'none',
+                                    transition: 'all 150ms ease',
+                                    boxShadow: isOpenButtonHover ? '0 10px 28px rgba(46, 125, 50, 0.5)' : '0 8px 24px rgba(46, 125, 50, 0.4)',
+                                    background: isOpenButtonHover ? 'linear-gradient(135deg, #2e7d32, #43a047)' : 'linear-gradient(135deg, #2e7d32, #4caf50)',
+                                    animation: isOpenButtonHover ? 'unisew-chat-shake 220ms ease-in-out' : 'none',
+                                    willChange: 'transform',
+                                    border: 'none'
+                                }}
+                                onMouseEnter={() => setIsOpenButtonHover(true)}
+                                onMouseLeave={() => setIsOpenButtonHover(false)}
+                            />
+                        </Badge>
+                    )}
+                </Box>
+            )}
         </Box>
     );
 }

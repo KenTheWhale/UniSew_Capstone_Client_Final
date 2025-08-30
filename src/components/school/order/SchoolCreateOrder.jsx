@@ -670,7 +670,7 @@ export default function SchoolCreateOrder() {
                                             <DatePicker
                                                 value={deadline}
                                                 onChange={handleDeadlineChange}
-                                                placeholder="Select delivery date (minimum 2 weeks from today)"
+                                                placeholder="Select delivery date (minimum 1 month from today)"
                                                 format="DD/MM/YYYY"
                                                 style={{
                                                     width: 280,
@@ -679,11 +679,11 @@ export default function SchoolCreateOrder() {
                                                     border: '1px solid #e0e0e0'
                                                 }}
                                                 disabledDate={(current) => {
-                                                    const minDate = dayjs().add(14, 'day').startOf('day');
+                                                    const minDate = dayjs().add(30, 'day').startOf('day');
                                                     return current && current < minDate;
                                                 }}
                                                 status={validationErrors.deadline ? 'error' : ''}
-                                                defaultPickerValue={dayjs().add(14, 'day')}
+                                                defaultPickerValue={dayjs().add(30, 'day')}
                                             />
                                             {validationErrors.deadline && (
                                                 <Typography variant="body2" sx={{
@@ -700,8 +700,23 @@ export default function SchoolCreateOrder() {
                                                 fontSize: '13px',
                                                 fontStyle: 'italic'
                                             }}>
-                                                * Minimum delivery time is 2 weeks from today
-                                                ({dayjs().add(14, 'day').format('DD/MM/YYYY')})
+                                                * Minimum delivery time is 1 month from today
+                                                ({dayjs().add(30, 'day').format('DD/MM/YYYY')})
+                                            </Typography>
+                                            <Typography variant="body2" sx={{
+                                                color: '#f57c00',
+                                                fontSize: '13px',
+                                                fontWeight: 600,
+                                                mt: 1,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 1,
+                                                p: 1.5,
+                                                borderRadius: 1,
+                                                backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                                                border: '1px solid rgba(255, 152, 0, 0.3)'
+                                            }}>
+                                                ⚠️ We recommend setting a delivery deadline of 2 months or more to maximize your chances of getting your order accepted.
                                             </Typography>
                                         </Box>
                                     </Box>
