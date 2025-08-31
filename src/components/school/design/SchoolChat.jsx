@@ -101,9 +101,17 @@ const downloadDesignAsZip = async (delivery) => {
             
             try {
                 const url = new URL(imageUrl);
-                if (!url.protocol.startsWith('http')) {
-                    return { valid: false, reason: 'Invalid protocol' };
+                
+                // Fix Mixed Content issue: convert HTTP to HTTPS
+                if (url.protocol === 'http:') {
+                    url.protocol = 'https:';
+                    console.log('Converted HTTP to HTTPS:', imageUrl, '→', url.toString());
                 }
+                
+                if (!url.protocol.startsWith('https')) {
+                    return { valid: false, reason: 'Invalid protocol - only HTTPS allowed' };
+                }
+                
                 return { valid: true, url: url.toString() };
             } catch (error) {
                 return { valid: false, reason: 'Invalid URL structure' };
