@@ -1,8 +1,9 @@
 import axios from "axios"
 import {refreshToken} from "../services/AuthService.jsx";
 
-// axios.defaults.baseURL = "http://localhost:8080/api/v1"
-axios.defaults.baseURL = "https://unisew-server.onrender.com/api/v1"
+const url = import.meta.env.VITE_SERVER_BE
+
+axios.defaults.baseURL = `${url}/api/v1`
 
 const axiosClient = axios.create({
     baseURL: axios.defaults.baseURL,
