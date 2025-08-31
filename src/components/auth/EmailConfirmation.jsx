@@ -34,22 +34,18 @@ export default function EmailConfirmation() {
             encryptedData: data
         })
             .then(async (res) => {
-                if (res && res.status === 201) {
+                if (res && res.status === 200) {
                     try {
-                        // Extract data from response (excluding pid)
-                        const {districtId, wardCode, address, name, phone} = res.data.body;
+                        const {districtId, wardCode, address, name, phone, encryptString} = res.data.body;
 
-                        // Call createStore API
                         const storeResponse = await createStore(districtId, wardCode, address, name, phone);
 
                         if (storeResponse && storeResponse.data.code === 200) {
                             const shopId = storeResponse.data.data.shop_id;
-                            const pid = res.data.body.pid;
 
-                            // Call updatePartnerStoreID API
-                            const updateResponse = await updatePartnerStoreID(shopId, pid);
+                            const updateResponse = await updatePartnerStoreID(shopId, encryptString);
 
-                            if (updateResponse && updateResponse.status === 200) {
+                            if (updateResponse && updateResponse.status === 201) {
                                 setStatus('success');
                                 setMessage('Account created successfully!');
                                 enqueueSnackbar('Account created successfully!', {variant: 'success'});
