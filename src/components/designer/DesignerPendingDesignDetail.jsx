@@ -24,8 +24,11 @@ import {
     CheckCircle as CheckCircleIcon,
     Checkroom as CheckroomIcon,
     DesignServices,
+    Email as EmailIcon,
     Info as InfoIcon,
+    LocationOn as LocationIcon,
     Person as PersonIcon,
+    Phone as PhoneIcon,
     School as SchoolIcon,
     SportsEsports as SportsIcon,
     Star as StarIcon,
@@ -341,7 +344,6 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                     }
                 }}
             >
-                {}
                 <Box sx={{
                     background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
                     color: 'white',
@@ -371,13 +373,261 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                     <StatusChip status={mergedRequestData.status}/>
                 </Box>
 
-                {}
                 <DialogContent sx={{p: 0, overflow: 'auto'}}>
                     <Container maxWidth={false} sx={{p: 3}}>
                         <Grid container spacing={3} sx={{display: 'flex'}}>
-                            {}
                             <Grid sx={{flex: 2}}>
-                                {}
+                                {/* School Information Card */}
+                                <Card sx={{
+                                    mb: 3,
+                                    background: 'rgba(255, 255, 255, 0.9)',
+                                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                                    borderRadius: 2,
+                                    boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                                    backdropFilter: 'blur(10px)',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                                        transform: 'translateY(-2px)',
+                                        background: 'rgba(255, 255, 255, 0.95)'
+                                    }
+                                }}>
+                                    <Box sx={{
+                                        background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+                                        p: 1.5,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1,
+                                        borderBottom: '1px solid #e0e0e0',
+                                        transition: 'all 0.3s ease'
+                                    }}>
+                                        <SchoolIcon sx={{color: 'white', fontSize: 18, transition: 'all 0.3s ease'}}/>
+                                        <Typography variant="h6" sx={{
+                                            color: 'white',
+                                            fontWeight: 600,
+                                            transition: 'all 0.3s ease'
+                                        }}>
+                                            School Information
+                                        </Typography>
+                                    </Box>
+                                    <CardContent sx={{p: 3}}>
+                                        {/* School Avatar and Basic Info */}
+                                        <Box sx={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            gap: 2,
+                                            mb: 3,
+                                            p: 3,
+                                            borderRadius: 3,
+                                            background: 'linear-gradient(135deg, rgba(22, 163, 74, 0.05) 0%, rgba(21, 128, 61, 0.05) 100%)',
+                                            border: '1px solid rgba(22, 163, 74, 0.1)',
+                                            transition: 'all 0.3s ease',
+                                            '&:hover': {
+                                                background: 'rgba(22, 163, 74, 0.08)',
+                                                transform: 'translateY(-1px)',
+                                                boxShadow: '0 4px 12px rgba(22, 163, 74, 0.1)'
+                                            }
+                                        }}>
+                                            <Avatar
+                                                src={mergedRequestData.school?.avatar}
+                                                referrerPolicy="no-referrer"
+                                                sx={{
+                                                    width: 72,
+                                                    height: 72,
+                                                    boxShadow: '0 8px 24px rgba(22, 163, 74, 0.2)',
+                                                    border: '3px solid rgba(22, 163, 74, 0.2)',
+                                                    '& img': {
+                                                        objectFit: 'cover',
+                                                        width: '100%',
+                                                        height: '100%'
+                                                    }
+                                                }}
+                                            >
+                                                {mergedRequestData.school?.business?.charAt(0) || mergedRequestData.school?.name?.charAt(0)}
+                                            </Avatar>
+                                            <Box sx={{textAlign: 'center'}}>
+                                                <Typography variant="h5" sx={{
+                                                    fontWeight: 700,
+                                                    color: '#1e293b',
+                                                    fontSize: '1.5rem',
+                                                    mb: 0.5
+                                                }}>
+                                                    {mergedRequestData.school?.business || mergedRequestData.school?.name || 'N/A'}
+                                                </Typography>
+                                                {/*<Typography variant="body1" sx={{*/}
+                                                {/*    color: '#16a34a',*/}
+                                                {/*    fontWeight: 600,*/}
+                                                {/*    fontSize: '1rem'*/}
+                                                {/*}}>*/}
+                                                {/*    {mergedRequestData.school?.name || 'School Representative'}*/}
+                                                {/*</Typography>*/}
+                                            </Box>
+                                        </Box>
+
+                                        {/* Contact Information Grid */}
+                                        <Grid container spacing={2}>
+                                            <Grid sx={{flex: 1}}>
+                                                <Box sx={{
+                                                    p: 2.5,
+                                                    borderRadius: 3,
+                                                    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(37, 99, 235, 0.05) 100%)',
+                                                    border: '1px solid rgba(59, 130, 246, 0.1)',
+                                                    textAlign: 'center',
+                                                    transition: 'all 0.3s ease',
+                                                    '&:hover': {
+                                                        background: 'rgba(59, 130, 246, 0.08)',
+                                                        transform: 'translateY(-2px)',
+                                                        boxShadow: '0 8px 25px rgba(59, 130, 246, 0.15)'
+                                                    }
+                                                }}>
+                                                    <Box sx={{
+                                                        width: 40,
+                                                        height: 40,
+                                                        borderRadius: '50%',
+                                                        background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        mx: 'auto',
+                                                        mb: 1.5,
+                                                        boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+                                                    }}>
+                                                        <PhoneIcon sx={{color: 'white', fontSize: 20}}/>
+                                                    </Box>
+                                                    <Typography variant="caption" sx={{
+                                                        color: '#64748b',
+                                                        fontWeight: 600,
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.5px',
+                                                        display: 'block',
+                                                        fontSize: '0.75rem'
+                                                    }}>
+                                                        Phone Number
+                                                    </Typography>
+                                                    <Typography variant="body2" sx={{
+                                                        fontWeight: 700,
+                                                        color: '#1e293b',
+                                                        fontSize: '0.9rem',
+                                                        mt: 0.5
+                                                    }}>
+                                                        {mergedRequestData.school?.phone || 'N/A'}
+                                                    </Typography>
+                                                </Box>
+                                            </Grid>
+
+                                            <Grid sx={{flex: 1}}>
+                                                <Box sx={{
+                                                    p: 2.5,
+                                                    borderRadius: 3,
+                                                    background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(217, 119, 6, 0.05) 100%)',
+                                                    border: '1px solid rgba(245, 158, 11, 0.1)',
+                                                    textAlign: 'center',
+                                                    transition: 'all 0.3s ease',
+                                                    '&:hover': {
+                                                        background: 'rgba(245, 158, 11, 0.08)',
+                                                        transform: 'translateY(-2px)',
+                                                        boxShadow: '0 8px 25px rgba(245, 158, 11, 0.15)'
+                                                    }
+                                                }}>
+                                                    <Box sx={{
+                                                        width: 40,
+                                                        height: 40,
+                                                        borderRadius: '50%',
+                                                        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        mx: 'auto',
+                                                        mb: 1.5,
+                                                        boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)'
+                                                    }}>
+                                                        <EmailIcon sx={{color: 'white', fontSize: 18}}/>
+                                                    </Box>
+                                                    <Typography variant="caption" sx={{
+                                                        color: '#64748b',
+                                                        fontWeight: 600,
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.5px',
+                                                        display: 'block',
+                                                        fontSize: '0.75rem'
+                                                    }}>
+                                                        Email Address
+                                                    </Typography>
+                                                    <Typography variant="body2" sx={{
+                                                        fontWeight: 700,
+                                                        color: '#1e293b',
+                                                        fontSize: '0.9rem',
+                                                        mt: 0.5,
+                                                        wordBreak: 'break-word'
+                                                    }}>
+                                                        {mergedRequestData.school?.account?.email || 'N/A'}
+                                                    </Typography>
+                                                </Box>
+                                            </Grid>
+                                        </Grid>
+
+                                        {/* Address Information */}
+                                        {mergedRequestData.school?.address && (
+                                            <Box sx={{
+                                                mt: 2,
+                                                p: 3,
+                                                borderRadius: 3,
+                                                background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%)',
+                                                border: '1px solid rgba(168, 85, 247, 0.1)',
+                                                transition: 'all 0.3s ease',
+                                                '&:hover': {
+                                                    background: 'rgba(168, 85, 247, 0.08)',
+                                                    transform: 'translateY(-1px)',
+                                                    boxShadow: '0 4px 12px rgba(168, 85, 247, 0.1)'
+                                                }
+                                            }}>
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'flex-start',
+                                                    gap: 2
+                                                }}>
+                                                    <Box sx={{
+                                                        width: 32,
+                                                        height: 32,
+                                                        borderRadius: '50%',
+                                                        background: 'linear-gradient(135deg, #a855f7 0%, #9333ea 100%)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        flexShrink: 0,
+                                                        mt: 0.5,
+                                                        boxShadow: '0 4px 12px rgba(168, 85, 247, 0.3)'
+                                                    }}>
+                                                        <LocationIcon sx={{color: 'white', fontSize: 16}}/>
+                                                    </Box>
+                                                    <Box sx={{flex: 1}}>
+                                                        <Typography variant="caption" sx={{
+                                                            color: '#64748b',
+                                                            fontWeight: 600,
+                                                            textTransform: 'uppercase',
+                                                            letterSpacing: '0.5px',
+                                                            display: 'block',
+                                                            fontSize: '0.75rem',
+                                                            mb: 0.5
+                                                        }}>
+                                                            School Address
+                                                        </Typography>
+                                                        <Typography variant="body2" sx={{
+                                                            color: '#1e293b',
+                                                            fontWeight: 500,
+                                                            lineHeight: 1.6,
+                                                            fontSize: '0.9rem'
+                                                        }}>
+                                                            {mergedRequestData.school.address}
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+                                            </Box>
+                                        )}
+                                    </CardContent>
+                                </Card>
+
                                 <Card sx={{
                                     mb: 3,
                                     background: 'rgba(255, 255, 255, 0.9)',

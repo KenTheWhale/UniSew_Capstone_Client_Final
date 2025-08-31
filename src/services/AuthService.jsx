@@ -40,8 +40,8 @@ export const validatePartnerTaxCode = async (taxCode) => {
     return response || null;
 }
 
-export const updatePartnerStoreID = async (storeId, pid) => {
-    const response = await axiosClient.get(`/auth/partner/suid?suid=${storeId}&pid=${pid}`)
+export const updatePartnerStoreID = async (storeId, encryptString) => {
+    const response = await axiosClient.get(`/auth/partner/suid?suid=${storeId}&encryptString=${encryptString}`)
     return response || null;
 }
 
