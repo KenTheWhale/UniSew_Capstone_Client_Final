@@ -556,10 +556,11 @@ export default function PartnerRegister() {
             .then(res => {
                 if (res && res.status === 200) {
 
+                    const url = import.meta.env.VITE_SERVER_FE
+
                     const emailParam = {
                         title: 'Email Confirmation for Partner Register',
-                        // verifiedLink: 'http://localhost:5173/email/confirmation?p=' + res.data.body.encryptData,
-                        verifiedLink: 'https://unisew.onrender.com/email/confirmation?p=' + res.data.body.encryptData,
+                        verifiedLink: `${url}/email/confirmation?p=` + res.data.body.encryptData,
                         receiver: formData.email
                     }
 
