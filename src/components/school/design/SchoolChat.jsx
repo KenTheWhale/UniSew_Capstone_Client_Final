@@ -706,7 +706,7 @@ export function UseDesignChatMessages(roomId, userInfo) {
     return {chatMessages, unreadCount, sendMessage, markAsRead};
 }
 
-function DeliveryDetailModal({visible, onCancel, delivery}) {
+function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
     const [isDownloading, setIsDownloading] = useState(false);
     const [downloadProgress, setDownloadProgress] = useState(0);
 
@@ -1010,11 +1010,59 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                                     }}>
                                         <InfoCircleOutlined/>
                                     </Box>
-                                    <Typography.Text strong style={{fontSize: '16px'}}>Note</Typography.Text>
+                                    <Typography.Text strong style={{fontSize: '16px'}}>Delivery Note</Typography.Text>
                                 </Box>
                                 <Typography.Text style={{color: '#475569', fontSize: '14px', lineHeight: 1.6}}>
                                     {delivery.note}
                                 </Typography.Text>
+                            </Box>
+                        )}
+
+                        {revision?.note && (
+                            <Box sx={{
+                                p: 2.5,
+                                backgroundColor: 'white',
+                                borderRadius: 3,
+                                border: '1px solid #ff6b35',
+                                boxShadow: '0 2px 8px rgba(255, 107, 53, 0.1)',
+                                borderLeftWidth: '4px'
+                            }}>
+                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                    <Box sx={{
+                                        width: 32,
+                                        height: 32,
+                                        borderRadius: '50%',
+                                        background: 'linear-gradient(135deg, #ff6b35, #ff8c42)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: 'white',
+                                        fontSize: '14px'
+                                    }}>
+                                        <EditOutlined/>
+                                    </Box>
+                                    <Typography.Text strong style={{fontSize: '16px', color: '#ff6b35'}}>Revision Request</Typography.Text>
+                                </Box>
+                                <Typography.Text style={{color: '#475569', fontSize: '14px', lineHeight: 1.6}}>
+                                    {revision.note}
+                                </Typography.Text>
+                                {revision.requestDate && (
+                                    <Typography.Text style={{
+                                        color: '#94a3b8', 
+                                        fontSize: '12px', 
+                                        display: 'block', 
+                                        mt: 1,
+                                        fontStyle: 'italic'
+                                    }}>
+                                        Requested on: {new Date(revision.requestDate).toLocaleDateString('vi-VN', {
+                                            day: '2-digit',
+                                            month: '2-digit',
+                                            year: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                    </Typography.Text>
+                                )}
                             </Box>
                         )}
                     </Box>
@@ -2048,6 +2096,7 @@ export default function SchoolChat() {
     const [isRequestDetailPopupVisible, setIsRequestDetailPopupVisible] = useState(false);
     const [isDeliveryDetailModalVisible, setIsDeliveryDetailModalVisible] = useState(false);
     const [selectedDelivery, setSelectedDelivery] = useState(null);
+    const [selectedRevision, setSelectedRevision] = useState(null);
     const [loadingDeliveries, setLoadingDeliveries] = useState(false);
     const [revisionRequests, setRevisionRequests] = useState([]);
     const [loadingRevisionRequests, setLoadingRevisionRequests] = useState(false);
@@ -2299,14 +2348,16 @@ export default function SchoolChat() {
         }
     };
 
-    const handleOpenDeliveryDetailModal = (delivery) => {
+    const handleOpenDeliveryDetailModal = (delivery, revision = null) => {
         setSelectedDelivery(delivery);
+        setSelectedRevision(revision);
         setIsDeliveryDetailModalVisible(true);
     };
 
     const handleCloseDeliveryDetailModal = () => {
         setIsDeliveryDetailModalVisible(false);
         setSelectedDelivery(null);
+        setSelectedRevision(null);
     };
 
     const handleOpenConfirmFinalModal = (item) => {
@@ -3004,7 +3055,7 @@ export default function SchoolChat() {
                                                                     onClick={() => {
                                                                         const delivery = designDeliveries.find(d => d.id === revision.deliveryId);
                                                                         if (delivery) {
-                                                                            handleOpenDeliveryDetailModal(delivery);
+                                                                            handleOpenDeliveryDetailModal(delivery, revision);
                                                                         }
                                                                     }}
                                                                     style={{
@@ -3031,7 +3082,6 @@ export default function SchoolChat() {
                             </Box>
                         </Box>
 
-                        {}
                         {designDeliveries.length > 0 && (
                             <Paper
                                 elevation={0}
@@ -3226,6 +3276,7 @@ export default function SchoolChat() {
                 visible={isDeliveryDetailModalVisible}
                 onCancel={handleCloseDeliveryDetailModal}
                 delivery={selectedDelivery}
+                revision={selectedRevision}
             />
 
             <Modal
@@ -3390,22 +3441,34 @@ export default function SchoolChat() {
                                 borderTop: '2px solid #e2e8f0',
                                 background: 'linear-gradient(135deg, #f8fafc 0%, #e3f2fd 100%)'
                             }}>
-                                <Box sx={{display: 'flex', gap: 1, alignItems: 'center'}}>
+                                <Box sx={{display: 'flex', gap: 1, alignItems: 'flex-end'}}>
                                     <Box sx={{flex: 1, position: 'relative'}}>
-                                        <Input
-                                            size="large"
+                                        <TextArea
                                             placeholder={!userInfo ? 'Loading user info...' : 
                                                 requestData?.status === 'completed' ? 'Chat is read-only for completed requests' : 
                                                 'Type your message...'}
                                             value={newMessage}
                                             onChange={(e) => setNewMessage(e.target.value)}
-                                            onPressEnter={handleSendMessage}
+                                            onPressEnter={(e) => {
+                                                if (e.shiftKey) {
+                                                    // Allow shift+enter for new line
+                                                    return;
+                                                }
+                                                e.preventDefault();
+                                                handleSendMessage();
+                                            }}
                                             disabled={isViewOnly || !userInfo}
+                                            autoSize={{
+                                                minRows: 1,
+                                                maxRows: 4
+                                            }}
                                             style={{
-                                                borderRadius: '24px',
-                                                padding: '14px 18px',
+                                                borderRadius: '12px',
+                                                padding: '12px 16px',
                                                 border: '1px solid #e2e8f0',
-                                                height: 48
+                                                resize: 'none',
+                                                fontSize: '14px',
+                                                lineHeight: '1.5'
                                             }}
                                         />
                                         {showEmojiPicker && (
@@ -3413,7 +3476,7 @@ export default function SchoolChat() {
                                                 ref={emojiPickerRef}
                                                 sx={{
                                                     position: 'absolute',
-                                                    bottom: '46px',
+                                                    bottom: 'calc(100% + 8px)',
                                                     left: 0,
                                                     zIndex: 10,
                                                     borderRadius: '8px',

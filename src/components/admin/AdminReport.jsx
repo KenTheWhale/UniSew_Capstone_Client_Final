@@ -797,12 +797,12 @@ export default function AdminReport() {
                                                         src={selectedReport.sender.avatar}
                                                         sx={{width: 40, height: 40}}
                                                     >
-                                                        {selectedReport.sender.name.charAt(0)}
+                                                        {selectedReport.sender.name ? selectedReport.sender.name.charAt(0) : 'U'}
                                                     </Avatar>
                                                     <Box>
                                                         <Typography variant="body1"
                                                                     sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                                            {selectedReport.sender.name}
+                                                            {selectedReport.sender.name || 'No Name User'}
                                                         </Typography>
                                                         <Typography variant="body2" sx={{color: '#64748b'}}>
                                                             {selectedReport.sender.email}
@@ -832,12 +832,12 @@ export default function AdminReport() {
                                                         src={selectedReport.receiver.avatar}
                                                         sx={{width: 40, height: 40}}
                                                     >
-                                                        {selectedReport.receiver.name.charAt(0)}
+                                                        {selectedReport.receiver.name ? selectedReport.receiver.name.charAt(0) : 'U'}
                                                     </Avatar>
                                                     <Box>
                                                         <Typography variant="body1"
                                                                     sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                                            {selectedReport.receiver.name}
+                                                            {selectedReport.receiver.name || 'Unknown User'}
                                                         </Typography>
                                                         <Typography variant="body2" sx={{color: '#64748b'}}>
                                                             {selectedReport.receiver.email}

@@ -1121,6 +1121,86 @@ export default function SchoolCreateOrder() {
                                             </Box>
                                         );
                                     })()}
+
+                                    {/* Order Summary */}
+                                    <Box sx={{
+                                        mt: 4,
+                                        p: 3,
+                                        borderRadius: 3,
+                                        background: getTotalQuantity() >= 50 
+                                            ? 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(129, 199, 132, 0.15) 100%)'
+                                            : 'linear-gradient(135deg, rgba(244, 67, 54, 0.1) 0%, rgba(239, 83, 80, 0.15) 100%)',
+                                        border: getTotalQuantity() >= 50 
+                                            ? '1px solid #4caf50' 
+                                            : '1px solid #f44336'
+                                    }}>
+                                        <Typography variant="h6" sx={{
+                                            fontWeight: 600,
+                                            color: getTotalQuantity() >= 50 ? '#2e7d32' : '#d32f2f',
+                                            mb: 2,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 1
+                                        }}>
+                                            {getTotalQuantity() >= 50 ? '✅' : '⚠️'} Order Summary
+                                        </Typography>
+                                        <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1}}>
+                                            <Typography variant="body1" sx={{
+                                                color: '#374151',
+                                                fontWeight: 500
+                                            }}>
+                                                Total Uniforms Selected:
+                                            </Typography>
+                                            <Typography variant="h5" sx={{
+                                                color: getTotalQuantity() >= 50 ? '#2e7d32' : '#d32f2f',
+                                                fontWeight: 700
+                                            }}>
+                                                {getTotalQuantity()}
+                                            </Typography>
+                                        </Box>
+                                        <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2}}>
+                                            <Typography variant="body1" sx={{
+                                                color: '#374151',
+                                                fontWeight: 500
+                                            }}>
+                                                Minimum Required:
+                                            </Typography>
+                                            <Typography variant="body1" sx={{
+                                                color: '#64748b',
+                                                fontWeight: 600
+                                            }}>
+                                                50 uniforms
+                                            </Typography>
+                                        </Box>
+                                        
+                                        {getTotalQuantity() < 50 && (
+                                            <Typography variant="body2" sx={{
+                                                color: '#d32f2f',
+                                                fontWeight: 500,
+                                                fontSize: '14px',
+                                                p: 2,
+                                                borderRadius: 2,
+                                                backgroundColor: 'rgba(244, 67, 54, 0.1)',
+                                                border: '1px solid rgba(244, 67, 54, 0.2)'
+                                            }}>
+                                                You need to select {50 - getTotalQuantity()} more uniforms to meet the minimum order requirement.
+                                            </Typography>
+                                        )}
+                                        
+                                        {getTotalQuantity() >= 50 && (
+                                            <Typography variant="body2" sx={{
+                                                color: '#2e7d32',
+                                                fontWeight: 500,
+                                                fontSize: '14px',
+                                                p: 2,
+                                                borderRadius: 2,
+                                                backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                                                border: '1px solid rgba(76, 175, 80, 0.2)'
+                                            }}>
+                                                Great! Your order meets the minimum requirement. You can proceed to create the order.
+                                            </Typography>
+                                        )}
+                                    </Box>
                                 </CardContent>
                             </MuiCard>
                         )}

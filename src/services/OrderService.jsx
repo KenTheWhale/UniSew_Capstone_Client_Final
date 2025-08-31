@@ -20,8 +20,8 @@ export const createOrder = async (orderData) => {
     return response || null
 }
 
-export const cancelOrder = async (orderId) => {
-    const response = await axiosClient.put(`/order/cancellation?orderId=${orderId}`)
+export const cancelOrder = async (data) => {
+    const response = await axiosClient.put(`/order/cancellation`, data)
     return response || null
 }
 
@@ -98,4 +98,8 @@ export const confirmDeliveryOrder = async (orderId, receiverId, totalPrice, gate
     return response || null
 }
 
+export const confirmOrder = async (data) => {
+    const response = await axiosClient.put(`/order/confirm`, data)
+    return response || null
+}
 

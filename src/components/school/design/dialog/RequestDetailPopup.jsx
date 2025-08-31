@@ -166,6 +166,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                 <DialogContent sx={{padding: '20px', overflowY: 'auto'}}>
                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
 
+                        {/* Basic Information Card */}
                         <Card
                             size="small"
                             style={{
@@ -175,7 +176,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                             }}
                         >
                             <Row gutter={[16, 8]} align="middle">
-                                <Col span={8}>
+                                <Col span={12}>
                                     <Space direction="vertical" size="small">
                                         <Text style={{fontWeight: 600, fontSize: '16px', color: '#1e293b'}}>
                                             {request.name}
@@ -185,23 +186,43 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                         </Text>
                                     </Space>
                                 </Col>
-                                <Col span={8} style={{textAlign: 'center'}}>
+                                <Col span={12} style={{textAlign: 'center'}}>
                                     <Space direction="vertical" size="small">
-                                        <Text style={{fontSize: '12px', color: '#64748b'}}>
+                                        <Text style={{fontSize: '14px', color: '#2e7d32', fontWeight: 600}}>
                                             Design Request
                                         </Text>
-                                        <Text style={{fontSize: '10px', color: '#94a3b8'}}>
-                                            Basic Information
+                                        <Text style={{fontSize: '12px', color: '#64748b'}}>
+                                            {parseID(request.id, 'dr')}
                                         </Text>
-                                    </Space>
-                                </Col>
-                                <Col span={8} style={{display: 'flex', justifyContent: 'flex-end', textAlign: 'right'}}>
-                                    <Space direction="vertical" size="small">
-                                        {statusTag(request.status)}
-                                        <Box sx={{height: '12px'}}></Box>
                                     </Space>
                                 </Col>
                             </Row>
+                        </Card>
+
+                        {/* Status Section - Prominent Display */}
+                        <Card
+                            size="small"
+                            style={{
+                                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(37, 99, 235, 0.12) 100%)',
+                                border: '2px solid rgba(59, 130, 246, 0.2)',
+                                borderRadius: 12,
+                                marginBottom: '16px',
+                                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.1)'
+                            }}
+                        >
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                p: 2
+                            }}>
+                                <Box sx={{
+                                    transform: 'scale(1.5)',
+                                    filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.15))'
+                                }}>
+                                    {statusTag(request.status)}
+                                </Box>
+                            </Box>
                         </Card>
 
 

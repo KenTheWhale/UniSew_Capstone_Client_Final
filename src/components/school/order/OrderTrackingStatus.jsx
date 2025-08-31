@@ -35,7 +35,7 @@ import {
     TrendingUp as TrendingUpIcon
 } from '@mui/icons-material';
 import {useNavigate} from 'react-router-dom';
-import {getOrderDetailBySchool} from '../../../services/OrderService';
+import {getOrderDetailBySchool, confirmOrder} from '../../../services/OrderService';
 import {getPaymentUrl} from '../../../services/PaymentService';
 import {calculateFee, getShippingInfo} from '../../../services/ShippingService';
 import {parseID} from '../../../utils/ParseIDUtil';
@@ -174,6 +174,10 @@ export default function OrderTrackingStatus() {
     const [shippingInfo, setShippingInfo] = useState(null);
     const [shippingInfoLoading, setShippingInfoLoading] = useState(false);
     const [shippingInfoError, setShippingInfoError] = useState(null);
+
+    // Confirm order states
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [confirmingOrder, setConfirmingOrder] = useState(false);
 
     const orderId = sessionStorage.getItem('trackingOrderId');
 
@@ -364,6 +368,52 @@ export default function OrderTrackingStatus() {
 
     const handleClosePaymentDialog = () => {
         setPaymentDialogOpen(false);
+    };
+
+    // Handle confirm order dialog
+    const handleOpenConfirmDialog = () => {
+        setConfirmDialogOpen(true);
+    };
+
+    const handleCloseConfirmDialog = () => {
+        setConfirmDialogOpen(false);
+    };
+
+    // Handle confirm order process
+    const handleConfirmOrder = async () => {
+        try {
+            setConfirmingOrder(true);
+
+            const data = {
+                orderId: orderDetail.id
+            };
+
+            const response = await confirmOrder(data);
+
+            if (response && response.status === 200) {
+                enqueueSnackbar('Order confirmed successfully! Thank you for your confirmation.', {
+                    variant: 'success',
+                    autoHideDuration: 4000
+                });
+
+                // Refresh order detail to get updated status
+                await fetchOrderDetail(false);
+                setConfirmDialogOpen(false);
+            } else {
+                enqueueSnackbar('Failed to confirm order. Please try again.', {
+                    variant: 'error',
+                    autoHideDuration: 4000
+                });
+            }
+        } catch (error) {
+            console.error('Error confirming order:', error);
+            enqueueSnackbar('Error confirming order. Please try again.', {
+                variant: 'error',
+                autoHideDuration: 4000
+            });
+        } finally {
+            setConfirmingOrder(false);
+        }
     };
 
     // Handle payment process
@@ -1027,13 +1077,16 @@ export default function OrderTrackingStatus() {
                                     </Typography>
                                 </Box>
 
-                                {/* Process to Payment Button - Show when Delivering phase needs payment */}
-                                {milestones.some(m => m.isPaymentRequired) && (
-                                    <Box sx={{
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        mt: 3
-                                    }}>
+                                {/* Action Buttons Section */}
+                                <Box sx={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    gap: 2,
+                                    mt: 3,
+                                    flexWrap: 'wrap'
+                                }}>
+                                    {/* Process to Payment Button - Show when Delivering phase needs payment */}
+                                    {milestones.some(m => m.isPaymentRequired) && (
                                         <Button
                                             variant="contained"
                                             startIcon={<MoneyIcon/>}
@@ -1056,8 +1109,34 @@ export default function OrderTrackingStatus() {
                                         >
                                             Process to Payment
                                         </Button>
-                                    </Box>
-                                )}
+                                    )}
+
+                                    {/* Confirm Receipt Button - Show when order is delivering and has pickup date */}
+                                    {orderDetail.status === 'delivering' && shippingInfo?.pickup_time && (
+                                        <Button
+                                            variant="contained"
+                                            startIcon={<CheckCircleIcon/>}
+                                            onClick={handleOpenConfirmDialog}
+                                            sx={{
+                                                background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                                                color: 'white',
+                                                fontWeight: 600,
+                                                px: 4,
+                                                py: 1.5,
+                                                borderRadius: 2,
+                                                boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)',
+                                                '&:hover': {
+                                                    background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+                                                    boxShadow: '0 8px 25px rgba(34, 197, 94, 0.4)',
+                                                    transform: 'translateY(-2px)'
+                                                },
+                                                transition: 'all 0.3s ease'
+                                            }}
+                                        >
+                                            Confirm Receipt
+                                        </Button>
+                                    )}
+                                </Box>
                             </Box>
                         )}
                     </CardContent>
@@ -3996,6 +4075,161 @@ export default function OrderTrackingStatus() {
                             </>
                         ) : (
                             'Proceed to Payment'
+                        )}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Confirm Order Receipt Dialog */}
+            <Dialog
+                open={confirmDialogOpen}
+                onClose={handleCloseConfirmDialog}
+                maxWidth="sm"
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        borderRadius: 3,
+                        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
+                        overflow: 'hidden'
+                    }
+                }}
+            >
+                <DialogTitle sx={{
+                    background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    p: 3
+                }}>
+                    <Box sx={{
+                        p: 1,
+                        borderRadius: 2,
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <CheckCircleIcon sx={{fontSize: 20}}/>
+                    </Box>
+                    Confirm Order Receipt
+                </DialogTitle>
+
+                <DialogContent sx={{p: 4}}>
+                    <Box sx={{textAlign: 'center', mb: 4}}>
+                        <Typography variant="h6" sx={{fontWeight: 700, color: '#1e293b', mb: 2}}>
+                            Have you received your order?
+                        </Typography>
+                        <Typography variant="body1" sx={{color: '#64748b', lineHeight: 1.6, mb: 3}}>
+                            Please confirm that you have received your order. This action will mark the order as completed.
+                        </Typography>
+                        
+                        <Box sx={{
+                            p: 3,
+                            borderRadius: 3,
+                            background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(22, 163, 74, 0.05) 100%)',
+                            border: '1px solid rgba(34, 197, 94, 0.15)',
+                            mb: 3
+                        }}>
+                            <Typography variant="subtitle1" sx={{
+                                fontWeight: 600,
+                                color: '#16a34a',
+                                mb: 1
+                            }}>
+                                Order: {parseID(orderDetail?.id, 'ord')}
+                            </Typography>
+                            {shippingInfo?.pickup_time && (
+                                <Typography variant="body2" sx={{color: '#64748b'}}>
+                                    Picked up on: {formatDate(shippingInfo.pickup_time)}
+                                </Typography>
+                            )}
+                        </Box>
+
+                        <Box sx={{
+                            p: 3,
+                            borderRadius: 3,
+                            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(217, 119, 6, 0.05) 100%)',
+                            border: '1px solid rgba(245, 158, 11, 0.15)',
+                            borderLeft: '4px solid #f59e0b'
+                        }}>
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: 2
+                            }}>
+                                <Box sx={{
+                                    width: 32,
+                                    height: 32,
+                                    borderRadius: '50%',
+                                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    flexShrink: 0,
+                                    mt: 0.5,
+                                    boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)'
+                                }}>
+                                    <InfoIcon sx={{color: 'white', fontSize: 18}}/>
+                                </Box>
+                                <Box sx={{flex: 1}}>
+                                    <Typography variant="subtitle2" sx={{
+                                        fontWeight: 600,
+                                        color: '#92400e',
+                                        fontSize: '1rem',
+                                        mb: 1
+                                    }}>
+                                        Important Notice
+                                    </Typography>
+                                    <Typography variant="body2" sx={{
+                                        color: '#451a03',
+                                        lineHeight: 1.6,
+                                        fontSize: '0.9rem'
+                                    }}>
+                                        Once you confirm receipt, this order will be marked as completed and you won't be able to report any issues. Please make sure you have received and inspected your order before confirming.
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        </Box>
+                    </Box>
+                </DialogContent>
+
+                <DialogActions sx={{p: 3, pt: 0}}>
+                    <Button
+                        onClick={handleCloseConfirmDialog}
+                        sx={{
+                            color: '#64748b',
+                            borderColor: '#d1d5db',
+                            '&:hover': {
+                                borderColor: '#9ca3af',
+                                backgroundColor: '#f9fafb'
+                            }
+                        }}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="contained"
+                        onClick={handleConfirmOrder}
+                        disabled={confirmingOrder}
+                        sx={{
+                            background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                            color: 'white',
+                            fontWeight: 600,
+                            '&:hover': {
+                                background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)'
+                            },
+                            '&:disabled': {
+                                background: 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)'
+                            }
+                        }}
+                    >
+                        {confirmingOrder ? (
+                            <>
+                                <CircularProgress size={16} sx={{color: 'white', mr: 1}}/>
+                                Confirming...
+                            </>
+                        ) : (
+                            'Yes, I Received My Order'
                         )}
                     </Button>
                 </DialogActions>

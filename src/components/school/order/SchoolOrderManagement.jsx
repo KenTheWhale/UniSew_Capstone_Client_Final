@@ -175,7 +175,11 @@ export default function SchoolOrderList() {
         try {
             setCancellingOrderId(orderId);
 
-            const response = await cancelOrder(orderId);
+            const data = {
+                orderId: orderId
+            };
+
+            const response = await cancelOrder(data);
 
             if (response && response.status === 200) {
                 enqueueSnackbar('Order cancelled successfully!', {
