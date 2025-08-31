@@ -93,18 +93,156 @@ const downloadDesignAsZip = async (delivery) => {
     try {
         const zip = new JSZip();
 
-        // Helper function to fetch image and convert to blob
+        // Helper function to validate image URL
+        const validateImageUrl = (imageUrl) => {
+            if (!imageUrl || typeof imageUrl !== 'string') {
+                return { valid: false, reason: 'Invalid URL format' };
+            }
+            
+            try {
+                const url = new URL(imageUrl);
+                if (!url.protocol.startsWith('http')) {
+                    return { valid: false, reason: 'Invalid protocol' };
+                }
+                return { valid: true, url: url.toString() };
+            } catch (error) {
+                return { valid: false, reason: 'Invalid URL structure' };
+            }
+        };
+
+        // Helper function to fetch image and convert to blob with better error handling
         const fetchImageAsBlob = async (imageUrl) => {
             try {
-                const response = await fetch(imageUrl);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                // Validate URL first
+                const validation = validateImageUrl(imageUrl);
+                if (!validation.valid) {
+                    console.warn('Invalid image URL:', imageUrl, 'Reason:', validation.reason);
+                    return null;
+                }
+
+                const validUrl = validation.url;
+                console.log('Fetching image from:', validUrl);
+
+                // Add timestamp to prevent caching issues
+                const urlWithTimestamp = validUrl.includes('?') 
+                    ? `${validUrl}&t=${Date.now()}` 
+                    : `${validUrl}?t=${Date.now()}`;
+
+                // Try different fetch strategies
+                let response;
+                let fetchError;
+
+                // Strategy 1: Standard fetch with CORS
+                try {
+                    response = await fetch(urlWithTimestamp, {
+                        method: 'GET',
+                        mode: 'cors',
+                        credentials: 'include',
+                        headers: {
+                            'Accept': 'image/*',
+                            'Cache-Control': 'no-cache'
+                        }
+                    });
+                } catch (error) {
+                    fetchError = error;
+                    console.log('Standard fetch failed, trying alternative methods...');
+                }
+
+                // Strategy 2: Try without credentials if first attempt failed
+                if (!response && fetchError) {
+                    try {
+                        response = await fetch(urlWithTimestamp, {
+                            method: 'GET',
+                            mode: 'cors',
+                            credentials: 'omit',
+                            headers: {
+                                'Accept': 'image/*',
+                                'Cache-Control': 'no-cache'
+                            }
+                        });
+                    } catch (error) {
+                        console.log('Fetch without credentials also failed, trying no-cors...');
+                    }
+                }
+
+                // Strategy 3: Try no-cors mode as last resort
+                if (!response) {
+                    try {
+                        response = await fetch(validUrl, {
+                            method: 'GET',
+                            mode: 'no-cors'
+                        });
+                        
+                        if (response.type === 'opaque') {
+                            console.warn('No-cors response received, cannot access image content');
+                            return null;
+                        }
+                    } catch (error) {
+                        console.error('All fetch strategies failed:', error);
+                        return null;
+                    }
+                }
+
+                if (!response) {
+                    console.error('All fetch strategies failed for URL:', validUrl);
+                    return null;
+                }
+
+                if (!response.ok) {
+                    console.error(`HTTP error! status: ${response.status} for URL: ${validUrl}`);
+                    return null;
+                }
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.startsWith('image/')) {
+                    console.warn(`Invalid content type: ${contentType} for URL: ${validUrl}`);
+                    return null;
+                }
+
                 const blob = await response.blob();
+                if (blob.size === 0) {
+                    console.warn(`Empty blob received for URL: ${validUrl}`);
+                    return null;
+                }
+
+                console.log(`Successfully fetched image: ${validUrl}, size: ${blob.size} bytes, type: ${contentType}`);
                 return blob;
             } catch (error) {
-                console.error('Error fetching image:', error);
+                console.error('Error fetching image:', error, 'URL:', imageUrl);
                 return null;
             }
         };
+
+        // Helper function to add image to zip with unique naming
+        const addImageToZip = async (folder, imageUrl, fileName, index = 0) => {
+            if (!imageUrl) return false;
+            
+            const blob = await fetchImageAsBlob(imageUrl);
+            if (blob) {
+                // Create unique filename to avoid conflicts
+                const uniqueFileName = index > 0 ? `${fileName}_${index + 1}.png` : `${fileName}.png`;
+                folder.file(uniqueFileName, blob);
+                console.log(`Added image to ZIP: ${uniqueFileName}`);
+                return true;
+            } else {
+                console.warn(`Failed to fetch image for: ${fileName}`);
+                return false;
+            }
+        };
+
+        // Log delivery information for debugging
+        console.log('Processing delivery:', {
+            name: delivery.name,
+            id: delivery.id,
+            totalItems: delivery.deliveryItems?.length || 0,
+            items: delivery.deliveryItems?.map(item => ({
+                frontImageUrl: item.frontImageUrl,
+                backImageUrl: item.backImageUrl,
+                type: item.designItem?.type,
+                gender: item.designItem?.gender,
+                category: item.designItem?.category
+            }))
+        });
 
         // Group items by gender and category
         const boyItems = delivery.deliveryItems?.filter(item =>
@@ -113,6 +251,13 @@ const downloadDesignAsZip = async (delivery) => {
         const girlItems = delivery.deliveryItems?.filter(item =>
             item.designItem?.gender?.toLowerCase() === 'girl'
         ) || [];
+        const otherItems = delivery.deliveryItems?.filter(item => {
+            const gender = item.designItem?.gender?.toLowerCase();
+            return gender !== 'boy' && gender !== 'girl';
+        }) || [];
+
+        let totalImagesAdded = 0;
+        let totalImagesAttempted = 0;
 
         // Process Boy uniforms
         if (boyItems.length > 0) {
@@ -150,18 +295,9 @@ const downloadDesignAsZip = async (delivery) => {
                     const shirtFolder = regularFolder.folder("shirt");
                     for (let i = 0; i < shirtItems.length; i++) {
                         const item = shirtItems[i];
-                        if (item.frontImageUrl) {
-                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
-                            if (frontBlob) {
-                                shirtFolder.file(`front_design.png`, frontBlob);
-                            }
-                        }
-                        if (item.backImageUrl) {
-                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
-                            if (backBlob) {
-                                shirtFolder.file(`back_design.png`, backBlob);
-                            }
-                        }
+                        totalImagesAttempted += 2; // front + back
+                        if (await addImageToZip(shirtFolder, item.frontImageUrl, 'front_design', i)) totalImagesAdded++;
+                        if (await addImageToZip(shirtFolder, item.backImageUrl, 'back_design', i)) totalImagesAdded++;
                     }
                 }
 
@@ -170,18 +306,9 @@ const downloadDesignAsZip = async (delivery) => {
                     const pantsFolder = regularFolder.folder("pants");
                     for (let i = 0; i < pantsItems.length; i++) {
                         const item = pantsItems[i];
-                        if (item.frontImageUrl) {
-                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
-                            if (frontBlob) {
-                                pantsFolder.file(`front_design.png`, frontBlob);
-                            }
-                        }
-                        if (item.backImageUrl) {
-                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
-                            if (backBlob) {
-                                pantsFolder.file(`back_design.png`, backBlob);
-                            }
-                        }
+                        totalImagesAttempted += 2; // front + back
+                        if (await addImageToZip(pantsFolder, item.frontImageUrl, 'front_design', i)) totalImagesAdded++;
+                        if (await addImageToZip(pantsFolder, item.backImageUrl, 'back_design', i)) totalImagesAdded++;
                     }
                 }
 
@@ -190,18 +317,9 @@ const downloadDesignAsZip = async (delivery) => {
                     const skirtFolder = regularFolder.folder("skirt");
                     for (let i = 0; i < skirtItems.length; i++) {
                         const item = skirtItems[i];
-                        if (item.frontImageUrl) {
-                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
-                            if (frontBlob) {
-                                skirtFolder.file(`front_design.png`, frontBlob);
-                            }
-                        }
-                        if (item.backImageUrl) {
-                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
-                            if (backBlob) {
-                                skirtFolder.file(`back_design.png`, backBlob);
-                            }
-                        }
+                        totalImagesAttempted += 2; // front + back
+                        if (await addImageToZip(skirtFolder, item.frontImageUrl, 'front_design', i)) totalImagesAdded++;
+                        if (await addImageToZip(skirtFolder, item.backImageUrl, 'back_design', i)) totalImagesAdded++;
                     }
                 }
 
@@ -210,18 +328,9 @@ const downloadDesignAsZip = async (delivery) => {
                     const otherFolder = regularFolder.folder("other");
                     for (let i = 0; i < otherItems.length; i++) {
                         const item = otherItems[i];
-                        if (item.frontImageUrl) {
-                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
-                            if (frontBlob) {
-                                otherFolder.file(`front_design.png`, frontBlob);
-                            }
-                        }
-                        if (item.backImageUrl) {
-                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
-                            if (backBlob) {
-                                otherFolder.file(`back_design.png`, backBlob);
-                            }
-                        }
+                        totalImagesAttempted += 2; // front + back
+                        if (await addImageToZip(otherFolder, item.frontImageUrl, 'front_design', i)) totalImagesAdded++;
+                        if (await addImageToZip(otherFolder, item.backImageUrl, 'back_design', i)) totalImagesAdded++;
                     }
                 }
             }
@@ -250,18 +359,9 @@ const downloadDesignAsZip = async (delivery) => {
                     const shirtFolder = peFolder.folder("shirt");
                     for (let i = 0; i < shirtItems.length; i++) {
                         const item = shirtItems[i];
-                        if (item.frontImageUrl) {
-                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
-                            if (frontBlob) {
-                                shirtFolder.file(`front_design.png`, frontBlob);
-                            }
-                        }
-                        if (item.backImageUrl) {
-                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
-                            if (backBlob) {
-                                shirtFolder.file(`back_design.png`, backBlob);
-                            }
-                        }
+                        totalImagesAttempted += 2; // front + back
+                        if (await addImageToZip(shirtFolder, item.frontImageUrl, 'front_design', i)) totalImagesAdded++;
+                        if (await addImageToZip(shirtFolder, item.backImageUrl, 'back_design', i)) totalImagesAdded++;
                     }
                 }
 
@@ -270,18 +370,9 @@ const downloadDesignAsZip = async (delivery) => {
                     const pantsFolder = peFolder.folder("pants");
                     for (let i = 0; i < pantsItems.length; i++) {
                         const item = pantsItems[i];
-                        if (item.frontImageUrl) {
-                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
-                            if (frontBlob) {
-                                pantsFolder.file(`front_design.png`, frontBlob);
-                            }
-                        }
-                        if (item.backImageUrl) {
-                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
-                            if (backBlob) {
-                                pantsFolder.file(`back_design.png`, backBlob);
-                            }
-                        }
+                        totalImagesAttempted += 2; // front + back
+                        if (await addImageToZip(pantsFolder, item.frontImageUrl, 'front_design', i)) totalImagesAdded++;
+                        if (await addImageToZip(pantsFolder, item.backImageUrl, 'back_design', i)) totalImagesAdded++;
                     }
                 }
 
@@ -290,18 +381,9 @@ const downloadDesignAsZip = async (delivery) => {
                     const skirtFolder = peFolder.folder("skirt");
                     for (let i = 0; i < skirtItems.length; i++) {
                         const item = skirtItems[i];
-                        if (item.frontImageUrl) {
-                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
-                            if (frontBlob) {
-                                skirtFolder.file(`front_design.png`, frontBlob);
-                            }
-                        }
-                        if (item.backImageUrl) {
-                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
-                            if (backBlob) {
-                                skirtFolder.file(`back_design.png`, backBlob);
-                            }
-                        }
+                        totalImagesAttempted += 2; // front + back
+                        if (await addImageToZip(skirtFolder, item.frontImageUrl, 'front_design', i)) totalImagesAdded++;
+                        if (await addImageToZip(skirtFolder, item.backImageUrl, 'back_design', i)) totalImagesAdded++;
                     }
                 }
 
@@ -310,18 +392,9 @@ const downloadDesignAsZip = async (delivery) => {
                     const otherFolder = peFolder.folder("other");
                     for (let i = 0; i < otherItems.length; i++) {
                         const item = otherItems[i];
-                        if (item.frontImageUrl) {
-                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
-                            if (frontBlob) {
-                                otherFolder.file(`front_design.png`, frontBlob);
-                            }
-                        }
-                        if (item.backImageUrl) {
-                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
-                            if (backBlob) {
-                                otherFolder.file(`back_design.png`, backBlob);
-                            }
-                        }
+                        totalImagesAttempted += 2; // front + back
+                        if (await addImageToZip(otherFolder, item.frontImageUrl, 'front_design', i)) totalImagesAdded++;
+                        if (await addImageToZip(otherFolder, item.backImageUrl, 'back_design', i)) totalImagesAdded++;
                     }
                 }
             }
@@ -363,18 +436,9 @@ const downloadDesignAsZip = async (delivery) => {
                     const shirtFolder = regularFolder.folder("shirt");
                     for (let i = 0; i < shirtItems.length; i++) {
                         const item = shirtItems[i];
-                        if (item.frontImageUrl) {
-                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
-                            if (frontBlob) {
-                                shirtFolder.file(`front_design.png`, frontBlob);
-                            }
-                        }
-                        if (item.backImageUrl) {
-                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
-                            if (backBlob) {
-                                shirtFolder.file(`back_design.png`, backBlob);
-                            }
-                        }
+                        totalImagesAttempted += 2; // front + back
+                        if (await addImageToZip(shirtFolder, item.frontImageUrl, 'front_design', i)) totalImagesAdded++;
+                        if (await addImageToZip(shirtFolder, item.backImageUrl, 'back_design', i)) totalImagesAdded++;
                     }
                 }
 
@@ -383,18 +447,9 @@ const downloadDesignAsZip = async (delivery) => {
                     const pantsFolder = regularFolder.folder("pants");
                     for (let i = 0; i < pantsItems.length; i++) {
                         const item = pantsItems[i];
-                        if (item.frontImageUrl) {
-                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
-                            if (frontBlob) {
-                                pantsFolder.file(`front_design.png`, frontBlob);
-                            }
-                        }
-                        if (item.backImageUrl) {
-                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
-                            if (backBlob) {
-                                pantsFolder.file(`back_design.png`, backBlob);
-                            }
-                        }
+                        totalImagesAttempted += 2; // front + back
+                        if (await addImageToZip(pantsFolder, item.frontImageUrl, 'front_design', i)) totalImagesAdded++;
+                        if (await addImageToZip(pantsFolder, item.backImageUrl, 'back_design', i)) totalImagesAdded++;
                     }
                 }
 
@@ -403,18 +458,9 @@ const downloadDesignAsZip = async (delivery) => {
                     const skirtFolder = regularFolder.folder("skirt");
                     for (let i = 0; i < skirtItems.length; i++) {
                         const item = skirtItems[i];
-                        if (item.frontImageUrl) {
-                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
-                            if (frontBlob) {
-                                skirtFolder.file(`front_design.png`, frontBlob);
-                            }
-                        }
-                        if (item.backImageUrl) {
-                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
-                            if (backBlob) {
-                                skirtFolder.file(`back_design.png`, backBlob);
-                            }
-                        }
+                        totalImagesAttempted += 2; // front + back
+                        if (await addImageToZip(skirtFolder, item.frontImageUrl, 'front_design', i)) totalImagesAdded++;
+                        if (await addImageToZip(skirtFolder, item.backImageUrl, 'back_design', i)) totalImagesAdded++;
                     }
                 }
 
@@ -423,18 +469,9 @@ const downloadDesignAsZip = async (delivery) => {
                     const otherFolder = regularFolder.folder("other");
                     for (let i = 0; i < otherItems.length; i++) {
                         const item = otherItems[i];
-                        if (item.frontImageUrl) {
-                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
-                            if (frontBlob) {
-                                otherFolder.file(`front_design.png`, frontBlob);
-                            }
-                        }
-                        if (item.backImageUrl) {
-                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
-                            if (backBlob) {
-                                otherFolder.file(`back_design.png`, backBlob);
-                            }
-                        }
+                        totalImagesAttempted += 2; // front + back
+                        if (await addImageToZip(otherFolder, item.frontImageUrl, 'front_design', i)) totalImagesAdded++;
+                        if (await addImageToZip(otherFolder, item.backImageUrl, 'back_design', i)) totalImagesAdded++;
                     }
                 }
             }
@@ -463,18 +500,9 @@ const downloadDesignAsZip = async (delivery) => {
                     const shirtFolder = peFolder.folder("shirt");
                     for (let i = 0; i < shirtItems.length; i++) {
                         const item = shirtItems[i];
-                        if (item.frontImageUrl) {
-                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
-                            if (frontBlob) {
-                                shirtFolder.file(`front_design_${i + 1}.png`, frontBlob);
-                            }
-                        }
-                        if (item.backImageUrl) {
-                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
-                            if (backBlob) {
-                                shirtFolder.file(`back_design_${i + 1}.png`, backBlob);
-                            }
-                        }
+                        totalImagesAttempted += 2; // front + back
+                        if (await addImageToZip(shirtFolder, item.frontImageUrl, 'front_design', i)) totalImagesAdded++;
+                        if (await addImageToZip(shirtFolder, item.backImageUrl, 'back_design', i)) totalImagesAdded++;
                     }
                 }
 
@@ -483,18 +511,9 @@ const downloadDesignAsZip = async (delivery) => {
                     const pantsFolder = peFolder.folder("pants");
                     for (let i = 0; i < pantsItems.length; i++) {
                         const item = pantsItems[i];
-                        if (item.frontImageUrl) {
-                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
-                            if (frontBlob) {
-                                pantsFolder.file(`front_design_${i + 1}.png`, frontBlob);
-                            }
-                        }
-                        if (item.backImageUrl) {
-                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
-                            if (backBlob) {
-                                pantsFolder.file(`back_design_${i + 1}.png`, backBlob);
-                            }
-                        }
+                        totalImagesAttempted += 2; // front + back
+                        if (await addImageToZip(pantsFolder, item.frontImageUrl, 'front_design', i)) totalImagesAdded++;
+                        if (await addImageToZip(pantsFolder, item.backImageUrl, 'back_design', i)) totalImagesAdded++;
                     }
                 }
 
@@ -503,18 +522,9 @@ const downloadDesignAsZip = async (delivery) => {
                     const skirtFolder = peFolder.folder("skirt");
                     for (let i = 0; i < skirtItems.length; i++) {
                         const item = skirtItems[i];
-                        if (item.frontImageUrl) {
-                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
-                            if (frontBlob) {
-                                skirtFolder.file(`front_design_${i + 1}.png`, frontBlob);
-                            }
-                        }
-                        if (item.backImageUrl) {
-                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
-                            if (backBlob) {
-                                skirtFolder.file(`back_design_${i + 1}.png`, backBlob);
-                            }
-                        }
+                        totalImagesAttempted += 2; // front + back
+                        if (await addImageToZip(skirtFolder, item.frontImageUrl, 'front_design', i)) totalImagesAdded++;
+                        if (await addImageToZip(skirtFolder, item.backImageUrl, 'back_design', i)) totalImagesAdded++;
                     }
                 }
 
@@ -523,22 +533,40 @@ const downloadDesignAsZip = async (delivery) => {
                     const otherFolder = peFolder.folder("other");
                     for (let i = 0; i < otherItems.length; i++) {
                         const item = otherItems[i];
-                        if (item.frontImageUrl) {
-                            const frontBlob = await fetchImageAsBlob(item.frontImageUrl);
-                            if (frontBlob) {
-                                otherFolder.file(`front_design_${i + 1}.png`, frontBlob);
-                            }
-                        }
-                        if (item.backImageUrl) {
-                            const backBlob = await fetchImageAsBlob(item.backImageUrl);
-                            if (backBlob) {
-                                otherFolder.file(`back_design_${i + 1}.png`, backBlob);
-                            }
-                        }
+                        totalImagesAttempted += 2; // front + back
+                        if (await addImageToZip(otherFolder, item.frontImageUrl, 'front_design', i)) totalImagesAdded++;
+                        if (await addImageToZip(otherFolder, item.backImageUrl, 'back_design', i)) totalImagesAdded++;
                     }
                 }
             }
         }
+
+        // Process Other items
+        if (otherItems.length > 0) {
+            const otherFolder = zip.folder("other");
+            
+            for (let i = 0; i < otherItems.length; i++) {
+                const item = otherItems[i];
+                const category = item.designItem?.category?.toLowerCase() || 'unknown';
+                const type = item.designItem?.type?.toLowerCase() || 'unknown';
+                
+                const categoryFolder = otherFolder.folder(category);
+                const typeFolder = categoryFolder.folder(type);
+                
+                totalImagesAttempted += 2; // front + back
+                if (await addImageToZip(typeFolder, item.frontImageUrl, 'front_design', i)) totalImagesAdded++;
+                if (await addImageToZip(typeFolder, item.backImageUrl, 'back_design', i)) totalImagesAdded++;
+            }
+        }
+
+        // Check if any images were added
+        if (totalImagesAdded === 0) {
+            console.warn('No images were successfully added to the ZIP file');
+            console.log(`Attempted to download ${totalImagesAttempted} images, but none succeeded`);
+            throw new Error(`No images could be downloaded. Attempted ${totalImagesAttempted} images but all failed. Please check the image URLs and server configuration.`);
+        }
+
+        console.log(`Successfully added ${totalImagesAdded}/${totalImagesAttempted} images to ZIP file`);
 
         // Generate and download ZIP file
         const content = await zip.generateAsync({type: "blob"});
@@ -548,7 +576,7 @@ const downloadDesignAsZip = async (delivery) => {
         return true;
     } catch (error) {
         console.error('Error creating ZIP file:', error);
-        return false;
+        throw error;
     }
 };
 
@@ -671,7 +699,77 @@ export function UseDesignChatMessages(roomId, userInfo) {
 }
 
 function DeliveryDetailModal({visible, onCancel, delivery}) {
+    const [isDownloading, setIsDownloading] = useState(false);
+    const [downloadProgress, setDownloadProgress] = useState(0);
+
     if (!delivery) return null;
+
+    const handleDownload = async () => {
+        if (isDownloading) return;
+        
+        setIsDownloading(true);
+        setDownloadProgress(0);
+        
+        try {
+            console.log('Starting download for delivery:', delivery.name);
+            console.log('Delivery items:', delivery.deliveryItems);
+            
+            // Log image URLs for debugging
+            if (delivery.deliveryItems) {
+                delivery.deliveryItems.forEach((item, index) => {
+                    console.log(`Item ${index + 1}:`, {
+                        frontImageUrl: item.frontImageUrl,
+                        backImageUrl: item.backImageUrl,
+                        type: item.designItem?.type,
+                        gender: item.designItem?.gender,
+                        category: item.designItem?.category
+                    });
+                });
+            }
+            
+            // Simulate progress updates
+            const progressInterval = setInterval(() => {
+                setDownloadProgress(prev => {
+                    if (prev >= 90) return prev;
+                    return prev + Math.random() * 10;
+                });
+            }, 200);
+            
+            await downloadDesignAsZip(delivery);
+            
+            clearInterval(progressInterval);
+            setDownloadProgress(100);
+            console.log('Download completed successfully');
+            
+            // Reset after success
+            setTimeout(() => {
+                setIsDownloading(false);
+                setDownloadProgress(0);
+            }, 1000);
+            
+        } catch (error) {
+            console.error('Download error:', error);
+            
+            // Show user-friendly error message
+            let errorMessage = 'Download failed. ';
+            if (error.message.includes('No images could be downloaded')) {
+                errorMessage += 'No images could be downloaded. Please check if the image URLs are accessible.';
+            } else if (error.message.includes('CORS')) {
+                errorMessage += 'CORS error occurred. Please check server configuration.';
+            } else if (error.message.includes('fetch')) {
+                errorMessage += 'Network error occurred. Please check your internet connection.';
+            } else {
+                errorMessage += error.message || 'Unknown error occurred.';
+            }
+            
+            // You can use your notification system here
+            alert(errorMessage);
+            
+            // Reset on error
+            setIsDownloading(false);
+            setDownloadProgress(0);
+        }
+    };
 
     return (
         <Dialog
@@ -690,7 +788,7 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                 }
             }}
         >
-            {}
+            {/* Header */}
             <Box sx={{
                 background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
                 color: 'white',
@@ -734,13 +832,13 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                 </Box>
             </Box>
 
-            {}
+            {/* Content */}
             <Box sx={{
                 display: 'flex',
                 height: 'calc(90vh - 120px)',
                 overflow: 'hidden'
             }}>
-                {}
+                {/* Left Sidebar */}
                 <Box sx={{
                     width: '35%',
                     p: 3,
@@ -815,35 +913,70 @@ function DeliveryDetailModal({visible, onCancel, delivery}) {
                             }}>
                                 <Button
                                     type="primary"
-                                    icon={<DownloadOutlined/>}
-                                    onClick={async () => {
-                                        try {
-                                            await downloadDesignAsZip(delivery);
-                                        } catch (error) {
-                                            console.error('Download error:', error);
-                                        }
-                                    }}
+                                    icon={isDownloading ? <SyncOutlined spin/> : <DownloadOutlined/>}
+                                    onClick={handleDownload}
+                                    disabled={isDownloading}
                                     style={{
                                         width: '100%',
                                         height: '36px',
                                         borderRadius: '6px',
-                                        background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
+                                        background: isDownloading 
+                                            ? 'linear-gradient(135deg, #64748b, #94a3b8)' 
+                                            : 'linear-gradient(135deg, #2e7d32, #4caf50)',
                                         border: 'none',
                                         fontWeight: 600,
                                         boxShadow: '0 2px 8px rgba(46, 125, 50, 0.2)',
                                         transition: 'all 0.3s ease'
                                     }}
                                     onMouseEnter={(e) => {
-                                        e.target.style.transform = 'translateY(-1px)';
-                                        e.target.style.boxShadow = '0 4px 12px rgba(46, 125, 50, 0.3)';
+                                        if (!isDownloading) {
+                                            e.target.style.transform = 'translateY(-1px)';
+                                            e.target.style.boxShadow = '0 4px 12px rgba(46, 125, 50, 0.3)';
+                                        }
                                     }}
                                     onMouseLeave={(e) => {
-                                        e.target.style.transform = 'translateY(0)';
-                                        e.target.style.boxShadow = '0 2px 8px rgba(46, 125, 50, 0.2)';
+                                        if (!isDownloading) {
+                                            e.target.style.transform = 'translateY(0)';
+                                            e.target.style.boxShadow = '0 2px 8px rgba(46, 125, 50, 0.2)';
+                                        }
                                     }}
                                 >
-                                    Download Design
+                                    {isDownloading ? 'Downloading...' : 'Download Design'}
                                 </Button>
+                                
+                                {/* Progress Bar */}
+                                {isDownloading && (
+                                    <Box sx={{mt: 2}}>
+                                        <Box sx={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            mb: 1
+                                        }}>
+                                            <Typography.Text style={{fontSize: '12px', color: '#64748b'}}>
+                                                Progress
+                                            </Typography.Text>
+                                            <Typography.Text style={{fontSize: '12px', color: '#64748b'}}>
+                                                {Math.round(downloadProgress)}%
+                                            </Typography.Text>
+                                        </Box>
+                                        <Box sx={{
+                                            width: '100%',
+                                            height: '4px',
+                                            backgroundColor: '#e2e8f0',
+                                            borderRadius: '2px',
+                                            overflow: 'hidden'
+                                        }}>
+                                            <Box sx={{
+                                                width: `${downloadProgress}%`,
+                                                height: '100%',
+                                                backgroundColor: '#2e7d32',
+                                                borderRadius: '2px',
+                                                transition: 'width 0.3s ease'
+                                            }}/>
+                                        </Box>
+                                    </Box>
+                                )}
                             </Box>
                         </Box>
 
