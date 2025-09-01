@@ -7,17 +7,26 @@ import {
     CircularProgress,
     Grid,
     IconButton,
+    LinearProgress,
     Modal,
     Paper,
     Rating,
+    Switch,
     TextField,
     Typography
 } from '@mui/material';
-import {Close as CloseIcon, CloudUpload as CloudUploadIcon, Delete as DeleteIcon} from '@mui/icons-material';
+import {
+    Close as CloseIcon, 
+    CloudUpload as CloudUploadIcon, 
+    Delete as DeleteIcon,
+    Image as ImageIcon,
+    Videocam as VideocamIcon
+} from '@mui/icons-material';
 import {enqueueSnackbar} from 'notistack';
 import {giveFeedback} from '../../../../services/FeedbackService.jsx';
-import {uploadCloudinary} from '../../../../services/UploadImageService.jsx';
+import {uploadCloudinary, uploadCloudinaryVideo} from '../../../../services/UploadImageService.jsx';
 import DisplayImage from '../../../ui/DisplayImage.jsx';
+import {parseID} from "../../../../utils/ParseIDUtil.jsx";
 
 export default function FeedbackReportPopup({
                                                 visible,
@@ -32,6 +41,13 @@ export default function FeedbackReportPopup({
     const [uploadingImages, setUploadingImages] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
+    
+    // Video upload states
+    const [isVideoMode, setIsVideoMode] = useState(false);
+    const [videoFile, setVideoFile] = useState(null);
+    const [uploadingVideo, setUploadingVideo] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [videoUrl, setVideoUrl] = useState('');
 
     const isReport = type === 'report';
     const maxImages = 3;
@@ -50,13 +66,13 @@ export default function FeedbackReportPopup({
             newErrors.rating = 'Rating is required';
         }
 
-        if (isReport && images.length === 0) {
-            newErrors.images = 'At least one image is required for reports';
+        if (isReport && images.length === 0 && !videoUrl) {
+            newErrors.media = 'At least one image or video is required for reports';
         }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
-    }, [content, rating, isReport, images.length]);
+    }, [content, rating, isReport, images.length, videoUrl]);
 
     const handleImageUpload = useCallback(async (file) => {
         try {
@@ -110,6 +126,65 @@ export default function FeedbackReportPopup({
         setImages(prev => prev.filter(img => img.id !== imageId));
     }, []);
 
+    // Video upload handlers
+    const handleVideoUpload = useCallback(async (file) => {
+        try {
+            setUploadingVideo(true);
+            setUploadProgress(0);
+            
+            const videoUrl = await uploadCloudinaryVideo(file, (progressEvent) => {
+                const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                setUploadProgress(progress);
+            });
+            
+            return videoUrl;
+        } catch (err) {
+            console.error('Error uploading video:', err);
+            enqueueSnackbar('Failed to upload video', {variant: 'error'});
+            throw err;
+        } finally {
+            setUploadingVideo(false);
+            setUploadProgress(0);
+        }
+    }, []);
+
+    const handleVideoChange = useCallback(async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        try {
+            const uploadedVideoUrl = await handleVideoUpload(file);
+            setVideoFile(file);
+            setVideoUrl(uploadedVideoUrl);
+            // Clear images when video is uploaded
+            setImages([]);
+        } catch (err) {
+            console.error('Upload failed for video:', file.name, err);
+        }
+        
+        event.target.value = '';
+    }, [handleVideoUpload]);
+
+    const handleRemoveVideo = useCallback(() => {
+        setVideoFile(null);
+        setVideoUrl('');
+        setUploadProgress(0);
+    }, []);
+
+    const handleUploadModeToggle = useCallback((event) => {
+        const videoMode = event.target.checked;
+        setIsVideoMode(videoMode);
+        
+        // Clear existing uploads when switching modes
+        if (videoMode) {
+            setImages([]);
+        } else {
+            setVideoFile(null);
+            setVideoUrl('');
+            setUploadProgress(0);
+        }
+    }, []);
+
     const handleSubmit = useCallback(async () => {
         if (!validateForm()) {
             return;
@@ -124,7 +199,8 @@ export default function FeedbackReportPopup({
                 rating: rating,
                 content: content.trim(),
                 report: isReport,
-                imageUrls: images.map(img => img.url)
+                imageUrls: images.map(img => img.url),
+                videoUrl: videoUrl || null
             };
 
             if (requestData.orderId) {
@@ -149,6 +225,10 @@ export default function FeedbackReportPopup({
                 setRating(0);
                 setContent('');
                 setImages([]);
+                setVideoFile(null);
+                setVideoUrl('');
+                setUploadProgress(0);
+                setIsVideoMode(false);
                 setErrors({});
 
                 if (onSuccess) {
@@ -166,12 +246,16 @@ export default function FeedbackReportPopup({
         } finally {
             setSubmitting(false);
         }
-    }, [rating, content, images, isReport, requestData, onSuccess, onCancel, validateForm]);
+    }, [rating, content, images, videoUrl, isReport, requestData, onSuccess, onCancel, validateForm]);
 
     const handleClose = useCallback(() => {
         setRating(0);
         setContent('');
         setImages([]);
+        setVideoFile(null);
+        setVideoUrl('');
+        setUploadProgress(0);
+        setIsVideoMode(false);
         setErrors({});
         onCancel();
     }, [onCancel]);
@@ -252,7 +336,7 @@ export default function FeedbackReportPopup({
                                     {requestData?.orderId ? 'Order ID' : 'Request ID'}
                                 </Typography>
                                 <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                    {requestData?.orderId ? `#${requestData.orderId}` : (requestData?.id ? `#${requestData.id}` : 'N/A')}
+                                    {requestData?.orderId ? `${parseID(requestData.orderId, "ord")}` : (requestData?.id ? `${parseID(requestData.id, "dr")}` : 'N/A')}
                                 </Typography>
                             </Grid>
                             <Grid item xs={12} sm={6}>
@@ -384,14 +468,39 @@ export default function FeedbackReportPopup({
                         borderRadius: 2,
                         border: '1px solid #e2e8f0'
                     }}>
-                        <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
-                            {isReport ? 'Evidence Images' : 'Attached Images'}
-                            <Typography component="span" sx={{color: '#64748b', fontWeight: 'normal'}}>
-                                {' '}({images.length}/{maxImages})
+                        <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3}}>
+                            <Typography variant="h6" sx={{fontWeight: 'bold', color: '#1e293b'}}>
+                                {isReport ? 'Evidence Media' : 'Attached Media'}
+                                {!isVideoMode && (
+                                    <Typography component="span" sx={{color: '#64748b', fontWeight: 'normal'}}>
+                                        {' '}({images.length}/{maxImages})
+                                    </Typography>
+                                )}
                             </Typography>
-                        </Typography>
+                            
+                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                <ImageIcon sx={{color: isVideoMode ? '#9ca3af' : '#3b82f6', fontSize: 20}}/>
+                                <Switch
+                                    checked={isVideoMode}
+                                    onChange={handleUploadModeToggle}
+                                    sx={{
+                                        '& .MuiSwitch-switchBase.Mui-checked': {
+                                            color: '#8b5cf6',
+                                        },
+                                        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                            backgroundColor: '#8b5cf6',
+                                        },
+                                    }}
+                                />
+                                <VideocamIcon sx={{color: isVideoMode ? '#8b5cf6' : '#9ca3af', fontSize: 20}}/>
+                                <Typography variant="body2" sx={{color: '#64748b', fontWeight: 500}}>
+                                    {isVideoMode ? 'Video' : 'Images'}
+                                </Typography>
+                            </Box>
+                        </Box>
 
-                        {images.length > 0 && (
+                        {/* Images Display */}
+                        {!isVideoMode && images.length > 0 && (
                             <Grid container spacing={2} sx={{mb: 3}}>
                                 {images.map((image) => (
                                     <Grid item xs={12} sm={6} md={4} key={image.id}>
@@ -431,7 +540,53 @@ export default function FeedbackReportPopup({
                             </Grid>
                         )}
 
-                        {images.length < maxImages && (
+                        {/* Video Display */}
+                        {isVideoMode && videoFile && (
+                            <Box sx={{mb: 3}}>
+                                <Box sx={{
+                                    position: 'relative',
+                                    width: '100%',
+                                    maxWidth: 500,
+                                    mx: 'auto',
+                                    borderRadius: 2,
+                                    overflow: 'hidden',
+                                    border: '2px solid #e2e8f0',
+                                    backgroundColor: '#000'
+                                }}>
+                                    <video
+                                        src={videoUrl}
+                                        controls
+                                        style={{
+                                            width: '100%',
+                                            height: '300px',
+                                            objectFit: 'contain'
+                                        }}
+                                    />
+                                    <IconButton
+                                        onClick={handleRemoveVideo}
+                                        sx={{
+                                            position: 'absolute',
+                                            top: 8,
+                                            right: 8,
+                                            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                                            color: 'white',
+                                            '&:hover': {
+                                                backgroundColor: 'rgba(0, 0, 0, 0.9)'
+                                            }
+                                        }}
+                                        size="small"
+                                    >
+                                        <DeleteIcon/>
+                                    </IconButton>
+                                </Box>
+                                <Typography variant="body2" sx={{textAlign: 'center', mt: 1, color: '#64748b'}}>
+                                    Video: {videoFile.name}
+                                </Typography>
+                            </Box>
+                        )}
+
+                        {/* Upload Area for Images */}
+                        {!isVideoMode && images.length < maxImages && (
                             <Box sx={{
                                 border: '2px dashed #d1d5db',
                                 borderRadius: 2,
@@ -455,7 +610,7 @@ export default function FeedbackReportPopup({
                                 />
                                 <label htmlFor="image-upload">
                                     <Box sx={{cursor: 'pointer'}}>
-                                        <CloudUploadIcon sx={{fontSize: 48, color: '#64748b', mb: 2}}/>
+                                        <ImageIcon sx={{fontSize: 48, color: '#64748b', mb: 2}}/>
                                         <Typography variant="h6" sx={{color: '#1e293b', mb: 1}}>
                                             {uploadingImages ? 'Uploading...' : 'Upload Images'}
                                         </Typography>
@@ -473,9 +628,69 @@ export default function FeedbackReportPopup({
                             </Box>
                         )}
 
-                        {errors.images && (
+                        {/* Upload Area for Video */}
+                        {isVideoMode && !videoFile && (
+                            <Box sx={{
+                                border: '2px dashed #8b5cf6',
+                                borderRadius: 2,
+                                p: 3,
+                                textAlign: 'center',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                backgroundColor: 'rgba(139, 92, 246, 0.05)',
+                                '&:hover': {
+                                    borderColor: '#7c3aed',
+                                    backgroundColor: 'rgba(139, 92, 246, 0.1)'
+                                }
+                            }}>
+                                <input
+                                    type="file"
+                                    accept="video/*"
+                                    onChange={handleVideoChange}
+                                    style={{display: 'none'}}
+                                    id="video-upload"
+                                    disabled={uploadingVideo}
+                                />
+                                <label htmlFor="video-upload">
+                                    <Box sx={{cursor: 'pointer'}}>
+                                        <VideocamIcon sx={{fontSize: 48, color: '#8b5cf6', mb: 2}}/>
+                                        <Typography variant="h6" sx={{color: '#1e293b', mb: 1}}>
+                                            {uploadingVideo ? `Uploading... ${uploadProgress}%` : 'Upload Video'}
+                                        </Typography>
+                                        <Typography variant="body2" sx={{color: '#64748b', mb: 2}}>
+                                            {isReport
+                                                ? 'Upload evidence video (MP4, AVI, MOV, etc.)'
+                                                : 'Upload video to support your feedback (MP4, AVI, MOV, etc.)'
+                                            }
+                                        </Typography>
+                                        {uploadingVideo && (
+                                            <Box sx={{mt: 2}}>
+                                                <LinearProgress 
+                                                    variant="determinate" 
+                                                    value={uploadProgress}
+                                                    sx={{
+                                                        height: 6,
+                                                        borderRadius: 3,
+                                                        backgroundColor: '#e2e8f0',
+                                                        '& .MuiLinearProgress-bar': {
+                                                            backgroundColor: '#8b5cf6',
+                                                            borderRadius: 3
+                                                        }
+                                                    }}
+                                                />
+                                                <Typography variant="body2" sx={{color: '#8b5cf6', mt: 1, fontWeight: 500}}>
+                                                    {uploadProgress}% completed
+                                                </Typography>
+                                            </Box>
+                                        )}
+                                    </Box>
+                                </label>
+                            </Box>
+                        )}
+
+                        {errors.media && (
                             <Alert severity="error" sx={{mt: 2}}>
-                                {errors.images}
+                                {errors.media}
                             </Alert>
                         )}
                     </Paper>
