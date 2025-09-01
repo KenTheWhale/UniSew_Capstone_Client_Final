@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useState} from "react";
 import {Outlet, useLocation, useNavigate} from "react-router-dom";
 import {AppBar, Avatar, Badge, Box, CssBaseline, Divider, Popover, Toolbar, Typography} from "@mui/material";
-import {AccountCircle, AdminPanelSettings, Assessment, Logout, People, Receipt} from "@mui/icons-material";
+import {AccountCircle, AdminPanelSettings, Assessment, Logout, People, Receipt, Settings} from "@mui/icons-material";
 import {Tag} from "antd";
 import {signout} from "../../services/AccountService.jsx";
 import {enqueueSnackbar} from "notistack";
@@ -173,8 +173,47 @@ function Navbar({activeMenu, navigate}) {
                             </Typography>
                         </Box>
                     </Box>
+                </Box>
 
+                <Divider sx={{my: 3, borderColor: "#e9ecef"}}/>
 
+                {}
+                <Typography variant="overline" sx={{
+                    px: 2,
+                    pb: 1,
+                    color: "#6c757d",
+                    fontWeight: 700,
+                    fontSize: "0.75rem",
+                    letterSpacing: "1px"
+                }}>
+                    PLATFORM MANAGEMENT
+                </Typography>
+                <Box sx={{mb: 3}}>
+                    <Box
+                        sx={{
+                            borderRadius: 2,
+                            mx: 1,
+                            my: 0.5,
+                            color: activeMenu === 'platform-settings' ? "#FFFFFF" : "#495057",
+                            p: 2,
+                            cursor: "pointer",
+                            transition: "all 0.3s ease",
+                            background: activeMenu === 'platform-settings' ? "linear-gradient(135deg, #dc3545 0%, #c82333 100%)" : "transparent",
+                            "&:hover": {
+                                background: "linear-gradient(135deg, #dc3545 0%, #c82333 100%)",
+                                color: "#FFFFFF",
+                                transform: "translateY(-1px)",
+                            },
+                        }}
+                        onClick={() => navigate("/admin/platform/setting")}
+                    >
+                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
+                            <Settings sx={{color: "inherit", fontSize: 20}}/>
+                            <Typography variant="body2" sx={{fontWeight: 500}}>
+                                Platform Settings
+                            </Typography>
+                        </Box>
+                    </Box>
                 </Box>
             </Box>
         </Box>
@@ -226,6 +265,8 @@ export default function AdminDashboardLayout() {
             setActiveMenu('reports');
         } else if (pathname.includes('/admin/accounts')) {
             setActiveMenu('accounts');
+        } else if (pathname.includes('/admin/platform/setting')) {
+            setActiveMenu('platform-settings');
         } else if (pathname.includes('/admin/requests')) {
             setActiveMenu('requests');
         } else {

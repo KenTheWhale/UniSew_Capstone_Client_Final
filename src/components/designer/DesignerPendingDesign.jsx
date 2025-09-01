@@ -113,8 +113,8 @@ const ErrorStateComponent = React.memo(({error, onRetry, isRetrying}) => (
 
 const EmptyStateComponent = React.memo(() => (
     <EmptyState
-        title="No pending design requests available"
-        description="There are no pending design requests to display"
+        title="No available design requests"
+        description="There are no available design requests to display"
         icon="🎨"
     />
 ));
@@ -195,7 +195,7 @@ const TableSection = React.memo(({
                         color: "#1e293b"
                     }}
                 >
-                    Pending Design Requests
+                    Available Design Requests
                 </Typography>
                 <Chip
                     label={`${stats.total} Available`}
