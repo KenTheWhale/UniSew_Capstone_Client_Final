@@ -14,10 +14,14 @@ import {
 } from "@mui/material";
 import {Badge, Descriptions, Empty, Input, Modal, Select, Table, Tag} from 'antd';
 import {CreditCardOutlined, DollarOutlined, PayCircleOutlined, ReloadOutlined, StopOutlined} from '@ant-design/icons';
-import {AccountBalance, Visibility} from '@mui/icons-material';
+import {AccountBalance, PictureAsPdf, Visibility} from '@mui/icons-material';
 import {enqueueSnackbar} from 'notistack';
 import {getTransactions} from '../../services/PaymentService.jsx';
 import {parseID} from "../../utils/ParseIDUtil.jsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import {CSVLink} from "react-csv";
+import { GrDocumentCsv } from "react-icons/gr";
 
 const {Search} = Input;
 const {Option} = Select;
@@ -124,6 +128,7 @@ export default function AdminTransaction() {
     const [paymentTypeFilter, setPaymentTypeFilter] = useState('all');
     const [selectedTransaction, setSelectedTransaction] = useState(null);
     const [detailModalVisible, setDetailModalVisible] = useState(false);
+
 
     const fetchTransactions = useCallback(async () => {
         setLoading(true);
@@ -464,6 +469,136 @@ export default function AdminTransaction() {
         }
     ], []);
 
+    function arrayBufferToBase64(buffer) {
+        const bytes = new Uint8Array(buffer);
+        const chunkSize = 0x8000; // ~32KB
+        let binary = "";
+        for (let i = 0; i < bytes.length; i += chunkSize) {
+            const chunk = bytes.subarray(i, i + chunkSize);
+            binary += String.fromCharCode.apply(null, chunk);
+        }
+        return btoa(binary);
+    }
+
+    async function embedUnicodeFont(doc) {
+        const res = await fetch("/fonts/NotoSans-Regular.ttf");
+        const buf = await res.arrayBuffer();
+        const base64 = arrayBufferToBase64(buf);
+        doc.addFileToVFS("NotoSans-Regular.ttf", base64);
+        doc.addFont("NotoSans-Regular.ttf", "NotoSans", "normal");
+        doc.setFont("NotoSans", "normal");
+    }
+
+    async function handleDownloadPdf() {
+        const doc = new jsPDF({unit: "pt", format: "a4"});
+        await embedUnicodeFont(doc);
+
+        const margin = 30; // pt
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const printWidth = pageWidth - margin * 2;
+
+        const ratios = [0.0636, 0.1458, 0.1794, 0.1196, 0.0972, 0.1458, 0.0972, 0.1514];
+        const colWidths = ratios.map(r => Math.floor(printWidth * r));
+
+        doc.setFont("NotoSans", "normal");
+        doc.setFontSize(14);
+        doc.text("UniSew - Transactions Report", margin, 40);
+
+        const head = [["ID", "Sender", "Receiver", "Amount", "Fee", "Type", "Status", "Date"]];
+        const body = (filteredTransactions || []).map(trs => ([
+            `#${trs.id}`,
+            (trs.sender && trs.sender.name) ? trs.sender.name : "-",
+            (trs.receiver && trs.receiver.name) ? trs.receiver.name : "-",
+            new Intl.NumberFormat("vi-VN").format(trs.amount || 0) + " ₫",
+            new Intl.NumberFormat("vi-VN").format(trs.serviceFee || 0) + " ₫",
+            typeof getPaymentTypeText === "function" ? getPaymentTypeText(trs.paymentType) : (trs.paymentType || ""),
+            typeof getStatusText === "function" ? getStatusText(trs.status) : (trs.status || ""),
+            (function formatDateTime(d) {
+                const date = new Date(d);
+                return date.toLocaleTimeString("vi-VN", {hour12: false}) + " " + date.toLocaleDateString("vi-VN");
+            })(trs.creationDate)
+        ]));
+
+        autoTable(doc, {
+            startY: 60,
+            head,
+            body,
+            margin: {left: margin, right: margin},
+            tableWidth: printWidth,
+            theme: "grid",
+            styles: {
+                font: "NotoSans",
+                fontSize: 10,
+                cellPadding: 6,
+                lineWidth: 0.2,
+                overflow: "linebreak",
+                textColor: 0
+            },
+            headStyles: {
+                fillColor: [255, 255, 255],
+                textColor: 0,
+                fontStyle: "bold",
+                lineWidth: 0.2
+            },
+            columnStyles: {
+                0: {cellWidth: colWidths[0], halign: "left"},
+                1: {cellWidth: colWidths[1], halign: "left"},
+                2: {cellWidth: colWidths[2], halign: "left"},
+                3: {cellWidth: colWidths[3], halign: "right"},
+                4: {cellWidth: colWidths[4], halign: "right"},
+                5: {cellWidth: colWidths[5], halign: "left"},
+                6: {cellWidth: colWidths[6], halign: "left"},
+                7: {cellWidth: colWidths[7], halign: "center"}
+            },
+            didDrawPage: () => {
+
+                doc.setFontSize(14);
+                doc.text("UniSew - Transactions Report", margin, 40);
+            }
+        });
+
+        const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY : 60;
+        doc.setFontSize(10);
+        doc.text(`Total Transactions: ${filteredTransactions ? filteredTransactions.length : 0}`, margin, finalY + 20);
+
+        doc.save(`transactions_${new Date().toISOString().slice(0, 10)}.pdf`);
+    }
+
+
+    function formatDateTime(d) {
+        const date = new Date(d);
+        const time = date.toLocaleTimeString("vi-VN", {hour12: false}); // 07:00:00
+        const day = date.toLocaleDateString("vi-VN");                    // 31/8/2025
+        return `${time} ${day}`;
+    }
+
+    const csvHeaders = [
+        {label: "ID", key: "id"},
+        {label: "Sender", key: "sender"},
+        {label: "Receiver", key: "receiver"},
+        {label: "Amount (VND)", key: "amount"},
+        {label: "Fee (VND)", key: "fee"},
+        {label: "Payment Type", key: "paymentType"},
+        {label: "Status", key: "status"},
+        {label: "Date", key: "date"},
+    ];
+
+    function mapToCsvRows(transactions) {
+        return (transactions || []).map(trs => ({
+            id: `#${trs.id}`,
+            sender: trs?.sender?.name || "-",
+            receiver: trs?.receiver?.name || "-",
+            amount: Number(trs?.amount || 0),
+            fee: Number(trs?.serviceFee || 0),
+            paymentType: typeof getPaymentTypeText === "function" ? getPaymentTypeText(trs.paymentType) : (trs.paymentType || ""),
+            status: typeof getStatusText === "function" ? getStatusText(trs.status) : (trs.status || ""),
+            date: formatDateTime(trs.creationDate),
+        }));
+    }
+
+    const data = mapToCsvRows(transactions);
+    const filename = `transactions_${new Date().toISOString().slice(0, 10)}.csv`;
+
     return (
         <Box sx={{
             height: '100%',
@@ -578,6 +713,45 @@ export default function AdminTransaction() {
                                 }}
                             >
                                 <ReloadOutlined/>
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Download PDF">
+                            <IconButton
+                                onClick={handleDownloadPdf}
+                                sx={{
+                                    backgroundColor: '#FF0000',
+                                    color: 'white',
+                                    '&:hover': {
+                                        backgroundColor: '#FF0000',
+                                        transform: 'scale(1.05)'
+                                    },
+                                    transition: 'all 0.2s ease'
+                                }}
+                            >
+                                <PictureAsPdf style={{fontSize: 20}}/>
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Dowload CSV">
+                            <IconButton
+                                sx={{
+                                backgroundColor: '#28a745',
+                                color: 'white',
+                                '&:hover': {
+                                    backgroundColor: '#218838',
+                                    transform: 'scale(1.05)'
+                                },
+                                transition: 'all 0.2s ease'
+                            }}>
+                                <CSVLink
+                                    data={data}
+                                    headers={csvHeaders}
+                                    filename={filename}
+                                    separator=","
+                                    uFEFF={true}
+                                    target="_blank"
+                                >
+                                    <GrDocumentCsv />
+                                </CSVLink>
                             </IconButton>
                         </Tooltip>
                     </Box>

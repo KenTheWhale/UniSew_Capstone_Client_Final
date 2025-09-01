@@ -13,6 +13,7 @@ import {
     DialogTitle,
     Fab,
     IconButton,
+    LinearProgress,
     List,
     Paper,
     Step,
@@ -47,7 +48,7 @@ import {
     updateMilestoneStatus,
     viewPhase
 } from '../../services/OrderService';
-import {uploadCloudinary} from '../../services/UploadImageService';
+import {uploadCloudinary, uploadCloudinaryVideo} from '../../services/UploadImageService';
 import {calculateShippingTime} from '../../services/ShippingService';
 import {DatePicker} from '@mui/x-date-pickers/DatePicker';
 import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
@@ -129,6 +130,7 @@ export default function MilestoneManagement() {
     const [uploadImageDialogOpen, setUploadImageDialogOpen] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
     const [uploadingImage, setUploadingImage] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
     const [updatingData, setUpdatingData] = useState(false);
 
     const [orderDetailDialogOpen, setOrderDetailDialogOpen] = useState(false);
@@ -3134,7 +3136,11 @@ export default function MilestoneManagement() {
                             </Typography>
                         </Box>
                         <IconButton
-                            onClick={() => setUploadImageDialogOpen(false)}
+                            onClick={() => {
+                                setUploadImageDialogOpen(false);
+                                setSelectedImage(null);
+                                setUploadProgress(0);
+                            }}
                             sx={{
                                 position: 'absolute',
                                 right: 8,
@@ -3155,7 +3161,7 @@ export default function MilestoneManagement() {
                                 Phase Completion Evidence
                             </Typography>
                             <Typography variant="body2" sx={{color: '#64748b'}}>
-                                Please upload an image as proof of completion for the current phase
+                                Please upload a video as proof of completion for the current phase
                             </Typography>
                         </Box>
 
@@ -3204,9 +3210,9 @@ export default function MilestoneManagement() {
                         >
                             {selectedImage ? (
                                 <Box>
-                                    <img
+                                    <video
                                         src={URL.createObjectURL(selectedImage)}
-                                        alt="Selected"
+                                        controls
                                         style={{
                                             maxWidth: '100%',
                                             maxHeight: '200px',
@@ -3215,7 +3221,7 @@ export default function MilestoneManagement() {
                                         }}
                                     />
                                     <Typography variant="body2" sx={{color: '#64748b'}}>
-                                        Click to change image
+                                        Click to change video
                                     </Typography>
                                 </Box>
                             ) : (
@@ -3230,20 +3236,20 @@ export default function MilestoneManagement() {
                                         <AssignmentIcon sx={{fontSize: 40, color: '#3f51b5'}}/>
                                     </Avatar>
                                     <Typography variant="h6" sx={{color: '#1e293b', mb: 1, fontWeight: 600}}>
-                                        Upload Image
+                                        Upload Video
                                     </Typography>
                                     <Typography variant="body2" sx={{color: '#64748b', mb: 2}}>
-                                        Click to select an image file
+                                        Click to select a video file
                                     </Typography>
                                     <Typography variant="caption" sx={{color: '#94a3b8'}}>
-                                        Supported formats: JPG, PNG, GIF, Webp (Max 10MB)
+                                        Supported formats: MP4, AVI, MOV, WMV, FLV, WebM, MKV, M4V, 3GP (Max 50MB)
                                     </Typography>
                                 </Box>
                             )}
                             <input
                                 id="image-upload"
                                 type="file"
-                                accept="image/jpeg, image/png, image/gif, image/webp"
+                                accept="video/mp4, video/avi, video/mov, video/wmv, video/flv, video/webm, video/mkv, video/m4v, video/3gp"
                                 style={{display: 'none'}}
                                 onChange={(e) => {
                                     const file = e.target.files[0];
@@ -3253,6 +3259,65 @@ export default function MilestoneManagement() {
                                 }}
                             />
                         </Box>
+
+                        {/* Upload Progress Bar */}
+                        {uploadingImage && (
+                            <Box sx={{
+                                mt: 3,
+                                p: 3,
+                                background: 'linear-gradient(135deg, rgba(63, 81, 181, 0.05) 0%, rgba(48, 63, 159, 0.08) 100%)',
+                                borderRadius: 2,
+                                border: '1px solid rgba(63, 81, 181, 0.1)'
+                            }}>
+                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                    <Avatar sx={{
+                                        background: 'linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)',
+                                        width: 32,
+                                        height: 32
+                                    }}>
+                                        <AssignmentIcon sx={{fontSize: 18}}/>
+                                    </Avatar>
+                                    <Typography variant="subtitle1" sx={{fontWeight: 700, color: '#1e293b'}}>
+                                        Uploading Video...
+                                    </Typography>
+                                    <Typography variant="body2" sx={{
+                                        color: '#3f51b5',
+                                        fontWeight: 600,
+                                        ml: 'auto'
+                                    }}>
+                                        {uploadProgress}%
+                                    </Typography>
+                                </Box>
+                                
+                                <LinearProgress
+                                    variant="determinate"
+                                    value={uploadProgress}
+                                    sx={{
+                                        height: 8,
+                                        borderRadius: 4,
+                                        backgroundColor: 'rgba(63, 81, 181, 0.1)',
+                                        '& .MuiLinearProgress-bar': {
+                                            borderRadius: 4,
+                                            background: 'linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)',
+                                            boxShadow: '0 2px 8px rgba(63, 81, 181, 0.3)'
+                                        }
+                                    }}
+                                />
+                                
+                                <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1}}>
+                                    <Typography variant="caption" sx={{color: '#64748b', fontSize: '0.75rem'}}>
+                                        Please wait while your video is being uploaded...
+                                    </Typography>
+                                    <Typography variant="caption" sx={{
+                                        color: '#3f51b5',
+                                        fontWeight: 600,
+                                        fontSize: '0.75rem'
+                                    }}>
+                                        {uploadProgress < 100 ? 'Uploading...' : 'Upload Complete!'}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        )}
                     </DialogContent>
 
                     <DialogActions sx={{p: 3, pt: 0}}>
@@ -3260,6 +3325,7 @@ export default function MilestoneManagement() {
                             onClick={() => {
                                 setUploadImageDialogOpen(false);
                                 setSelectedImage(null);
+                                setUploadProgress(0);
                             }}
                             sx={{
                                 color: '#64748b',
@@ -3276,25 +3342,28 @@ export default function MilestoneManagement() {
                             variant="contained"
                             disabled={!selectedImage || uploadingImage}
                             onClick={async () => {
-                                if (selectedImage && selectedImage.size > 10 * 1024 * 1024) {
-                                    enqueueSnackbar('Please select an image file under 10MB', {variant: 'warning'});
+                                if (selectedImage && selectedImage.size > 50 * 1024 * 1024) {
+                                    enqueueSnackbar('Please select a video file under 50MB', {variant: 'warning'});
                                     return;
                                 }
 
                                 try {
                                     setUploadingImage(true);
+                                    setUploadProgress(0);
 
-                                    let imageUrl = '';
+                                    let videoUrl = '';
                                     if (selectedImage) {
-                                        const uploadResponse = await uploadCloudinary(selectedImage);
+                                        const uploadResponse = await uploadCloudinaryVideo(selectedImage, (progress) => {
+                                            setUploadProgress(progress);
+                                        });
                                         if (uploadResponse) {
-                                            imageUrl = uploadResponse;
+                                            videoUrl = uploadResponse;
                                         }
                                     }
 
                                     const updateData = {
                                         orderId: viewingOrder.id,
-                                        imageUrl: imageUrl
+                                        videoUrl: videoUrl
                                     };
 
                                     const response = await updateMilestoneStatus(updateData);
@@ -3303,6 +3372,7 @@ export default function MilestoneManagement() {
                                         enqueueSnackbar('Phase completed successfully!', {variant: 'success'});
                                         setUploadImageDialogOpen(false);
                                         setSelectedImage(null);
+                                        setUploadProgress(0);
 
                                         setUpdatingData(true);
 
@@ -3346,6 +3416,7 @@ export default function MilestoneManagement() {
                                     enqueueSnackbar('Failed to complete phase. Please try again.', {variant: 'error'});
                                 } finally {
                                     setUploadingImage(false);
+                                    setUploadProgress(0);
                                     setUpdatingData(false);
                                 }
                             }}
@@ -3364,7 +3435,7 @@ export default function MilestoneManagement() {
                             {uploadingImage ? (
                                 <>
                                     <CircularProgress size={16} sx={{color: 'white', mr: 1}}/>
-                                    Processing...
+                                    {uploadProgress < 100 ? `Uploading... ${uploadProgress}%` : 'Processing...'}
                                 </>
                             ) : (
                                 'Complete Phase'

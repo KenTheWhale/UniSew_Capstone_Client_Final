@@ -33,7 +33,7 @@ export const uploadCloudinary = async (file) => {
     }
 }
 
-export const uploadCloudinaryVideo = async (file) => {
+export const uploadCloudinaryVideo = async (file, onProgress = null) => {
     try {
         if (!file) {
             console.error('No file provided to uploadCloudinaryVideo');
@@ -55,7 +55,16 @@ export const uploadCloudinaryVideo = async (file) => {
         formData.append('upload_preset', 'unisew');
         formData.append('public_id', name);
 
-        const response = await axios.post("https://api.cloudinary.com/v1_1/dj0ckodyq/video/upload", formData)
+        const config = {
+            onUploadProgress: (progressEvent) => {
+                if (onProgress && progressEvent.total) {
+                    const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    onProgress(percentCompleted);
+                }
+            }
+        };
+
+        const response = await axios.post("https://api.cloudinary.com/v1_1/dj0ckodyq/video/upload", formData, config)
         if (response && response.status === 200) {
             return response.data.url
         }

@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {Avatar, Box, Card, CardContent, Chip, Typography} from '@mui/material';
+import {Avatar, Badge, Box, Card, CardContent, Chip, IconButton, Tooltip, Typography} from '@mui/material';
 import {
     AccessTime as TimeIcon,
     AttachMoney as MoneyIcon,
@@ -20,13 +20,20 @@ import {
     MailOutlined,
     PhoneOutlined,
     SyncOutlined,
-    UserOutlined
+    UserOutlined,
+    TeamOutlined,
+    HomeOutlined,
+    ShopOutlined,
+    CalendarOutlined,
+    StarFilled,
+    StopOutlined
 } from '@ant-design/icons';
 import {parseID} from '../../../../utils/ParseIDUtil.jsx';
 import DisplayImage from '../../../ui/DisplayImage.jsx';
 import {viewQuotation} from '../../../../services/OrderService.jsx';
 import OrderPaymentPopup from './OrderPaymentPopup.jsx';
 import {getPhoneLink} from '../../../../utils/PhoneUtil.jsx';
+import {Typography as MuiTypography} from '@mui/material';
 
 export function statusTag(status) {
     let color;
@@ -55,6 +62,105 @@ export function statusTag(status) {
     return <Tag style={{margin: 0}} color={color}>{icon} {status}</Tag>;
 }
 
+// Garment Profile Modal Component
+const GarmentProfileModal = ({open, onClose, garment}) => {
+    if (!garment) return null;
+    const customer = garment.customer || {};
+    const account = customer.account || {};
+    return (
+        <Modal
+            open={open}
+            onCancel={onClose}
+            footer={null}
+            centered
+            width={480}
+            title={
+                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                    <TeamOutlined style={{color: '#1976d2', fontSize: 28}}/>
+                    <MuiTypography variant="h6" sx={{fontWeight: 700, color: '#1e293b', m: 0}}>
+                        Garment Factory Profile
+                    </MuiTypography>
+                </Box>
+            }
+        >
+            <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', py: 2}}>
+                <Badge
+                    overlap="circular"
+                    anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
+                    badgeContent={
+                        account.status === 'active' ? (
+                            <CheckCircleOutlined
+                                style={{color: '#16a34a', fontSize: 28, backgroundColor: 'white', borderRadius: '50%', padding: 2}}/>
+                        ) : (
+                            <StopOutlined style={{color: '#dc2626', fontSize: 28, backgroundColor: 'white', borderRadius: '50%', padding: 2}}/>
+                        )
+                    }
+                >
+                    <Avatar
+                        src={customer.avatar}
+                        alt={customer.name}
+                        sx={{width: 96, height: 96, mb: 2, border: '3px solid #1976d2'}}
+                    >
+                        {customer.name?.charAt(0)}
+                    </Avatar>
+                </Badge>
+                <MuiTypography variant="h5" sx={{fontWeight: 700, color: '#1976d2', mb: 1, textAlign: 'center'}}>
+                    {customer.name}
+                </MuiTypography>
+                <MuiTypography variant="h6" sx={{fontWeight: 600, color: '#2e7d32', mb: 1, textAlign: 'center'}}>
+                    {customer.business}
+                </MuiTypography>
+                <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mb: 1}}>
+                    <StarFilled style={{color: '#f59e0b', fontSize: 16}}/>
+                    <MuiTypography variant="body2" sx={{
+                        color: '#f59e0b',
+                        fontWeight: 600
+                    }}>{garment.rating?.toFixed(1) || 0}</MuiTypography>
+                </Box>
+                <Divider sx={{width: '100%', my: 2}}/>
+                <Box sx={{width: '100%', display: 'flex', flexDirection: 'column', gap: 1}}>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                        <MailOutlined style={{color: '#1976d2'}}/>
+                        <MuiTypography variant="body2"
+                                       sx={{color: '#1e293b', fontWeight: 500}}>{account.email}</MuiTypography>
+                    </Box>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                        <PhoneOutlined style={{color: '#1976d2'}}/>
+                        <MuiTypography variant="body2"
+                                       sx={{color: '#1e293b', fontWeight: 500}}>{customer.phone}</MuiTypography>
+                    </Box>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                        <HomeOutlined style={{color: '#1976d2'}}/>
+                        <MuiTypography variant="body2"
+                                       sx={{color: '#1e293b', fontWeight: 500}}>{customer.address}</MuiTypography>
+                    </Box>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                        <ShopOutlined style={{color: '#1976d2'}}/>
+                        <MuiTypography variant="body2"
+                                       sx={{color: '#1e293b', fontWeight: 500}}>{customer.business}</MuiTypography>
+                    </Box>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                        <CalendarOutlined style={{color: '#1976d2'}}/>
+                        <MuiTypography variant="body2" sx={{
+                            color: '#1e293b',
+                            fontWeight: 500
+                        }}>Registered: {account.registerDate}</MuiTypography>
+                    </Box>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                        <Chip
+                            label={account.status === 'active' ? 'Active' : 'Inactive'}
+                            color={account.status === 'active' ? 'success' : 'error'}
+                            size="small"
+                            sx={{fontWeight: 600}}
+                        />
+                        <Chip label={account.role} color="primary" size="small"/>
+                    </Box>
+                </Box>
+            </Box>
+        </Modal>
+    );
+};
+
 export default function OrderDetailPopup({open, onClose, order}) {
     const [imagesDialogOpen, setImagesDialogOpen] = useState(false);
     const [selectedItemImages, setSelectedItemImages] = useState(null);
@@ -70,6 +176,8 @@ export default function OrderDetailPopup({open, onClose, order}) {
     const [sortCriteria, setSortCriteria] = useState([]);
     const [sortOrder, setSortOrder] = useState();
     const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [profileModalOpen, setProfileModalOpen] = useState(false);
+    const [profileGarment, setProfileGarment] = useState(null);
 
     if (!order) return null;
 
@@ -543,6 +651,55 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                     }}
                                          onClick={() => handleQuotationClick(quotation)}
                                     >
+                                        {/* Profile View Button - Positioned absolutely */}
+                                        <Tooltip title="View Profile">
+                                            <IconButton
+                                                onClick={e => {
+                                                    e.stopPropagation();
+                                                    setProfileGarment(quotation.garment);
+                                                    setProfileModalOpen(true);
+                                                }}
+                                                size="small"
+                                                sx={{
+                                                    position: 'absolute',
+                                                    top: 12,
+                                                    right: 12,
+                                                    zIndex: 2,
+                                                    bgcolor: '#f8fafc',
+                                                    border: '1px solid #e2e8f0',
+                                                    '&:hover': {
+                                                        bgcolor: '#1976d2',
+                                                        color: 'white',
+                                                        borderColor: '#1976d2'
+                                                    }
+                                                }}
+                                            >
+                                                <TeamOutlined style={{fontSize: '14px'}}/>
+                                            </IconButton>
+                                        </Tooltip>
+
+                                        {/* Selected Badge - Positioned below profile button */}
+                                        {selectedQuotation && selectedQuotation.id === quotation.id && (
+                                            <Chip
+                                                label="Selected"
+                                                color="success"
+                                                size="small"
+                                                sx={{
+                                                    position: 'absolute',
+                                                    top: 50,
+                                                    right: 12,
+                                                    zIndex: 2,
+                                                    fontWeight: 600,
+                                                    fontSize: 10,
+                                                    height: 20,
+                                                    px: 1,
+                                                    borderRadius: 1.5,
+                                                    bgcolor: '#e8f5e8',
+                                                    color: '#2e7d32',
+                                                    border: '1px solid #2e7d32'
+                                                }}
+                                            />
+                                        )}
 
                                         <Box sx={{display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5}}>
                                             <Avatar
@@ -2120,6 +2277,13 @@ export default function OrderDetailPopup({open, onClose, order}) {
                     quotation: selectedQuotation,
                     order: order
                 }}
+            />
+
+            {/* Garment Profile Modal */}
+            <GarmentProfileModal
+                open={profileModalOpen}
+                onClose={() => setProfileModalOpen(false)}
+                garment={profileGarment}
             />
         </>
     );

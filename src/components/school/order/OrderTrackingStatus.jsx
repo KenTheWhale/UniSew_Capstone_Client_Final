@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {
     Avatar,
     Box,
@@ -20,6 +20,7 @@ import {
     AttachMoney as MoneyIcon,
     CalendarToday as CalendarIcon,
     CheckCircle as CheckCircleIcon,
+    Close as CloseIcon,
     DesignServices as DesignServicesIcon,
     Email as EmailIcon,
     Groups as GroupsIcon,
@@ -29,10 +30,12 @@ import {
     LocationOn as LocationIcon,
     Pending as PendingIcon,
     Phone as PhoneIcon,
+    PlayArrow as PlayArrowIcon,
     Refresh as RefreshIcon,
     School as SchoolIcon,
     TableChart as TableChartIcon,
-    TrendingUp as TrendingUpIcon
+    TrendingUp as TrendingUpIcon,
+    Videocam as VideocamIcon
 } from '@mui/icons-material';
 import {useNavigate} from 'react-router-dom';
 import {getOrderDetailBySchool, confirmOrder} from '../../../services/OrderService';
@@ -179,6 +182,13 @@ export default function OrderTrackingStatus() {
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const [confirmingOrder, setConfirmingOrder] = useState(false);
 
+    // Video dialog states
+    const [videoDialogOpen, setVideoDialogOpen] = useState(false);
+    const [selectedMilestoneVideo, setSelectedMilestoneVideo] = useState(null);
+
+    // Timeout ref for popover delay
+    const popoverTimeoutRef = useRef(null);
+
     const orderId = sessionStorage.getItem('trackingOrderId');
 
     const fetchOrderDetail = async (showLoading = true) => {
@@ -211,6 +221,15 @@ export default function OrderTrackingStatus() {
     useEffect(() => {
         fetchOrderDetail();
     }, [orderId]);
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (popoverTimeoutRef.current) {
+                clearTimeout(popoverTimeoutRef.current);
+            }
+        };
+    }, []);
 
     // Refresh the component when shipping info is loaded
     useEffect(() => {
@@ -250,6 +269,12 @@ export default function OrderTrackingStatus() {
     };
 
     const handleMilestoneHover = (event, milestone) => {
+        // Clear any existing timeout
+        if (popoverTimeoutRef.current) {
+            clearTimeout(popoverTimeoutRef.current);
+            popoverTimeoutRef.current = null;
+        }
+
         setHoveredMilestone(milestone);
         setPopoverAnchor(event.currentTarget);
 
@@ -283,6 +308,64 @@ export default function OrderTrackingStatus() {
     };
 
     const handleMilestoneLeave = () => {
+        // Clear any existing timeout
+        if (popoverTimeoutRef.current) {
+            clearTimeout(popoverTimeoutRef.current);
+        }
+        
+        // Delay hiding popover to allow moving mouse to popover
+        popoverTimeoutRef.current = setTimeout(() => {
+            setHoveredMilestone(null);
+            setPopoverAnchor(null);
+        }, 150);
+    };
+
+    // Handle popover mouse events
+    const handlePopoverMouseEnter = () => {
+        // Clear timeout when mouse enters popover
+        if (popoverTimeoutRef.current) {
+            clearTimeout(popoverTimeoutRef.current);
+            popoverTimeoutRef.current = null;
+        }
+    };
+
+    const handlePopoverMouseLeave = () => {
+        // Clear any existing timeout first
+        if (popoverTimeoutRef.current) {
+            clearTimeout(popoverTimeoutRef.current);
+            popoverTimeoutRef.current = null;
+        }
+        
+        // Hide popover immediately when mouse leaves popover
+        setHoveredMilestone(null);
+        setPopoverAnchor(null);
+    };
+
+    // Handle video dialog
+    const handleOpenVideoDialog = (milestone) => {
+        // Close popover when opening video dialog
+        setHoveredMilestone(null);
+        setPopoverAnchor(null);
+        if (popoverTimeoutRef.current) {
+            clearTimeout(popoverTimeoutRef.current);
+            popoverTimeoutRef.current = null;
+        }
+        
+        setSelectedMilestoneVideo(milestone);
+        setVideoDialogOpen(true);
+    };
+
+    const handleCloseVideoDialog = () => {
+        setVideoDialogOpen(false);
+        setSelectedMilestoneVideo(null);
+    };
+
+    // Force close popover when clicking elsewhere
+    const handleForceClosePopover = () => {
+        if (popoverTimeoutRef.current) {
+            clearTimeout(popoverTimeoutRef.current);
+            popoverTimeoutRef.current = null;
+        }
         setHoveredMilestone(null);
         setPopoverAnchor(null);
     };
@@ -558,7 +641,8 @@ export default function OrderTrackingStatus() {
                 startDate: milestone.startDate,
                 endDate: milestone.endDate,
                 completedDate: milestone.completedDate,
-                stage: milestone.stage || (index + 2)
+                stage: milestone.stage || (index + 2),
+                videoUrl: milestone.videoUrl || null
             };
         });
 
@@ -1012,6 +1096,42 @@ export default function OrderTrackingStatus() {
                                                             }}>
                                                                 !
                                                             </Typography>
+                                                        </Box>
+                                                    )}
+
+                                                    {/* Video icon for milestones with video */}
+                                                    {milestone.videoUrl && milestone.isCompleted && (
+                                                        <Box 
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleOpenVideoDialog(milestone);
+                                                            }}
+                                                            sx={{
+                                                                position: 'absolute',
+                                                                top: -8,
+                                                                right: -8,
+                                                                width: 24,
+                                                                height: 24,
+                                                                borderRadius: '50%',
+                                                                background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                boxShadow: '0 4px 12px rgba(139, 92, 246, 0.4)',
+                                                                border: '2px solid white',
+                                                                cursor: 'pointer',
+                                                                zIndex: 2,
+                                                                transition: 'all 0.3s ease',
+                                                                '&:hover': {
+                                                                    transform: 'scale(1.1)',
+                                                                    boxShadow: '0 6px 16px rgba(139, 92, 246, 0.6)'
+                                                                }
+                                                            }}
+                                                        >
+                                                            <VideocamIcon sx={{
+                                                                color: 'white',
+                                                                fontSize: '12px'
+                                                            }} />
                                                         </Box>
                                                     )}
                                                 </Box>
@@ -3368,7 +3488,7 @@ export default function OrderTrackingStatus() {
             <Popover
                 open={Boolean(hoveredMilestone)}
                 anchorEl={popoverAnchor}
-                onClose={handleMilestoneLeave}
+                onClose={handleForceClosePopover}
                 anchorOrigin={{
                     vertical: popoverPosition.vertical,
                     horizontal: popoverPosition.horizontal,
@@ -3378,7 +3498,7 @@ export default function OrderTrackingStatus() {
                     horizontal: popoverPosition.horizontal === 'right' ? 'left' : 'right',
                 }}
                 sx={{
-                    pointerEvents: 'none',
+                    pointerEvents: 'auto',
                     '& .MuiPopover-paper': {
                         borderRadius: 3,
                         boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
@@ -3386,11 +3506,14 @@ export default function OrderTrackingStatus() {
                         maxWidth: 400,
                         minWidth: 350,
                         p: 0,
-                        margin: 2
+                        margin: 2,
+                        pointerEvents: 'auto'
                     }
                 }}
                 disableRestoreFocus
                 disableScrollLock
+                onMouseEnter={handlePopoverMouseEnter}
+                onMouseLeave={handlePopoverMouseLeave}
             >
                 {hoveredMilestone && (
                     <Box sx={{p: 4}}>
@@ -3575,9 +3698,128 @@ export default function OrderTrackingStatus() {
                             </Box>
                         )}
 
+                        {/* Video Preview for completed milestones with video */}
+                        {hoveredMilestone.videoUrl && hoveredMilestone.isCompleted && (
+                            <Box sx={{
+                                mt: 3,
+                                p: 2,
+                                borderRadius: 3,
+                                background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%)',
+                                border: '1px solid rgba(139, 92, 246, 0.2)',
+                                position: 'relative',
+                                overflow: 'hidden'
+                            }}>
+                                <Box sx={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    right: 0,
+                                    width: '40px',
+                                    height: '40px',
+                                    background: 'rgba(139, 92, 246, 0.1)',
+                                    borderRadius: '50%',
+                                    transform: 'translate(10px, -10px)'
+                                }}/>
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    mb: 2,
+                                    position: 'relative',
+                                    zIndex: 1
+                                }}>
+                                    <Box sx={{
+                                        width: 28,
+                                        height: 28,
+                                        borderRadius: '50%',
+                                        background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)'
+                                    }}>
+                                        <VideocamIcon sx={{color: 'white', fontSize: 16}}/>
+                                    </Box>
+                                    <Typography variant="subtitle2" sx={{
+                                        fontWeight: 600,
+                                        color: '#7c3aed',
+                                        fontSize: '0.875rem'
+                                    }}>
+                                        Progress Video Available
+                                    </Typography>
+                                </Box>
+                                <Box sx={{
+                                    position: 'relative',
+                                    width: '100%',
+                                    height: 120,
+                                    borderRadius: 2,
+                                    overflow: 'hidden',
+                                    backgroundColor: '#000',
+                                    cursor: 'pointer',
+                                    '&:hover .play-overlay': {
+                                        opacity: 1
+                                    }
+                                }}
+                                onClick={() => handleOpenVideoDialog(hoveredMilestone)}
+                                >
+                                    <video
+                                        src={hoveredMilestone.videoUrl}
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover'
+                                        }}
+                                        muted
+                                        preload="metadata"
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                        }}
+                                    />
+                                    <Box 
+                                        className="play-overlay"
+                                        sx={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            right: 0,
+                                            bottom: 0,
+                                            background: 'rgba(0, 0, 0, 0.5)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            opacity: 0,
+                                            transition: 'opacity 0.3s ease'
+                                        }}
+                                    >
+                                        <Box sx={{
+                                            width: 40,
+                                            height: 40,
+                                            borderRadius: '50%',
+                                            background: 'rgba(255, 255, 255, 0.9)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+                                        }}>
+                                            <PlayArrowIcon sx={{color: '#8b5cf6', fontSize: 24}}/>
+                                        </Box>
+                                    </Box>
+                                </Box>
+                                <Typography variant="caption" sx={{
+                                    color: '#64748b',
+                                    fontSize: '0.75rem',
+                                    mt: 1,
+                                    display: 'block',
+                                    textAlign: 'center'
+                                }}>
+                                    Click to watch full video
+                                </Typography>
+                            </Box>
+                        )}
+
                         <Box sx={{
                             display: 'flex',
-                            justifyContent: 'center'
+                            justifyContent: 'center',
+                            mt: hoveredMilestone.videoUrl && hoveredMilestone.isCompleted ? 2 : 0
                         }}>
                             <Chip
                                 label={hoveredMilestone.isCompleted ? 'Completed' : hoveredMilestone.isActive ? 'Active' : hoveredMilestone.isPaymentRequired ? 'Required Payment' : hoveredMilestone.isNotStarted ? 'Not Started' : 'Pending'}
@@ -4233,6 +4475,172 @@ export default function OrderTrackingStatus() {
                         )}
                     </Button>
                 </DialogActions>
+            </Dialog>
+
+            {/* Video Dialog */}
+            <Dialog
+                open={videoDialogOpen}
+                onClose={handleCloseVideoDialog}
+                maxWidth="md"
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        borderRadius: 3,
+                        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
+                        overflow: 'hidden',
+                        backgroundColor: '#000'
+                    }
+                }}
+            >
+                <DialogTitle sx={{
+                    background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    p: 3
+                }}>
+                    <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 2
+                    }}>
+                        <Box sx={{
+                            p: 1,
+                            borderRadius: 2,
+                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            <VideocamIcon sx={{fontSize: 20}}/>
+                        </Box>
+                        <Box>
+                            <Typography variant="h6" sx={{fontWeight: 700, fontSize: '1.25rem'}}>
+                                {selectedMilestoneVideo?.title || 'Milestone Progress'}
+                            </Typography>
+                            <Typography variant="body2" sx={{
+                                color: 'rgba(255, 255, 255, 0.9)',
+                                fontWeight: 500,
+                                fontSize: '0.875rem'
+                            }}>
+                                Production progress video
+                            </Typography>
+                        </Box>
+                    </Box>
+                    <IconButton
+                        onClick={handleCloseVideoDialog}
+                        sx={{
+                            color: 'white',
+                            '&:hover': {
+                                backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }}
+                    >
+                        <CloseIcon/>
+                    </IconButton>
+                </DialogTitle>
+
+                <DialogContent sx={{p: 0, backgroundColor: '#000'}}>
+                    {selectedMilestoneVideo?.videoUrl && (
+                        <Box sx={{
+                            position: 'relative',
+                            width: '100%',
+                            paddingBottom: '56.25%', // 16:9 aspect ratio
+                            height: 0,
+                            overflow: 'hidden'
+                        }}>
+                            <video
+                                controls
+                                autoPlay
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'contain'
+                                }}
+                                src={selectedMilestoneVideo.videoUrl}
+                            >
+                                Your browser does not support the video tag.
+                            </video>
+                        </Box>
+                    )}
+                </DialogContent>
+
+                <Box sx={{
+                    background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+                    p: 3
+                }}>
+                    <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 3
+                    }}>
+                        <Box sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 2
+                        }}>
+                            <Box sx={{
+                                width: 40,
+                                height: 40,
+                                borderRadius: '50%',
+                                background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)'
+                            }}>
+                                <CheckCircleIcon sx={{color: 'white', fontSize: 20}}/>
+                            </Box>
+                            <Box>
+                                <Typography variant="subtitle1" sx={{
+                                    fontWeight: 700,
+                                    color: '#1e293b',
+                                    fontSize: '1rem'
+                                }}>
+                                    Stage {selectedMilestoneVideo?.stage || 1} Completed
+                                </Typography>
+                                <Typography variant="body2" sx={{
+                                    color: '#64748b',
+                                    fontSize: '0.875rem'
+                                }}>
+                                    {selectedMilestoneVideo?.description || 'Production milestone completed successfully'}
+                                </Typography>
+                            </Box>
+                        </Box>
+                        
+                        {selectedMilestoneVideo?.completedDate && (
+                            <Box sx={{
+                                p: 2,
+                                borderRadius: 2,
+                                background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%)',
+                                border: '1px solid rgba(139, 92, 246, 0.2)',
+                                ml: 'auto'
+                            }}>
+                                <Typography variant="caption" sx={{
+                                    color: '#64748b',
+                                    fontWeight: 500,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px',
+                                    display: 'block',
+                                    fontSize: '0.7rem'
+                                }}>
+                                    Completed Date
+                                </Typography>
+                                <Typography variant="body2" sx={{
+                                    fontWeight: 700,
+                                    color: '#7c3aed',
+                                    fontSize: '0.875rem'
+                                }}>
+                                    {formatDate(selectedMilestoneVideo.completedDate)}
+                                </Typography>
+                            </Box>
+                        )}
+                    </Box>
+                </Box>
             </Dialog>
         </Box>
     );
