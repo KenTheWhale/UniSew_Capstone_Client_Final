@@ -38,6 +38,7 @@ import {
     Report as ReportIcon,
     ShoppingCart as OrderIcon,
     ThumbDown as ThumbDownIcon,
+    Videocam as VideocamIcon,
     Visibility as VisibilityIcon,
     Warning as WarningIcon
 } from '@mui/icons-material';
@@ -585,7 +586,7 @@ export default function AdminReport() {
                                                         </Typography>
                                                         <Typography variant="body2" sx={{color: '#64748b'}}>
                                                             {report.order ? `Order ${parseID(report.order.id, "ord")}` :
-                                                                report.designRequest ? `Design Request #${report.designRequest.id}` : 'General Report'}
+                                                                report.designRequest ? `Design Request ${parseID(report.designRequest.id, "dr")}` : 'General Report'}
                                                         </Typography>
                                                         {report.sender && (
                                                             <Typography variant="body2"
@@ -668,6 +669,24 @@ export default function AdminReport() {
                                                                 sx={{
                                                                     backgroundColor: '#e0e7ff',
                                                                     color: '#3730a3',
+                                                                    fontWeight: 'bold',
+                                                                    fontSize: '0.7rem'
+                                                                }}
+                                                            />
+                                                        </Box>
+                                                    )}
+                                                    {(report.video || report.designRequest?.feedback?.video) && (
+                                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                                            <Typography variant="body2" sx={{color: '#64748b'}}>
+                                                                Video:
+                                                            </Typography>
+                                                            <Chip
+                                                                icon={<VideocamIcon sx={{fontSize: '12px'}}/>}
+                                                                label="Video Available"
+                                                                size="small"
+                                                                sx={{
+                                                                    backgroundColor: '#fef3c7',
+                                                                    color: '#92400e',
                                                                     fontWeight: 'bold',
                                                                     fontSize: '0.7rem'
                                                                 }}
@@ -770,6 +789,19 @@ export default function AdminReport() {
                                             <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                                 {selectedReport.images.length} image{selectedReport.images.length > 1 ? 's' : ''}
                                             </Typography>
+                                        </Box>
+                                    )}
+                                    {(selectedReport.video || selectedReport.designRequest?.feedback?.video) && (
+                                        <Box sx={{flex: 1}}>
+                                            <Typography variant="body2" sx={{color: '#64748b'}}>
+                                                {selectedReport.isReport ? 'Evidence Video' : 'Attached Video'}
+                                            </Typography>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                                <VideocamIcon sx={{fontSize: 16, color: '#8b5cf6'}}/>
+                                                <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
+                                                    Video Available
+                                                </Typography>
+                                            </Box>
                                         </Box>
                                     )}
                                 </Box>
@@ -1068,6 +1100,62 @@ export default function AdminReport() {
                                             </Grid>
                                         ))}
                                     </Grid>
+                                </Paper>
+                            )}
+
+                            {/* Video Display */}
+                            {(selectedReport.video || selectedReport.designRequest?.feedback?.video) && (
+                                <Paper elevation={0} sx={{
+                                    p: 3,
+                                    backgroundColor: '#f8fafc',
+                                    borderRadius: 2,
+                                    border: '1px solid #e2e8f0'
+                                }}>
+                                    <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
+                                        {selectedReport.isReport ? 'Evidence Video' : 'Attached Video'}
+                                    </Typography>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        borderRadius: 2,
+                                        overflow: 'hidden',
+                                        border: '2px solid #e2e8f0',
+                                        backgroundColor: '#000'
+                                    }}>
+                                        <video
+                                            src={selectedReport.video || selectedReport.designRequest?.feedback?.video}
+                                            controls
+                                            style={{
+                                                width: '100%',
+                                                maxWidth: '600px',
+                                                height: 'auto',
+                                                maxHeight: '400px',
+                                                objectFit: 'contain'
+                                            }}
+                                            onError={(e) => {
+                                                console.error('Video failed to load:', e);
+                                                e.target.style.display = 'none';
+                                                e.target.parentNode.innerHTML = '<div style="color: #ef4444; padding: 20px; text-align: center;">Video failed to load</div>';
+                                            }}
+                                        />
+                                    </Box>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: 1,
+                                        mt: 2,
+                                        p: 2,
+                                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                                        borderRadius: 2,
+                                        border: '1px solid rgba(139, 92, 246, 0.2)'
+                                    }}>
+                                        <VideocamIcon sx={{color: '#8b5cf6', fontSize: 20}}/>
+                                        <Typography variant="body2" sx={{color: '#5b21b6', fontWeight: 500}}>
+                                            {selectedReport.isReport ? 'Evidence video for this report' : 'Video attachment for feedback'}
+                                        </Typography>
+                                    </Box>
                                 </Paper>
                             )}
 
@@ -1547,107 +1635,185 @@ export default function AdminReport() {
                             </Paper>
 
                             {/* School & Garment Information */}
-                            <Grid container spacing={3}>
-                                {/* School Info */}
-                                <Grid item xs={12} md={6}>
-                                    <Paper elevation={0} sx={{
-                                        p: 3,
-                                        backgroundColor: '#f8fafc',
+                            <Paper elevation={0} sx={{
+                                p: 3,
+                                backgroundColor: '#f8fafc',
+                                borderRadius: 2,
+                                border: '1px solid #e2e8f0'
+                            }}>
+                                <Typography variant="h6" sx={{
+                                    fontWeight: 'bold', 
+                                    mb: 2, 
+                                    color: '#1e293b',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1
+                                }}>
+                                    <BusinessIcon sx={{color: '#10b981'}}/>
+                                    School & Garment Information
+                                </Typography>
+                                <Box sx={{display: 'flex', gap: 3}}>
+                                    {/* School Information */}
+                                    <Box sx={{
+                                        flex: 1,
+                                        p: 2,
+                                        background: 'rgba(16, 185, 129, 0.05)',
                                         borderRadius: 2,
-                                        border: '1px solid #e2e8f0',
-                                        height: '100%'
+                                        border: '1px solid rgba(16, 185, 129, 0.1)'
                                     }}>
                                         <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
-                                            <Avatar sx={{bgcolor: '#10b981', width: 40, height: 40}}>
-                                                <BusinessIcon/>
+                                            <Avatar sx={{bgcolor: '#10b981', width: 32, height: 32}}>
+                                                <BusinessIcon sx={{fontSize: 16}}/>
                                             </Avatar>
-                                            <Typography variant="h6" sx={{fontWeight: 'bold', color: '#1e293b'}}>
+                                            <Typography variant="subtitle1" sx={{
+                                                fontWeight: 'bold', 
+                                                color: '#10b981',
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.5px'
+                                            }}>
                                                 School Information
                                             </Typography>
                                         </Box>
-                                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 1.5}}>
                                             <Box>
-                                                <Typography variant="body2" sx={{color: '#64748b', mb: 0.5}}>
+                                                <Typography variant="caption" sx={{
+                                                    color: '#10b981',
+                                                    fontWeight: 600,
+                                                    textTransform: 'uppercase',
+                                                    fontSize: '0.7rem'
+                                                }}>
                                                     School Name
                                                 </Typography>
-                                                <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
+                                                <Typography variant="body2" sx={{
+                                                    fontWeight: 'bold', 
+                                                    color: '#1e293b',
+                                                    fontSize: '0.875rem'
+                                                }}>
                                                     {selectedReport.order.school?.business}
                                                 </Typography>
                                             </Box>
                                             <Box>
-                                                <Typography variant="body2" sx={{color: '#64748b', mb: 0.5}}>
+                                                <Typography variant="caption" sx={{
+                                                    color: '#10b981',
+                                                    fontWeight: 600,
+                                                    textTransform: 'uppercase',
+                                                    fontSize: '0.7rem'
+                                                }}>
                                                     Contact Person
                                                 </Typography>
-                                                <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
+                                                <Typography variant="body2" sx={{
+                                                    fontWeight: 'bold', 
+                                                    color: '#1e293b',
+                                                    fontSize: '0.875rem'
+                                                }}>
                                                     {selectedReport.order.school?.name}
                                                 </Typography>
                                             </Box>
                                             <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                                                <PhoneIcon sx={{fontSize: 16, color: '#64748b'}}/>
-                                                <Typography variant="body2" sx={{color: '#64748b'}}>
+                                                <PhoneIcon sx={{fontSize: 14, color: '#10b981'}}/>
+                                                <Typography variant="body2" sx={{
+                                                    color: '#1e293b',
+                                                    fontSize: '0.8rem',
+                                                    fontWeight: 500
+                                                }}>
                                                     {selectedReport.order.school?.phone}
                                                 </Typography>
                                             </Box>
                                             <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 1}}>
-                                                <LocationIcon sx={{fontSize: 16, color: '#64748b', mt: 0.2}}/>
-                                                <Typography variant="body2" sx={{color: '#64748b', lineHeight: 1.4}}>
+                                                <LocationIcon sx={{fontSize: 14, color: '#10b981', mt: 0.2}}/>
+                                                <Typography variant="body2" sx={{
+                                                    color: '#1e293b', 
+                                                    lineHeight: 1.4,
+                                                    fontSize: '0.8rem',
+                                                    fontWeight: 500
+                                                }}>
                                                     {selectedReport.order.school?.address}
                                                 </Typography>
                                             </Box>
                                         </Box>
-                                    </Paper>
-                                </Grid>
+                                    </Box>
 
-                                {/* Garment Info */}
-                                <Grid item xs={12} md={6}>
-                                    <Paper elevation={0} sx={{
-                                        p: 3,
-                                        backgroundColor: '#f8fafc',
+                                    {/* Garment Factory Information */}
+                                    <Box sx={{
+                                        flex: 1,
+                                        p: 2,
+                                        background: 'rgba(239, 68, 68, 0.05)',
                                         borderRadius: 2,
-                                        border: '1px solid #e2e8f0',
-                                        height: '100%'
+                                        border: '1px solid rgba(239, 68, 68, 0.1)'
                                     }}>
                                         <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
-                                            <Avatar sx={{bgcolor: '#ef4444', width: 40, height: 40}}>
-                                                <BusinessIcon/>
+                                            <Avatar sx={{bgcolor: '#ef4444', width: 32, height: 32}}>
+                                                <BusinessIcon sx={{fontSize: 16}}/>
                                             </Avatar>
-                                            <Typography variant="h6" sx={{fontWeight: 'bold', color: '#1e293b'}}>
+                                            <Typography variant="subtitle1" sx={{
+                                                fontWeight: 'bold', 
+                                                color: '#ef4444',
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.5px'
+                                            }}>
                                                 Garment Factory
                                             </Typography>
                                         </Box>
-                                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 1.5}}>
                                             <Box>
-                                                <Typography variant="body2" sx={{color: '#64748b', mb: 0.5}}>
+                                                <Typography variant="caption" sx={{
+                                                    color: '#ef4444',
+                                                    fontWeight: 600,
+                                                    textTransform: 'uppercase',
+                                                    fontSize: '0.7rem'
+                                                }}>
                                                     Factory Name
                                                 </Typography>
-                                                <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
+                                                <Typography variant="body2" sx={{
+                                                    fontWeight: 'bold', 
+                                                    color: '#1e293b',
+                                                    fontSize: '0.875rem'
+                                                }}>
                                                     {selectedReport.order.garment?.customer?.business}
                                                 </Typography>
                                             </Box>
                                             <Box>
-                                                <Typography variant="body2" sx={{color: '#64748b', mb: 0.5}}>
+                                                <Typography variant="caption" sx={{
+                                                    color: '#ef4444',
+                                                    fontWeight: 600,
+                                                    textTransform: 'uppercase',
+                                                    fontSize: '0.7rem'
+                                                }}>
                                                     Contact Person
                                                 </Typography>
-                                                <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
+                                                <Typography variant="body2" sx={{
+                                                    fontWeight: 'bold', 
+                                                    color: '#1e293b',
+                                                    fontSize: '0.875rem'
+                                                }}>
                                                     {selectedReport.order.garment?.customer?.name}
                                                 </Typography>
                                             </Box>
                                             <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                                                <PhoneIcon sx={{fontSize: 16, color: '#64748b'}}/>
-                                                <Typography variant="body2" sx={{color: '#64748b'}}>
+                                                <PhoneIcon sx={{fontSize: 14, color: '#ef4444'}}/>
+                                                <Typography variant="body2" sx={{
+                                                    color: '#1e293b',
+                                                    fontSize: '0.8rem',
+                                                    fontWeight: 500
+                                                }}>
                                                     {selectedReport.order.garment?.customer?.phone}
                                                 </Typography>
                                             </Box>
                                             <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 1}}>
-                                                <LocationIcon sx={{fontSize: 16, color: '#64748b', mt: 0.2}}/>
-                                                <Typography variant="body2" sx={{color: '#64748b', lineHeight: 1.4}}>
+                                                <LocationIcon sx={{fontSize: 14, color: '#ef4444', mt: 0.2}}/>
+                                                <Typography variant="body2" sx={{
+                                                    color: '#1e293b', 
+                                                    lineHeight: 1.4,
+                                                    fontSize: '0.8rem',
+                                                    fontWeight: 500
+                                                }}>
                                                     {selectedReport.order.garment?.customer?.address}
                                                 </Typography>
                                             </Box>
                                         </Box>
-                                    </Paper>
-                                </Grid>
-                            </Grid>
+                                    </Box>
+                                </Box>
+                            </Paper>
 
                             {/* Order Items Table */}
                             {selectedReport.order.orderDetails && selectedReport.order.orderDetails.length > 0 && (
@@ -2162,6 +2328,71 @@ export default function AdminReport() {
                 <DialogContent sx={{p: 4}}>
                     {selectedReport?.designRequest && (
                         <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
+                            {/* Header Card */}
+                            <Paper elevation={0} sx={{
+                                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.08) 100%)',
+                                border: '1px solid rgba(16, 185, 129, 0.1)',
+                                borderRadius: 2,
+                                p: 3
+                            }}>
+                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1,
+                                        flex: 1
+                                    }}>
+                                        <Typography variant="h5" sx={{
+                                            fontWeight: 'bold', 
+                                            color: '#1e293b',
+                                            fontSize: '1.25rem'
+                                        }}>
+                                            {selectedReport.designRequest.name}
+                                        </Typography>
+                                    </Box>
+                                    <Chip
+                                        label={parseID(selectedReport.designRequest.id, 'dr')}
+                                        sx={{
+                                            backgroundColor: '#dcfce7',
+                                            color: '#065f46',
+                                            fontWeight: 'bold',
+                                            fontSize: '0.75rem'
+                                        }}
+                                    />
+                                </Box>
+                                <Typography variant="body2" sx={{color: '#64748b', fontSize: '0.875rem'}}>
+                                    Created: {formatDate(selectedReport.designRequest.creationDate)}
+                                </Typography>
+                            </Paper>
+
+                            {/* Status Section */}
+                            <Paper elevation={0} sx={{
+                                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(37, 99, 235, 0.12) 100%)',
+                                border: '2px solid rgba(59, 130, 246, 0.2)',
+                                borderRadius: 3,
+                                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.1)',
+                                p: 3
+                            }}>
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    <Chip
+                                        label={selectedReport.designRequest.status}
+                                        sx={{
+                                            backgroundColor: '#3b82f6',
+                                            color: 'white',
+                                            fontWeight: 'bold',
+                                            fontSize: '1rem',
+                                            padding: '8px 16px',
+                                            transform: 'scale(1.2)',
+                                            filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.15))'
+                                        }}
+                                    />
+                                </Box>
+                            </Paper>
+
                             {/* Basic Information */}
                             <Paper elevation={0} sx={{
                                 p: 3,
@@ -2169,43 +2400,65 @@ export default function AdminReport() {
                                 borderRadius: 2,
                                 border: '1px solid #e2e8f0'
                             }}>
-                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
+                                <Typography variant="h6" sx={{
+                                    fontWeight: 'bold', 
+                                    mb: 2, 
+                                    color: '#1e293b',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1
+                                }}>
+                                    <InfoIcon sx={{color: '#10b981'}}/>
                                     Basic Information
                                 </Typography>
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6}>
-                                        <Typography variant="body2" sx={{color: '#64748b'}}>
+                                <Box sx={{display: 'flex', gap: 3}}>
+                                    <Box sx={{
+                                        flex: 1,
+                                        p: 2,
+                                        background: 'rgba(16, 185, 129, 0.05)',
+                                        borderRadius: 2,
+                                        border: '1px solid rgba(16, 185, 129, 0.1)'
+                                    }}>
+                                        <Typography variant="body2" sx={{
+                                            color: '#10b981',
+                                            fontWeight: 600,
+                                            fontSize: '0.75rem',
+                                            textTransform: 'uppercase'
+                                        }}>
                                             Request Name
                                         </Typography>
-                                        <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
+                                        <Typography variant="body1" sx={{
+                                            fontWeight: 'bold', 
+                                            color: '#1e293b',
+                                            mt: 0.5
+                                        }}>
                                             {selectedReport.designRequest.name}
                                         </Typography>
-                                    </Grid>
-                                    <Grid item xs={12} sm={6}>
-                                        <Typography variant="body2" sx={{color: '#64748b'}}>
-                                            Status
-                                        </Typography>
-                                        <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                            {selectedReport.designRequest.status}
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item xs={12} sm={6}>
-                                        <Typography variant="body2" sx={{color: '#64748b'}}>
-                                            Creation Date
-                                        </Typography>
-                                        <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                            {formatDate(selectedReport.designRequest.creationDate)}
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item xs={12} sm={6}>
-                                        <Typography variant="body2" sx={{color: '#64748b'}}>
+                                    </Box>
+                                    <Box sx={{
+                                        flex: 1,
+                                        p: 2,
+                                        background: 'rgba(124, 58, 237, 0.05)',
+                                        borderRadius: 2,
+                                        border: '1px solid rgba(124, 58, 237, 0.1)'
+                                    }}>
+                                        <Typography variant="body2" sx={{
+                                            color: '#7c3aed',
+                                            fontWeight: 600,
+                                            fontSize: '0.75rem',
+                                            textTransform: 'uppercase'
+                                        }}>
                                             Privacy
                                         </Typography>
-                                        <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
+                                        <Typography variant="body1" sx={{
+                                            fontWeight: 'bold', 
+                                            color: '#1e293b',
+                                            mt: 0.5
+                                        }}>
                                             {selectedReport.designRequest.privacy ? 'Private' : 'Public'}
                                         </Typography>
-                                    </Grid>
-                                </Grid>
+                                    </Box>
+                                </Box>
                             </Paper>
 
                             {/* School Information */}
@@ -2216,51 +2469,150 @@ export default function AdminReport() {
                                     borderRadius: 2,
                                     border: '1px solid #e2e8f0'
                                 }}>
-                                    <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
+                                    <Typography variant="h6" sx={{
+                                        fontWeight: 'bold', 
+                                        mb: 2, 
+                                        color: '#1e293b',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1
+                                    }}>
+                                        <BusinessIcon sx={{color: '#10b981'}}/>
                                         School Information
                                     </Typography>
-                                    <Grid container spacing={2}>
-                                        <Grid item xs={12} sm={6}>
-                                            <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                School Name
-                                            </Typography>
-                                            <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                                {selectedReport.designRequest.school.business}
-                                            </Typography>
-                                        </Grid>
-                                        <Grid item xs={12} sm={6}>
-                                            <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                Contact Person
-                                            </Typography>
-                                            <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                                {selectedReport.designRequest.school.name}
-                                            </Typography>
-                                        </Grid>
-                                        <Grid item xs={12} sm={6}>
-                                            <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                Phone
-                                            </Typography>
-                                            <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                                {selectedReport.designRequest.school.phone}
-                                            </Typography>
-                                        </Grid>
-                                        <Grid item xs={12} sm={6}>
-                                            <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                Tax Code
-                                            </Typography>
-                                            <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                                {selectedReport.designRequest.school.taxCode}
-                                            </Typography>
-                                        </Grid>
-                                        <Grid item xs={12}>
-                                            <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                Address
-                                            </Typography>
-                                            <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                                {selectedReport.designRequest.school.address}
-                                            </Typography>
-                                        </Grid>
-                                    </Grid>
+                                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
+                                        {/* First row: School Name, Contact Person, Phone, Tax Code */}
+                                        <Box sx={{display: 'flex', gap: 2}}>
+                                            <Box sx={{
+                                                flex: 1,
+                                                p: 2,
+                                                background: 'rgba(16, 185, 129, 0.05)',
+                                                borderRadius: 2,
+                                                border: '1px solid rgba(16, 185, 129, 0.1)'
+                                            }}>
+                                                <Typography variant="body2" sx={{
+                                                    color: '#10b981',
+                                                    fontWeight: 600,
+                                                    fontSize: '0.75rem',
+                                                    textTransform: 'uppercase',
+                                                    mb: 1
+                                                }}>
+                                                    School Name
+                                                </Typography>
+                                                <Typography variant="body1" sx={{
+                                                    fontWeight: 'bold', 
+                                                    color: '#1e293b'
+                                                }}>
+                                                    {selectedReport.designRequest.school.business}
+                                                </Typography>
+                                            </Box>
+                                            <Box sx={{
+                                                flex: 1,
+                                                p: 2,
+                                                background: 'rgba(255, 152, 0, 0.05)',
+                                                borderRadius: 2,
+                                                border: '1px solid rgba(255, 152, 0, 0.1)'
+                                            }}>
+                                                <Typography variant="body2" sx={{
+                                                    color: '#f57c00',
+                                                    fontWeight: 600,
+                                                    fontSize: '0.75rem',
+                                                    textTransform: 'uppercase',
+                                                    mb: 1
+                                                }}>
+                                                    Contact Person
+                                                </Typography>
+                                                <Typography variant="body1" sx={{
+                                                    fontWeight: 'bold', 
+                                                    color: '#1e293b'
+                                                }}>
+                                                    {selectedReport.designRequest.school.name}
+                                                </Typography>
+                                            </Box>
+                                            <Box sx={{
+                                                flex: 1,
+                                                p: 2,
+                                                background: 'rgba(124, 58, 237, 0.05)',
+                                                borderRadius: 2,
+                                                border: '1px solid rgba(124, 58, 237, 0.1)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 1
+                                            }}>
+                                                <PhoneIcon sx={{color: '#7c3aed', fontSize: 16}}/>
+                                                <Box>
+                                                    <Typography variant="body2" sx={{
+                                                        color: '#7c3aed',
+                                                        fontWeight: 600,
+                                                        fontSize: '0.75rem',
+                                                        textTransform: 'uppercase'
+                                                    }}>
+                                                        Phone
+                                                    </Typography>
+                                                    <Typography variant="body1" sx={{
+                                                        fontWeight: 'bold', 
+                                                        color: '#1e293b'
+                                                    }}>
+                                                        {selectedReport.designRequest.school.phone}
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+                                            <Box sx={{
+                                                flex: 1,
+                                                p: 2,
+                                                background: 'rgba(236, 72, 153, 0.05)',
+                                                borderRadius: 2,
+                                                border: '1px solid rgba(236, 72, 153, 0.1)'
+                                            }}>
+                                                <Typography variant="body2" sx={{
+                                                    color: '#ec4899',
+                                                    fontWeight: 600,
+                                                    fontSize: '0.75rem',
+                                                    textTransform: 'uppercase',
+                                                    mb: 1
+                                                }}>
+                                                    Tax Code
+                                                </Typography>
+                                                <Typography variant="body1" sx={{
+                                                    fontWeight: 'bold', 
+                                                    color: '#1e293b'
+                                                }}>
+                                                    {selectedReport.designRequest.school.taxCode}
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+                                        
+                                        {/* Second row: Address full width */}
+                                        <Box sx={{
+                                            p: 2,
+                                            background: 'rgba(59, 130, 246, 0.05)',
+                                            borderRadius: 2,
+                                            border: '1px solid rgba(59, 130, 246, 0.1)',
+                                            display: 'flex',
+                                            alignItems: 'flex-start',
+                                            gap: 1
+                                        }}>
+                                            <LocationIcon sx={{color: '#3b82f6', fontSize: 16, mt: 0.5}}/>
+                                            <Box>
+                                                <Typography variant="body2" sx={{
+                                                    color: '#3b82f6',
+                                                    fontWeight: 600,
+                                                    fontSize: '0.75rem',
+                                                    textTransform: 'uppercase',
+                                                    mb: 1
+                                                }}>
+                                                    Address
+                                                </Typography>
+                                                <Typography variant="body1" sx={{
+                                                    fontWeight: 'bold', 
+                                                    color: '#1e293b',
+                                                    lineHeight: 1.4
+                                                }}>
+                                                    {selectedReport.designRequest.school.address}
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+                                    </Box>
                                 </Paper>
                             )}
 
@@ -2272,84 +2624,563 @@ export default function AdminReport() {
                                     border: '1px solid #e2e8f0'
                                 }}>
                                     <Box sx={{p: 3, backgroundColor: 'white', borderBottom: '1px solid #e2e8f0'}}>
-                                        <Typography variant="h6" sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                            Design Items ({selectedReport.designRequest.items.length})
+                                        <Typography variant="h6" sx={{
+                                            fontWeight: 'bold', 
+                                            color: '#1e293b',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 1
+                                        }}>
+                                            <DesignIcon sx={{color: '#10b981'}}/>
+                                            Requested Design Items ({selectedReport.designRequest.items.length})
                                         </Typography>
                                     </Box>
                                     <Box sx={{p: 3}}>
-                                        <Grid container spacing={2}>
-                                            {selectedReport.designRequest.items.map((item, index) => (
-                                                <Grid item xs={12} sm={6} key={item.id}>
-                                                    <Card elevation={0} sx={{
-                                                        border: '1px solid #e2e8f0',
-                                                        borderRadius: 2,
-                                                        backgroundColor: 'white'
-                                                    }}>
-                                                        <CardContent sx={{p: 2}}>
+                                        {(() => {
+                                            const boyItems = selectedReport.designRequest.items.filter(item => item.gender === 'boy');
+                                            const girlItems = selectedReport.designRequest.items.filter(item => item.gender === 'girl');
+                                            
+                                            return (
+                                                <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
+                                                    {/* Boy Items Section */}
+                                                    {boyItems.length > 0 && (
+                                                        <Box>
+                                                            {/* Boy Header */}
                                                             <Box sx={{
+                                                                p: 2,
+                                                                mb: 2,
+                                                                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.15) 100%)',
+                                                                borderRadius: 2,
+                                                                border: '1px solid rgba(59, 130, 246, 0.2)',
                                                                 display: 'flex',
                                                                 alignItems: 'center',
-                                                                gap: 2,
-                                                                mb: 2
+                                                                gap: 1
                                                             }}>
-                                                                <Avatar
-                                                                    sx={{bgcolor: '#10b981', width: 32, height: 32}}>
-                                                                    <DesignIcon sx={{fontSize: 16}}/>
-                                                                </Avatar>
-                                                                <Box>
-                                                                    <Typography variant="subtitle2" sx={{
-                                                                        fontWeight: 'bold',
-                                                                        color: '#1e293b'
-                                                                    }}>
-                                                                        {item.type} - {item.gender}
-                                                                    </Typography>
-                                                                    <Typography variant="caption"
-                                                                                sx={{color: '#64748b'}}>
-                                                                        {item.category}
-                                                                    </Typography>
-                                                                </Box>
-                                                            </Box>
-                                                            <Box sx={{
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                gap: 1,
-                                                                mb: 1
-                                                            }}>
-                                                                <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                                    Color:
-                                                                </Typography>
                                                                 <Box sx={{
-                                                                    width: 20,
-                                                                    height: 20,
-                                                                    backgroundColor: item.color || '#000',
-                                                                    borderRadius: 0.5,
-                                                                    border: '1px solid #e5e7eb'
-                                                                }}/>
-                                                                <Typography variant="body2"
-                                                                            sx={{color: '#1e293b', fontWeight: 'bold'}}>
-                                                                    {item.color}
+                                                                    width: 24,
+                                                                    height: 24,
+                                                                    borderRadius: '50%',
+                                                                    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    fontSize: '12px'
+                                                                }}>
+                                                                    👦
+                                                                </Box>
+                                                                <Typography variant="subtitle1" sx={{
+                                                                    fontWeight: 'bold',
+                                                                    color: '#1e40af',
+                                                                    textTransform: 'uppercase',
+                                                                    letterSpacing: '0.5px'
+                                                                }}>
+                                                                    BOY ({boyItems.length} CLOTHS)
                                                                 </Typography>
                                                             </Box>
-                                                            {item.logoPosition && (
-                                                                <Typography variant="body2"
-                                                                            sx={{color: '#64748b', mb: 1}}>
-                                                                    Logo Position: <span style={{
+                                                            {/* Items organized by category */}
+                                                            {(() => {
+                                                                const regularBoyItems = boyItems.filter(item => item.category === 'regular');
+                                                                const peBoyItems = boyItems.filter(item => item.category === 'pe');
+                                                                
+                                                                return (
+                                                                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                                                                        {/* Regular Uniform */}
+                                                                        {regularBoyItems.length > 0 && (
+                                                                            <Box>
+                                                                                <Box sx={{
+                                                                                    p: 1.5,
+                                                                                    mb: 2,
+                                                                                    background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.15) 100%)',
+                                                                                    borderRadius: 2,
+                                                                                    border: '1px solid rgba(34, 197, 94, 0.2)',
+                                                                                    display: 'flex',
+                                                                                    alignItems: 'center',
+                                                                                    gap: 1
+                                                                                }}>
+                                                                                    <Box sx={{
+                                                                                        width: 20,
+                                                                                        height: 20,
+                                                                                        borderRadius: '50%',
+                                                                                        background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                                                                                        display: 'flex',
+                                                                                        alignItems: 'center',
+                                                                                        justifyContent: 'center',
+                                                                                        fontSize: '10px'
+                                                                                    }}>
+                                                                                        🎓
+                                                                                    </Box>
+                                                                                    <Typography variant="body2" sx={{
+                                                                                        fontWeight: 'bold',
+                                                                                        color: '#15803d',
+                                                                                        textTransform: 'uppercase',
+                                                                                        letterSpacing: '0.3px',
+                                                                                        fontSize: '0.875rem'
+                                                                                    }}>
+                                                                                        REGULAR UNIFORM ({regularBoyItems.length} CLOTHS)
+                                                                                    </Typography>
+                                                                                </Box>
+                                                                                <Box sx={{display: 'flex', gap: 2, flexWrap: 'wrap'}}>
+                                                                                    {regularBoyItems.map((item, index) => (
+                                                                                        <Box key={item.id} sx={{
+                                                                                            flex: '1 1 280px',
+                                                                                            minWidth: '280px',
+                                                                                            p: 2,
+                                                                                            border: '1px solid rgba(34, 197, 94, 0.2)',
+                                                                                            borderRadius: 2,
+                                                                                            background: 'linear-gradient(135deg, #ffffff 0%, rgba(34, 197, 94, 0.02) 100%)',
+                                                                                            transition: 'all 0.3s ease',
+                                                                                            '&:hover': {
+                                                                                                borderColor: '#22c55e',
+                                                                                                boxShadow: '0 3px 12px rgba(34, 197, 94, 0.15)'
+                                                                                            }
+                                                                                        }}>
+                                                                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                                                                                <Avatar sx={{bgcolor: '#22c55e', width: 28, height: 28}}>
+                                                                                                    <DesignIcon sx={{fontSize: 14}}/>
+                                                                                                </Avatar>
+                                                                                                <Box sx={{flex: 1}}>
+                                                                                                    <Typography variant="subtitle2" sx={{
+                                                                                                        fontWeight: 'bold',
+                                                                                                        color: '#1e293b',
+                                                                                                        fontSize: '0.875rem'
+                                                                                                    }}>
+                                                                                                        {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {item.category}
+                                                                                                    </Typography>
+                                                                                                </Box>
+                                                                                                <Chip
+                                                                                                    label={`#${index + 1}`}
+                                                                                                    size="small"
+                                                                                                    sx={{
+                                                                                                        backgroundColor: '#dcfce7',
+                                                                                                        color: '#15803d',
+                                                                                                        fontWeight: 'bold',
+                                                                                                        fontSize: '0.6rem'
+                                                                                                    }}
+                                                                                                />
+                                                                                            </Box>
+                                                                                            <Grid container spacing={1}>
+                                                                                                <Grid item xs={6}>
+                                                                                                    <Box sx={{
+                                                                                                        p: 1,
+                                                                                                        background: 'rgba(16, 185, 129, 0.08)',
+                                                                                                        borderRadius: 1,
+                                                                                                        border: '1px solid rgba(16, 185, 129, 0.15)'
+                                                                                                    }}>
+                                                                                                        <Typography variant="caption" sx={{
+                                                                                                            color: '#10b981',
+                                                                                                            fontWeight: 600,
+                                                                                                            textTransform: 'uppercase',
+                                                                                                            fontSize: '0.65rem'
+                                                                                                        }}>
+                                                                                                            FABRIC
+                                                                                                        </Typography>
+                                                                                                        <Typography variant="body2" sx={{
+                                                                                                            color: '#1e293b',
+                                                                                                            fontWeight: 500,
+                                                                                                            fontSize: '0.75rem'
+                                                                                                        }}>
+                                                                                                            {item.fabricName}
+                                                                                                        </Typography>
+                                                                                                    </Box>
+                                                                                                </Grid>
+                                                                                                <Grid item xs={6}>
+                                                                                                    <Box sx={{
+                                                                                                        p: 1,
+                                                                                                        background: 'rgba(124, 58, 237, 0.08)',
+                                                                                                        borderRadius: 1,
+                                                                                                        border: '1px solid rgba(124, 58, 237, 0.15)',
+                                                                                                        display: 'flex',
+                                                                                                        alignItems: 'center',
+                                                                                                        gap: 0.5
+                                                                                                    }}>
+                                                                                                        <Box sx={{
+                                                                                                            width: 12,
+                                                                                                            height: 12,
+                                                                                                            borderRadius: '50%',
+                                                                                                            backgroundColor: item.color || '#000',
+                                                                                                            border: '1px solid #ffffff',
+                                                                                                            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                                                                                                            flexShrink: 0
+                                                                                                        }}/>
+                                                                                                        <Box>
+                                                                                                            <Typography variant="caption" sx={{
+                                                                                                                color: '#7c3aed',
+                                                                                                                fontWeight: 600,
+                                                                                                                textTransform: 'uppercase',
+                                                                                                                fontSize: '0.65rem'
+                                                                                                            }}>
+                                                                                                                COLOR
+                                                                                                            </Typography>
+                                                                                                            <Typography variant="body2" sx={{
+                                                                                                                color: '#1e293b',
+                                                                                                                fontWeight: 500,
+                                                                                                                fontSize: '0.7rem'
+                                                                                                            }}>
+                                                                                                                {item.color}
+                                                                                                            </Typography>
+                                                                                                        </Box>
+                                                                                                    </Box>
+                                                                                                </Grid>
+                                                                                                <Grid item xs={6}>
+                                                                                                    <Box sx={{
+                                                                                                        p: 1,
+                                                                                                        background: 'rgba(255, 152, 0, 0.08)',
+                                                                                                        borderRadius: 1,
+                                                                                                        border: '1px solid rgba(255, 152, 0, 0.15)'
+                                                                                                    }}>
+                                                                                                        <Typography variant="caption" sx={{
+                                                                                                            color: '#f57c00',
+                                                                                                            fontWeight: 600,
+                                                                                                            textTransform: 'uppercase',
+                                                                                                            fontSize: '0.65rem'
+                                                                                                        }}>
+                                                                                                            LOGO
+                                                                                                        </Typography>
+                                                                                                        <Typography variant="body2" sx={{
+                                                                                                            color: '#1e293b',
+                                                                                                            fontWeight: 500,
+                                                                                                            fontSize: '0.75rem'
+                                                                                                        }}>
+                                                                                                            {item.logoPosition || 'No logo'}
+                                                                                                        </Typography>
+                                                                                                    </Box>
+                                                                                                </Grid>
+                                                                                                <Grid item xs={6}>
+                                                                                                    <Box sx={{
+                                                                                                        p: 1,
+                                                                                                        background: 'rgba(236, 72, 153, 0.08)',
+                                                                                                        borderRadius: 1,
+                                                                                                        border: '1px solid rgba(236, 72, 153, 0.15)'
+                                                                                                    }}>
+                                                                                                        <Typography variant="caption" sx={{
+                                                                                                            color: '#ec4899',
+                                                                                                            fontWeight: 600,
+                                                                                                            textTransform: 'uppercase',
+                                                                                                            fontSize: '0.65rem'
+                                                                                                        }}>
+                                                                                                            NOTE
+                                                                                                        </Typography>
+                                                                                                        <Typography variant="body2" sx={{
+                                                                                                            color: '#1e293b',
+                                                                                                            fontWeight: 500,
+                                                                                                            fontSize: '0.75rem',
+                                                                                                            fontStyle: item.note ? 'normal' : 'italic'
+                                                                                                        }}>
+                                                                                                            {item.note || 'No note'}
+                                                                                                        </Typography>
+                                                                                                    </Box>
+                                                                                                </Grid>
+                                                                                            </Grid>
+                                                                                            {item.sampleImages && item.sampleImages.length > 0 && (
+                                                                                                <Box sx={{mt: 1.5, pt: 1.5, borderTop: '1px solid #f1f5f9'}}>
+                                                                                                    <Typography variant="caption" sx={{
+                                                                                                        color: '#475569',
+                                                                                                        fontWeight: 600,
+                                                                                                        textTransform: 'uppercase',
+                                                                                                        fontSize: '0.65rem',
+                                                                                                        display: 'block',
+                                                                                                        mb: 1
+                                                                                                    }}>
+                                                                                                        SAMPLES ({item.sampleImages.length})
+                                                                                                    </Typography>
+                                                                                                    <Box sx={{display: 'flex', gap: 1, flexWrap: 'wrap'}}>
+                                                                                                        {item.sampleImages.map((image, imgIndex) => (
+                                                                                                            <Box key={imgIndex} sx={{
+                                                                                                                width: 32,
+                                                                                                                height: 32,
+                                                                                                                borderRadius: 1,
+                                                                                                                overflow: 'hidden',
+                                                                                                                border: '1px solid #e2e8f0'
+                                                                                                            }}>
+                                                                                                                <DisplayImage
+                                                                                                                    imageUrl={image.url}
+                                                                                                                    alt={`Sample ${imgIndex + 1}`}
+                                                                                                                    width="32px"
+                                                                                                                    height="32px"
+                                                                                                                />
+                                                                                                            </Box>
+                                                                                                        ))}
+                                                                                                    </Box>
+                                                                                                </Box>
+                                                                                            )}
+                                                                                        </Box>
+                                                                                    ))}
+                                                                                </Box>
+                                                                            </Box>
+                                                                        )}
+
+                                                                        {/* PE Uniform */}
+                                                                        {peBoyItems.length > 0 && (
+                                                                            <Box>
+                                                                                <Box sx={{
+                                                                                    p: 1.5,
+                                                                                    mb: 2,
+                                                                                    background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.15) 100%)',
+                                                                                    borderRadius: 2,
+                                                                                    border: '1px solid rgba(245, 158, 11, 0.2)',
+                                                                                    display: 'flex',
+                                                                                    alignItems: 'center',
+                                                                                    gap: 1
+                                                                                }}>
+                                                                                    <Box sx={{
+                                                                                        width: 20,
+                                                                                        height: 20,
+                                                                                        borderRadius: '50%',
+                                                                                        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                                                                                        display: 'flex',
+                                                                                        alignItems: 'center',
+                                                                                        justifyContent: 'center',
+                                                                                        fontSize: '10px'
+                                                                                    }}>
+                                                                                        ⚽
+                                                                                    </Box>
+                                                                                    <Typography variant="body2" sx={{
+                                                                                        fontWeight: 'bold',
+                                                                                        color: '#a16207',
+                                                                                        textTransform: 'uppercase',
+                                                                                        letterSpacing: '0.3px',
+                                                                                        fontSize: '0.875rem'
+                                                                                    }}>
+                                                                                        PHYSICAL EDUCATION UNIFORM ({peBoyItems.length} CLOTHS)
+                                                                                    </Typography>
+                                                                                </Box>
+                                                                                <Box sx={{display: 'flex', gap: 2, flexWrap: 'wrap'}}>
+                                                                                    {peBoyItems.map((item, index) => (
+                                                                                        <Box key={item.id} sx={{
+                                                                                            flex: '1 1 280px',
+                                                                                            minWidth: '280px',
+                                                                                            p: 2,
+                                                                                            border: '1px solid rgba(245, 158, 11, 0.2)',
+                                                                                            borderRadius: 2,
+                                                                                            background: 'linear-gradient(135deg, #ffffff 0%, rgba(245, 158, 11, 0.02) 100%)',
+                                                                                            transition: 'all 0.3s ease',
+                                                                                            '&:hover': {
+                                                                                                borderColor: '#f59e0b',
+                                                                                                boxShadow: '0 3px 12px rgba(245, 158, 11, 0.15)'
+                                                                                            }
+                                                                                        }}>
+                                                                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                                                                                <Avatar sx={{bgcolor: '#f59e0b', width: 28, height: 28}}>
+                                                                                                    <DesignIcon sx={{fontSize: 14}}/>
+                                                                                                </Avatar>
+                                                                                                <Box sx={{flex: 1}}>
+                                                                                                    <Typography variant="subtitle2" sx={{
+                                                                                                        fontWeight: 'bold',
+                                                                                                        color: '#1e293b',
+                                                                                                        fontSize: '0.875rem'
+                                                                                                    }}>
+                                                                                                        {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {item.category}
+                                                                                                    </Typography>
+                                                                                                </Box>
+                                                                                                <Chip
+                                                                                                    label={`#${index + 1}`}
+                                                                                                    size="small"
+                                                                                                    sx={{
+                                                                                                        backgroundColor: '#fef3c7',
+                                                                                                        color: '#a16207',
+                                                                                                        fontWeight: 'bold',
+                                                                                                        fontSize: '0.6rem'
+                                                                                                    }}
+                                                                                                />
+                                                                                            </Box>
+                                                                                            <Grid container spacing={1}>
+                                                                                                <Grid item xs={6}>
+                                                                                                    <Box sx={{
+                                                                                                        p: 1,
+                                                                                                        background: 'rgba(16, 185, 129, 0.08)',
+                                                                                                        borderRadius: 1,
+                                                                                                        border: '1px solid rgba(16, 185, 129, 0.15)'
+                                                                                                    }}>
+                                                                                                        <Typography variant="caption" sx={{
+                                                                                                            color: '#10b981',
+                                                                                                            fontWeight: 600,
+                                                                                                            textTransform: 'uppercase',
+                                                                                                            fontSize: '0.65rem'
+                                                                                                        }}>
+                                                                                                            FABRIC
+                                                                                                        </Typography>
+                                                                                                        <Typography variant="body2" sx={{
+                                                                                                            color: '#1e293b',
+                                                                                                            fontWeight: 500,
+                                                                                                            fontSize: '0.75rem'
+                                                                                                        }}>
+                                                                                                            {item.fabricName}
+                                                                                                        </Typography>
+                                                                                                    </Box>
+                                                                                                </Grid>
+                                                                                                <Grid item xs={6}>
+                                                                                                    <Box sx={{
+                                                                                                        p: 1,
+                                                                                                        background: 'rgba(124, 58, 237, 0.08)',
+                                                                                                        borderRadius: 1,
+                                                                                                        border: '1px solid rgba(124, 58, 237, 0.15)',
+                                                                                                        display: 'flex',
+                                                                                                        alignItems: 'center',
+                                                                                                        gap: 0.5
+                                                                                                    }}>
+                                                                                                        <Box sx={{
+                                                                                                            width: 12,
+                                                                                                            height: 12,
+                                                                                                            borderRadius: '50%',
+                                                                                                            backgroundColor: item.color || '#000',
+                                                                                                            border: '1px solid #ffffff',
+                                                                                                            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                                                                                                            flexShrink: 0
+                                                                                                        }}/>
+                                                                                                        <Box>
+                                                                                                            <Typography variant="caption" sx={{
+                                                                                                                color: '#7c3aed',
+                                                                                                                fontWeight: 600,
+                                                                                                                textTransform: 'uppercase',
+                                                                                                                fontSize: '0.65rem'
+                                                                                                            }}>
+                                                                                                                COLOR
+                                                                                                            </Typography>
+                                                                                                            <Typography variant="body2" sx={{
+                                                                                                                color: '#1e293b',
+                                                                                                                fontWeight: 500,
+                                                                                                                fontSize: '0.7rem'
+                                                                                                            }}>
+                                                                                                                {item.color}
+                                                                                                            </Typography>
+                                                                                                        </Box>
+                                                                                                    </Box>
+                                                                                                </Grid>
+                                                                                                <Grid item xs={6}>
+                                                                                                    <Box sx={{
+                                                                                                        p: 1,
+                                                                                                        background: 'rgba(255, 152, 0, 0.08)',
+                                                                                                        borderRadius: 1,
+                                                                                                        border: '1px solid rgba(255, 152, 0, 0.15)'
+                                                                                                    }}>
+                                                                                                        <Typography variant="caption" sx={{
+                                                                                                            color: '#f57c00',
+                                                                                                            fontWeight: 600,
+                                                                                                            textTransform: 'uppercase',
+                                                                                                            fontSize: '0.65rem'
+                                                                                                        }}>
+                                                                                                            LOGO
+                                                                                                        </Typography>
+                                                                                                        <Typography variant="body2" sx={{
+                                                                                                            color: '#1e293b',
+                                                                                                            fontWeight: 500,
+                                                                                                            fontSize: '0.75rem'
+                                                                                                        }}>
+                                                                                                            {item.logoPosition || 'No logo'}
+                                                                                                        </Typography>
+                                                                                                    </Box>
+                                                                                                </Grid>
+                                                                                                <Grid item xs={6}>
+                                                                                                    <Box sx={{
+                                                                                                        p: 1,
+                                                                                                        background: 'rgba(236, 72, 153, 0.08)',
+                                                                                                        borderRadius: 1,
+                                                                                                        border: '1px solid rgba(236, 72, 153, 0.15)'
+                                                                                                    }}>
+                                                                                                        <Typography variant="caption" sx={{
+                                                                                                            color: '#ec4899',
+                                                                                                            fontWeight: 600,
+                                                                                                            textTransform: 'uppercase',
+                                                                                                            fontSize: '0.65rem'
+                                                                                                        }}>
+                                                                                                            NOTE
+                                                                                                        </Typography>
+                                                                                                        <Typography variant="body2" sx={{
+                                                                                                            color: '#1e293b',
+                                                                                                            fontWeight: 500,
+                                                                                                            fontSize: '0.75rem',
+                                                                                                            fontStyle: item.note ? 'normal' : 'italic'
+                                                                                                        }}>
+                                                                                                            {item.note || 'No note'}
+                                                                                                        </Typography>
+                                                                                                    </Box>
+                                                                                                </Grid>
+                                                                                            </Grid>
+                                                                                            {item.sampleImages && item.sampleImages.length > 0 && (
+                                                                                                <Box sx={{mt: 1.5, pt: 1.5, borderTop: '1px solid #f1f5f9'}}>
+                                                                                                    <Typography variant="caption" sx={{
+                                                                                                        color: '#475569',
+                                                                                                        fontWeight: 600,
+                                                                                                        textTransform: 'uppercase',
+                                                                                                        fontSize: '0.65rem',
+                                                                                                        display: 'block',
+                                                                                                        mb: 1
+                                                                                                    }}>
+                                                                                                        SAMPLES ({item.sampleImages.length})
+                                                                                                    </Typography>
+                                                                                                    <Box sx={{display: 'flex', gap: 1, flexWrap: 'wrap'}}>
+                                                                                                        {item.sampleImages.map((image, imgIndex) => (
+                                                                                                            <Box key={imgIndex} sx={{
+                                                                                                                width: 32,
+                                                                                                                height: 32,
+                                                                                                                borderRadius: 1,
+                                                                                                                overflow: 'hidden',
+                                                                                                                border: '1px solid #e2e8f0'
+                                                                                                            }}>
+                                                                                                                <DisplayImage
+                                                                                                                    imageUrl={image.url}
+                                                                                                                    alt={`Sample ${imgIndex + 1}`}
+                                                                                                                    width="32px"
+                                                                                                                    height="32px"
+                                                                                                                />
+                                                                                                            </Box>
+                                                                                                        ))}
+                                                                                                    </Box>
+                                                                                                </Box>
+                                                                                            )}
+                                                                                        </Box>
+                                                                                    ))}
+                                                                                </Box>
+                                                                            </Box>
+                                                                        )}
+                                                                    </Box>
+                                                                );
+                                                            })()}
+                                                        </Box>
+                                                    )}
+
+                                                    {/* Girl Items - Similar structure */}
+                                                    {girlItems.length > 0 && (
+                                                        <Box>
+                                                            <Box sx={{
+                                                                p: 2,
+                                                                mb: 2,
+                                                                background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.1) 0%, rgba(219, 39, 119, 0.15) 100%)',
+                                                                borderRadius: 2,
+                                                                border: '1px solid rgba(236, 72, 153, 0.2)',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: 1
+                                                            }}>
+                                                                <Box sx={{
+                                                                    width: 24,
+                                                                    height: 24,
+                                                                    borderRadius: '50%',
+                                                                    background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    fontSize: '12px'
+                                                                }}>
+                                                                    👧
+                                                                </Box>
+                                                                <Typography variant="subtitle1" sx={{
                                                                     fontWeight: 'bold',
-                                                                    color: '#1e293b'
-                                                                }}>{item.logoPosition}</span>
+                                                                    color: '#be185d',
+                                                                    textTransform: 'uppercase',
+                                                                    letterSpacing: '0.5px'
+                                                                }}>
+                                                                    GIRL ({girlItems.length} CLOTHS)
                                                                 </Typography>
-                                                            )}
-                                                            <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                                Fabric: <span style={{
-                                                                fontWeight: 'bold',
-                                                                color: '#1e293b'
-                                                            }}>{item.fabricName}</span>
+                                                            </Box>
+                                                            <Typography variant="body2" sx={{color: '#64748b', fontStyle: 'italic', textAlign: 'center', py: 2}}>
+                                                                Similar detailed layout for girl items...
                                                             </Typography>
-                                                        </CardContent>
-                                                    </Card>
-                                                </Grid>
-                                            ))}
-                                        </Grid>
+                                                        </Box>
+                                                    )}
+                                                </Box>
+                                            );
+                                        })()}
                                     </Box>
                                 </Paper>
                             )}
@@ -2362,7 +3193,17 @@ export default function AdminReport() {
                                     borderRadius: 2,
                                     border: '1px solid #e2e8f0'
                                 }}>
-                                    <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
+                                    <Typography variant="h6" sx={{
+                                        fontWeight: 'bold', 
+                                        mb: 2, 
+                                        color: '#1e293b',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1
+                                    }}>
+                                        <Avatar sx={{bgcolor: '#8b5cf6', width: 32, height: 32}}>
+                                            <InfoIcon sx={{fontSize: 16}}/>
+                                        </Avatar>
                                         School Logo
                                     </Typography>
                                     <Box sx={{
@@ -2372,7 +3213,8 @@ export default function AdminReport() {
                                         minHeight: 200,
                                         border: '2px dashed #e2e8f0',
                                         borderRadius: 2,
-                                        backgroundColor: 'white'
+                                        backgroundColor: 'white',
+                                        p: 2
                                     }}>
                                         <DisplayImage
                                             imageUrl={selectedReport.designRequest.logoImage}
