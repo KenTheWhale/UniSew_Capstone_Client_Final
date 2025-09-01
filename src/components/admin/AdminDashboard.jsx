@@ -596,8 +596,7 @@ export default function AdminDashboard() {
     }
 
     return (
-        <Box sx={{height: '100%', overflowY: 'auto', overflowX: 'hidden', width: '100%'}}>
-            {}
+        <Box sx={{height: 'max-content', overflowY: 'hidden', overflowX: 'hidden', width: '100%'}}>
             <Box
                 sx={{
                     mb: 4,
@@ -1036,7 +1035,7 @@ export default function AdminDashboard() {
                                     ) : (
                                         <Grid container spacing={2}>
                                             {roleChartData.map((role) => (
-                                                <Grid item xs={6} key={role.id}>
+                                                <Grid sx={{flex: 1}} key={role.id}>
                                                     <Box sx={{
                                                         p: 2,
                                                         borderRadius: 2,

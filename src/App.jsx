@@ -6,6 +6,7 @@ import {SnackbarProvider} from 'notistack';
 import {createTheme, CssBaseline, Slide, ThemeProvider} from '@mui/material';
 const DesignerFeedback = lazy(() => import("./components/designer/DesignerFeedback.jsx"));
 const GarmentFeedback = lazy(() => import("./components/garment/GarmentFeedback.jsx"));
+const DesignerQuotationManagement = lazy(() => import("./components/designer/DesignerQuotationManagement.jsx"));
 
 const WebAppLayout = lazy(() => import("./layouts/ui/WebAppLayout.jsx"));
 const Homepage = lazy(() => import("./components/auth/Homepage.jsx"));
@@ -40,10 +41,11 @@ const TermOfServices = lazy(() => import("./components/auth/TermOfServices.jsx")
 const AdminDashboard = lazy(() => import("./components/admin/AdminDashboard.jsx"));
 const AdminAccount = lazy(() => import("./components/admin/AdminAccount.jsx"));
 const AdminTransaction = lazy(() => import("./components/admin/AdminTransaction.jsx"));
+const AdminReport = lazy(() => import("./components/admin/AdminReport.jsx"));
+const PlatformSetting = lazy(() => import("./components/admin/PlatformSetting.jsx"));
 const AdminDashboardLayout = lazy(() => import("./layouts/admin/AdminDashboardLayout.jsx"));
 const MilestoneManagement = lazy(() => import("./components/garment/MilestoneManagement.jsx"));
 const GarmentPendingOrders = lazy(() => import("./components/garment/GarmentPendingOrders.jsx"));
-const AdminReport = lazy(() => import("./components/admin/AdminReport.jsx"));
 
 import { LoadingProvider, GlobalLoadingOverlay } from './contexts/LoadingContext.jsx';
 const GarmentProfile = lazy(() => import("./components/garment/profile/GarmentProfile.jsx"));
@@ -324,6 +326,14 @@ const router = createBrowserRouter([
                         <AdminReport/>
                     </Suspense>
                 )
+            },
+            {
+                path: 'platform/setting',
+                element: (
+                    <Suspense fallback={<LoadingFallback />}>
+                        <PlatformSetting/>
+                    </Suspense>
+                )
             }
         ]
     },
@@ -388,6 +398,14 @@ const router = createBrowserRouter([
                 element: (
                     <Suspense fallback={<LoadingFallback />}>
                         <DesignerFeedback/>
+                    </Suspense>
+                )
+            },
+            {
+                path: 'quotations',
+                element: (
+                    <Suspense fallback={<LoadingFallback />}>
+                        <DesignerQuotationManagement/>
                     </Suspense>
                 )
             }

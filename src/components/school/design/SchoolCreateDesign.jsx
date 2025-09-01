@@ -23,13 +23,14 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DesignServicesIcon from '@mui/icons-material/DesignServices';
 import {ColorPicker} from 'antd';
 import {enqueueSnackbar} from "notistack";
-import {createDesignRequest, getFabrics} from "../../../services/DesignService.jsx";
+import {createDesignRequest, getFabrics, importDesign} from "../../../services/DesignService.jsx";
 import {uploadCloudinary} from "../../../services/UploadImageService.jsx";
 import DisplayImage from "../../ui/DisplayImage.jsx";
 
 
 export default function SchoolCreateDesign() {
     const [designRequest, setDesignRequest] = useState({
+        designType: 'new', // 'new' or 'import'
         designName: '',
         logo: {
             file: null,
@@ -48,6 +49,10 @@ export default function SchoolCreateDesign() {
                             note: '',
                             createType: 'new',
                             images: [],
+                            logoHeight: '',
+                            logoWidth: '',
+                            frontDesignImage: null,
+                            backDesignImage: null,
                         },
                         pants: {
                             fabric: '',
@@ -55,6 +60,8 @@ export default function SchoolCreateDesign() {
                             note: '',
                             createType: 'new',
                             images: [],
+                            frontDesignImage: null,
+                            backDesignImage: null,
                         },
                         showForm: false,
                     },
@@ -66,6 +73,10 @@ export default function SchoolCreateDesign() {
                             note: '',
                             createType: 'new',
                             images: [],
+                            logoHeight: '',
+                            logoWidth: '',
+                            frontDesignImage: null,
+                            backDesignImage: null,
                         },
                         pants: {
                             fabric: '',
@@ -80,6 +91,8 @@ export default function SchoolCreateDesign() {
                             note: '',
                             createType: 'new',
                             images: [],
+                            frontDesignImage: null,
+                            backDesignImage: null,
                         },
                         bottomType: 'pants',
                         showForm: false,
@@ -98,6 +111,10 @@ export default function SchoolCreateDesign() {
                             note: '',
                             createType: 'new',
                             images: [],
+                            logoHeight: '',
+                            logoWidth: '',
+                            frontDesignImage: null,
+                            backDesignImage: null,
                         },
                         pants: {
                             fabric: '',
@@ -116,6 +133,10 @@ export default function SchoolCreateDesign() {
                             note: '',
                             createType: 'new',
                             images: [],
+                            logoHeight: '',
+                            logoWidth: '',
+                            frontDesignImage: null,
+                            backDesignImage: null,
                         },
                         pants: {
                             fabric: '',
@@ -145,19 +166,39 @@ export default function SchoolCreateDesign() {
         const shirt = boyDetails.shirt;
         const pants = boyDetails.pants;
 
-        return shirt.fabric && shirt.logoPlacement && pants.fabric;
+        // Check if logo dimensions are required (when designType is import)
+        const logoDimensionsRequired = designRequest.designType === 'import';
+        const logoDimensionsValid = !logoDimensionsRequired || (shirt.logoHeight && shirt.logoWidth);
+
+        // Check if design images are required (when designType is import)
+        const designImagesRequired = designRequest.designType === 'import';
+        const shirtDesignImagesValid = !designImagesRequired || (shirt.frontDesignImage && shirt.backDesignImage);
+        const pantsDesignImagesValid = !designImagesRequired || (pants.frontDesignImage && pants.backDesignImage);
+
+        return shirt.fabric && shirt.logoPlacement && pants.fabric && logoDimensionsValid && shirtDesignImagesValid && pantsDesignImagesValid;
     };
 
     const isGirlInfoComplete = (uniformType) => {
         const girlDetails = designRequest.uniformTypes[uniformType].details.girl;
         const shirt = girlDetails.shirt;
 
+        // Check if logo dimensions are required (when designType is import)
+        const logoDimensionsRequired = designRequest.designType === 'import';
+        const logoDimensionsValid = !logoDimensionsRequired || (shirt.logoHeight && shirt.logoWidth);
+
+        // Check if design images are required (when designType is import)
+        const designImagesRequired = designRequest.designType === 'import';
+        const shirtDesignImagesValid = !designImagesRequired || (shirt.frontDesignImage && shirt.backDesignImage);
+
         if (uniformType === 'regular') {
             const bottomType = designRequest.uniformTypes.regular.details.girl.bottomType;
             const bottomFabric = bottomType === 'skirt' ? girlDetails.skirt.fabric : girlDetails.pants.fabric;
-            return shirt.fabric && shirt.logoPlacement && bottomFabric && bottomType;
+            const bottomItem = bottomType === 'skirt' ? girlDetails.skirt : girlDetails.pants;
+            const bottomDesignImagesValid = !designImagesRequired || (bottomItem.frontDesignImage && bottomItem.backDesignImage);
+            return shirt.fabric && shirt.logoPlacement && bottomFabric && bottomType && logoDimensionsValid && shirtDesignImagesValid && bottomDesignImagesValid;
         } else {
-            return shirt.fabric && shirt.logoPlacement && girlDetails.pants.fabric;
+            const pantsDesignImagesValid = !designImagesRequired || (girlDetails.pants.frontDesignImage && girlDetails.pants.backDesignImage);
+            return shirt.fabric && shirt.logoPlacement && girlDetails.pants.fabric && logoDimensionsValid && shirtDesignImagesValid && pantsDesignImagesValid;
         }
     };
 
@@ -169,10 +210,28 @@ export default function SchoolCreateDesign() {
             if (!boyDetails.shirt.fabric) missing.push('Shirt Fabric');
             if (!boyDetails.shirt.logoPlacement) missing.push('Shirt Logo Placement');
             if (!boyDetails.pants.fabric) missing.push('Pants Fabric');
+            
+            // Check logo dimensions for import design type
+            if (designRequest.designType === 'import') {
+                if (!boyDetails.shirt.logoHeight) missing.push('Logo Height');
+                if (!boyDetails.shirt.logoWidth) missing.push('Logo Width');
+                if (!boyDetails.shirt.frontDesignImage) missing.push('Shirt Front Design Image');
+                if (!boyDetails.shirt.backDesignImage) missing.push('Shirt Back Design Image');
+                if (!boyDetails.pants.frontDesignImage) missing.push('Pants Front Design Image');
+                if (!boyDetails.pants.backDesignImage) missing.push('Pants Back Design Image');
+            }
         } else {
             const girlDetails = designRequest.uniformTypes[uniformType].details.girl;
             if (!girlDetails.shirt.fabric) missing.push('Shirt Fabric');
             if (!girlDetails.shirt.logoPlacement) missing.push('Shirt Logo Placement');
+
+            // Check logo dimensions for import design type
+            if (designRequest.designType === 'import') {
+                if (!girlDetails.shirt.logoHeight) missing.push('Logo Height');
+                if (!girlDetails.shirt.logoWidth) missing.push('Logo Width');
+                if (!girlDetails.shirt.frontDesignImage) missing.push('Shirt Front Design Image');
+                if (!girlDetails.shirt.backDesignImage) missing.push('Shirt Back Design Image');
+            }
 
             if (uniformType === 'regular') {
                 if (!designRequest.uniformTypes.regular.details.girl.bottomType) {
@@ -181,9 +240,22 @@ export default function SchoolCreateDesign() {
                     const bottomType = designRequest.uniformTypes.regular.details.girl.bottomType;
                     const bottomFabric = bottomType === 'skirt' ? girlDetails.skirt.fabric : girlDetails.pants.fabric;
                     if (!bottomFabric) missing.push(`${bottomType === 'skirt' ? 'Skirt' : 'Pants'} Fabric`);
+                    
+                    // Check design images for import design type
+                    if (designRequest.designType === 'import') {
+                        const bottomItem = bottomType === 'skirt' ? girlDetails.skirt : girlDetails.pants;
+                        if (!bottomItem.frontDesignImage) missing.push(`${bottomType === 'skirt' ? 'Skirt' : 'Pants'} Front Design Image`);
+                        if (!bottomItem.backDesignImage) missing.push(`${bottomType === 'skirt' ? 'Skirt' : 'Pants'} Back Design Image`);
+                    }
                 }
             } else {
                 if (!girlDetails.pants.fabric) missing.push('Pants Fabric');
+                
+                // Check design images for import design type
+                if (designRequest.designType === 'import') {
+                    if (!girlDetails.pants.frontDesignImage) missing.push('Pants Front Design Image');
+                    if (!girlDetails.pants.backDesignImage) missing.push('Pants Back Design Image');
+                }
             }
         }
 
@@ -196,10 +268,14 @@ export default function SchoolCreateDesign() {
             if (fieldType === 'shirtFabric') return !boyDetails.shirt.fabric;
             if (fieldType === 'shirtLogoPlacement') return !boyDetails.shirt.logoPlacement;
             if (fieldType === 'pantsFabric') return !boyDetails.pants.fabric;
+            if (fieldType === 'logoHeight' && designRequest.designType === 'import') return !boyDetails.shirt.logoHeight;
+            if (fieldType === 'logoWidth' && designRequest.designType === 'import') return !boyDetails.shirt.logoWidth;
         } else {
             const girlDetails = designRequest.uniformTypes[uniformType].details.girl;
             if (fieldType === 'shirtFabric') return !girlDetails.shirt.fabric;
             if (fieldType === 'shirtLogoPlacement') return !girlDetails.shirt.logoPlacement;
+            if (fieldType === 'logoHeight' && designRequest.designType === 'import') return !girlDetails.shirt.logoHeight;
+            if (fieldType === 'logoWidth' && designRequest.designType === 'import') return !girlDetails.shirt.logoWidth;
 
             if (uniformType === 'regular') {
                 if (fieldType === 'bottomType') return !designRequest.uniformTypes.regular.details.girl.bottomType;
@@ -390,6 +466,93 @@ export default function SchoolCreateDesign() {
         return resultImage
     }
 
+    const buildImportDesignData = async (designName, logo, designItems) => {
+        const designItemDataList = [];
+
+        console.log('Starting to build import design data...');
+        console.log('Design Items to process:', designItems);
+
+        // Process each design item to match the import format
+        for (const item of designItems) {
+            const uniformType = item.itemCategory === 'regular' ? 'regular' : 'physicalEducation';
+            const gender = item.gender;
+            const itemType = item.itemType;
+            
+            console.log(`Processing ${gender} ${itemType} for ${uniformType} uniform`);
+            
+            // Get the specific item details from the state
+            let itemDetails;
+            if (itemType === 'shirt') {
+                itemDetails = designRequest.uniformTypes[uniformType].details[gender].shirt;
+            } else if (itemType === 'pants') {
+                itemDetails = designRequest.uniformTypes[uniformType].details[gender].pants;
+            } else if (itemType === 'skirt') {
+                itemDetails = designRequest.uniformTypes[uniformType].details[gender].skirt;
+            }
+
+            console.log(`Item details for ${itemType}:`, itemDetails);
+
+            // Upload front and back design images to Cloudinary
+            let frontImage = '';
+            let backImage = '';
+            
+            if (itemDetails.frontDesignImage) {
+                console.log(`Uploading front design image for ${gender} ${itemType}...`);
+                try {
+                    frontImage = await uploadCloudinary(itemDetails.frontDesignImage);
+                    console.log(`Front image uploaded successfully: ${frontImage}`);
+                } catch (error) {
+                    console.error(`Failed to upload front image for ${gender} ${itemType}:`, error);
+                    enqueueSnackbar(`Failed to upload front design image for ${gender} ${itemType}`, {variant: 'error'});
+                    throw error;
+                }
+            } else {
+                console.log(`No front design image for ${gender} ${itemType}`);
+            }
+            
+            if (itemDetails.backDesignImage) {
+                console.log(`Uploading back design image for ${gender} ${itemType}...`);
+                try {
+                    backImage = await uploadCloudinary(itemDetails.backDesignImage);
+                    console.log(`Back image uploaded successfully: ${backImage}`);
+                } catch (error) {
+                    console.error(`Failed to upload back image for ${gender} ${itemType}:`, error);
+                    enqueueSnackbar(`Failed to upload back design image for ${gender} ${itemType}`, {variant: 'error'});
+                    throw error;
+                }
+            } else {
+                console.log(`No back design image for ${gender} ${itemType}`);
+            }
+
+            const designItemData = {
+                type: itemType,
+                category: item.itemCategory,
+                logoPosition: item.logoPosition || '',
+                color: item.color,
+                gender: item.gender,
+                fabricId: item.fabricId,
+                logoHeight: itemType === 'shirt' ? parseFloat(itemDetails.logoHeight) || 0 : 0,
+                logoWidth: itemType === 'shirt' ? parseFloat(itemDetails.logoWidth) || 0 : 0,
+                frontImage: frontImage,
+                backImage: backImage
+            };
+
+            console.log(`Design item data for ${gender} ${itemType}:`, designItemData);
+            designItemDataList.push(designItemData);
+        }
+
+        const importData = {
+            designData: {
+                name: designName,
+                logoImage: logo
+            },
+            designItemDataList: designItemDataList
+        };
+
+        console.log('Final import design data structure:', importData);
+        return importData;
+    };
+
     const handleSubmit = async () => {
         setIsSubmitting(true);
 
@@ -434,6 +597,38 @@ export default function SchoolCreateDesign() {
                     setIsSubmitting(false);
                     return;
                 }
+                if (designRequest.designType === 'import') {
+                    if (!designRequest.uniformTypes.regular.details.boy.shirt.logoHeight) {
+                        enqueueSnackbar('Boy Shirt Logo Height for Regular Uniform is required when importing design.', {variant: 'error'});
+                        setIsSubmitting(false);
+                        return;
+                    }
+                    if (!designRequest.uniformTypes.regular.details.boy.shirt.logoWidth) {
+                        enqueueSnackbar('Boy Shirt Logo Width for Regular Uniform is required when importing design.', {variant: 'error'});
+                        setIsSubmitting(false);
+                        return;
+                    }
+                    if (!designRequest.uniformTypes.regular.details.boy.shirt.frontDesignImage) {
+                        enqueueSnackbar('Boy Shirt Front Design Image for Regular Uniform is required when importing design.', {variant: 'error'});
+                        setIsSubmitting(false);
+                        return;
+                    }
+                    if (!designRequest.uniformTypes.regular.details.boy.shirt.backDesignImage) {
+                        enqueueSnackbar('Boy Shirt Back Design Image for Regular Uniform is required when importing design.', {variant: 'error'});
+                        setIsSubmitting(false);
+                        return;
+                    }
+                    if (!designRequest.uniformTypes.regular.details.boy.pants.frontDesignImage) {
+                        enqueueSnackbar('Boy Pants Front Design Image for Regular Uniform is required when importing design.', {variant: 'error'});
+                        setIsSubmitting(false);
+                        return;
+                    }
+                    if (!designRequest.uniformTypes.regular.details.boy.pants.backDesignImage) {
+                        enqueueSnackbar('Boy Pants Back Design Image for Regular Uniform is required when importing design.', {variant: 'error'});
+                        setIsSubmitting(false);
+                        return;
+                    }
+                }
             }
             if (designRequest.uniformTypes.regular.genders.girl) {
                 if (!designRequest.uniformTypes.regular.details.girl.shirt.fabric) {
@@ -460,6 +655,54 @@ export default function SchoolCreateDesign() {
                     setIsSubmitting(false);
                     return;
                 }
+                if (designRequest.designType === 'import') {
+                    if (!designRequest.uniformTypes.regular.details.girl.shirt.logoHeight) {
+                        enqueueSnackbar('Girl Shirt Logo Height for Regular Uniform is required when importing design.', {variant: 'error'});
+                        setIsSubmitting(false);
+                        return;
+                    }
+                    if (!designRequest.uniformTypes.regular.details.girl.shirt.logoWidth) {
+                        enqueueSnackbar('Girl Shirt Logo Width for Regular Uniform is required when importing design.', {variant: 'error'});
+                        setIsSubmitting(false);
+                        return;
+                    }
+                    if (!designRequest.uniformTypes.regular.details.girl.shirt.frontDesignImage) {
+                        enqueueSnackbar('Girl Shirt Front Design Image for Regular Uniform is required when importing design.', {variant: 'error'});
+                        setIsSubmitting(false);
+                        return;
+                    }
+                    if (!designRequest.uniformTypes.regular.details.girl.shirt.backDesignImage) {
+                        enqueueSnackbar('Girl Shirt Back Design Image for Regular Uniform is required when importing design.', {variant: 'error'});
+                        setIsSubmitting(false);
+                        return;
+                    }
+                    
+                    // Check bottom item design images based on bottom type
+                    const bottomType = designRequest.uniformTypes.regular.details.girl.bottomType;
+                    if (bottomType === 'pants') {
+                        if (!designRequest.uniformTypes.regular.details.girl.pants.frontDesignImage) {
+                            enqueueSnackbar('Girl Pants Front Design Image for Regular Uniform is required when importing design.', {variant: 'error'});
+                            setIsSubmitting(false);
+                            return;
+                        }
+                        if (!designRequest.uniformTypes.regular.details.girl.pants.backDesignImage) {
+                            enqueueSnackbar('Girl Pants Back Design Image for Regular Uniform is required when importing design.', {variant: 'error'});
+                            setIsSubmitting(false);
+                            return;
+                        }
+                    } else if (bottomType === 'skirt') {
+                        if (!designRequest.uniformTypes.regular.details.girl.skirt.frontDesignImage) {
+                            enqueueSnackbar('Girl Skirt Front Design Image for Regular Uniform is required when importing design.', {variant: 'error'});
+                            setIsSubmitting(false);
+                            return;
+                        }
+                        if (!designRequest.uniformTypes.regular.details.girl.skirt.backDesignImage) {
+                            enqueueSnackbar('Girl Skirt Back Design Image for Regular Uniform is required when importing design.', {variant: 'error'});
+                            setIsSubmitting(false);
+                            return;
+                        }
+                    }
+                }
             }
         }
 
@@ -480,6 +723,38 @@ export default function SchoolCreateDesign() {
                     setIsSubmitting(false);
                     return;
                 }
+                if (designRequest.designType === 'import') {
+                    if (!designRequest.uniformTypes.physicalEducation.details.boy.shirt.logoHeight) {
+                        enqueueSnackbar('Boy Shirt Logo Height for Physical Education Uniform is required when importing design.', {variant: 'error'});
+                        setIsSubmitting(false);
+                        return;
+                    }
+                    if (!designRequest.uniformTypes.physicalEducation.details.boy.shirt.logoWidth) {
+                        enqueueSnackbar('Boy Shirt Logo Width for Physical Education Uniform is required when importing design.', {variant: 'error'});
+                        setIsSubmitting(false);
+                        return;
+                    }
+                    if (!designRequest.uniformTypes.physicalEducation.details.boy.shirt.frontDesignImage) {
+                        enqueueSnackbar('Boy Shirt Front Design Image for Physical Education Uniform is required when importing design.', {variant: 'error'});
+                        setIsSubmitting(false);
+                        return;
+                    }
+                    if (!designRequest.uniformTypes.physicalEducation.details.boy.shirt.backDesignImage) {
+                        enqueueSnackbar('Boy Shirt Back Design Image for Physical Education Uniform is required when importing design.', {variant: 'error'});
+                        setIsSubmitting(false);
+                        return;
+                    }
+                    if (!designRequest.uniformTypes.physicalEducation.details.boy.pants.frontDesignImage) {
+                        enqueueSnackbar('Boy Pants Front Design Image for Physical Education Uniform is required when importing design.', {variant: 'error'});
+                        setIsSubmitting(false);
+                        return;
+                    }
+                    if (!designRequest.uniformTypes.physicalEducation.details.boy.pants.backDesignImage) {
+                        enqueueSnackbar('Boy Pants Back Design Image for Physical Education Uniform is required when importing design.', {variant: 'error'});
+                        setIsSubmitting(false);
+                        return;
+                    }
+                }
             }
             if (designRequest.uniformTypes.physicalEducation.genders.girl) {
                 if (!designRequest.uniformTypes.physicalEducation.details.girl.shirt.fabric) {
@@ -496,6 +771,38 @@ export default function SchoolCreateDesign() {
                     enqueueSnackbar('Girl Shirt Logo Placement for Physical Education Uniform is required.', {variant: 'error'});
                     setIsSubmitting(false);
                     return;
+                }
+                if (designRequest.designType === 'import') {
+                    if (!designRequest.uniformTypes.physicalEducation.details.girl.shirt.logoHeight) {
+                        enqueueSnackbar('Girl Shirt Logo Height for Physical Education Uniform is required when importing design.', {variant: 'error'});
+                        setIsSubmitting(false);
+                        return;
+                    }
+                    if (!designRequest.uniformTypes.physicalEducation.details.girl.shirt.logoWidth) {
+                        enqueueSnackbar('Girl Shirt Logo Width for Physical Education Uniform is required when importing design.', {variant: 'error'});
+                        setIsSubmitting(false);
+                        return;
+                    }
+                    if (!designRequest.uniformTypes.physicalEducation.details.girl.shirt.frontDesignImage) {
+                        enqueueSnackbar('Girl Shirt Front Design Image for Physical Education Uniform is required when importing design.', {variant: 'error'});
+                        setIsSubmitting(false);
+                        return;
+                    }
+                    if (!designRequest.uniformTypes.physicalEducation.details.girl.shirt.backDesignImage) {
+                        enqueueSnackbar('Girl Shirt Back Design Image for Physical Education Uniform is required when importing design.', {variant: 'error'});
+                        setIsSubmitting(false);
+                        return;
+                    }
+                    if (!designRequest.uniformTypes.physicalEducation.details.girl.pants.frontDesignImage) {
+                        enqueueSnackbar('Girl Pants Front Design Image for Physical Education Uniform is required when importing design.', {variant: 'error'});
+                        setIsSubmitting(false);
+                        return;
+                    }
+                    if (!designRequest.uniformTypes.physicalEducation.details.girl.pants.backDesignImage) {
+                        enqueueSnackbar('Girl Pants Back Design Image for Physical Education Uniform is required when importing design.', {variant: 'error'});
+                        setIsSubmitting(false);
+                        return;
+                    }
                 }
             }
         }
@@ -685,6 +992,37 @@ export default function SchoolCreateDesign() {
             }
         }
 
+        if (designRequest.designType === 'import') {
+            try {
+                console.log('Starting import design process...');
+                
+                // Build import design data structure
+                const importDesignData = await buildImportDesignData(designName, logo, designItems);
+                console.log('Import Design Data:', importDesignData);
+                
+                // Call the import design API
+                console.log('Calling import design API...');
+                const response = await importDesign(importDesignData);
+                
+                if (response && response.status === 201) {
+                    enqueueSnackbar('Import design request submitted successfully!', {variant: 'success'});
+                    setTimeout(() => {
+                        window.location.href = '/school/design';
+                    }, 1000);
+                } else {
+                    console.error('Import design API response:', response);
+                    enqueueSnackbar('Failed to submit import design request', {variant: 'error'});
+                }
+                
+            } catch (error) {
+                console.error('Error during import design process:', error);
+                enqueueSnackbar('An error occurred while preparing import design data', {variant: 'error'});
+            } finally {
+                setIsSubmitting(false);
+            }
+            return;
+        }
+
         const request = {
             designName: designName,
             logoImage: logo,
@@ -780,36 +1118,38 @@ export default function SchoolCreateDesign() {
 
                     <Box sx={{display: 'grid', gap: 3}}>
 
-                        <Box>
-                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
-                                Design Type *
-                            </Typography>
-                            <FormControl fullWidth size="small">
-                                <Select
-                                    value={shirtCreateType}
-                                    onChange={e => setShirtCreateType(e.target.value)}
-                                    displayEmpty
-                                    renderValue={(selected) => {
-                                        if (selected === '') {
-                                            return 'Select design approach';
-                                        }
+                        {designRequest.designType !== 'import' && (
+                            <Box>
+                                <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
+                                    Design Type *
+                                </Typography>
+                                <FormControl fullWidth size="small">
+                                    <Select
+                                        value={shirtCreateType}
+                                        onChange={e => setShirtCreateType(e.target.value)}
+                                        displayEmpty
+                                        renderValue={(selected) => {
+                                            if (selected === '') {
+                                                return 'Select design approach';
+                                            }
 
-                                        const options = {
-                                            'new': 'New Design - Create from scratch',
-                                            'upload': 'Upload Image - Provide reference images',
-                                        };
+                                            const options = {
+                                                'new': 'New Design - Create from scratch',
+                                                'upload': 'Upload Image - Provide reference images',
+                                            };
 
-                                        return options[selected];
-                                    }}
-                                    variant='outlined'>
-                                    <MenuItem value="new">New Design - Create from scratch</MenuItem>
-                                    <MenuItem value="upload">Upload Image - Provide reference images</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Box>
+                                            return options[selected];
+                                        }}
+                                        variant='outlined'>
+                                        <MenuItem value="new">New Design - Create from scratch</MenuItem>
+                                        <MenuItem value="upload">Upload Image - Provide reference images</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Box>
+                        )}
 
 
-                        {shirtCreateType === 'upload' && (
+                        {shirtCreateType === 'upload' && designRequest.designType !== 'import' && (
                             <Box>
                                 <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                     Reference Images (Max 4)
@@ -946,6 +1286,240 @@ export default function SchoolCreateDesign() {
                                 </Select>
                             </FormControl>
                         </Box>
+
+                        {designRequest.designType === 'import' && (
+                            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                                <Box>
+                                    <Typography variant="subtitle2" sx={{ 
+                                        mb: 1, 
+                                        fontWeight: '600',
+                                        color: isFieldMissing(uniformType, 'boy', 'logoHeight') ? '#d32f2f' : '#1e293b'
+                                    }}>
+                                        Logo Height (cm) *
+                                    </Typography>
+                                    <TextField
+                                        type="number"
+                                        size="small"
+                                        placeholder="Enter logo height"
+                                        value={designRequest.uniformTypes[uniformType].details.boy.shirt.logoHeight}
+                                        onChange={(e) => {
+                                            setDesignRequest(prev => ({
+                                                ...prev,
+                                                uniformTypes: {
+                                                    ...prev.uniformTypes,
+                                                    [uniformType]: {
+                                                        ...prev.uniformTypes[uniformType],
+                                                        details: {
+                                                            ...prev.uniformTypes[uniformType].details,
+                                                            boy: {
+                                                                ...prev.uniformTypes[uniformType].details.boy,
+                                                                shirt: {
+                                                                    ...prev.uniformTypes[uniformType].details.boy.shirt,
+                                                                    logoHeight: e.target.value
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }));
+                                        }}
+                                        sx={{
+                                            '& .MuiOutlinedInput-root': {
+                                                '& fieldset': {
+                                                    borderColor: isFieldMissing(uniformType, 'boy', 'logoHeight') ? '#d32f2f' : '#c0c0c0',
+                                                },
+                                                '&:hover fieldset': {
+                                                    borderColor: isFieldMissing(uniformType, 'boy', 'logoHeight') ? '#d32f2f' : '#2e7d32',
+                                                },
+                                                '&.Mui-focused fieldset': {
+                                                    borderColor: isFieldMissing(uniformType, 'boy', 'logoHeight') ? '#d32f2f' : '#2e7d32',
+                                                },
+                                            },
+                                        }}
+                                    />
+                                </Box>
+                                <Box>
+                                    <Typography variant="subtitle2" sx={{ 
+                                        mb: 1, 
+                                        fontWeight: '600',
+                                        color: isFieldMissing(uniformType, 'boy', 'logoWidth') ? '#d32f2f' : '#1e293b'
+                                    }}>
+                                        Logo Width (cm) *
+                                    </Typography>
+                                    <TextField
+                                        type="number"
+                                        size="small"
+                                        placeholder="Enter logo width"
+                                        value={designRequest.uniformTypes[uniformType].details.boy.shirt.logoWidth}
+                                        onChange={(e) => {
+                                            setDesignRequest(prev => ({
+                                                ...prev,
+                                                uniformTypes: {
+                                                    ...prev.uniformTypes,
+                                                    [uniformType]: {
+                                                        ...prev.uniformTypes[uniformType],
+                                                        details: {
+                                                            ...prev.uniformTypes[uniformType].details,
+                                                            boy: {
+                                                                ...prev.uniformTypes[uniformType].details.boy,
+                                                                shirt: {
+                                                                    ...prev.uniformTypes[uniformType].details.boy.shirt,
+                                                                    logoWidth: e.target.value
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }));
+                                        }}
+                                        sx={{
+                                            '& .MuiOutlinedInput-root': {
+                                                '& fieldset': {
+                                                    borderColor: isFieldMissing(uniformType, 'boy', 'logoWidth') ? '#d32f2f' : '#c0c0c0',
+                                                },
+                                                '&:hover fieldset': {
+                                                    borderColor: isFieldMissing(uniformType, 'boy', 'logoWidth') ? '#d32f2f' : '#2e7d32',
+                                                },
+                                                '&.Mui-focused fieldset': {
+                                                    borderColor: isFieldMissing(uniformType, 'boy', 'logoWidth') ? '#d32f2f' : '#2e7d32',
+                                                },
+                                            },
+                                        }}
+                                    />
+                                </Box>
+                            </Box>
+                        )}
+
+                        {designRequest.designType === 'import' && (
+                            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                                <Box>
+                                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                                        Front Design Image *
+                                    </Typography>
+                                    <Box sx={{
+                                        border: '2px dashed #ddd',
+                                        borderRadius: '8px',
+                                        p: 2,
+                                        textAlign: 'center',
+                                        backgroundColor: '#fafafa'
+                                    }}>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            style={{ display: 'none' }}
+                                            id={`front-design-boy-shirt-${uniformType}`}
+                                            onChange={(e) => {
+                                                const file = e.target.files[0];
+                                                if (file) {
+                                                    setDesignRequest(prev => ({
+                                                        ...prev,
+                                                        uniformTypes: {
+                                                            ...prev.uniformTypes,
+                                                            [uniformType]: {
+                                                                ...prev.uniformTypes[uniformType],
+                                                                details: {
+                                                                    ...prev.uniformTypes[uniformType].details,
+                                                                    boy: {
+                                                                        ...prev.uniformTypes[uniformType].details.boy,
+                                                                        shirt: {
+                                                                            ...prev.uniformTypes[uniformType].details.boy.shirt,
+                                                                            frontDesignImage: file
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }));
+                                                }
+                                            }}
+                                        />
+                                        <label htmlFor={`front-design-boy-shirt-${uniformType}`}>
+                                            <Button
+                                                variant="outlined"
+                                                component="span"
+                                                startIcon={<CloudUploadIcon/>}
+                                                sx={{ mb: 1 }}
+                                            >
+                                                Upload Front Design
+                                            </Button>
+                                        </label>
+                                        {designRequest.uniformTypes[uniformType].details.boy.shirt.frontDesignImage && (
+                                            <Box sx={{ mt: 1 }}>
+                                                <DisplayImage
+                                                    imageUrl={URL.createObjectURL(designRequest.uniformTypes[uniformType].details.boy.shirt.frontDesignImage)}
+                                                    alt="Front Design Preview"
+                                                    width="100px"
+                                                    height="auto"
+                                                />
+                                            </Box>
+                                        )}
+                                    </Box>
+                                </Box>
+                                <Box>
+                                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                                        Back Design Image *
+                                    </Typography>
+                                    <Box sx={{
+                                        border: '2px dashed #ddd',
+                                        borderRadius: '8px',
+                                        p: 2,
+                                        textAlign: 'center',
+                                        backgroundColor: '#fafafa'
+                                    }}>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            style={{ display: 'none' }}
+                                            id={`back-design-boy-shirt-${uniformType}`}
+                                            onChange={(e) => {
+                                                const file = e.target.files[0];
+                                                if (file) {
+                                                    setDesignRequest(prev => ({
+                                                        ...prev,
+                                                        uniformTypes: {
+                                                            ...prev.uniformTypes,
+                                                            [uniformType]: {
+                                                                ...prev.uniformTypes[uniformType],
+                                                                details: {
+                                                                    ...prev.uniformTypes[uniformType].details,
+                                                                    boy: {
+                                                                        ...prev.uniformTypes[uniformType].details.boy,
+                                                                        shirt: {
+                                                                            ...prev.uniformTypes[uniformType].details.boy.shirt,
+                                                                            backDesignImage: file
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }));
+                                                }
+                                            }}
+                                        />
+                                        <label htmlFor={`back-design-boy-shirt-${uniformType}`}>
+                                            <Button
+                                                variant="outlined"
+                                                component="span"
+                                                startIcon={<CloudUploadIcon/>}
+                                                sx={{ mb: 1 }}
+                                            >
+                                                Upload Back Design
+                                            </Button>
+                                        </label>
+                                        {designRequest.uniformTypes[uniformType].details.boy.shirt.backDesignImage && (
+                                            <Box sx={{ mt: 1 }}>
+                                                <DisplayImage
+                                                    imageUrl={URL.createObjectURL(designRequest.uniformTypes[uniformType].details.boy.shirt.backDesignImage)}
+                                                    alt="Back Design Preview"
+                                                    width="100px"
+                                                    height="auto"
+                                                />
+                                            </Box>
+                                        )}
+                                    </Box>
+                                </Box>
+                            </Box>
+                        )}
 
 
                         <Box>
@@ -1217,35 +1791,37 @@ export default function SchoolCreateDesign() {
                     </Typography>
 
                     <Box sx={{display: 'grid', gap: 3}}>
-                        <Box>
-                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
-                                Design Type *
-                            </Typography>
-                            <FormControl fullWidth size="small">
-                                <Select
-                                    value={pantsCreateType}
-                                    onChange={e => setPantsCreateType(e.target.value)}
-                                    displayEmpty
-                                    renderValue={(selected) => {
-                                        if (selected === '') {
-                                            return 'Select design approach';
-                                        }
+                        {designRequest.designType !== 'import' && (
+                            <Box>
+                                <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
+                                    Design Type *
+                                </Typography>
+                                <FormControl fullWidth size="small">
+                                    <Select
+                                        value={pantsCreateType}
+                                        onChange={e => setPantsCreateType(e.target.value)}
+                                        displayEmpty
+                                        renderValue={(selected) => {
+                                            if (selected === '') {
+                                                return 'Select design approach';
+                                            }
 
-                                        const options = {
-                                            'new': 'New Design - Create from scratch',
-                                            'upload': 'Upload Image - Provide reference images',
-                                        };
+                                            const options = {
+                                                'new': 'New Design - Create from scratch',
+                                                'upload': 'Upload Image - Provide reference images',
+                                            };
 
-                                        return options[selected];
-                                    }}
-                                    variant='outlined'>
-                                    <MenuItem value="new">New Design - Create from scratch</MenuItem>
-                                    <MenuItem value="upload">Upload Image - Provide reference images</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Box>
+                                            return options[selected];
+                                        }}
+                                        variant='outlined'>
+                                        <MenuItem value="new">New Design - Create from scratch</MenuItem>
+                                        <MenuItem value="upload">Upload Image - Provide reference images</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Box>
+                        )}
 
-                        {pantsCreateType === 'upload' && (
+                        {pantsCreateType === 'upload' && designRequest.designType !== 'import' && (
                             <Box>
                                 <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                     Reference Images (Max 4)
@@ -1382,6 +1958,137 @@ export default function SchoolCreateDesign() {
                                     </Select>
                                 </FormControl>
                             </Box>
+
+                            {designRequest.designType === 'import' && (
+                                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                                    <Box>
+                                        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                                            Front Design Image *
+                                        </Typography>
+                                        <Box sx={{
+                                            border: '2px dashed #ddd',
+                                            borderRadius: '8px',
+                                            p: 2,
+                                            textAlign: 'center',
+                                            backgroundColor: '#fafafa'
+                                        }}>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                style={{ display: 'none' }}
+                                                id={`front-design-boy-pants-${uniformType}`}
+                                                onChange={(e) => {
+                                                    const file = e.target.files[0];
+                                                    if (file) {
+                                                        setDesignRequest(prev => ({
+                                                            ...prev,
+                                                            uniformTypes: {
+                                                                ...prev.uniformTypes,
+                                                                [uniformType]: {
+                                                                    ...prev.uniformTypes[uniformType],
+                                                                    details: {
+                                                                        ...prev.uniformTypes[uniformType].details,
+                                                                        boy: {
+                                                                            ...prev.uniformTypes[uniformType].details.boy,
+                                                                            pants: {
+                                                                                ...prev.uniformTypes[uniformType].details.boy.pants,
+                                                                                frontDesignImage: file
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }));
+                                                    }
+                                                }}
+                                            />
+                                            <label htmlFor={`front-design-boy-pants-${uniformType}`}>
+                                                <Button
+                                                    variant="outlined"
+                                                    component="span"
+                                                    startIcon={<CloudUploadIcon/>}
+                                                    sx={{ mb: 1 }}
+                                                >
+                                                    Upload Front Design
+                                                </Button>
+                                            </label>
+                                            {designRequest.uniformTypes[uniformType].details.boy.pants.frontDesignImage && (
+                                                <Box sx={{ mt: 1 }}>
+                                                    <DisplayImage
+                                                        imageUrl={URL.createObjectURL(designRequest.uniformTypes[uniformType].details.boy.pants.frontDesignImage)}
+                                                        alt="Front Design Preview"
+                                                        width="100px"
+                                                        height="auto"
+                                                    />
+                                                </Box>
+                                            )}
+                                        </Box>
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                                            Back Design Image *
+                                        </Typography>
+                                        <Box sx={{
+                                            border: '2px dashed #ddd',
+                                            borderRadius: '8px',
+                                            p: 2,
+                                            textAlign: 'center',
+                                            backgroundColor: '#fafafa'
+                                        }}>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                style={{ display: 'none' }}
+                                                id={`back-design-boy-pants-${uniformType}`}
+                                                onChange={(e) => {
+                                                    const file = e.target.files[0];
+                                                    if (file) {
+                                                        setDesignRequest(prev => ({
+                                                            ...prev,
+                                                            uniformTypes: {
+                                                                ...prev.uniformTypes,
+                                                                [uniformType]: {
+                                                                    ...prev.uniformTypes[uniformType],
+                                                                    details: {
+                                                                        ...prev.uniformTypes[uniformType].details,
+                                                                        boy: {
+                                                                            ...prev.uniformTypes[uniformType].details.boy,
+                                                                            pants: {
+                                                                                ...prev.uniformTypes[uniformType].details.boy.pants,
+                                                                                backDesignImage: file
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }));
+                                                    }
+                                                }}
+                                            />
+                                            <label htmlFor={`back-design-boy-pants-${uniformType}`}>
+                                                <Button
+                                                    variant="outlined"
+                                                    component="span"
+                                                    startIcon={<CloudUploadIcon/>}
+                                                    sx={{ mb: 1 }}
+                                                >
+                                                    Upload Back Design
+                                                </Button>
+                                            </label>
+                                            {designRequest.uniformTypes[uniformType].details.boy.pants.backDesignImage && (
+                                                <Box sx={{ mt: 1 }}>
+                                                    <DisplayImage
+                                                        imageUrl={URL.createObjectURL(designRequest.uniformTypes[uniformType].details.boy.pants.backDesignImage)}
+                                                        alt="Back Design Preview"
+                                                        width="100px"
+                                                        height="auto"
+                                                    />
+                                                </Box>
+                                            )}
+                                        </Box>
+                                    </Box>
+                                </Box>
+                            )}
 
 
                             <Box>
@@ -1559,36 +2266,38 @@ export default function SchoolCreateDesign() {
 
                     <Box sx={{display: 'grid', gap: 3}}>
 
-                        <Box>
-                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
-                                Design Type *
-                            </Typography>
-                            <FormControl fullWidth size="small">
-                                <Select
-                                    value={shirtCreateType}
-                                    onChange={e => setShirtCreateType(e.target.value)}
-                                    displayEmpty
-                                    renderValue={(selected) => {
-                                        if (selected === '') {
-                                            return 'Select design approach';
-                                        }
+                        {designRequest.designType !== 'import' && (
+                            <Box>
+                                <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
+                                    Design Type *
+                                </Typography>
+                                <FormControl fullWidth size="small">
+                                    <Select
+                                        value={shirtCreateType}
+                                        onChange={e => setShirtCreateType(e.target.value)}
+                                        displayEmpty
+                                        renderValue={(selected) => {
+                                            if (selected === '') {
+                                                return 'Select design approach';
+                                            }
 
-                                        const options = {
-                                            'new': 'New Design - Create from scratch',
-                                            'upload': 'Upload Image - Provide reference images',
-                                        };
+                                            const options = {
+                                                'new': 'New Design - Create from scratch',
+                                                'upload': 'Upload Image - Provide reference images',
+                                            };
 
-                                        return options[selected];
-                                    }}
-                                    variant='outlined'>
-                                    <MenuItem value="new">New Design - Create from scratch</MenuItem>
-                                    <MenuItem value="upload">Upload Image - Provide reference images</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Box>
+                                            return options[selected];
+                                        }}
+                                        variant='outlined'>
+                                        <MenuItem value="new">New Design - Create from scratch</MenuItem>
+                                        <MenuItem value="upload">Upload Image - Provide reference images</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Box>
+                        )}
 
 
-                        {shirtCreateType === 'upload' && (
+                        {shirtCreateType === 'upload' && designRequest.designType !== 'import' && (
                             <Box>
                                 <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                     Reference Images (Max 4)
@@ -1725,6 +2434,137 @@ export default function SchoolCreateDesign() {
                                 </Select>
                             </FormControl>
                         </Box>
+
+                        {designRequest.designType === 'import' && (
+                            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                                <Box>
+                                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                                        Front Design Image *
+                                    </Typography>
+                                    <Box sx={{
+                                        border: '2px dashed #ddd',
+                                        borderRadius: '8px',
+                                        p: 2,
+                                        textAlign: 'center',
+                                        backgroundColor: '#fafafa'
+                                    }}>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            style={{ display: 'none' }}
+                                            id={`front-design-girl-shirt-${uniformType}`}
+                                            onChange={(e) => {
+                                                const file = e.target.files[0];
+                                                if (file) {
+                                                    setDesignRequest(prev => ({
+                                                        ...prev,
+                                                        uniformTypes: {
+                                                            ...prev.uniformTypes,
+                                                            [uniformType]: {
+                                                                ...prev.uniformTypes[uniformType],
+                                                                details: {
+                                                                    ...prev.uniformTypes[uniformType].details,
+                                                                    girl: {
+                                                                        ...prev.uniformTypes[uniformType].details.girl,
+                                                                        shirt: {
+                                                                            ...prev.uniformTypes[uniformType].details.girl.shirt,
+                                                                            frontDesignImage: file
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }));
+                                                }
+                                            }}
+                                        />
+                                        <label htmlFor={`front-design-girl-shirt-${uniformType}`}>
+                                            <Button
+                                                variant="outlined"
+                                                component="span"
+                                                startIcon={<CloudUploadIcon/>}
+                                                sx={{ mb: 1 }}
+                                            >
+                                                Upload Front Design
+                                            </Button>
+                                        </label>
+                                        {designRequest.uniformTypes[uniformType].details.girl.shirt.frontDesignImage && (
+                                            <Box sx={{ mt: 1 }}>
+                                                <DisplayImage
+                                                    imageUrl={URL.createObjectURL(designRequest.uniformTypes[uniformType].details.girl.shirt.frontDesignImage)}
+                                                    alt="Front Design Preview"
+                                                    width="100px"
+                                                    height="auto"
+                                                />
+                                            </Box>
+                                        )}
+                                    </Box>
+                                </Box>
+                                <Box>
+                                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                                        Back Design Image *
+                                    </Typography>
+                                    <Box sx={{
+                                        border: '2px dashed #ddd',
+                                        borderRadius: '8px',
+                                        p: 2,
+                                        textAlign: 'center',
+                                        backgroundColor: '#fafafa'
+                                    }}>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            style={{ display: 'none' }}
+                                            id={`back-design-girl-shirt-${uniformType}`}
+                                            onChange={(e) => {
+                                                const file = e.target.files[0];
+                                                if (file) {
+                                                    setDesignRequest(prev => ({
+                                                        ...prev,
+                                                        uniformTypes: {
+                                                            ...prev.uniformTypes,
+                                                            [uniformType]: {
+                                                                ...prev.uniformTypes[uniformType],
+                                                                details: {
+                                                                    ...prev.uniformTypes[uniformType].details,
+                                                                    girl: {
+                                                                        ...prev.uniformTypes[uniformType].details.girl,
+                                                                        shirt: {
+                                                                            ...prev.uniformTypes[uniformType].details.girl.shirt,
+                                                                            backDesignImage: file
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }));
+                                                }
+                                            }}
+                                        />
+                                        <label htmlFor={`back-design-girl-shirt-${uniformType}`}>
+                                            <Button
+                                                variant="outlined"
+                                                component="span"
+                                                startIcon={<CloudUploadIcon/>}
+                                                sx={{ mb: 1 }}
+                                            >
+                                                Upload Back Design
+                                            </Button>
+                                        </label>
+                                        {designRequest.uniformTypes[uniformType].details.girl.shirt.backDesignImage && (
+                                            <Box sx={{ mt: 1 }}>
+                                                <DisplayImage
+                                                    imageUrl={URL.createObjectURL(designRequest.uniformTypes[uniformType].details.girl.shirt.backDesignImage)}
+                                                    alt="Back Design Preview"
+                                                    width="100px"
+                                                    height="auto"
+                                                />
+                                            </Box>
+                                        )}
+                                    </Box>
+                                </Box>
+                            </Box>
+                        )}
 
 
                         <Box>
@@ -2055,36 +2895,38 @@ export default function SchoolCreateDesign() {
 
                     <Box sx={{display: 'grid', gap: 3}}>
 
-                        <Box>
-                            <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
-                                Design Type *
-                            </Typography>
-                            <FormControl fullWidth size="small">
-                                <Select
-                                    value={bottomCreateType}
-                                    onChange={e => setBottomCreateType(e.target.value)}
-                                    displayEmpty
-                                    renderValue={(selected) => {
-                                        if (selected === '') {
-                                            return 'Select design approach';
-                                        }
+                        {designRequest.designType !== 'import' && (
+                            <Box>
+                                <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
+                                    Design Type *
+                                </Typography>
+                                <FormControl fullWidth size="small">
+                                    <Select
+                                        value={bottomCreateType}
+                                        onChange={e => setBottomCreateType(e.target.value)}
+                                        displayEmpty
+                                        renderValue={(selected) => {
+                                            if (selected === '') {
+                                                return 'Select design approach';
+                                            }
 
-                                        const options = {
-                                            'new': 'New Design - Create from scratch',
-                                            'upload': 'Upload Image - Provide reference images',
-                                        };
+                                            const options = {
+                                                'new': 'New Design - Create from scratch',
+                                                'upload': 'Upload Image - Provide reference images',
+                                            };
 
-                                        return options[selected];
-                                    }}
-                                    variant='outlined'>
-                                    <MenuItem value="new">New Design - Create from scratch</MenuItem>
-                                    <MenuItem value="upload">Upload Image - Provide reference images</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Box>
+                                            return options[selected];
+                                        }}
+                                        variant='outlined'>
+                                        <MenuItem value="new">New Design - Create from scratch</MenuItem>
+                                        <MenuItem value="upload">Upload Image - Provide reference images</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Box>
+                        )}
 
 
-                        {bottomCreateType === 'upload' && (
+                        {bottomCreateType === 'upload' && designRequest.designType !== 'import' && (
                             <Box>
                                 <Typography variant="subtitle2" sx={{mb: 1, fontWeight: '600'}}>
                                     Reference Images (Max 4)
@@ -2233,6 +3075,151 @@ export default function SchoolCreateDesign() {
                                 </Select>
                             </FormControl>
                         </Box>
+
+                        {designRequest.designType === 'import' && (
+                            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                                <Box>
+                                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                                        Front Design Image *
+                                    </Typography>
+                                    <Box sx={{
+                                        border: '2px dashed #ddd',
+                                        borderRadius: '8px',
+                                        p: 2,
+                                        textAlign: 'center',
+                                        backgroundColor: '#fafafa'
+                                    }}>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            style={{ display: 'none' }}
+                                            id={`front-design-girl-${bottomType}-${uniformType}`}
+                                            onChange={(e) => {
+                                                const file = e.target.files[0];
+                                                if (file) {
+                                                    const bottomType = uniformType === "regular" ? designRequest.uniformTypes.regular.details.girl.bottomType : "pants";
+                                                    const imageField = bottomType === "pants" ? "pants" : "skirt";
+                                                    setDesignRequest(prev => ({
+                                                        ...prev,
+                                                        uniformTypes: {
+                                                            ...prev.uniformTypes,
+                                                            [uniformType]: {
+                                                                ...prev.uniformTypes[uniformType],
+                                                                details: {
+                                                                    ...prev.uniformTypes[uniformType].details,
+                                                                    girl: {
+                                                                        ...prev.uniformTypes[uniformType].details.girl,
+                                                                        [imageField]: {
+                                                                            ...prev.uniformTypes[uniformType].details.girl[imageField],
+                                                                            frontDesignImage: file
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }));
+                                                }
+                                            }}
+                                        />
+                                        <label htmlFor={`front-design-girl-${bottomType}-${uniformType}`}>
+                                            <Button
+                                                variant="outlined"
+                                                component="span"
+                                                startIcon={<CloudUploadIcon/>}
+                                                sx={{ mb: 1 }}
+                                            >
+                                                Upload Front Design
+                                            </Button>
+                                        </label>
+                                        {(() => {
+                                            const bottomType = uniformType === "regular" ? designRequest.uniformTypes.regular.details.girl.bottomType : "pants";
+                                            const imageField = bottomType === "pants" ? "pants" : "skirt";
+                                            const image = designRequest.uniformTypes[uniformType].details.girl[imageField].frontDesignImage;
+                                            return image && (
+                                                <Box sx={{ mt: 1 }}>
+                                                    <DisplayImage
+                                                        imageUrl={URL.createObjectURL(image)}
+                                                        alt="Front Design Preview"
+                                                        width="100px"
+                                                        height="auto"
+                                                    />
+                                                </Box>
+                                            );
+                                        })()}
+                                    </Box>
+                                </Box>
+                                <Box>
+                                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                                        Back Design Image *
+                                    </Typography>
+                                    <Box sx={{
+                                        border: '2px dashed #ddd',
+                                        borderRadius: '8px',
+                                        p: 2,
+                                        textAlign: 'center',
+                                        backgroundColor: '#fafafa'
+                                    }}>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            style={{ display: 'none' }}
+                                            id={`back-design-girl-${bottomType}-${uniformType}`}
+                                            onChange={(e) => {
+                                                const file = e.target.files[0];
+                                                if (file) {
+                                                    const bottomType = uniformType === "regular" ? designRequest.uniformTypes.regular.details.girl.bottomType : "pants";
+                                                    const imageField = bottomType === "pants" ? "pants" : "skirt";
+                                                    setDesignRequest(prev => ({
+                                                        ...prev,
+                                                        uniformTypes: {
+                                                            ...prev.uniformTypes,
+                                                            [uniformType]: {
+                                                                ...prev.uniformTypes[uniformType],
+                                                                details: {
+                                                                    ...prev.uniformTypes[uniformType].details,
+                                                                    girl: {
+                                                                        ...prev.uniformTypes[uniformType].details.girl,
+                                                                        [imageField]: {
+                                                                            ...prev.uniformTypes[uniformType].details.girl[imageField],
+                                                                            backDesignImage: file
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }));
+                                                }
+                                            }}
+                                        />
+                                        <label htmlFor={`back-design-girl-${bottomType}-${uniformType}`}>
+                                            <Button
+                                                variant="outlined"
+                                                component="span"
+                                                startIcon={<CloudUploadIcon/>}
+                                                sx={{ mb: 1 }}
+                                            >
+                                                Upload Back Design
+                                            </Button>
+                                        </label>
+                                        {(() => {
+                                            const bottomType = uniformType === "regular" ? designRequest.uniformTypes.regular.details.girl.bottomType : "pants";
+                                            const imageField = bottomType === "pants" ? "pants" : "skirt";
+                                            const image = designRequest.uniformTypes[uniformType].details.girl[imageField].backDesignImage;
+                                            return image && (
+                                                <Box sx={{ mt: 1 }}>
+                                                    <DisplayImage
+                                                        imageUrl={URL.createObjectURL(image)}
+                                                        alt="Back Design Preview"
+                                                        width="100px"
+                                                        height="auto"
+                                                    />
+                                                </Box>
+                                            );
+                                        })()}
+                                    </Box>
+                                </Box>
+                            </Box>
+                        )}
 
 
                         <Box>
@@ -2414,6 +3401,58 @@ export default function SchoolCreateDesign() {
                 boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                 border: '1px solid #e2e8f0'
             }}>
+
+                <Box sx={{mb: 4}}>
+                    <Typography variant="h6" sx={{
+                        color: '#1e293b',
+                        mb: 2,
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1
+                    }}>
+                        🎯 Design Type
+                    </Typography>
+                    <FormControl fullWidth size="medium" sx={{mb: 3}}>
+                        <Select
+                            value={designRequest.designType}
+                            onChange={(e) => setDesignRequest(prev => ({...prev, designType: e.target.value}))}
+                            displayEmpty
+                            renderValue={(selected) => {
+                                if (selected === 'new') {
+                                    return 'Create New Design';
+                                } else if (selected === 'import') {
+                                    return 'Import Existing Design';
+                                }
+                                return 'Select design type';
+                            }}
+                            sx={{
+                                '& .MuiOutlinedInput-root': {
+                                    borderRadius: 2,
+                                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: '#2e7d32'
+                                    },
+                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: '#2e7d32'
+                                    }
+                                },
+                                '& .MuiInputLabel-root': {
+                                    '&.Mui-focused': {
+                                        color: '#2e7d32'
+                                    }
+                                },
+                                '& .MuiFormLabel-root': {
+                                    '&.Mui-focused': {
+                                        color: '#2e7d32'
+                                    }
+                                }
+                            }}
+                            variant='outlined'>
+                            <MenuItem value="new">Create New Design</MenuItem>
+                            <MenuItem value="import">Import Existing Design</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Box>
 
                 <Box sx={{mb: 4}}>
                     <Typography variant="h6" sx={{
@@ -3250,7 +4289,10 @@ export default function SchoolCreateDesign() {
                         }
                     }}
                 >
-                    {isSubmitting ? 'Submitting...' : 'Submit Request'}
+                    {isSubmitting 
+                        ? (designRequest.designType === 'import' ? 'Importing...' : 'Submitting...') 
+                        : (designRequest.designType === 'import' ? 'Import Design' : 'Submit Request')
+                    }
                 </Button>
             </Box>
         </Box>

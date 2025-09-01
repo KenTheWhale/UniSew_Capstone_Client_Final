@@ -193,8 +193,9 @@ export default function SchoolDesign() {
         const completed = filteredDesignRequests.filter(req => req.status === 'completed').length;
         const processing = filteredDesignRequests.filter(req => req.status === 'processing').length;
         const canceled = filteredDesignRequests.filter(req => req.status === 'canceled').length;
+        const imported = filteredDesignRequests.filter(req => req.status === 'imported').length;
 
-        return {total, pending, completed, processing, canceled};
+        return {total, pending, completed, processing, canceled, imported};
     }, [filteredDesignRequests]);
 
     const handleViewDetail = useCallback((id) => {
@@ -564,34 +565,37 @@ export default function SchoolDesign() {
                 >
                     Manage and track your school's uniform design requests with ease. From concept to completion.
                 </Typography>
-                <Button
-                    variant="contained"
-                    size="large"
-                    startIcon={<AddIcon/>}
-                    onClick={handleCreateDesignRequest}
-                    sx={{
-                        background: "linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)",
-                        color: "white",
-                        px: 4,
-                        py: 1.5,
-                        fontSize: "1rem",
-                        fontWeight: 600,
-                        borderRadius: 2,
-                        textTransform: "none",
-                        boxShadow: "0 4px 15px rgba(46, 125, 50, 0.3)",
-                        "&:hover": {
-                            background: "linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%)",
-                            transform: "translateY(-2px)",
-                            boxShadow: "0 8px 25px rgba(46, 125, 50, 0.4)"
-                        }
-                    }}
-                >
-                    Create New Request
-                </Button>
+                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                    <Button
+                        variant="contained"
+                        size="large"
+                        startIcon={<AddIcon/>}
+                        onClick={handleCreateDesignRequest}
+                        sx={{
+                            background: "linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)",
+                            color: "white",
+                            px: 4,
+                            py: 1.5,
+                            fontSize: "1rem",
+                            fontWeight: 600,
+                            borderRadius: 2,
+                            textTransform: "none",
+                            boxShadow: "0 4px 15px rgba(46, 125, 50, 0.3)",
+                            "&:hover": {
+                                background: "linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%)",
+                                transform: "translateY(-2px)",
+                                boxShadow: "0 8px 25px rgba(46, 125, 50, 0.4)"
+                            }
+                        }}
+                    >
+                        Create New Request
+                    </Button>
+
+                </Box>
             </Box>
 
             <Box sx={{mb: 4}}>
-                <Box sx={{display: 'flex', gap: 3}}>
+                <Box sx={{display: 'flex', gap: 3, flexWrap: 'wrap'}}>
                     <StatCard
                         icon={<TrendingUpIcon sx={{color: STATUS_COLORS.completed, fontSize: 24}}/>}
                         value={stats.total}
@@ -619,6 +623,13 @@ export default function SchoolDesign() {
                         label="Completed"
                         color={STATUS_COLORS.completed}
                         bgColor="#e8f5e8"
+                    />
+                    <StatCard
+                        icon={<DesignServicesIcon sx={{color: '#e91e63', fontSize: 24}}/>}
+                        value={stats.imported}
+                        label="Imported"
+                        color="#e91e63"
+                        bgColor="#fce4ec"
                     />
                     <StatCard
                         icon={<Typography variant="h6"
@@ -686,7 +697,7 @@ export default function SchoolDesign() {
                 </Box>
             </Paper>
 
-            {selectedRequest && selectedRequest.status !== 'pending' && (
+            {selectedRequest && selectedRequest.status !== 'pending' && selectedRequest.status !== 'imported' && (
                 <RequestDetailPopup
                     visible={isModalVisible}
                     onCancel={handleCancel}
@@ -698,6 +709,14 @@ export default function SchoolDesign() {
                 <FindingDesignerPopup
                     visible={isModalVisible}
                     onCancel={handleCloseDesignerModal}
+                    request={selectedRequest}
+                />
+            )}
+
+            {selectedRequest && selectedRequest.status === 'imported' && (
+                <RequestDetailPopup
+                    visible={isModalVisible}
+                    onCancel={handleCancel}
                     request={selectedRequest}
                 />
             )}
