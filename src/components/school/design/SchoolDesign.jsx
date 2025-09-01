@@ -215,8 +215,6 @@ export default function SchoolDesign() {
         navigate('/school/request/create');
     }, [navigate]);
 
-
-
     const handleCancel = useCallback(() => {
         setIsModalVisible(false);
         setSelectedRequest(null);
@@ -233,6 +231,10 @@ export default function SchoolDesign() {
     }, []);
 
     const handleOpenFeedback = useCallback((request) => {
+        if (request.status === 'imported') {
+            enqueueSnackbar('Feedback is not available for imported requests', {variant: 'warning'});
+            return;
+        }
         if (request.status !== 'completed') {
             enqueueSnackbar('Feedback is only available for completed requests', {variant: 'warning'});
             return;
@@ -246,6 +248,10 @@ export default function SchoolDesign() {
     }, []);
 
     const handleOpenReport = useCallback((request) => {
+        if (request.status === 'imported') {
+            enqueueSnackbar('Report is not available for imported requests', {variant: 'warning'});
+            return;
+        }
         if (request.status === 'pending') {
             enqueueSnackbar('Report is not available for pending requests', {variant: 'warning'});
             return;
@@ -279,6 +285,11 @@ export default function SchoolDesign() {
             const request = designRequests.find(req => req.id === requestId);
             if (!request) {
                 enqueueSnackbar('Request not found', {variant: 'error'});
+                return;
+            }
+
+            if (request.status === 'imported') {
+                enqueueSnackbar('Cannot cancel imported requests', {variant: 'warning'});
                 return;
             }
 
@@ -454,11 +465,11 @@ export default function SchoolDesign() {
                                     handleOpenFeedback(record);
                                     handleCloseMenu();
                                 }}
-                                disabled={record.status !== 'completed' || !!record.feedback}
+                                disabled={record.status === 'imported' || record.status !== 'completed' || !!record.feedback}
                             >
                                 <FeedbackIcon fontSize="small" sx={{
                                     mr: 1,
-                                    color: (record.status === 'completed' && !record.feedback) ? '#10b981' : '#9ca3af'
+                                    color: (record.status === 'completed' && !record.feedback && record.status !== 'imported') ? '#10b981' : '#9ca3af'
                                 }}/>
                                 Feedback
                             </MenuItem>
@@ -467,7 +478,7 @@ export default function SchoolDesign() {
                                     handleOpenReport(record);
                                     handleCloseMenu();
                                 }}
-                                disabled={record.status === 'pending' || record.status === 'imported' || !!record.feedback}
+                                disabled={record.status === 'imported' || record.status === 'pending' || !!record.feedback}
                             >
                                 <ReportIcon fontSize="small" sx={{
                                     mr: 1,
@@ -475,7 +486,7 @@ export default function SchoolDesign() {
                                 }}/>
                                 Report
                             </MenuItem>
-                            {(record.status === 'pending' || record.status === 'processing' || record.status === 'imported') && (
+                            {(record.status === 'pending' || record.status === 'processing') && record.status !== 'imported' && (
                                 <MenuItem
                                     onClick={async () => {
                                         await handleCancelRequest(record.id);
