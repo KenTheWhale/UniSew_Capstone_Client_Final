@@ -14,7 +14,8 @@ import {
     Paper,
     Chip,
     IconButton,
-    Tooltip
+    Tooltip,
+    InputAdornment
 } from '@mui/material';
 import {
     Save,
@@ -37,6 +38,7 @@ export default function PlatformSetting() {
         // Media Settings
         maxImageSize: 10,
         maxVideoSize: 100,
+        maxReferenceImages: 5, // Thêm cấu hình số lượng tối đa reference images
         
         // Notification Settings
         emailNotifications: true,
@@ -138,8 +140,10 @@ export default function PlatformSetting() {
                                     onChange={(e) => handleSettingChange('taxRate', parseFloat(e.target.value))}
                                     variant="outlined"
                                     size="medium"
-                                    InputProps={{
-                                        endAdornment: <Chip label="%" size="small" />
+                                    slotProps={{
+                                        input: {
+                                            endAdornment: <InputAdornment position="end"><Chip label="%" size="small" /></InputAdornment>
+                                        }
                                     }}
                                 />
                             </Grid>
@@ -152,8 +156,10 @@ export default function PlatformSetting() {
                                     onChange={(e) => handleSettingChange('serviceFeeRate', parseFloat(e.target.value))}
                                     variant="outlined"
                                     size="medium"
-                                    InputProps={{
-                                        endAdornment: <Chip label="%" size="small" />
+                                    slotProps={{
+                                        input: {
+                                            endAdornment: <InputAdornment position="end"><Chip label="%" size="small" /></InputAdornment>
+                                        }
                                     }}
                                 />
                             </Grid>
@@ -166,8 +172,10 @@ export default function PlatformSetting() {
                                     onChange={(e) => handleVietnameseNumberChange('minTransactionAmount', e.target.value)}
                                     variant="outlined"
                                     size="medium"
-                                    InputProps={{
-                                        endAdornment: <Chip label="VND" size="small" />
+                                    slotProps={{
+                                        input: {
+                                            endAdornment: <InputAdornment position="end"><Chip label="VND" size="small" /></InputAdornment>
+                                        }
                                     }}
                                 />
                             </Grid>
@@ -180,8 +188,10 @@ export default function PlatformSetting() {
                                     onChange={(e) => handleVietnameseNumberChange('maxTransactionAmount', e.target.value)}
                                     variant="outlined"
                                     size="medium"
-                                    InputProps={{
-                                        endAdornment: <Chip label="VND" size="small" />
+                                    slotProps={{
+                                        input: {
+                                            endAdornment: <InputAdornment position="end"><Chip label="VND" size="small" /></InputAdornment>
+                                        }
                                     }}
                                 />
                             </Grid>
@@ -200,8 +210,10 @@ export default function PlatformSetting() {
                                     onChange={(e) => handleSettingChange('maxImageSize', parseInt(e.target.value))}
                                     variant="outlined"
                                     size="medium"
-                                    InputProps={{
-                                        endAdornment: <Chip label="MB" size="small" />
+                                    slotProps={{
+                                        input: {
+                                            endAdornment: <InputAdornment position="end"><Chip label="MB" size="small" /></InputAdornment>
+                                        }
                                     }}
                                 />
                             </Grid>
@@ -214,8 +226,27 @@ export default function PlatformSetting() {
                                     onChange={(e) => handleSettingChange('maxVideoSize', parseInt(e.target.value))}
                                     variant="outlined"
                                     size="medium"
-                                    InputProps={{
-                                        endAdornment: <Chip label="MB" size="small" />
+                                    slotProps={{
+                                        input: {
+                                            endAdornment: <InputAdornment position="end"><Chip label="MB" size="small" /></InputAdornment>
+                                        }
+                                    }}
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={6} sx={{ flex: 1 }}>
+                                <TextField
+                                    fullWidth
+                                    label="Max Reference Images"
+                                    type="number"
+                                    value={settings.maxReferenceImages}
+                                    onChange={(e) => handleSettingChange('maxReferenceImages', parseInt(e.target.value))}
+                                    variant="outlined"
+                                    size="medium"
+                                    helperText="Max reference images for each design request"
+                                    slotProps={{
+                                        input: {
+                                            endAdornment: <InputAdornment position="end"><Chip label="images" size="small" /></InputAdornment>
+                                        }
                                     }}
                                 />
                             </Grid>
