@@ -488,6 +488,8 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
     const [sortCriteria, setSortCriteria] = useState([]);
     const [profileModalOpen, setProfileModalOpen] = useState(false);
     const [profileDesigner, setProfileDesigner] = useState(null);
+    const [selectedImages, setSelectedImages] = useState(null);
+    const [imageDialogVisible, setImageDialogVisible] = useState(false);
 
     const selectedDesigner = useMemo(() =>
             appliedDesigners.find(d => d.id === selectedQuotation?.designerId),
@@ -724,9 +726,10 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                         disabled={!selectedQuotation || isProcessing || exceedsCap}
                         icon={isProcessing ? <Spin size="small"/> : <CheckCircleOutlined/>}
                         style={{
-                            backgroundColor: '#2e7d32',
+                            backgroundColor: !selectedQuotation || isProcessing || exceedsCap ? '#d1d5db' : '#2e7d32',
                             color: 'white',
-                            borderColor: '#2e7d32'
+                            borderColor: !selectedQuotation || isProcessing || exceedsCap ? '#d1d5db' : '#2e7d32',
+                            cursor: !selectedQuotation || isProcessing || exceedsCap ? 'not-allowed' : 'pointer'
                         }}
                     >
                         {isProcessing ? 'Processing...' : 'Confirm Selection'}
@@ -904,8 +907,6 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                             {request.name}
                                         </Typography.Title>
                                         <Tag color="green">{parseID(request.id, 'dr')}</Tag>
-                                    </Box>
-                                    <Box sx={{display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1}}>
                                         <Tag color="geekblue">Status: {request.status}</Tag>
                                         <Tag
                                             color={request.privacy ? 'blue' : 'default'}>{request.privacy ? 'Private' : 'Public'}</Tag>
@@ -926,7 +927,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                 borderRadius: 2,
                                                 display: 'flex',
                                                 flexDirection: 'column',
-                                                height: 280,
+                                                height: "max-content",
                                                 transition: 'all 0.2s ease',
                                                 '&:hover': {
                                                     boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
@@ -961,13 +962,26 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                     minHeight: 120
                                                 }}>
                                                     {(item.sampleImages && item.sampleImages.length > 0) ? (
-                                                        <DisplayImage
-                                                            imageUrl={item.sampleImages[0].url}
-                                                            alt="Sample"
-                                                            width="100px"
-                                                            height="100px"
-                                                            style={{objectFit: 'cover', borderRadius: '8px'}}
-                                                        />
+                                                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                                                            <DisplayImage
+                                                                imageUrl={item.sampleImages[0].url}
+                                                                alt="Sample"
+                                                                width="100px"
+                                                                height="100px"
+                                                                style={{objectFit: 'cover', borderRadius: '8px'}}
+                                                            />
+                                                            <Button 
+                                                                size="small" 
+                                                                type="primary"
+                                                                onClick={() => {
+                                                                    setSelectedImages(item.sampleImages);
+                                                                    setImageDialogVisible(true);
+                                                                }}
+                                                                style={{ fontSize: '10px', height: '24px' }}
+                                                            >
+                                                                View Reference Images ({item.sampleImages.length})
+                                                            </Button>
+                                                        </Box>
                                                     ) : (
                                                         <Box sx={{
                                                             width: '100%',
@@ -987,43 +1001,44 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                     )}
                                                 </Box>
 
-                                                <Box sx={{display: 'flex', flexDirection: 'column', gap: 0.5, mb: 1}}>
-                                                    <Box sx={{display: 'flex', gap: 0.5, flexWrap: 'wrap'}}>
-                                                        <Tag color="blue" style={{
-                                                            fontSize: '10px',
-                                                            padding: '2px 6px'
-                                                        }}>{item.gender}</Tag>
-                                                        <Tag color="success" style={{
-                                                            fontSize: '10px',
-                                                            padding: '2px 6px'
-                                                        }}>{item.fabricName}</Tag>
-                                                        {item.logoPosition && (
-                                                            <Tag color="gold" style={{
-                                                                fontSize: '10px',
-                                                                padding: '2px 6px',
-                                                                alignSelf: 'flex-start'
-                                                            }}>
-                                                                Logo: {item.logoPosition}
-                                                            </Tag>
-                                                        )}
-                                                    </Box>
-                                                </Box>
-
                                                 <Box sx={{
-                                                    mt: 'auto',
+                                                    display: 'flex', 
+                                                    flexDirection: 'column', 
+                                                    gap: 0.5, 
+                                                    mb: 1,
                                                     p: 1,
                                                     backgroundColor: '#f8fafc',
                                                     borderRadius: 1,
                                                     border: '1px solid #e2e8f0'
                                                 }}>
-                                                    <Typography.Text style={{
+                                                    <Tag color="success" style={{
                                                         fontSize: '10px',
-                                                        color: '#64748b',
-                                                        display: 'block',
-                                                        lineHeight: '1.3'
+                                                        padding: '2px 6px',
+                                                        width: '100%',
+                                                        textAlign: 'left',
+                                                        backgroundColor: '#f5f5f5',
+                                                        border: '1px solid #d9d9d9'
+                                                    }}>Fabric: {item.fabricName}</Tag>
+                                                    <Tag color="gold" style={{
+                                                            fontSize: '10px',
+                                                            padding: '2px 6px',
+                                                            width: '100%',
+                                                            textAlign: 'left',
+                                                            backgroundColor: '#f5f5f5',
+                                                            border: '1px solid #d9d9d9'
+                                                        }}>
+                                                            Logo: {item.logoPosition || 'N/A'}
+                                                        </Tag>
+                                                    <Tag color="default" style={{
+                                                        fontSize: '10px',
+                                                        padding: '2px 6px',
+                                                        width: '100%',
+                                                        textAlign: 'left',
+                                                        backgroundColor: '#f5f5f5',
+                                                        border: '1px solid #d9d9d9'
                                                     }}>
-                                                        {item.note || 'N/A'}
-                                                    </Typography.Text>
+                                                        Note: {item.note || 'N/A'}
+                                                    </Tag>
                                                 </Box>
                                             </Paper>
                                         ))}
@@ -1078,13 +1093,26 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                     minHeight: 120
                                                 }}>
                                                     {(item.sampleImages && item.sampleImages.length > 0) ? (
-                                                        <DisplayImage
-                                                            imageUrl={item.sampleImages[0].url}
-                                                            alt="Sample"
-                                                            width="100px"
-                                                            height="100px"
-                                                            style={{objectFit: 'cover', borderRadius: '8px'}}
-                                                        />
+                                                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                                                            <DisplayImage
+                                                                imageUrl={item.sampleImages[0].url}
+                                                                alt="Sample"
+                                                                width="100px"
+                                                                height="100px"
+                                                                style={{objectFit: 'cover', borderRadius: '8px'}}
+                                                            />
+                                                            <Button 
+                                                                size="small" 
+                                                                type="primary"
+                                                                onClick={() => {
+                                                                    setSelectedImages(item.sampleImages);
+                                                                    setImageDialogVisible(true);
+                                                                }}
+                                                                style={{ fontSize: '10px', height: '24px' }}
+                                                            >
+                                                                View Reference Images ({item.sampleImages.length})
+                                                            </Button>
+                                                        </Box>
                                                     ) : (
                                                         <Box sx={{
                                                             width: '100%',
@@ -1581,6 +1609,37 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
             />
             <DesignerProfileModal open={profileModalOpen} onClose={() => setProfileModalOpen(false)}
                                   designer={profileDesigner}/>
+            
+            {/* Image Dialog */}
+            <Modal
+                title="Sample Images"
+                open={imageDialogVisible}
+                onCancel={() => setImageDialogVisible(false)}
+                footer={null}
+                width={800}
+            >
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
+                    {selectedImages?.map((image, index) => (
+                        <Box key={index} sx={{ textAlign: 'center' }}>
+                            <DisplayImage
+                                imageUrl={image.url}
+                                alt={`Sample ${index + 1}`}
+                                width="200px"
+                                height="200px"
+                                style={{ objectFit: 'cover', borderRadius: '8px' }}
+                            />
+                            <Typography.Text style={{ 
+                                display: 'block', 
+                                marginTop: '8px', 
+                                fontSize: '12px',
+                                color: '#64748b'
+                            }}>
+                                Image {index + 1}
+                            </Typography.Text>
+                        </Box>
+                    ))}
+                </Box>
+            </Modal>
         </Modal>
     );
 }

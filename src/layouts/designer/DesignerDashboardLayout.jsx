@@ -420,7 +420,45 @@ export default function DesignerDashboardLayout() {
 
                         <Divider sx={{my: 3, borderColor: "#e9ecef"}}/>
 
-                        {}
+                        {/* QUOTATION MANAGEMENT */}
+                        <Typography variant="overline" sx={{
+                            px: 2,
+                            pb: 1,
+                            color: "#6c757d",
+                            fontWeight: 700,
+                            fontSize: "0.75rem",
+                            letterSpacing: "1px"
+                        }}>
+                            QUOTATION MANAGEMENT
+                        </Typography>
+                        <List sx={{mb: 3}}>
+                            <ListItem disablePadding>
+                                <ListItemButton
+                                    sx={{
+                                        borderRadius: 2,
+                                        mx: 1,
+                                        my: 0.5,
+                                        color: "#495057",
+                                        "&:hover": {
+                                            background: "linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)",
+                                            color: "#FFFFFF",
+                                            transform: "translateY(-1px)",
+                                        },
+                                        transition: "all 0.3s ease",
+                                    }}
+                                    onClick={() => navigate("/designer/quotations")}
+                                >
+                                    <ListItemIcon sx={{color: "inherit"}}>
+                                        <Assignment/>
+                                    </ListItemIcon>
+                                    <ListItemText primary="My Quotations"/>
+                                </ListItemButton>
+                            </ListItem>
+                        </List>
+
+                        <Divider sx={{my: 3, borderColor: "#e9ecef"}}/>
+
+                        {/* COMMUNICATION */}
                         <Typography variant="overline" sx={{
                             px: 2,
                             pb: 1,

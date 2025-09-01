@@ -377,7 +377,181 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                     <Container maxWidth={false} sx={{p: 3}}>
                         <Grid container spacing={3} sx={{display: 'flex'}}>
                             <Grid sx={{flex: 2}}>
-                                {/* School Information Card */}
+                                {/* Request Information Card - Comes First */}
+                                <Card sx={{
+                                    mb: 3,
+                                    background: 'rgba(255, 255, 255, 0.9)',
+                                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                                    borderRadius: 2,
+                                    boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                                    backdropFilter: 'blur(10px)',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                                        transform: 'translateY(-2px)',
+                                        background: 'rgba(255, 255, 255, 0.95)'
+                                    }
+                                }}>
+                                    <Box sx={{
+                                        background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
+                                        p: 2,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1.5,
+                                        borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+                                        transition: 'all 0.3s ease'
+                                    }}>
+                                        <Box sx={{
+                                            p: 1,
+                                            borderRadius: 2,
+                                            background: 'rgba(255, 255, 255, 0.2)',
+                                            backdropFilter: 'blur(10px)'
+                                        }}>
+                                            <DesignServices sx={{color: 'white', fontSize: 20}}/>
+                                        </Box>
+                                        <Typography variant="h6" sx={{
+                                            color: 'white',
+                                            fontWeight: 700,
+                                            transition: 'all 0.3s ease'
+                                        }}>
+                                            Request Information
+                                        </Typography>
+                                    </Box>
+                                    <CardContent sx={{p: 3}}>
+                                        <Box sx={{
+                                            display: 'flex',
+                                            gap: 2,
+                                            flexWrap: 'wrap'
+                                        }}>
+                                            <Box sx={{
+                                                flex: 1,
+                                                minWidth: '200px',
+                                                p: 2.5,
+                                                background: 'rgba(255, 255, 255, 0.8)',
+                                                borderRadius: 2,
+                                                border: '1px solid rgba(124, 58, 237, 0.1)',
+                                                textAlign: 'center',
+                                                transition: 'all 0.3s ease',
+                                                '&:hover': {
+                                                    background: 'rgba(255, 255, 255, 0.9)',
+                                                    transform: 'translateY(-1px)',
+                                                    boxShadow: '0 4px 12px rgba(124, 58, 237, 0.1)'
+                                                }
+                                            }}>
+                                                <DesignServices sx={{
+                                                    color: '#7c3aed',
+                                                    fontSize: 24,
+                                                    mb: 1
+                                                }}/>
+                                                <Typography variant="body2" sx={{
+                                                    color: '#64748b',
+                                                    fontWeight: 600,
+                                                    mb: 0.5
+                                                }}>
+                                                    Design Name
+                                                </Typography>
+                                                <Typography variant="body1" sx={{
+                                                    fontWeight: 600,
+                                                    color: '#1e293b'
+                                                }}>
+                                                    {mergedRequestData.name || 'Uniform Design'}
+                                                </Typography>
+                                            </Box>
+
+                                            <Box sx={{
+                                                flex: 1,
+                                                minWidth: '200px',
+                                                p: 2.5,
+                                                background: 'rgba(255, 255, 255, 0.8)',
+                                                borderRadius: 2,
+                                                border: '1px solid rgba(124, 58, 237, 0.1)',
+                                                textAlign: 'center',
+                                                transition: 'all 0.3s ease',
+                                                '&:hover': {
+                                                    background: 'rgba(255, 255, 255, 0.9)',
+                                                    transform: 'translateY(-1px)',
+                                                    boxShadow: '0 4px 12px rgba(124, 58, 237, 0.1)'
+                                                }
+                                            }}>
+                                                <CalendarIcon sx={{
+                                                    color: '#7c3aed',
+                                                    fontSize: 24,
+                                                    mb: 1
+                                                }}/>
+                                                <Typography variant="body2" sx={{
+                                                    color: '#64748b',
+                                                    fontWeight: 600,
+                                                    mb: 0.5
+                                                }}>
+                                                    Request Date
+                                                </Typography>
+                                                <Typography variant="body1" sx={{
+                                                    fontWeight: 600,
+                                                    color: '#1e293b'
+                                                }}>
+                                                    {formatDate(mergedRequestData.date || mergedRequestData.creationDate)}
+                                                </Typography>
+                                                <Typography variant="caption" sx={{
+                                                    color: '#667eea',
+                                                    fontWeight: 600,
+                                                    display: 'block',
+                                                    mt: 0.5
+                                                }}>
+                                                    {(() => {
+                                                        const days = calculateDaysFromRequest(mergedRequestData.date || mergedRequestData.creationDate);
+                                                        if (days === 0) {
+                                                            return 'Today';
+                                                        } else if (days === 1) {
+                                                            return '1 day ago';
+                                                        } else if (days > 1) {
+                                                            return `${days} days ago`;
+                                                        } else {
+                                                            return `${Math.abs(days)} days from now`;
+                                                        }
+                                                    })()}
+                                                </Typography>
+                                            </Box>
+
+                                            <Box sx={{
+                                                flex: 1,
+                                                minWidth: '200px',
+                                                p: 2.5,
+                                                background: 'rgba(255, 255, 255, 0.8)',
+                                                borderRadius: 2,
+                                                border: '1px solid rgba(124, 58, 237, 0.1)',
+                                                textAlign: 'center',
+                                                transition: 'all 0.3s ease',
+                                                '&:hover': {
+                                                    background: 'rgba(255, 255, 255, 0.9)',
+                                                    transform: 'translateY(-1px)',
+                                                    boxShadow: '0 4px 12px rgba(124, 58, 237, 0.1)'
+                                                }
+                                            }}>
+                                                <AssignmentIcon sx={{
+                                                    color: '#7c3aed',
+                                                    fontSize: 24,
+                                                    mb: 1
+                                                }}/>
+                                                <Typography variant="body2" sx={{
+                                                    color: '#64748b',
+                                                    fontWeight: 600,
+                                                    mb: 0.5
+                                                }}>
+                                                    Status
+                                                </Typography>
+                                                <Typography variant="body1" sx={{
+                                                    fontWeight: 600,
+                                                    color: '#1e293b',
+                                                    textTransform: 'capitalize'
+                                                }}>
+                                                    {mergedRequestData.status || 'N/A'}
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+                                    </CardContent>
+                                </Card>
+
+                                {/* School Information Card - Comes Second */}
                                 <Card sx={{
                                     mb: 3,
                                     background: 'rgba(255, 255, 255, 0.9)',
@@ -394,49 +568,56 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                 }}>
                                     <Box sx={{
                                         background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
-                                        p: 1.5,
+                                        p: 2,
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: 1,
-                                        borderBottom: '1px solid #e0e0e0',
+                                        gap: 1.5,
+                                        borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
                                         transition: 'all 0.3s ease'
                                     }}>
-                                        <SchoolIcon sx={{color: 'white', fontSize: 18, transition: 'all 0.3s ease'}}/>
+                                        <Box sx={{
+                                            p: 1,
+                                            borderRadius: 2,
+                                            background: 'rgba(255, 255, 255, 0.2)',
+                                            backdropFilter: 'blur(10px)'
+                                        }}>
+                                            <SchoolIcon sx={{color: 'white', fontSize: 20}}/>
+                                        </Box>
                                         <Typography variant="h6" sx={{
                                             color: 'white',
-                                            fontWeight: 600,
+                                            fontWeight: 700,
                                             transition: 'all 0.3s ease'
                                         }}>
                                             School Information
                                         </Typography>
                                     </Box>
                                     <CardContent sx={{p: 3}}>
-                                        {/* School Avatar and Basic Info */}
+                                        {/* School Profile */}
                                         <Box sx={{
                                             display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'center',
-                                            gap: 2,
-                                            mb: 3,
+                                            alignItems: 'flex-start',
+                                            gap: 3,
+                                            mb: 4,
                                             p: 3,
                                             borderRadius: 3,
-                                            background: 'linear-gradient(135deg, rgba(22, 163, 74, 0.05) 0%, rgba(21, 128, 61, 0.05) 100%)',
-                                            border: '1px solid rgba(22, 163, 74, 0.1)',
+                                            background: 'linear-gradient(135deg, rgba(22, 163, 74, 0.03) 0%, rgba(21, 128, 61, 0.03) 100%)',
+                                            border: '1px solid rgba(22, 163, 74, 0.08)',
                                             transition: 'all 0.3s ease',
                                             '&:hover': {
-                                                background: 'rgba(22, 163, 74, 0.08)',
+                                                background: 'linear-gradient(135deg, rgba(22, 163, 74, 0.05) 0%, rgba(21, 128, 61, 0.05) 100%)',
                                                 transform: 'translateY(-1px)',
-                                                boxShadow: '0 4px 12px rgba(22, 163, 74, 0.1)'
+                                                boxShadow: '0 4px 12px rgba(22, 163, 74, 0.08)'
                                             }
                                         }}>
                                             <Avatar
                                                 src={mergedRequestData.school?.avatar}
                                                 referrerPolicy="no-referrer"
                                                 sx={{
-                                                    width: 72,
-                                                    height: 72,
-                                                    boxShadow: '0 8px 24px rgba(22, 163, 74, 0.2)',
-                                                    border: '3px solid rgba(22, 163, 74, 0.2)',
+                                                    width: 80,
+                                                    height: 80,
+                                                    boxShadow: '0 12px 32px rgba(22, 163, 74, 0.25)',
+                                                    border: '4px solid rgba(22, 163, 74, 0.15)',
+                                                    flexShrink: 0,
                                                     '& img': {
                                                         objectFit: 'cover',
                                                         width: '100%',
@@ -446,188 +627,215 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                             >
                                                 {mergedRequestData.school?.business?.charAt(0) || mergedRequestData.school?.name?.charAt(0)}
                                             </Avatar>
-                                            <Box sx={{textAlign: 'center'}}>
+                                            <Box sx={{flex: 1, minWidth: 0}}>
                                                 <Typography variant="h5" sx={{
                                                     fontWeight: 700,
                                                     color: '#1e293b',
-                                                    fontSize: '1.5rem',
-                                                    mb: 0.5
+                                                    mb: 1,
+                                                    fontSize: '1.4rem',
+                                                    lineHeight: 1.2
                                                 }}>
                                                     {mergedRequestData.school?.business || mergedRequestData.school?.name || 'N/A'}
                                                 </Typography>
-                                                {/*<Typography variant="body1" sx={{*/}
-                                                {/*    color: '#16a34a',*/}
-                                                {/*    fontWeight: 600,*/}
-                                                {/*    fontSize: '1rem'*/}
-                                                {/*}}>*/}
-                                                {/*    {mergedRequestData.school?.name || 'School Representative'}*/}
-                                                {/*</Typography>*/}
+                                                <Box sx={{
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: 1,
+                                                    px: 2,
+                                                    py: 0.5,
+                                                    borderRadius: 2,
+                                                    background: 'rgba(22, 163, 74, 0.1)',
+                                                    border: '1px solid rgba(22, 163, 74, 0.2)',
+                                                    mb: 1.5
+                                                }}>
+                                                    <Box sx={{
+                                                        width: 8,
+                                                        height: 8,
+                                                        borderRadius: '50%',
+                                                        background: '#16a34a'
+                                                    }}/>
+                                                    <Typography variant="body2" sx={{
+                                                        color: '#16a34a',
+                                                        fontWeight: 600,
+                                                        fontSize: '0.85rem'
+                                                    }}>
+                                                        School Representative
+                                                    </Typography>
+                                                </Box>
+
                                             </Box>
                                         </Box>
 
-                                        {/* Contact Information Grid */}
-                                        <Grid container spacing={2}>
-                                            <Grid sx={{flex: 1}}>
+                                        {/* Contact Information */}
+                                        <Box sx={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: 2
+                                        }}>
+                                            {/* Phone Number and Contact Person on same row */}
+                                            <Box sx={{
+                                                display: 'flex',
+                                                gap: 2
+                                            }}>
                                                 <Box sx={{
+                                                    flex: 1,
                                                     p: 2.5,
-                                                    borderRadius: 3,
-                                                    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(37, 99, 235, 0.05) 100%)',
+                                                    borderRadius: 2,
+                                                    background: 'rgba(59, 130, 246, 0.05)',
                                                     border: '1px solid rgba(59, 130, 246, 0.1)',
-                                                    textAlign: 'center',
+                                                    textAlign: 'left',
                                                     transition: 'all 0.3s ease',
                                                     '&:hover': {
                                                         background: 'rgba(59, 130, 246, 0.08)',
-                                                        transform: 'translateY(-2px)',
-                                                        boxShadow: '0 8px 25px rgba(59, 130, 246, 0.15)'
+                                                        transform: 'translateY(-1px)',
+                                                        boxShadow: '0 4px 12px rgba(59, 130, 246, 0.15)'
                                                     }
                                                 }}>
-                                                    <Box sx={{
-                                                        width: 40,
-                                                        height: 40,
-                                                        borderRadius: '50%',
-                                                        background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        mx: 'auto',
-                                                        mb: 1.5,
-                                                        boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
-                                                    }}>
-                                                        <PhoneIcon sx={{color: 'white', fontSize: 20}}/>
-                                                    </Box>
-                                                    <Typography variant="caption" sx={{
+                                                    <PhoneIcon sx={{
+                                                        color: '#3b82f6',
+                                                        fontSize: 24,
+                                                        mb: 1
+                                                    }}/>
+                                                    <Typography variant="body2" sx={{
                                                         color: '#64748b',
                                                         fontWeight: 600,
-                                                        textTransform: 'uppercase',
-                                                        letterSpacing: '0.5px',
-                                                        display: 'block',
-                                                        fontSize: '0.75rem'
+                                                        mb: 0.5
                                                     }}>
                                                         Phone Number
                                                     </Typography>
-                                                    <Typography variant="body2" sx={{
-                                                        fontWeight: 700,
-                                                        color: '#1e293b',
-                                                        fontSize: '0.9rem',
-                                                        mt: 0.5
+                                                    <Typography variant="body1" sx={{
+                                                        fontWeight: 600,
+                                                        color: '#1e293b'
                                                     }}>
                                                         {mergedRequestData.school?.phone || 'N/A'}
                                                     </Typography>
                                                 </Box>
-                                            </Grid>
 
-                                            <Grid sx={{flex: 1}}>
                                                 <Box sx={{
+                                                    flex: 1,
                                                     p: 2.5,
-                                                    borderRadius: 3,
-                                                    background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(217, 119, 6, 0.05) 100%)',
+                                                    borderRadius: 2,
+                                                    background: 'rgba(168, 85, 247, 0.05)',
+                                                    border: '1px solid rgba(168, 85, 247, 0.1)',
+                                                    textAlign: 'left',
+                                                    transition: 'all 0.3s ease',
+                                                    '&:hover': {
+                                                        background: 'rgba(168, 85, 247, 0.08)',
+                                                        transform: 'translateY(-1px)',
+                                                        boxShadow: '0 4px 12px rgba(168, 85, 247, 0.15)'
+                                                    }
+                                                }}>
+                                                    <PersonIcon sx={{
+                                                        color: '#a855f7',
+                                                        fontSize: 24,
+                                                        mb: 1
+                                                    }}/>
+                                                    <Typography variant="body2" sx={{
+                                                        color: '#64748b',
+                                                        fontWeight: 600,
+                                                        mb: 0.5
+                                                    }}>
+                                                        Contact Person
+                                                    </Typography>
+                                                    <Typography variant="body1" sx={{
+                                                        fontWeight: 600,
+                                                        color: '#1e293b'
+                                                    }}>
+                                                        {mergedRequestData.school?.name || 'N/A'}
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+
+                                            {/* Email Address and School Address on same row */}
+                                            <Box sx={{
+                                                display: 'flex',
+                                                gap: 2
+                                            }}>
+                                                <Box sx={{
+                                                    flex: 1,
+                                                    p: 2.5,
+                                                    borderRadius: 2,
+                                                    background: 'rgba(245, 158, 11, 0.05)',
                                                     border: '1px solid rgba(245, 158, 11, 0.1)',
-                                                    textAlign: 'center',
+                                                    textAlign: 'left',
                                                     transition: 'all 0.3s ease',
                                                     '&:hover': {
                                                         background: 'rgba(245, 158, 11, 0.08)',
-                                                        transform: 'translateY(-2px)',
-                                                        boxShadow: '0 8px 25px rgba(245, 158, 11, 0.15)'
+                                                        transform: 'translateY(-1px)',
+                                                        boxShadow: '0 4px 12px rgba(245, 158, 11, 0.15)'
                                                     }
                                                 }}>
-                                                    <Box sx={{
-                                                        width: 40,
-                                                        height: 40,
-                                                        borderRadius: '50%',
-                                                        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        mx: 'auto',
-                                                        mb: 1.5,
-                                                        boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)'
-                                                    }}>
-                                                        <EmailIcon sx={{color: 'white', fontSize: 18}}/>
-                                                    </Box>
-                                                    <Typography variant="caption" sx={{
+                                                    <EmailIcon sx={{
+                                                        color: '#f59e0b',
+                                                        fontSize: 24,
+                                                        mb: 1
+                                                    }}/>
+                                                    <Typography variant="body2" sx={{
                                                         color: '#64748b',
                                                         fontWeight: 600,
-                                                        textTransform: 'uppercase',
-                                                        letterSpacing: '0.5px',
-                                                        display: 'block',
-                                                        fontSize: '0.75rem'
+                                                        mb: 0.5
                                                     }}>
                                                         Email Address
                                                     </Typography>
-                                                    <Typography variant="body2" sx={{
-                                                        fontWeight: 700,
+                                                    <Typography variant="body1" sx={{
+                                                        fontWeight: 600,
                                                         color: '#1e293b',
+                                                        wordBreak: 'break-word',
+                                                        overflowWrap: 'break-word',
+                                                        hyphens: 'auto',
                                                         fontSize: '0.9rem',
-                                                        mt: 0.5,
-                                                        wordBreak: 'break-word'
+                                                        lineHeight: 1.3,
+                                                        maxWidth: '100%'
                                                     }}>
                                                         {mergedRequestData.school?.account?.email || 'N/A'}
                                                     </Typography>
                                                 </Box>
-                                            </Grid>
-                                        </Grid>
 
-                                        {/* Address Information */}
-                                        {mergedRequestData.school?.address && (
-                                            <Box sx={{
-                                                mt: 2,
-                                                p: 3,
-                                                borderRadius: 3,
-                                                background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%)',
-                                                border: '1px solid rgba(168, 85, 247, 0.1)',
-                                                transition: 'all 0.3s ease',
-                                                '&:hover': {
-                                                    background: 'rgba(168, 85, 247, 0.08)',
-                                                    transform: 'translateY(-1px)',
-                                                    boxShadow: '0 4px 12px rgba(168, 85, 247, 0.1)'
-                                                }
-                                            }}>
-                                                <Box sx={{
-                                                    display: 'flex',
-                                                    alignItems: 'flex-start',
-                                                    gap: 2
-                                                }}>
+                                                {mergedRequestData.school?.address && (
                                                     <Box sx={{
-                                                        width: 32,
-                                                        height: 32,
-                                                        borderRadius: '50%',
-                                                        background: 'linear-gradient(135deg, #a855f7 0%, #9333ea 100%)',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        flexShrink: 0,
-                                                        mt: 0.5,
-                                                        boxShadow: '0 4px 12px rgba(168, 85, 247, 0.3)'
+                                                        flex: 2,
+                                                        p: 2.5,
+                                                        borderRadius: 2,
+                                                        background: 'rgba(168, 85, 247, 0.05)',
+                                                        border: '1px solid rgba(168, 85, 247, 0.1)',
+                                                        textAlign: 'left',
+                                                        transition: 'all 0.3s ease',
+                                                        '&:hover': {
+                                                            background: 'rgba(168, 85, 247, 0.08)',
+                                                            transform: 'translateY(-1px)',
+                                                            boxShadow: '0 4px 12px rgba(168, 85, 247, 0.15)'
+                                                        }
                                                     }}>
-                                                        <LocationIcon sx={{color: 'white', fontSize: 16}}/>
-                                                    </Box>
-                                                    <Box sx={{flex: 1}}>
-                                                        <Typography variant="caption" sx={{
+                                                        <LocationIcon sx={{
+                                                            color: '#a855f7',
+                                                            fontSize: 24,
+                                                            mb: 1
+                                                        }}/>
+                                                        <Typography variant="body2" sx={{
                                                             color: '#64748b',
                                                             fontWeight: 600,
-                                                            textTransform: 'uppercase',
-                                                            letterSpacing: '0.5px',
-                                                            display: 'block',
-                                                            fontSize: '0.75rem',
                                                             mb: 0.5
                                                         }}>
                                                             School Address
                                                         </Typography>
-                                                        <Typography variant="body2" sx={{
+                                                        <Typography variant="body1" sx={{
                                                             color: '#1e293b',
                                                             fontWeight: 500,
                                                             lineHeight: 1.6,
-                                                            fontSize: '0.9rem'
+                                                            fontSize: '0.9rem',
+                                                            wordBreak: 'break-word',
+                                                            overflowWrap: 'break-word'
                                                         }}>
                                                             {mergedRequestData.school.address}
                                                         </Typography>
                                                     </Box>
-                                                </Box>
+                                                )}
                                             </Box>
-                                        )}
+                                        </Box>
                                     </CardContent>
                                 </Card>
 
+                                {/* Design Details Card - Shows Uniform Items */}
                                 <Card sx={{
                                     mb: 3,
                                     background: 'rgba(255, 255, 255, 0.9)',
@@ -643,288 +851,335 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                     }
                                 }}>
                                     <Box sx={{
-                                        background: 'rgba(124, 58, 237, 0.1)',
-                                        p: 1.5,
+                                        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                                        p: 2,
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: 1,
-                                        borderBottom: '1px solid #e0e0e0',
+                                        gap: 1.5,
+                                        borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
                                         transition: 'all 0.3s ease'
                                     }}>
-                                        <StarIcon sx={{color: '#7c3aed', fontSize: 18, transition: 'all 0.3s ease'}}/>
+                                        <Box sx={{
+                                            p: 1,
+                                            borderRadius: 2,
+                                            background: 'rgba(255, 255, 255, 0.2)',
+                                            backdropFilter: 'blur(10px)'
+                                        }}>
+                                            <CheckroomIcon sx={{color: 'white', fontSize: 20}}/>
+                                        </Box>
                                         <Typography variant="h6" sx={{
-                                            color: '#7c3aed',
-                                            fontWeight: 600,
+                                            color: 'white',
+                                            fontWeight: 700,
                                             transition: 'all 0.3s ease'
                                         }}>
-                                            Request Information
+                                            Design Details
                                         </Typography>
                                     </Box>
                                     <CardContent sx={{p: 3}}>
-                                        <Grid container spacing={2} sx={{display: 'flex'}}>
-                                            <Grid sx={{flex: 1}}>
+                                        {/* Regular Uniform Section */}
+                                        {getItemsByCategory('regular').length > 0 && (
+                                            <Box sx={{mb: 3}}>
                                                 <Box sx={{
+                                                    mb: 2,
                                                     p: 2,
-                                                    background: 'rgba(248, 249, 250, 0.8)',
+                                                    border: '1px solid #e2e8f0',
                                                     borderRadius: 2,
-                                                    border: '1px solid rgba(233, 236, 239, 0.5)',
-                                                    textAlign: 'center',
-                                                    backdropFilter: 'blur(5px)',
-                                                    transition: 'all 0.3s ease',
-                                                    '&:hover': {
-                                                        background: 'rgba(240, 240, 240, 0.9)',
-                                                        transform: 'translateY(-1px)',
-                                                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                                                    }
+                                                    background: 'rgba(59,130,246,0.05)'
                                                 }}>
-                                                    <SchoolIcon sx={{
-                                                        color: '#666',
-                                                        fontSize: 24,
-                                                        mb: 1,
-                                                        transition: 'all 0.3s ease'
-                                                    }}/>
-                                                    <Typography variant="body2" sx={{
-                                                        color: '#666',
-                                                        fontWeight: 600,
-                                                        mb: 0.5,
-                                                        transition: 'all 0.3s ease'
+                                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mb: 1}}>
+                                                        <Box sx={{width: 10, height: 10, borderRadius: '50%', background: '#3b82f6'}}/>
+                                                        <Typography variant="subtitle1" sx={{fontWeight: 700, color: '#1e293b'}}>Regular Uniform</Typography>
+                                                    </Box>
+                                                    <Box sx={{
+                                                        display: 'grid',
+                                                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                                                        gap: 2
                                                     }}>
-                                                        School Name
-                                                    </Typography>
-                                                    <Typography variant="body1" sx={{
-                                                        fontWeight: 600,
-                                                        color: '#333',
-                                                        transition: 'all 0.3s ease'
-                                                    }}>
-                                                        {mergedRequestData.school?.business || mergedRequestData.school?.name || 'N/A'}
-                                                    </Typography>
-                                                </Box>
-                                            </Grid>
-
-                                            <Grid sx={{flex: 1}}>
-                                                <Box sx={{
-                                                    p: 2,
-                                                    background: 'rgba(248, 249, 250, 0.8)',
-                                                    borderRadius: 2,
-                                                    border: '1px solid rgba(233, 236, 239, 0.5)',
-                                                    textAlign: 'center',
-                                                    backdropFilter: 'blur(5px)',
-                                                    transition: 'all 0.3s ease',
-                                                    '&:hover': {
-                                                        background: 'rgba(240, 240, 240, 0.9)',
-                                                        transform: 'translateY(-1px)',
-                                                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                                                    }
-                                                }}>
-                                                    <DesignServices sx={{
-                                                        color: '#666',
-                                                        fontSize: 24,
-                                                        mb: 1,
-                                                        transition: 'all 0.3s ease'
-                                                    }}/>
-                                                    <Typography variant="body2" sx={{
-                                                        color: '#666',
-                                                        fontWeight: 600,
-                                                        mb: 0.5,
-                                                        transition: 'all 0.3s ease'
-                                                    }}>
-                                                        Design Name
-                                                    </Typography>
-                                                    <Typography variant="body1" sx={{
-                                                        fontWeight: 600,
-                                                        color: '#333',
-                                                        transition: 'all 0.3s ease'
-                                                    }}>
-                                                        {mergedRequestData.name || 'Uniform Design'}
-                                                    </Typography>
-                                                </Box>
-                                            </Grid>
-                                        </Grid>
-
-                                        <Grid container spacing={2} sx={{display: 'flex', mt: 2}}>
-                                            <Grid sx={{flex: 1}}>
-                                                <Box sx={{
-                                                    p: 2,
-                                                    background: 'rgba(248, 249, 250, 0.8)',
-                                                    borderRadius: 2,
-                                                    border: '1px solid rgba(233, 236, 239, 0.5)',
-                                                    textAlign: 'center',
-                                                    backdropFilter: 'blur(5px)',
-                                                    transition: 'all 0.3s ease',
-                                                    '&:hover': {
-                                                        background: 'rgba(240, 240, 240, 0.9)',
-                                                        transform: 'translateY(-1px)',
-                                                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                                                    }
-                                                }}>
-                                                    <CalendarIcon sx={{
-                                                        color: '#666',
-                                                        fontSize: 24,
-                                                        mb: 1,
-                                                        transition: 'all 0.3s ease'
-                                                    }}/>
-                                                    <Typography variant="body2" sx={{
-                                                        color: '#666',
-                                                        fontWeight: 600,
-                                                        mb: 0.5,
-                                                        transition: 'all 0.3s ease'
-                                                    }}>
-                                                        Request Date
-                                                    </Typography>
-                                                    <Typography variant="body1" sx={{
-                                                        fontWeight: 600,
-                                                        color: '#333',
-                                                        transition: 'all 0.3s ease'
-                                                    }}>
-                                                        {formatDate(mergedRequestData.date || mergedRequestData.creationDate)}
-                                                    </Typography>
-                                                    <Typography variant="caption" sx={{
-                                                        color: '#667eea',
-                                                        fontWeight: 600,
-                                                        display: 'block',
-                                                        mt: 0.5
-                                                    }}>
-                                                        {(() => {
-                                                            const days = calculateDaysFromRequest(mergedRequestData.date || mergedRequestData.creationDate);
-                                                            if (days === 0) {
-                                                                return 'Today';
-                                                            } else if (days === 1) {
-                                                                return '1 day ago';
-                                                            } else if (days > 1) {
-                                                                return `${days} days ago`;
-                                                            } else {
-                                                                return `${Math.abs(days)} days from now`;
-                                                            }
-                                                        })()}
-                                                    </Typography>
-                                                </Box>
-                                            </Grid>
-                                        </Grid>
-                                    </CardContent>
-                                </Card>
-
-                                {}
-                                <Card sx={{
-                                    background: 'rgba(255, 255, 255, 0.9)',
-                                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                                    borderRadius: 2,
-                                    boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-                                    backdropFilter: 'blur(10px)',
-                                    transition: 'all 0.3s ease',
-                                    '&:hover': {
-                                        boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
-                                        transform: 'translateY(-2px)',
-                                        background: 'rgba(255, 255, 255, 0.95)'
-                                    }
-                                }}>
-                                    <Box sx={{
-                                        background: 'rgba(124, 58, 237, 0.1)',
-                                        p: 1.5,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 1,
-                                        borderBottom: '1px solid #e0e0e0',
-                                        transition: 'all 0.3s ease'
-                                    }}>
-                                        <BusinessIcon
-                                            sx={{color: '#7c3aed', fontSize: 18, transition: 'all 0.3s ease'}}/>
-                                        <Typography variant="h6" sx={{
-                                            color: '#7c3aed',
-                                            fontWeight: 600,
-                                            transition: 'all 0.3s ease'
-                                        }}>
-                                            Request Details
-                                        </Typography>
-                                    </Box>
-                                    <CardContent sx={{p: 3}}>
-                                        {}
-                                        <Grid container spacing={2}>
-                                            {}
-                                            <Grid sx={{flex: 1}}>
-                                                <Box sx={{
-                                                    p: 2,
-                                                    mt: 2,
-                                                    background: 'rgba(248, 249, 250, 0.8)',
-                                                    borderRadius: 2,
-                                                    border: '1px solid rgba(233, 236, 239, 0.5)',
-                                                    transition: 'all 0.3s ease',
-                                                    backdropFilter: 'blur(5px)',
-                                                    '&:hover': {
-                                                        background: 'rgba(240, 240, 240, 0.9)',
-                                                        transform: 'translateY(-1px)',
-                                                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                                                    }
-                                                }}>
-                                                    <Typography variant="body1" sx={{
-                                                        color: '#333',
-                                                        fontWeight: 600,
-                                                        mb: 2,
-                                                        transition: 'all 0.3s ease',
-                                                        width: '100%'
-                                                    }}>
-                                                        Design Items:
-                                                    </Typography>
-
-                                                    {}
-                                                    <Box sx={{display: 'flex', gap: 2, mb: 3}}>
-                                                        <Button
-                                                            variant="contained"
-                                                            onClick={() => setRegularDialogOpen(true)}
-                                                            sx={{
-                                                                flex: 1,
-                                                                height: 120,
-                                                                borderRadius: 3,
-                                                                background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
-                                                                color: 'white',
-                                                                display: 'flex',
-                                                                flexDirection: 'column',
-                                                                gap: 1,
+                                                        {getItemsByCategory('regular').map((item, index) => (
+                                                            <Card key={`reg-${index}`} sx={{
+                                                                background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                                                                border: '2px solid rgba(124, 58, 237, 0.15)',
+                                                                borderRadius: 4,
+                                                                boxShadow: '0 8px 32px rgba(124, 58, 237, 0.12)',
                                                                 transition: 'all 0.3s ease',
+                                                                position: 'relative',
+                                                                overflow: 'hidden',
+                                                                height: '100%',
+                                                                minHeight: 260,
                                                                 '&:hover': {
-                                                                    transform: 'translateY(-3px)',
-                                                                    boxShadow: '0 8px 25px rgba(124, 58, 237, 0.4)'
+                                                                    transform: 'translateY(-6px)',
+                                                                    boxShadow: '0 12px 40px rgba(124, 58, 237, 0.25)',
+                                                                    borderColor: 'rgba(124, 58, 237, 0.3)'
+                                                                },
+                                                                '&::before': {
+                                                                    content: '""',
+                                                                    position: 'absolute',
+                                                                    top: 0,
+                                                                    left: 0,
+                                                                    right: 0,
+                                                                    height: '4px',
+                                                                    background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)'
                                                                 }
-                                                            }}
-                                                        >
-                                                            <SchoolIcon sx={{fontSize: 32}}/>
-                                                            <Typography variant="body2" sx={{fontWeight: 600}}>
-                                                                Regular Uniform
-                                                            </Typography>
-                                                        </Button>
-
-                                                        <Button
-                                                            variant="contained"
-                                                            onClick={() => setPhysicalDialogOpen(true)}
-                                                            sx={{
-                                                                flex: 1,
-                                                                height: 120,
-                                                                borderRadius: 3,
-                                                                background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
-                                                                color: 'white',
-                                                                display: 'flex',
-                                                                flexDirection: 'column',
-                                                                gap: 1,
-                                                                transition: 'all 0.3s ease',
-                                                                '&:hover': {
-                                                                    transform: 'translateY(-3px)',
-                                                                    boxShadow: '0 8px 25px rgba(124, 58, 237, 0.4)'
-                                                                }
-                                                            }}
-                                                        >
-                                                            <PersonIcon sx={{fontSize: 32}}/>
-                                                            <Typography variant="body2" sx={{fontWeight: 600}}>
-                                                                Physical Education
-                                                            </Typography>
-                                                        </Button>
+                                                            }}>
+                                                                <CardContent sx={{p: 2}}>
+                                                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5}}>
+                                                                        <Box sx={{
+                                                                            p: 1,
+                                                                            borderRadius: 3,
+                                                                            background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
+                                                                            color: 'white',
+                                                                            boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
+                                                                        }}>
+                                                                            {getItemIcon(item.type)}
+                                                                        </Box>
+                                                                        <Box>
+                                                                            <Typography variant="h6" sx={{fontWeight: 700, color: '#1e293b'}}>
+                                                                                {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
+                                                                            </Typography>
+                                                                            <Typography variant="body2" sx={{color: '#64748b', fontWeight: 500}}>
+                                                                                Regular Uniform - {item.gender === 'boy' ? 'Boy' : 'Girl'}
+                                                                            </Typography>
+                                                                        </Box>
+                                                                    </Box>
+                                                                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 1}}>
+                                                                        {renderColorWithPicker(item.color, '#7c3aed')}
+                                                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                                                            <Box sx={{
+                                                                                width: 8,
+                                                                                height: 8,
+                                                                                borderRadius: '50%',
+                                                                                background: '#7c3aed'
+                                                                            }}/>
+                                                                            <Typography variant="body2" sx={{fontWeight: 600, color: '#374151'}}>
+                                                                                Fabric: <span style={{color: '#7c3aed', fontWeight: 500}}>{item.fabricName || 'N/A'}</span>
+                                                                            </Typography>
+                                                                        </Box>
+                                                                        {item.logoPosition && (
+                                                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                                                                <Box sx={{
+                                                                                    width: 8,
+                                                                                    height: 8,
+                                                                                    borderRadius: '50%',
+                                                                                    background: '#7c3aed'
+                                                                                }}/>
+                                                                                <Typography variant="body2" sx={{fontWeight: 600, color: '#374151'}}>
+                                                                                    Logo Position: <span style={{color: '#7c3aed', fontWeight: 500}}>{item.logoPosition}</span>
+                                                                                </Typography>
+                                                                            </Box>
+                                                                        )}
+                                                                        {item.note && (
+                                                                            <Box sx={{
+                                                                                mt: 1,
+                                                                                p: 1.5,
+                                                                                background: 'rgba(124, 58, 237, 0.05)',
+                                                                                borderRadius: 2,
+                                                                                border: '1px solid rgba(124, 58, 237, 0.1)'
+                                                                            }}>
+                                                                                <Typography variant="body2" sx={{
+                                                                                    fontStyle: 'italic',
+                                                                                    color: '#64748b',
+                                                                                    fontWeight: 500
+                                                                                }}>
+                                                                                    <strong>Note:</strong> {item.note}
+                                                                                </Typography>
+                                                                            </Box>
+                                                                        )}
+                                                                    </Box>
+                                                                    <Box sx={{display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap'}}>
+                                                                        {item.type?.toLowerCase() === 'shirt' && (request?.logoImage || item.logoImageUrl) && (
+                                                                            <Button size="small" variant="outlined"
+                                                                                    onClick={() => setImageViewer({
+                                                                                        open: true,
+                                                                                        title: 'Logo image',
+                                                                                        images: [request?.logoImage || item.logoImageUrl],
+                                                                                        mode: 'logo'
+                                                                                    })}>
+                                                                                View logo image
+                                                                            </Button>
+                                                                        )}
+                                                                        {item.sampleImages && item.sampleImages.length > 0 && (
+                                                                            <Button size="small" variant="outlined"
+                                                                                    onClick={() => setImageViewer({
+                                                                                        open: true,
+                                                                                        title: 'Reference images',
+                                                                                        images: item.sampleImages.slice(0, 4).map(img => img.url),
+                                                                                        mode: 'reference'
+                                                                                    })}>
+                                                                                View reference images
+                                                                            </Button>
+                                                                        )}
+                                                                    </Box>
+                                                                </CardContent>
+                                                            </Card>
+                                                        ))}
                                                     </Box>
                                                 </Box>
-                                            </Grid>
-                                        </Grid>
+                                            </Box>
+                                        )}
+
+                                        {/* Physical Education Uniform Section */}
+                                        {getItemsByCategory('pe').length > 0 && (
+                                            <Box sx={{mb: 3}}>
+                                                <Box sx={{
+                                                    mb: 2,
+                                                    p: 2,
+                                                    border: '1px solid #e2e8f0',
+                                                    borderRadius: 2,
+                                                    background: 'rgba(236,72,153,0.05)'
+                                                }}>
+                                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mb: 1}}>
+                                                        <Box sx={{width: 10, height: 10, borderRadius: '50%', background: '#ec4899'}}/>
+                                                        <Typography variant="subtitle1" sx={{fontWeight: 700, color: '#1e293b'}}>Physical Education</Typography>
+                                                    </Box>
+                                                    <Box sx={{
+                                                        display: 'grid',
+                                                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                                                        gap: 2
+                                                    }}>
+                                                        {getItemsByCategory('pe').map((item, index) => (
+                                                            <Card key={`pe-${index}`} sx={{
+                                                                background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                                                                border: '2px solid rgba(124, 58, 237, 0.15)',
+                                                                borderRadius: 4,
+                                                                boxShadow: '0 8px 32px rgba(124, 58, 237, 0.12)',
+                                                                transition: 'all 0.3s ease',
+                                                                position: 'relative',
+                                                                overflow: 'hidden',
+                                                                height: '100%',
+                                                                minHeight: 260,
+                                                                '&:hover': {
+                                                                    transform: 'translateY(-6px)',
+                                                                    boxShadow: '0 12px 40px rgba(124, 58, 237, 0.25)',
+                                                                    borderColor: 'rgba(124, 58, 237, 0.3)'
+                                                                },
+                                                                '&::before': {
+                                                                    content: '""',
+                                                                    position: 'absolute',
+                                                                    top: 0,
+                                                                    left: 0,
+                                                                    right: 0,
+                                                                    height: '4px',
+                                                                    background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)'
+                                                                }
+                                                            }}>
+                                                                <CardContent sx={{p: 2}}>
+                                                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5}}>
+                                                                        <Box sx={{
+                                                                            p: 1,
+                                                                            borderRadius: 3,
+                                                                            background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
+                                                                            color: 'white',
+                                                                            boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
+                                                                        }}>
+                                                                            {getItemIcon(item.type)}
+                                                                        </Box>
+                                                                        <Box>
+                                                                            <Typography variant="h6" sx={{fontWeight: 700, color: '#1e293b'}}>
+                                                                                {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
+                                                                            </Typography>
+                                                                            <Typography variant="body2" sx={{color: '#64748b', fontWeight: 500}}>
+                                                                                Physical Education - {item.gender === 'boy' ? 'Boy' : 'Girl'}
+                                                                            </Typography>
+                                                                        </Box>
+                                                                    </Box>
+                                                                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 1}}>
+                                                                        {renderColorWithPicker(item.color, '#7c3aed')}
+                                                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                                                            <Box sx={{
+                                                                                width: 8,
+                                                                                height: 8,
+                                                                                borderRadius: '50%',
+                                                                                background: '#7c3aed'
+                                                                            }}/>
+                                                                            <Typography variant="body2" sx={{fontWeight: 600, color: '#374151'}}>
+                                                                                Fabric: <span style={{color: '#7c3aed', fontWeight: 500}}>{item.fabricName || 'N/A'}</span>
+                                                                            </Typography>
+                                                                        </Box>
+                                                                        {item.logoPosition && (
+                                                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                                                                <Box sx={{
+                                                                                    width: 8,
+                                                                                    height: 8,
+                                                                                    borderRadius: '50%',
+                                                                                    background: '#7c3aed'
+                                                                                }}/>
+                                                                                <Typography variant="body2" sx={{fontWeight: 600, color: '#374151'}}>
+                                                                                    Logo Position: <span style={{color: '#7c3aed', fontWeight: 500}}>{item.logoPosition}</span>
+                                                                                </Typography>
+                                                                            </Box>
+                                                                        )}
+                                                                        {item.note && (
+                                                                            <Box sx={{
+                                                                                mt: 1,
+                                                                                p: 1.5,
+                                                                                background: 'rgba(124, 58, 237, 0.05)',
+                                                                                borderRadius: 2,
+                                                                                border: '1px solid rgba(124, 58, 237, 0.1)'
+                                                                            }}>
+                                                                                <Typography variant="body2" sx={{
+                                                                                    fontStyle: 'italic',
+                                                                                    color: '#64748b',
+                                                                                    fontWeight: 500
+                                                                                }}>
+                                                                                    <strong>Note:</strong> {item.note}
+                                                                                </Typography>
+                                                                            </Box>
+                                                                        )}
+                                                                    </Box>
+                                                                    <Box sx={{display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap'}}>
+                                                                        {item.type?.toLowerCase() === 'shirt' && (request?.logoImage || item.logoImageUrl) && (
+                                                                            <Button size="small" variant="outlined"
+                                                                                    onClick={() => setImageViewer({
+                                                                                        open: true,
+                                                                                        title: 'Logo image',
+                                                                                        images: [request?.logoImage || item.logoImageUrl],
+                                                                                        mode: 'logo'
+                                                                                    })}>
+                                                                                View logo image
+                                                                            </Button>
+                                                                        )}
+                                                                        {item.sampleImages && item.sampleImages.length > 0 && (
+                                                                            <Button size="small" variant="outlined"
+                                                                                    onClick={() => setImageViewer({
+                                                                                        open: true,
+                                                                                        title: 'Reference images',
+                                                                                        images: item.sampleImages.slice(0, 4).map(img => img.url),
+                                                                                        mode: 'reference'
+                                                                                    })}>
+                                                                                View reference images
+                                                                            </Button>
+                                                                        )}
+                                                                    </Box>
+                                                                </CardContent>
+                                                            </Card>
+                                                        ))}
+                                                    </Box>
+                                                </Box>
+                                            </Box>
+                                        )}
+
+                                        {/* No Items Message */}
+                                        {getItemsByCategory('regular').length === 0 && getItemsByCategory('pe').length === 0 && (
+                                            <Box sx={{
+                                                textAlign: 'center',
+                                                py: 6,
+                                                background: 'rgba(124, 58, 237, 0.02)',
+                                                borderRadius: 3,
+                                                border: '2px dashed rgba(124, 58, 237, 0.2)'
+                                            }}>
+                                                <CheckroomIcon sx={{fontSize: 48, color: '#7c3aed', mb: 2, opacity: 0.6}}/>
+                                                <Typography variant="h6" sx={{color: '#64748b', fontWeight: 600, mb: 1}}>
+                                                    No Design Items Found
+                                                </Typography>
+                                                <Typography variant="body2" sx={{color: '#94a3b8'}}>
+                                                    No uniform specifications found for this design request.
+                                                </Typography>
+                                            </Box>
+                                        )}
                                     </CardContent>
                                 </Card>
                             </Grid>
 
-                            {}
                             <Grid sx={{flex: 1}}>
                                 <Card sx={{
                                     background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
@@ -993,7 +1248,6 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                             </Box>
                                         ) : (
                                             <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
-                                                {}
                                                 <Box>
                                                     <Typography variant="body2" sx={{
                                                         fontWeight: 600,
@@ -1038,7 +1292,6 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                                     />
                                                 </Box>
 
-                                                {}
                                                 <Box>
                                                     <Typography variant="body2" sx={{
                                                         fontWeight: 600,
@@ -1078,7 +1331,6 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                                     />
                                                 </Box>
 
-                                                {}
                                                 <Box>
                                                     <Typography variant="body2" sx={{
                                                         fontWeight: 600,
@@ -1125,7 +1377,6 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                                     />
                                                 </Box>
 
-                                                {}
                                                 <Box>
                                                     <Typography variant="body2" sx={{
                                                         fontWeight: 600,
@@ -1169,7 +1420,6 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                                     />
                                                 </Box>
 
-                                                {}
                                                 <Box>
                                                     <Typography variant="body2" sx={{
                                                         fontWeight: 600,
@@ -1215,7 +1465,6 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                                     />
                                                 </Box>
 
-                                                {}
                                                 <Box>
                                                     <Typography variant="body2" sx={{
                                                         fontWeight: 600,
@@ -1256,7 +1505,6 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                                     />
                                                 </Box>
 
-                                                {}
                                                 <Box sx={{
                                                     p: 2.5,
                                                     background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.03) 0%, rgba(91, 33, 182, 0.03) 100%)',
@@ -1266,7 +1514,6 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                                     position: 'relative',
                                                     overflow: 'hidden'
                                                 }}>
-                                                    {}
                                                     <Box sx={{
                                                         position: 'absolute',
                                                         top: -20,
@@ -1507,7 +1754,6 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                     </Container>
                 </DialogContent>
 
-                {}
                 <DialogActions sx={{p: 3, justifyContent: 'flex-end', gap: 2}}>
                     <Button
                         variant="outlined"
@@ -1534,25 +1780,18 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                 </DialogActions>
             </Dialog>
 
-            {}
-            <Dialog
-                open={regularDialogOpen}
-                onClose={() => setRegularDialogOpen(false)}
-                maxWidth="lg"
-                fullWidth
-                slotProps={{
-                    paper: {
-                        sx: {
-                            borderRadius: 4,
-                            background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-                            border: '1px solid rgba(124, 58, 237, 0.1)',
-                            boxShadow: '0 32px 64px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(124, 58, 237, 0.05)',
-                            overflow: 'hidden'
+            <Dialog open={regularDialogOpen} onClose={() => setRegularDialogOpen(false)} maxWidth="lg" fullWidth
+                    slotProps={{
+                        paper: {
+                            sx: {
+                                borderRadius: 4,
+                                background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                                border: '1px solid rgba(124, 58, 237, 0.1)',
+                                boxShadow: '0 32px 64px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(124, 58, 237, 0.05)',
+                                overflow: 'hidden'
+                            }
                         }
-                    }
-                }}
-            >
-                {}
+                    }}>
                 <Box sx={{
                     background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
                     color: 'white',
@@ -1590,14 +1829,10 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                     </Box>
                 </Box>
 
-                {}
                 <DialogContent sx={{p: 0}}>
                     <Box sx={{p: 4}}>
-
-                        {}
                         {getItemsByCategory('regular').length > 0 && (
                             <Box sx={{mb: 4}}>
-                                {}
                                 <Box sx={{
                                     mb: 2,
                                     p: 2,
@@ -1642,7 +1877,6 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                                 }
                                             }}>
                                                 <CardContent sx={{p: 2}}>
-                                                    {}
                                                     <Box
                                                         sx={{display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5}}>
                                                         <Box sx={{
@@ -1743,7 +1977,6 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                     </Box>
                                 </Box>
 
-                                {}
                                 <Box sx={{
                                     p: 2,
                                     border: '1px solid #e2e8f0',
@@ -1887,8 +2120,6 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                             </Box>
                         )}
 
-
-                        {}
                         {getItemsByCategory('regular').length === 0 && (
                             <Box sx={{
                                 textAlign: 'center',
@@ -1909,7 +2140,6 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                     </Box>
                 </DialogContent>
 
-                {}
                 <DialogActions sx={{
                     p: 3,
                     background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
@@ -1938,25 +2168,18 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                 </DialogActions>
             </Dialog>
 
-            {}
-            <Dialog
-                open={physicalDialogOpen}
-                onClose={() => setPhysicalDialogOpen(false)}
-                maxWidth="lg"
-                fullWidth
-                slotProps={{
-                    paper: {
-                        sx: {
-                            borderRadius: 4,
-                            background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-                            border: '1px solid rgba(124, 58, 237, 0.1)',
-                            boxShadow: '0 32px 64px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(124, 58, 237, 0.05)',
-                            overflow: 'hidden'
+            <Dialog open={physicalDialogOpen} onClose={() => setPhysicalDialogOpen(false)} maxWidth="lg" fullWidth
+                    slotProps={{
+                        paper: {
+                            sx: {
+                                borderRadius: 4,
+                                background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                                border: '1px solid rgba(124, 58, 237, 0.1)',
+                                boxShadow: '0 32px 64px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(124, 58, 237, 0.05)',
+                                overflow: 'hidden'
+                            }
                         }
-                    }
-                }}
-            >
-                {}
+                    }}>
                 <Box sx={{
                     background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
                     color: 'white',
@@ -1994,14 +2217,10 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                     </Box>
                 </Box>
 
-                {}
                 <DialogContent sx={{p: 0}}>
                     <Box sx={{p: 4}}>
-
-                        {}
                         {getItemsByCategory('pe').length > 0 && (
                             <Box sx={{mb: 4}}>
-                                {}
                                 <Box sx={{
                                     mb: 2,
                                     p: 2,
@@ -2144,7 +2363,6 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                     </Box>
                                 </Box>
 
-                                {}
                                 <Box sx={{
                                     p: 2,
                                     border: '1px solid #e2e8f0',
@@ -2288,8 +2506,6 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                             </Box>
                         )}
 
-
-                        {}
                         {getItemsByCategory('pe').length === 0 && (
                             <Box sx={{
                                 textAlign: 'center',
@@ -2310,7 +2526,6 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                     </Box>
                 </DialogContent>
 
-                {}
                 <DialogActions sx={{
                     p: 3,
                     background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
@@ -2339,7 +2554,6 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                 </DialogActions>
             </Dialog>
 
-            {}
             <Dialog open={imageViewer.open} onClose={() => setImageViewer(prev => ({...prev, open: false}))}
                     maxWidth="md" fullWidth>
                 <DialogContent sx={{p: 3}}>

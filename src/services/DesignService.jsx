@@ -99,3 +99,8 @@ export const cancelDesignRequest = async (data) => {
     const response = await axiosClient.put("/design/request/cancel", data)
     return response || null
 }
+
+export const importDesign = async (data) => {
+    const response = await axiosClient.post("/design/import", data)
+    return response || null
+}
