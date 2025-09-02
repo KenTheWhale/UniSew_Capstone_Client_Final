@@ -47,7 +47,7 @@ const drawerWidth = 280;
 
 export default function DesignerDashboardLayout() {
     const location = useLocation();
-    const [activeMenu, setActiveMenu] = useState("requests");
+    const [activeMenu, setActiveMenu] = useState("quotations");
     const [openHistory, setOpenHistory] = useState(false);
     const [search, setSearch] = useState("");
     const [anchorEl, setAnchorEl] = useState(null);
@@ -68,10 +68,12 @@ export default function DesignerDashboardLayout() {
 
     useEffect(() => {
         const pathname = location.pathname;
-        if (pathname.includes("/designer/requests")) {
-            setActiveMenu("requests");
-        } else if (pathname.includes("/designer/applied/requests")) {
-            setActiveMenu("applied");
+        if (pathname.includes("/designer/quotations")) {
+            setActiveMenu("quotations");
+        } else if (pathname.includes("/designer/feedbacks")) {
+            setActiveMenu("feedbacks");
+        } else if (pathname.includes("/designer/profile")) {
+            setActiveMenu("profile");
         } else {
             setActiveMenu("");
         }
@@ -111,7 +113,7 @@ export default function DesignerDashboardLayout() {
 
     const goToRequest = (requestId) => {
         if (!requestId) return;
-        navigate(`/designer/applied/requests?openId=${encodeURIComponent(requestId)}`);
+        navigate(`/designer/quotations?openId=${encodeURIComponent(requestId)}`);
         setOpenHistory(false);
     };
 
@@ -336,90 +338,6 @@ export default function DesignerDashboardLayout() {
 
                     {}
                     <Box sx={{p: 2}}>
-                        {}
-                        <Typography variant="overline" sx={{
-                            px: 2,
-                            pb: 1,
-                            color: "#6c757d",
-                            fontWeight: 700,
-                            fontSize: "0.75rem",
-                            letterSpacing: "1px"
-                        }}>
-                            DESIGN PROJECTS
-                        </Typography>
-                        <List sx={{mb: 3}}>
-                            <ListItem disablePadding>
-                                <ListItemButton
-                                    sx={{
-                                        borderRadius: 2,
-                                        mx: 1,
-                                        my: 0.5,
-                                        color: "#495057",
-                                        "&:hover": {
-                                            background: "linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)",
-                                            color: "#FFFFFF",
-                                            transform: "translateY(-1px)",
-                                        },
-                                        transition: "all 0.3s ease",
-                                    }}
-                                    onClick={() => navigate("/designer/requests")}
-                                >
-                                    <ListItemIcon sx={{color: "inherit"}}>
-                                        <DesignServices/>
-                                    </ListItemIcon>
-                                    <ListItemText primary="Requested Designs"/>
-                                </ListItemButton>
-                            </ListItem>
-
-                            <ListItem disablePadding>
-                                <ListItemButton
-                                    sx={{
-                                        borderRadius: 2,
-                                        mx: 1,
-                                        my: 0.5,
-                                        color: "#495057",
-                                        "&:hover": {
-                                            background: "linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)",
-                                            color: "#FFFFFF",
-                                            transform: "translateY(-1px)",
-                                        },
-                                        transition: "all 0.3s ease",
-                                    }}
-                                    onClick={() => navigate("/designer/applied/requests")}
-                                >
-                                    <ListItemIcon sx={{color: "inherit"}}>
-                                        <Assignment/>
-                                    </ListItemIcon>
-                                    <ListItemText primary="Applied Designs"/>
-                                </ListItemButton>
-                            </ListItem>
-
-                            <ListItem disablePadding>
-                                <ListItemButton
-                                    sx={{
-                                        borderRadius: 2,
-                                        mx: 1,
-                                        my: 0.5,
-                                        color: "#495057",
-                                        "&:hover": {
-                                            background: "linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)",
-                                            color: "#FFFFFF",
-                                            transform: "translateY(-1px)",
-                                        },
-                                        transition: "all 0.3s ease",
-                                    }}
-                                    onClick={() => navigate("/designer/feedbacks")}
-                                >
-                                    <ListItemIcon sx={{color: "inherit"}}>
-                                        <Star/>
-                                    </ListItemIcon>
-                                    <ListItemText primary="Feedback Management"/>
-                                </ListItemButton>
-                            </ListItem>
-                        </List>
-
-                        <Divider sx={{my: 3, borderColor: "#e9ecef"}}/>
-
                         {/* QUOTATION MANAGEMENT */}
                         <Typography variant="overline" sx={{
                             px: 2,
@@ -452,6 +370,44 @@ export default function DesignerDashboardLayout() {
                                         <Assignment/>
                                     </ListItemIcon>
                                     <ListItemText primary="My Quotations"/>
+                                </ListItemButton>
+                            </ListItem>
+                        </List>
+
+                        <Divider sx={{my: 3, borderColor: "#e9ecef"}}/>
+
+                        {/* FEEDBACK MANAGEMENT */}
+                        <Typography variant="overline" sx={{
+                            px: 2,
+                            pb: 1,
+                            color: "#6c757d",
+                            fontWeight: 700,
+                            fontSize: "0.75rem",
+                            letterSpacing: "1px"
+                        }}>
+                            FEEDBACK MANAGEMENT
+                        </Typography>
+                        <List sx={{mb: 3}}>
+                            <ListItem disablePadding>
+                                <ListItemButton
+                                    sx={{
+                                        borderRadius: 2,
+                                        mx: 1,
+                                        my: 0.5,
+                                        color: "#495057",
+                                        "&:hover": {
+                                            background: "linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)",
+                                            color: "#FFFFFF",
+                                            transform: "translateY(-1px)",
+                                        },
+                                        transition: "all 0.3s ease",
+                                    }}
+                                    onClick={() => navigate("/designer/feedbacks")}
+                                >
+                                    <ListItemIcon sx={{color: "inherit"}}>
+                                        <Star/>
+                                    </ListItemIcon>
+                                    <ListItemText primary="Feedback Management"/>
                                 </ListItemButton>
                             </ListItem>
                         </List>

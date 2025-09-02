@@ -943,20 +943,6 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                 border: '1px solid rgba(245, 158, 11, 0.2)',
                                                                 mb: 1
                                                             }}>
-                                                                <Box sx={{
-                                                                    display: 'flex',
-                                                                    justifyContent: 'center',
-                                                                    alignItems: 'center',
-                                                                    width: 20,
-                                                                    height: 20,
-                                                                    borderRadius: '50%',
-                                                                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                                                                    color: 'white',
-                                                                    fontSize: '10px',
-                                                                    fontWeight: 600
-                                                                }}>
-                                                                    âš?
-                                                                </Box>
                                                                 <Text style={{
                                                                     fontSize: '11px',
                                                                     fontWeight: 600,
@@ -1714,20 +1700,6 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                 border: '1px solid rgba(245, 158, 11, 0.2)',
                                                                 mb: 1
                                                             }}>
-                                                                <Box sx={{
-                                                                    display: 'flex',
-                                                                    justifyContent: 'center',
-                                                                    alignItems: 'center',
-                                                                    width: 20,
-                                                                    height: 20,
-                                                                    borderRadius: '50%',
-                                                                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                                                                    color: 'white',
-                                                                    fontSize: '10px',
-                                                                    fontWeight: 600
-                                                                }}>
-                                                                    âš?
-                                                                </Box>
                                                                 <Text style={{
                                                                     fontSize: '11px',
                                                                     fontWeight: 600,

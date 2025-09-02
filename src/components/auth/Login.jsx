@@ -32,7 +32,7 @@ export default function Login() {
                                 window.location.href = '/school/design';
                                 break;
                             case 'designer':
-                                window.location.href = '/designer/requests';
+                                window.location.href = '/designer/quotations';
                                 break;
                             case 'garment':
                                 window.location.href = '/garment/pending/order';

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {Button, Modal, Spin, Typography} from 'antd';
 import {
     CalendarOutlined,
@@ -17,6 +17,7 @@ import {enqueueSnackbar} from "notistack";
 import {serviceFee} from "../../../../configs/FixedVariables.jsx";
 
 export default function DesignPaymentPopup({visible, onCancel, selectedQuotationDetails}) {
+    const [isLoading, setIsLoading] = useState(false);
 
     if (!selectedQuotationDetails) {
         return (
@@ -41,6 +42,7 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
     const {quotation, request} = selectedQuotationDetails;
 
     const handleProceedToPayment = async () => {
+        setIsLoading(true);
         try {
             const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
             const rawSubtotal = quotation.price + (extraRevision * (quotation.extraRevisionPrice || 0));
@@ -73,6 +75,8 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
             }
         } catch (error) {
             enqueueSnackbar('Error generating payment URL', {variant: 'error'})
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -93,23 +97,29 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
                 </Box>
             }
             open={visible}
-            onCancel={onCancel}
+            onCancel={!isLoading ? onCancel : undefined}
             centered
             footer={[
-                <Button key="back" onClick={onCancel} style={{marginRight: 8}}>
+                <Button 
+                    key="back" 
+                    onClick={onCancel} 
+                    disabled={isLoading}
+                    style={{marginRight: 8}}
+                >
                     Cancel
                 </Button>,
                 <Button
                     key="submit"
                     type="primary"
                     onClick={handleProceedToPayment}
-                    icon={<CreditCardOutlined/>}
+                    loading={isLoading}
+                    icon={!isLoading ? <CreditCardOutlined/> : null}
                     style={{
                         backgroundColor: '#2e7d32',
                         borderColor: '#2e7d32'
                     }}
                 >
-                    Proceed to Payment
+                    {isLoading ? 'Processing...' : 'Proceed to Payment'}
                 </Button>,
             ]}
             width={800}

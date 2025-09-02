@@ -1820,7 +1820,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
     );
 }
 
-function RevisionRequestModal({visible, onCancel, onSubmit, selectedDeliveryId, remainingRevisions}) {
+function RevisionRequestModal({visible, onCancel, onSubmit, selectedDeliveryId, remainingRevisions, isSubmitting}) {
     const [form] = Form.useForm();
     const [formKey, setFormKey] = useState(0);
     const [initialValues, setInitialValues] = useState({revisionDescription: ''});
@@ -1861,15 +1861,19 @@ function RevisionRequestModal({visible, onCancel, onSubmit, selectedDeliveryId, 
             open={visible}
             onCancel={onCancel}
             onOk={remainingRevisions > 0 ? handleOk : undefined}
-            okText="Submit Revision Request"
+            okText={isSubmitting ? "Submitting..." : "Submit Revision Request"}
             cancelText="Cancel"
             okButtonProps={{
-                disabled: remainingRevisions === 0,
+                disabled: remainingRevisions === 0 || isSubmitting,
+                loading: isSubmitting,
                 style: {
-                    backgroundColor: remainingRevisions === 0 ? '#d1d5db' : '#2e7d32',
-                    borderColor: remainingRevisions === 0 ? '#d1d5db' : '#2e7d32',
-                    color: remainingRevisions === 0 ? '#6b7280' : 'white'
+                    backgroundColor: (remainingRevisions === 0 || isSubmitting) ? '#d1d5db' : '#2e7d32',
+                    borderColor: (remainingRevisions === 0 || isSubmitting) ? '#d1d5db' : '#2e7d32',
+                    color: (remainingRevisions === 0 || isSubmitting) ? '#6b7280' : 'white'
                 }
+            }}
+            cancelButtonProps={{
+                disabled: isSubmitting
             }}
             centered
             width={600}
@@ -1926,7 +1930,7 @@ function RevisionRequestModal({visible, onCancel, onSubmit, selectedDeliveryId, 
     );
 }
 
-function BuyMoreRevisionsModal({visible, onCancel, onSubmit, extraRevisionPrice}) {
+function BuyMoreRevisionsModal({visible, onCancel, onSubmit, extraRevisionPrice, isPurchasing}) {
     const [form] = Form.useForm();
     const [formKey, setFormKey] = useState(0);
     const [initialValues, setInitialValues] = useState({revisionQuantity: 1});
@@ -1982,14 +1986,19 @@ function BuyMoreRevisionsModal({visible, onCancel, onSubmit, extraRevisionPrice}
             open={visible}
             onCancel={onCancel}
             onOk={handleOk}
-            okText="Purchase Revisions"
+            okText={isPurchasing ? "Processing Payment..." : "Purchase Revisions"}
             cancelText="Cancel"
             okButtonProps={{
+                disabled: isPurchasing,
+                loading: isPurchasing,
                 style: {
-                    backgroundColor: '#2e7d32',
-                    borderColor: '#2e7d32',
-                    color: 'white'
+                    backgroundColor: isPurchasing ? '#d1d5db' : '#2e7d32',
+                    borderColor: isPurchasing ? '#d1d5db' : '#2e7d32',
+                    color: isPurchasing ? '#6b7280' : 'white'
                 }
+            }}
+            cancelButtonProps={{
+                disabled: isPurchasing
             }}
             centered
             width={700}
@@ -2088,11 +2097,13 @@ export default function SchoolChat() {
     const [finalDelivery, setFinalDelivery] = useState(null);
     const [isRevisionModalVisible, setIsRevisionModalVisible] = useState(false);
     const [selectedDeliveryIdForRevision, setSelectedDeliveryIdForRevision] = useState(null);
+    const [isSubmittingRevision, setIsSubmittingRevision] = useState(false);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const {enqueueSnackbar} = useSnackbar();
     const [isConfirmFinalModalVisible, setIsConfirmFinalModalVisible] = useState(false);
     const [deliveryToMakeFinal, setDeliveryToMakeFinal] = useState(null);
     const [isFinalDesignSet, setIsFinalDesignSet] = useState(false);
+    const [isConfirmingFinal, setIsConfirmingFinal] = useState(false);
     const [isRequestDetailPopupVisible, setIsRequestDetailPopupVisible] = useState(false);
     const [isDeliveryDetailModalVisible, setIsDeliveryDetailModalVisible] = useState(false);
     const [selectedDelivery, setSelectedDelivery] = useState(null);
@@ -2101,6 +2112,7 @@ export default function SchoolChat() {
     const [revisionRequests, setRevisionRequests] = useState([]);
     const [loadingRevisionRequests, setLoadingRevisionRequests] = useState(false);
     const [isBuyMoreRevisionsModalVisible, setIsBuyMoreRevisionsModalVisible] = useState(false);
+    const [isPurchasingRevisions, setIsPurchasingRevisions] = useState(false);
     const [userInfo, setUserInfo] = useState(null);
     const roomId = requestData?.id;
     const [newMessage, setNewMessage] = useState('');
@@ -2300,6 +2312,7 @@ export default function SchoolChat() {
     const handleCloseRevisionModal = () => {
         setIsRevisionModalVisible(false);
         setSelectedDeliveryIdForRevision(null);
+        setIsSubmittingRevision(false);
     };
 
     const handleOpenBuyMoreRevisionsModal = () => {
@@ -2308,9 +2321,11 @@ export default function SchoolChat() {
 
     const handleCloseBuyMoreRevisionsModal = () => {
         setIsBuyMoreRevisionsModalVisible(false);
+        setIsPurchasingRevisions(false);
     };
 
     const handleBuyMoreRevisions = async (values) => {
+        setIsPurchasingRevisions(true);
         try {
             const quantity = values.revisionQuantity;
             const extraRevisionPrice = requestData?.finalDesignQuotation?.extraRevisionPrice || 0;
@@ -2336,15 +2351,16 @@ export default function SchoolChat() {
             const paymentResponse = await getPaymentUrl(amount, description, orderType, returnURL);
 
             if (paymentResponse && paymentResponse.status === 200 && paymentResponse.data.body) {
+                // Don't close modal here - the page will redirect to payment
                 window.location.href = paymentResponse.data.body.url;
             } else {
                 enqueueSnackbar('Failed to get payment URL. Please try again.', {variant: 'error'});
+                setIsPurchasingRevisions(false);
             }
-
-            handleCloseBuyMoreRevisionsModal();
         } catch (error) {
             console.error('Error processing revision purchase:', error);
             enqueueSnackbar('Failed to process revision purchase. Please try again.', {variant: 'error'});
+            setIsPurchasingRevisions(false);
         }
     };
 
@@ -2368,10 +2384,12 @@ export default function SchoolChat() {
     const handleCloseConfirmFinalModal = () => {
         setIsConfirmFinalModalVisible(false);
         setDeliveryToMakeFinal(null);
+        setIsConfirmingFinal(false);
     };
 
     const handleConfirmMakeFinal = async () => {
         if (deliveryToMakeFinal) {
+            setIsConfirmingFinal(true);
             try {
                 const response = await makeDesignFinal({
                     deliveryId: deliveryToMakeFinal.id
@@ -2401,10 +2419,12 @@ export default function SchoolChat() {
                     }
                 } else {
                     enqueueSnackbar('Failed to set final design. Please try again.', {variant: 'error'});
+                    setIsConfirmingFinal(false);
                 }
             } catch (error) {
                 console.error('Error setting final design:', error);
                 enqueueSnackbar('Error setting final design. Please try again.', {variant: 'error'});
+                setIsConfirmingFinal(false);
             }
         }
     };
@@ -2414,6 +2434,7 @@ export default function SchoolChat() {
     };
 
     const handleRevisionSubmit = async (values) => {
+        setIsSubmittingRevision(true);
         try {
             console.log('Revision Request:', values);
 
@@ -2446,10 +2467,12 @@ export default function SchoolChat() {
                 }
             } else {
                 enqueueSnackbar('Failed to submit revision request. Please try again.', {variant: 'error'});
+                setIsSubmittingRevision(false);
             }
         } catch (error) {
             console.error('Error submitting revision request:', error);
             enqueueSnackbar('Error submitting revision request. Please try again.', {variant: 'error'});
+            setIsSubmittingRevision(false);
         }
     };
 
@@ -3256,6 +3279,7 @@ export default function SchoolChat() {
                 onSubmit={handleRevisionSubmit}
                 selectedDeliveryId={selectedDeliveryIdForRevision}
                 remainingRevisions={requestData?.revisionTime || 0}
+                isSubmitting={isSubmittingRevision}
             />
 
             <BuyMoreRevisionsModal
@@ -3263,6 +3287,7 @@ export default function SchoolChat() {
                 onCancel={handleCloseBuyMoreRevisionsModal}
                 onSubmit={handleBuyMoreRevisions}
                 extraRevisionPrice={requestData?.finalDesignQuotation?.extraRevisionPrice || 0}
+                isPurchasing={isPurchasingRevisions}
             />
 
             <RequestDetailPopup
@@ -3291,11 +3316,20 @@ export default function SchoolChat() {
                 open={isConfirmFinalModalVisible}
                 onCancel={handleCloseConfirmFinalModal}
                 onOk={handleConfirmMakeFinal}
-                okText="Confirm"
+                okText={isConfirmingFinal ? "Setting Final Design..." : "Confirm"}
                 cancelText="Cancel"
                 okButtonProps={{
                     danger: true,
-                    style: {backgroundColor: '#52c41a', borderColor: '#52c41a'}
+                    disabled: isConfirmingFinal,
+                    loading: isConfirmingFinal,
+                    style: {
+                        backgroundColor: isConfirmingFinal ? '#d1d5db' : '#52c41a', 
+                        borderColor: isConfirmingFinal ? '#d1d5db' : '#52c41a',
+                        color: isConfirmingFinal ? '#6b7280' : 'white'
+                    }
+                }}
+                cancelButtonProps={{
+                    disabled: isConfirmingFinal
                 }}
                 centered
                 styles={{

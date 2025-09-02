@@ -276,7 +276,11 @@ function MainHeader() {
                                             if (user.role === 'school') {
                                                 window.location.href = '/school/design';
                                             } else if (user.role === 'designer') {
-                                                window.location.href = '/designer/requests';
+                                                window.location.href = '/designer/quotations';
+                                            } else if (user.role === 'garment') {
+                                                window.location.href = '/garment/pending/order';
+                                            } else {
+                                                window.location.href = '/home';
                                             }
                                         }
 
@@ -403,15 +407,11 @@ function Footer() {
                         </Typography>
                         <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mb: 0.5}}>
                             <PhoneIcon sx={{fontSize: 18, color: 'rgba(255,255,255,0.8)'}}/>
-                            <Typography variant="body2">+1 (2) 345 6789</Typography>
-                        </Box>
-                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mb: 0.5}}>
-                            <PhoneIcon sx={{fontSize: 18, color: 'rgba(255,255,255,0.8)'}}/>
-                            <Typography variant="body2">+1 (2) 345 6789</Typography>
+                            <Typography variant="body2">0939-674-767</Typography>
                         </Box>
                         <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mb: 1}}>
                             <EmailIcon sx={{fontSize: 18, color: 'rgba(255,255,255,0.8)'}}/>
-                            <Typography variant="body2">rockybd1995@gmail.com</Typography>
+                            <Typography variant="body2">unisewsu2025@gmail.com</Typography>
                         </Box>
                     </Grid>
 
@@ -438,19 +438,25 @@ function Footer() {
                         <Typography variant="h6" sx={{fontWeight: 700, mb: 2, color: 'white'}}>
                             PAYMENT ACCEPTANCE
                         </Typography>
-                        <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2}}>
-                            <Box component="img"
-                                 src="/vnpay.png"
-                                 alt="VNPay"
-                                 sx={{
-                                     height: 'auto',
-                                     width: '100%',
-                                     backgroundColor: 'white',
-                                     borderRadius: 1,
-                                     p: 0.5,
-                                     boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-                                 }}
-                            />
+                        <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}>
+                            
+                            {/* Visa & Mastercard */}
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                justifyContent: 'flex-start',
+                                backgroundColor: 'transparent',
+                                width: '100%'
+                            }}>
+                                <Box component="img"
+                                     src="/visa.png"
+                                     alt="Visa & Mastercard"
+                                     sx={{
+                                         height: '50px',
+                                         width: '150px',
+                                     }}
+                                />
+                            </Box>
                         </Box>
                     </Grid>
                 </Grid>
