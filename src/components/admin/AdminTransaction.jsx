@@ -489,7 +489,7 @@ export default function AdminTransaction() {
     }
 
     async function handleDownloadPdf() {
-        const doc = new jsPDF({unit: "pt", format: "a4"});
+        const doc = new jsPDF({unit: "pt", format: "a1", orientation: "landscape"});
         await embedUnicodeFont(doc);
 
         const margin = 30; // pt
@@ -505,7 +505,7 @@ export default function AdminTransaction() {
 
         const head = [["ID", "Sender", "Receiver", "Amount", "Fee", "Type", "Status", "Date"]];
         const body = (filteredTransactions || []).map(trs => ([
-            `#${trs.id}`,
+            `${parseID(trs.id, "trs")}`,
             (trs.sender && trs.sender.name) ? trs.sender.name : "-",
             (trs.receiver && trs.receiver.name) ? trs.receiver.name : "-",
             new Intl.NumberFormat("vi-VN").format(trs.amount || 0) + " ₫",
