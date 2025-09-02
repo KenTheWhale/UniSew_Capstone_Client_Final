@@ -480,7 +480,7 @@ export default function SchoolOrderList() {
                                     handleOpenReport(record);
                                     handleCloseMenu();
                                 }}
-                                disabled={record.status === 'pending' || !!record.feedback || !!record.report}
+                                disabled={record.status === 'pending' || !!record.feedback || !!record.report || (record.status === 'canceled' && !record.garment)}
                             >
                                 <ReportIcon fontSize="small" sx={{
                                     mr: 1,

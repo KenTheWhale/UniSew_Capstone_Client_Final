@@ -1556,14 +1556,87 @@ export default function AdminReport() {
                 <DialogContent sx={{p: 4}}>
                     {selectedReport?.order && (
                         <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
+                            {/* Header Card */}
+                            <Paper elevation={0} sx={{
+                                background: 'linear-gradient(135deg, rgba(63, 81, 181, 0.05) 0%, rgba(48, 63, 159, 0.08) 100%)',
+                                border: '1px solid rgba(63, 81, 181, 0.1)',
+                                borderRadius: 2,
+                                p: 3
+                            }}>
+                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1,
+                                        flex: 1
+                                    }}>
+                                        <Typography variant="h5" sx={{
+                                            fontWeight: 'bold', 
+                                            color: '#1e293b',
+                                            fontSize: '1.25rem'
+                                        }}>
+                                            {selectedReport.order.selectedDesign?.designRequest?.name || `Order ${parseID(selectedReport.order.id, "ord")}`}
+                                        </Typography>
+                                    </Box>
+                                    <Chip
+                                        label={parseID(selectedReport.order.id, 'ord')}
+                                        sx={{
+                                            backgroundColor: '#e3f2fd',
+                                            color: '#1976d2',
+                                            fontWeight: 'bold',
+                                            fontSize: '0.75rem'
+                                        }}
+                                    />
+                                </Box>
+                                <Typography variant="body2" sx={{color: '#64748b', fontSize: '0.875rem'}}>
+                                    Created: {formatDate(selectedReport.order.orderDate)}
+                                </Typography>
+                            </Paper>
+
+                            {/* Status Section */}
+                            <Paper elevation={0} sx={{
+                                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(37, 99, 235, 0.12) 100%)',
+                                border: '2px solid rgba(59, 130, 246, 0.2)',
+                                borderRadius: 3,
+                                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.1)',
+                                p: 3
+                            }}>
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    <Chip
+                                        label={selectedReport.order.status}
+                                        sx={{
+                                            backgroundColor: '#3b82f6',
+                                            color: 'white',
+                                            fontWeight: 'bold',
+                                            fontSize: '1rem',
+                                            padding: '8px 16px',
+                                            transform: 'scale(1.2)',
+                                            filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.15))'
+                                        }}
+                                    />
+                                </Box>
+                            </Paper>
+
                             {/* Order Summary */}
                             <Paper elevation={0} sx={{
                                 p: 3,
-                                background: 'linear-gradient(135deg, rgba(63, 81, 181, 0.05) 0%, rgba(48, 63, 159, 0.08) 100%)',
+                                backgroundColor: '#f8fafc',
                                 borderRadius: 2,
-                                border: '1px solid rgba(63, 81, 181, 0.1)'
+                                border: '1px solid #e2e8f0'
                             }}>
-                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
+                                <Typography variant="h6" sx={{
+                                    fontWeight: 'bold', 
+                                    mb: 2, 
+                                    color: '#1e293b',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1
+                                }}>
+                                    <InfoIcon sx={{color: '#3f51b5'}}/>
                                     Order Summary
                                 </Typography>
                                 <Box sx={{display: 'flex', gap: 3, width: '100%'}}>
@@ -1635,10 +1708,10 @@ export default function AdminReport() {
                             </Paper>
 
                             {/* School & Garment Information */}
-                            <Paper elevation={0} sx={{
-                                p: 3,
-                                backgroundColor: '#f8fafc',
-                                borderRadius: 2,
+                                    <Paper elevation={0} sx={{
+                                        p: 3,
+                                        backgroundColor: '#f8fafc',
+                                        borderRadius: 2,
                                 border: '1px solid #e2e8f0'
                             }}>
                                 <Typography variant="h6" sx={{
@@ -1811,9 +1884,9 @@ export default function AdminReport() {
                                                 </Typography>
                                             </Box>
                                         </Box>
-                                    </Box>
-                                </Box>
-                            </Paper>
+                                            </Box>
+                                        </Box>
+                                    </Paper>
 
                             {/* Order Items Table */}
                             {selectedReport.order.orderDetails && selectedReport.order.orderDetails.length > 0 && (
@@ -2497,14 +2570,14 @@ export default function AdminReport() {
                                                     textTransform: 'uppercase',
                                                     mb: 1
                                                 }}>
-                                                    School Name
-                                                </Typography>
+                                                School Name
+                                            </Typography>
                                                 <Typography variant="body1" sx={{
                                                     fontWeight: 'bold', 
                                                     color: '#1e293b'
                                                 }}>
-                                                    {selectedReport.designRequest.school.business}
-                                                </Typography>
+                                                {selectedReport.designRequest.school.business}
+                                            </Typography>
                                             </Box>
                                             <Box sx={{
                                                 flex: 1,
@@ -2520,14 +2593,14 @@ export default function AdminReport() {
                                                     textTransform: 'uppercase',
                                                     mb: 1
                                                 }}>
-                                                    Contact Person
-                                                </Typography>
+                                                Contact Person
+                                            </Typography>
                                                 <Typography variant="body1" sx={{
                                                     fontWeight: 'bold', 
                                                     color: '#1e293b'
                                                 }}>
-                                                    {selectedReport.designRequest.school.name}
-                                                </Typography>
+                                                {selectedReport.designRequest.school.name}
+                                            </Typography>
                                             </Box>
                                             <Box sx={{
                                                 flex: 1,
@@ -2547,14 +2620,14 @@ export default function AdminReport() {
                                                         fontSize: '0.75rem',
                                                         textTransform: 'uppercase'
                                                     }}>
-                                                        Phone
-                                                    </Typography>
+                                                Phone
+                                            </Typography>
                                                     <Typography variant="body1" sx={{
                                                         fontWeight: 'bold', 
                                                         color: '#1e293b'
                                                     }}>
-                                                        {selectedReport.designRequest.school.phone}
-                                                    </Typography>
+                                                {selectedReport.designRequest.school.phone}
+                                            </Typography>
                                                 </Box>
                                             </Box>
                                             <Box sx={{
@@ -2571,14 +2644,14 @@ export default function AdminReport() {
                                                     textTransform: 'uppercase',
                                                     mb: 1
                                                 }}>
-                                                    Tax Code
-                                                </Typography>
+                                                Tax Code
+                                            </Typography>
                                                 <Typography variant="body1" sx={{
                                                     fontWeight: 'bold', 
                                                     color: '#1e293b'
                                                 }}>
-                                                    {selectedReport.designRequest.school.taxCode}
-                                                </Typography>
+                                                {selectedReport.designRequest.school.taxCode}
+                                            </Typography>
                                             </Box>
                                         </Box>
                                         
@@ -2601,15 +2674,15 @@ export default function AdminReport() {
                                                     textTransform: 'uppercase',
                                                     mb: 1
                                                 }}>
-                                                    Address
-                                                </Typography>
+                                                Address
+                                            </Typography>
                                                 <Typography variant="body1" sx={{
                                                     fontWeight: 'bold', 
                                                     color: '#1e293b',
                                                     lineHeight: 1.4
                                                 }}>
-                                                    {selectedReport.designRequest.school.address}
-                                                </Typography>
+                                                {selectedReport.designRequest.school.address}
+                                            </Typography>
                                             </Box>
                                         </Box>
                                     </Box>
@@ -2650,19 +2723,19 @@ export default function AdminReport() {
                                                                 p: 2,
                                                                 mb: 2,
                                                                 background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.15) 100%)',
-                                                                borderRadius: 2,
+                                                        borderRadius: 2,
                                                                 border: '1px solid rgba(59, 130, 246, 0.2)',
                                                                 display: 'flex',
                                                                 alignItems: 'center',
                                                                 gap: 1
-                                                            }}>
-                                                                <Box sx={{
+                                                    }}>
+                                                            <Box sx={{
                                                                     width: 24,
                                                                     height: 24,
                                                                     borderRadius: '50%',
                                                                     background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
                                                                     justifyContent: 'center',
                                                                     fontSize: '12px'
                                                                 }}>
@@ -2686,7 +2759,7 @@ export default function AdminReport() {
                                                                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
                                                                         {/* Regular Uniform */}
                                                                         {regularBoyItems.length > 0 && (
-                                                                            <Box>
+                                                                <Box>
                                                                                 <Box sx={{
                                                                                     p: 1.5,
                                                                                     mb: 2,
@@ -2739,14 +2812,14 @@ export default function AdminReport() {
                                                                                                     <DesignIcon sx={{fontSize: 14}}/>
                                                                                                 </Avatar>
                                                                                                 <Box sx={{flex: 1}}>
-                                                                                                    <Typography variant="subtitle2" sx={{
-                                                                                                        fontWeight: 'bold',
+                                                                    <Typography variant="subtitle2" sx={{
+                                                                        fontWeight: 'bold',
                                                                                                         color: '#1e293b',
                                                                                                         fontSize: '0.875rem'
                                                                                                     }}>
                                                                                                         {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {item.category}
-                                                                                                    </Typography>
-                                                                                                </Box>
+                                                                    </Typography>
+                                                                </Box>
                                                                                                 <Chip
                                                                                                     label={`#${index + 1}`}
                                                                                                     size="small"
@@ -2757,10 +2830,10 @@ export default function AdminReport() {
                                                                                                         fontSize: '0.6rem'
                                                                                                     }}
                                                                                                 />
-                                                                                            </Box>
+                                                            </Box>
                                                                                             <Grid container spacing={1}>
                                                                                                 <Grid item xs={6}>
-                                                                                                    <Box sx={{
+                                                            <Box sx={{
                                                                                                         p: 1,
                                                                                                         background: 'rgba(16, 185, 129, 0.08)',
                                                                                                         borderRadius: 1,
@@ -2789,8 +2862,8 @@ export default function AdminReport() {
                                                                                                         background: 'rgba(124, 58, 237, 0.08)',
                                                                                                         borderRadius: 1,
                                                                                                         border: '1px solid rgba(124, 58, 237, 0.15)',
-                                                                                                        display: 'flex',
-                                                                                                        alignItems: 'center',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
                                                                                                         gap: 0.5
                                                                                                     }}>
                                                                                                         <Box sx={{
@@ -2879,10 +2952,10 @@ export default function AdminReport() {
                                                                                                         textTransform: 'uppercase',
                                                                                                         fontSize: '0.65rem',
                                                                                                         display: 'block',
-                                                                                                        mb: 1
-                                                                                                    }}>
+                                                                mb: 1
+                                                            }}>
                                                                                                         SAMPLES ({item.sampleImages.length})
-                                                                                                    </Typography>
+                                                                </Typography>
                                                                                                     <Box sx={{display: 'flex', gap: 1, flexWrap: 'wrap'}}>
                                                                                                         {item.sampleImages.map((image, imgIndex) => (
                                                                                                             <Box key={imgIndex} sx={{
@@ -2922,9 +2995,9 @@ export default function AdminReport() {
                                                                                     alignItems: 'center',
                                                                                     gap: 1
                                                                                 }}>
-                                                                                    <Box sx={{
-                                                                                        width: 20,
-                                                                                        height: 20,
+                                                                <Box sx={{
+                                                                    width: 20,
+                                                                    height: 20,
                                                                                         borderRadius: '50%',
                                                                                         background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
                                                                                         display: 'flex',
@@ -3022,7 +3095,7 @@ export default function AdminReport() {
                                                                                                             width: 12,
                                                                                                             height: 12,
                                                                                                             borderRadius: '50%',
-                                                                                                            backgroundColor: item.color || '#000',
+                                                                    backgroundColor: item.color || '#000',
                                                                                                             border: '1px solid #ffffff',
                                                                                                             boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
                                                                                                             flexShrink: 0
@@ -3041,9 +3114,9 @@ export default function AdminReport() {
                                                                                                                 fontWeight: 500,
                                                                                                                 fontSize: '0.7rem'
                                                                                                             }}>
-                                                                                                                {item.color}
-                                                                                                            </Typography>
-                                                                                                        </Box>
+                                                                    {item.color}
+                                                                </Typography>
+                                                            </Box>
                                                                                                     </Box>
                                                                                                 </Grid>
                                                                                                 <Grid item xs={6}>
@@ -3060,16 +3133,16 @@ export default function AdminReport() {
                                                                                                             fontSize: '0.65rem'
                                                                                                         }}>
                                                                                                             LOGO
-                                                                                                        </Typography>
+                                                                </Typography>
                                                                                                         <Typography variant="body2" sx={{
                                                                                                             color: '#1e293b',
                                                                                                             fontWeight: 500,
                                                                                                             fontSize: '0.75rem'
                                                                                                         }}>
                                                                                                             {item.logoPosition || 'No logo'}
-                                                                                                        </Typography>
+                                                            </Typography>
                                                                                                     </Box>
-                                                                                                </Grid>
+                                                </Grid>
                                                                                                 <Grid item xs={6}>
                                                                                                     <Box sx={{
                                                                                                         p: 1,
@@ -3094,7 +3167,7 @@ export default function AdminReport() {
                                                                                                             {item.note || 'No note'}
                                                                                                         </Typography>
                                                                                                     </Box>
-                                                                                                </Grid>
+                                        </Grid>
                                                                                             </Grid>
                                                                                             {item.sampleImages && item.sampleImages.length > 0 && (
                                                                                                 <Box sx={{mt: 1.5, pt: 1.5, borderTop: '1px solid #f1f5f9'}}>
