@@ -1,9 +1,11 @@
 import './styles/App.css'
 import {createBrowserRouter, Navigate, RouterProvider} from "react-router-dom";
-import { lazy, Suspense } from "react";
+import {lazy, Suspense} from "react";
 import {GoogleOAuthProvider} from "@react-oauth/google";
 import {SnackbarProvider} from 'notistack';
 import {createTheme, CssBaseline, Slide, ThemeProvider} from '@mui/material';
+import {GlobalLoadingOverlay, LoadingProvider} from './contexts/LoadingContext.jsx';
+
 const DesignerFeedback = lazy(() => import("./components/designer/DesignerFeedback.jsx"));
 const GarmentFeedback = lazy(() => import("./components/garment/GarmentFeedback.jsx"));
 const DesignerQuotationManagement = lazy(() => import("./components/designer/DesignerQuotationManagement.jsx"));
@@ -20,14 +22,12 @@ const Contact = lazy(() => import("./components/auth/Contact.jsx"));
 const SchoolChat = lazy(() => import("./components/school/design/SchoolChat.jsx"));
 const SchoolCreateDesign = lazy(() => import('./components/school/design/SchoolCreateDesign.jsx'));
 const PaymentResult = lazy(() => import("./components/school/PaymentResult.jsx"));
-const DesignerPendingDesign = lazy(() => import("./components/designer/DesignerPendingDesign.jsx"));
 const DesignerDashboardLayout = lazy(() => import("./layouts/designer/DesignerDashboardLayout.jsx"));
 const PrivacyPolicy = lazy(() => import("./components/auth/PrivacyPolicy.jsx"));
 const HowItWork = lazy(() => import("./components/auth/HowItWork.jsx"));
 const PartnerRegister = lazy(() => import("./components/auth/PartnerRegister.jsx"));
 const EmailConfirmation = lazy(() => import("./components/auth/EmailConfirmation.jsx"));
 const DesignerChat = lazy(() => import("./components/designer/DesignerChat.jsx"));
-const AppliedRequestList = lazy(() => import("./components/designer/AppliedRequestList.jsx"));
 const AppliedRequestDetail = lazy(() => import("./components/designer/AppliedRequestDetail.jsx"));
 const SchoolProfile = lazy(() => import("./components/school/profile/SchoolProfile.jsx"));
 const DesignerProfile = lazy(() => import("./components/designer/profile/DesignerProfile.jsx"));
@@ -47,7 +47,6 @@ const AdminDashboardLayout = lazy(() => import("./layouts/admin/AdminDashboardLa
 const MilestoneManagement = lazy(() => import("./components/garment/MilestoneManagement.jsx"));
 const GarmentPendingOrders = lazy(() => import("./components/garment/GarmentPendingOrders.jsx"));
 
-import { LoadingProvider, GlobalLoadingOverlay } from './contexts/LoadingContext.jsx';
 const GarmentProfile = lazy(() => import("./components/garment/profile/GarmentProfile.jsx"));
 
 const LoadingFallback = () => {
@@ -351,13 +350,13 @@ const router = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <Navigate to={'/designer/requests'} />
+                element: <Navigate to={'/designer/quotations'} />
             },
             {
-                path: 'requests',
+                path: 'quotations',
                 element: (
                     <Suspense fallback={<LoadingFallback />}>
-                        <DesignerPendingDesign />
+                        <DesignerQuotationManagement/>
                     </Suspense>
                 )
             },
@@ -366,14 +365,6 @@ const router = createBrowserRouter([
                 element: (
                     <Suspense fallback={<LoadingFallback />}>
                         <DesignerChat/>
-                    </Suspense>
-                )
-            },
-            {
-                path: 'applied/requests',
-                element: (
-                    <Suspense fallback={<LoadingFallback />}>
-                        <AppliedRequestList/>
                     </Suspense>
                 )
             },
@@ -398,14 +389,6 @@ const router = createBrowserRouter([
                 element: (
                     <Suspense fallback={<LoadingFallback />}>
                         <DesignerFeedback/>
-                    </Suspense>
-                )
-            },
-            {
-                path: 'quotations',
-                element: (
-                    <Suspense fallback={<LoadingFallback />}>
-                        <DesignerQuotationManagement/>
                     </Suspense>
                 )
             }

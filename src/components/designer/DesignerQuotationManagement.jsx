@@ -1,190 +1,50 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
     Box,
-    Card,
-    CardContent,
     Chip,
     IconButton,
     Paper,
     Tab,
     Tabs,
     Tooltip,
-    Typography,
-    Dialog,
-    DialogContent,
-    DialogTitle,
-    DialogActions,
-    Button,
-    Divider,
-    Grid,
-    CircularProgress
+    Typography
 } from '@mui/material';
 import {
-    Assignment as AssignmentIcon,
-    CheckCircle as CheckCircleIcon,
-    Close as CloseIcon,
     Info as InfoIcon,
-    Refresh as RefreshIcon,
-    TrendingUp as TrendingUpIcon,
-    Schedule as ScheduleIcon,
-    Cancel as CancelIcon,
-    AttachMoney as MoneyIcon,
-    CalendarToday as CalendarIcon,
-    AccessTime as TimeIcon,
-    Receipt as ReceiptIcon
+    DesignServices as DesignServicesIcon
 } from '@mui/icons-material';
-import {Space, Table, Tag, Empty} from 'antd';
+import {Space, Table} from 'antd';
 import 'antd/dist/reset.css';
 import {DataLoadingState, EmptyState, ErrorState} from '../ui/LoadingSpinner.jsx';
 import {parseID} from "../../utils/ParseIDUtil.jsx";
-import {enqueueSnackbar} from "notistack";
-
-// Mock data structure - replace with actual API calls
-const mockQuotations = [
-    {
-        id: 1,
-        designRequestId: 101,
-        designRequestName: "School Uniform Design 2024",
-        schoolName: "ABC High School",
-        price: 1500000,
-        deliveryWithin: 14,
-        revisionTime: 3,
-        extraRevisionPrice: 200000,
-        acceptanceDeadline: "2024-12-31",
-        status: "pending",
-        creationDate: "2024-01-15",
-        note: "Modern and comfortable design for students"
-    },
-    {
-        id: 2,
-        designRequestId: 102,
-        designRequestName: "Sports Team Jersey",
-        schoolName: "XYZ Academy",
-        price: 800000,
-        deliveryWithin: 10,
-        revisionTime: 2,
-        extraRevisionPrice: 150000,
-        acceptanceDeadline: "2024-12-25",
-        status: "accepted",
-        creationDate: "2024-01-10",
-        note: "Dynamic design for sports activities"
-    },
-    {
-        id: 3,
-        designRequestId: 103,
-        designRequestName: "Graduation Ceremony Outfit",
-        schoolName: "DEF College",
-        price: 2500000,
-        deliveryWithin: 21,
-        revisionTime: 5,
-        extraRevisionPrice: 300000,
-        acceptanceDeadline: "2025-01-15",
-        status: "rejected",
-        creationDate: "2024-01-05",
-        note: "Elegant design for graduation ceremony"
-    }
-];
+import {getDesignRequests, getAppliedDesignerDesignRequests, getRejectedDesignerDesignRequests} from "../../services/DesignService.jsx";
+import {statusTag} from '../school/design/dialog/RequestDetailPopup.jsx';
+import DesignerPendingDesignDetail from './DesignerPendingDesignDetail.jsx';
+import AppliedRequestDetail from './AppliedRequestDetail.jsx';
+import {useLocation, useNavigate} from 'react-router-dom';
 
 // Utility functions
 const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('vi-VN', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-    });
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
 };
 
-const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN', {
-        style: 'currency',
-        currency: 'VND'
-    }).format(amount);
+const calculateDaysDiff = (dateString) => {
+    const requestDate = new Date(dateString);
+    const today = new Date();
+    requestDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    const timeDiff = today.getTime() - requestDate.getTime();
+    return Math.floor(timeDiff / (1000 * 3600 * 24));
 };
-
-const getStatusConfig = (status) => {
-    switch (status) {
-        case 'pending':
-            return {
-                color: '#f59e0b',
-                bgColor: '#fef3c7',
-                icon: <ScheduleIcon />,
-                label: 'Pending',
-                antdColor: 'warning'
-            };
-        case 'accepted':
-            return {
-                color: '#059669',
-                bgColor: '#d1fae5',
-                icon: <CheckCircleIcon />,
-                label: 'Accepted',
-                antdColor: 'success'
-            };
-        case 'rejected':
-            return {
-                color: '#dc2626',
-                bgColor: '#fee2e2',
-                icon: <CancelIcon />,
-                label: 'Rejected',
-                antdColor: 'error'
-            };
-        default:
-            return {
-                color: '#6b7280',
-                bgColor: '#f3f4f6',
-                icon: <AssignmentIcon />,
-                label: status,
-                antdColor: 'default'
-            };
-    }
-};
-
-// StatCard Component - Updated to match DesignerPendingDesign style
-const StatCard = React.memo(({icon, value, label, color, bgColor}) => (
-    <Card
-        elevation={0}
-        sx={{
-            flex: 1,
-            border: "1px solid #e2e8f0",
-            borderRadius: 2,
-            transition: "all 0.3s ease",
-            "&:hover": {
-                borderColor: color,
-                transform: "translateY(-2px)",
-                boxShadow: `0 4px 15px ${color}20`
-            }
-        }}
-    >
-        <CardContent sx={{textAlign: "center", p: 2}}>
-            <Box
-                sx={{
-                    width: 50,
-                    height: 50,
-                    borderRadius: "50%",
-                    backgroundColor: bgColor,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    mx: "auto",
-                    mb: 1.5
-                }}
-            >
-                {icon}
-            </Box>
-            <Typography variant="h5" sx={{fontWeight: 700, color, mb: 0.5}}>
-                {value}
-            </Typography>
-            <Typography variant="body2" sx={{color: "#64748b", fontWeight: 500}}>
-                {label}
-            </Typography>
-        </CardContent>
-    </Card>
-));
 
 // Loading State Component
 const LoadingState = React.memo(() => (
     <DataLoadingState
-        text="Loading Quotations..."
+        text="Loading Design Requests..."
         size={60}
         color="#7c3aed"
     />
@@ -197,21 +57,29 @@ const ErrorStateComponent = React.memo(({error, onRetry, isRetrying}) => (
         onRetry={onRetry}
         isRetrying={isRetrying}
         retryText="Retry"
-        errorTitle="Error Loading Quotations"
+        errorTitle="Error Loading Data"
     />
 ));
 
 // Empty State Component
 const EmptyStateComponent = React.memo(({activeTab}) => (
     <EmptyState
-        title="No quotations found"
-        description={`No quotations in ${activeTab === 0 ? 'all' : activeTab === 1 ? 'pending' : activeTab === 2 ? 'accepted' : 'rejected'} status`}
-        icon="📋"
+        title={
+            activeTab === 0 ? "No available design requests" : 
+            activeTab === 1 ? "No applied design requests" : 
+            "No rejected design requests"
+        }
+        description={
+            activeTab === 0 ? "There are no available design requests to display" : 
+            activeTab === 1 ? "You haven't applied for any design requests yet" :
+            "You don't have any rejected design requests"
+        }
+        icon={activeTab === 0 ? "🎨" : activeTab === 1 ? "📋" : "❌"}
     />
 ));
 
-// Header Section - Updated to match DesignerPendingDesign style
-const HeaderSection = React.memo(({onRefresh, stats}) => (
+// Header Section
+const HeaderSection = React.memo(({activeTab}) => (
     <Box
         sx={{
             mb: 4,
@@ -234,35 +102,18 @@ const HeaderSection = React.memo(({onRefresh, stats}) => (
             }
         }}
     >
-        <Box sx={{display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2}}>
-            <Box sx={{display: "flex", alignItems: "center"}}>
-                <ReceiptIcon sx={{fontSize: 32, mr: 2, color: "#7c3aed"}}/>
-                <Typography
-                    variant="h4"
-                    sx={{
-                        fontWeight: 700,
-                        color: "#1e293b",
-                        fontSize: {xs: "1.5rem", md: "2rem"}
-                    }}
-                >
-                    Quotation Management
-                </Typography>
-            </Box>
-            <Button
-                variant="outlined"
-                startIcon={<RefreshIcon />}
-                onClick={onRefresh}
+        <Box sx={{display: "flex", alignItems: "center", mb: 2}}>
+            <DesignServicesIcon sx={{fontSize: 32, mr: 2, color: "#7c3aed"}}/>
+            <Typography
+                variant="h4"
                 sx={{
-                    borderColor: '#7c3aed',
-                    color: '#7c3aed',
-                    '&:hover': {
-                        borderColor: '#5b21b6',
-                        backgroundColor: 'rgba(124, 58, 237, 0.04)'
-                    }
+                    fontWeight: 700,
+                    color: "#1e293b",
+                    fontSize: {xs: "1.5rem", md: "2rem"}
                 }}
             >
-                Refresh
-            </Button>
+                Design Request Management
+            </Typography>
         </Box>
         <Typography
             variant="body1"
@@ -273,17 +124,21 @@ const HeaderSection = React.memo(({onRefresh, stats}) => (
                 mb: 3
             }}
         >
-            Manage your design quotations and track their status. Monitor pending, accepted, and rejected quotations.
+            {activeTab === 0 
+                ? "Browse and apply for design projects from schools. Find opportunities that match your skills and expertise."
+                : activeTab === 1
+                ? "View your accepted and paid design projects. Track the progress of your ongoing work and completed projects."
+                : "View your rejected design requests. Learn from feedback and improve your future applications."
+            }
         </Typography>
     </Box>
 ));
 
-// Table Section - Updated to match DesignerPendingDesign style
+// Table Section
 const TableSection = React.memo(({
     columns,
-    filteredQuotations,
+    data,
     loading,
-    stats,
     activeTab,
     onTableChange
 }) => (
@@ -304,10 +159,16 @@ const TableSection = React.memo(({
                         color: "#1e293b"
                     }}
                 >
-                    Quotation List
+                    {activeTab === 0 ? "Available Design Requests" : 
+                     activeTab === 1 ? "Applied Design Requests" : 
+                     "Rejected Design Requests"}
                 </Typography>
                 <Chip
-                    label={`${filteredQuotations.length} Quotation${filteredQuotations.length !== 1 ? 's' : ''}`}
+                    label={`${data.length} ${
+                        activeTab === 0 ? 'Available' : 
+                        activeTab === 1 ? 'Applied' : 
+                        'Rejected'
+                    }`}
                     sx={{
                         backgroundColor: "rgba(124, 58, 237, 0.1)",
                         color: "#7c3aed",
@@ -316,12 +177,12 @@ const TableSection = React.memo(({
                 />
             </Box>
 
-            {filteredQuotations.length === 0 ? (
+            {data.length === 0 ? (
                 <EmptyStateComponent activeTab={activeTab} />
             ) : (
                 <Table
                     columns={columns}
-                    dataSource={filteredQuotations}
+                    dataSource={data}
                     rowKey="id"
                     loading={loading}
                     pagination={{
@@ -330,7 +191,7 @@ const TableSection = React.memo(({
                         showSizeChanger: true,
                         showQuickJumper: true,
                         showTotal: (total, range) => 
-                            `Showing ${range[0]}-${range[1]} of ${total} quotations`,
+                            `Showing ${range[0]}-${range[1]} of ${total} requests`,
                         style: {marginTop: 16}
                     }}
                     scroll={{x: 'max-content'}}
@@ -346,412 +207,662 @@ const TableSection = React.memo(({
     </Paper>
 ));
 
-// Quotation Detail Dialog
-const QuotationDetailDialog = React.memo(({open, onClose, quotation}) => {
-    if (!quotation) return null;
-
-    const statusConfig = getStatusConfig(quotation.status);
-
-    return (
-        <Dialog
-            open={open}
-            onClose={onClose}
-            maxWidth="md"
-            fullWidth
-        >
-            <DialogTitle sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                borderBottom: '1px solid #e5e7eb',
-                pb: 2
-            }}>
-                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
-                    <ReceiptIcon sx={{color: '#7c3aed'}} />
-                    <Typography variant="h6" sx={{fontWeight: 600}}>
-                        Quotation Details
-                    </Typography>
-                </Box>
-                <Chip
-                    icon={statusConfig.icon}
-                    label={statusConfig.label}
-                    sx={{
-                        backgroundColor: statusConfig.bgColor,
-                        color: statusConfig.color,
-                        fontWeight: 600
-                    }}
-                />
-            </DialogTitle>
-            
-            <DialogContent sx={{pt: 3}}>
-                <Grid container spacing={3}>
-                    <Grid item xs={12} md={6}>
-                        <Typography variant="subtitle2" sx={{color: '#6b7280', mb: 1}}>
-                            Design Request ID
-                        </Typography>
-                        <Typography variant="body1" sx={{fontWeight: 600, mb: 2}}>
-                            {parseID(quotation.designRequestId, 'dr')}
-                        </Typography>
-                        
-                        <Typography variant="subtitle2" sx={{color: '#6b7280', mb: 1}}>
-                            Design Request Name
-                        </Typography>
-                        <Typography variant="body1" sx={{fontWeight: 600, mb: 2}}>
-                            {quotation.designRequestName}
-                        </Typography>
-                        
-                        <Typography variant="subtitle2" sx={{color: '#6b7280', mb: 1}}>
-                            School Name
-                        </Typography>
-                        <Typography variant="body1" sx={{fontWeight: 600, mb: 2}}>
-                            {quotation.schoolName}
-                        </Typography>
-                    </Grid>
-                    
-                    <Grid item xs={12} md={6}>
-                        <Typography variant="subtitle2" sx={{color: '#6b7280', mb: 1}}>
-                            Price
-                        </Typography>
-                        <Typography variant="h6" sx={{color: '#059669', fontWeight: 700, mb: 2}}>
-                            {formatCurrency(quotation.price)}
-                        </Typography>
-                        
-                        <Typography variant="subtitle2" sx={{color: '#6b7280', mb: 1}}>
-                            Delivery Time
-                        </Typography>
-                        <Typography variant="body1" sx={{fontWeight: 600, mb: 2}}>
-                            {quotation.deliveryWithin} days
-                        </Typography>
-                    </Grid>
-                    
-                    <Grid item xs={12} md={6}>
-                        <Typography variant="subtitle2" sx={{color: '#6b7280', mb: 1}}>
-                            Revision Time
-                        </Typography>
-                        <Typography variant="body1" sx={{fontWeight: 600, mb: 2}}>
-                            {quotation.revisionTime === 9999 ? 'Unlimited' : `${quotation.revisionTime} times`}
-                        </Typography>
-                        
-                        <Typography variant="subtitle2" sx={{color: '#6b7280', mb: 1}}>
-                            Extra Revision Price
-                        </Typography>
-                        <Typography variant="body1" sx={{fontWeight: 600, mb: 2}}>
-                            {quotation.revisionTime === 9999 ? 'N/A' : formatCurrency(quotation.extraRevisionPrice)}
-                        </Typography>
-                    </Grid>
-                    
-                    <Grid item xs={12} md={6}>
-                        <Typography variant="subtitle2" sx={{color: '#6b7280', mb: 1}}>
-                            Acceptance Deadline
-                        </Typography>
-                        <Typography variant="body1" sx={{fontWeight: 600, mb: 2}}>
-                            {formatDate(quotation.acceptanceDeadline)}
-                        </Typography>
-                        
-                        <Typography variant="subtitle2" sx={{color: '#6b7280', mb: 1}}>
-                            Creation Date
-                        </Typography>
-                        <Typography variant="body1" sx={{fontWeight: 600, mb: 2}}>
-                            {formatDate(quotation.creationDate)}
-                        </Typography>
-                    </Grid>
-                    
-                    {quotation.note && (
-                        <Grid item xs={12}>
-                            <Typography variant="subtitle2" sx={{color: '#6b7280', mb: 1}}>
-                                Note
-                            </Typography>
-                            <Typography variant="body1" sx={{
-                                backgroundColor: '#f8fafc',
-                                p: 2,
-                                borderRadius: 2,
-                                border: '1px solid #e2e8f0'
-                            }}>
-                                {quotation.note}
-                            </Typography>
-                        </Grid>
-                    )}
-                </Grid>
-            </DialogContent>
-            
-            <DialogActions sx={{p: 3, borderTop: '1px solid #e5e7eb'}}>
-                <Button onClick={onClose} variant="outlined">
-                    Close
-                </Button>
-            </DialogActions>
-        </Dialog>
-    );
-});
-
 // Main Component
 export default function DesignerQuotationManagement() {
-    const [quotations, setQuotations] = useState(mockQuotations);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState(0);
-    const [sortBy, setSortBy] = useState('creationDate');
-    const [sortOrder, setSortOrder] = useState('descend');
-    const [selectedQuotation, setSelectedQuotation] = useState(null);
-    const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [isRetrying, setIsRetrying] = useState(false);
+    
+    // Available requests state
+    const [availableRequests, setAvailableRequests] = useState([]);
+    const [availableSortBy, setAvailableSortBy] = useState('creationDate');
+    const [availableSortOrder, setAvailableSortOrder] = useState('descend');
+    
+    // Applied requests state
+    const [appliedRequests, setAppliedRequests] = useState([]);
+    const [appliedSortBy, setAppliedSortBy] = useState('creationDate');
+    const [appliedSortOrder, setAppliedSortOrder] = useState('descend');
+    
+    // Rejected requests state
+    const [rejectedRequests, setRejectedRequests] = useState([]);
+    const [rejectedSortBy, setRejectedSortBy] = useState('creationDate');
+    const [rejectedSortOrder, setRejectedSortOrder] = useState('descend');
+    
+    // Modal states
+    const [isAvailableModalVisible, setIsAvailableModalVisible] = useState(false);
+    const [isAppliedModalVisible, setIsAppliedModalVisible] = useState(false);
+    const [selectedAvailableRequest, setSelectedAvailableRequest] = useState(null);
+    const [selectedAppliedRequest, setSelectedAppliedRequest] = useState(null);
 
-    // Filter and sort quotations based on active tab and sort criteria
-    const filteredQuotations = useMemo(() => {
-        let filtered = quotations;
-        
-        // Filter by status based on active tab
-        if (activeTab === 0) { // All
-            // No status filter
-        } else if (activeTab === 1) { // Pending
-            filtered = filtered.filter(q => q.status === 'pending');
-        } else if (activeTab === 2) { // Accepted
-            filtered = filtered.filter(q => q.status === 'accepted');
-        } else if (activeTab === 3) { // Rejected
-            filtered = filtered.filter(q => q.status === 'rejected');
+    const location = useLocation();
+    const navigate = useNavigate();
+    const openIdParam = useMemo(
+        () => new URLSearchParams(location.search).get('openId'),
+        [location.search]
+    );
+
+    const openedRef = useRef(false);
+
+    // Clear localStorage on component mount
+    useEffect(() => {
+        localStorage.removeItem('currentDesignRequest');
+    }, []);
+
+    // Fetch all data (available, applied, and rejected requests)
+    const fetchAllData = useCallback(async (showLoading = true) => {
+        try {
+            if (showLoading) setLoading(true);
+            setError('');
+            
+            // Fetch all three APIs in parallel
+            const [availableResponse, appliedResponse, rejectedResponse] = await Promise.all([
+                getDesignRequests(),
+                getAppliedDesignerDesignRequests(),
+                getRejectedDesignerDesignRequests()
+            ]);
+
+            // Handle available requests response
+            if (availableResponse && availableResponse.status === 200) {
+                console.log("Available design requests: ", availableResponse.data.body);
+                setAvailableRequests(availableResponse.data.body || []);
+            } else {
+                console.error('Failed to fetch available design requests');
+                setAvailableRequests([]);
+            }
+
+            // Handle applied requests response
+            if (appliedResponse && appliedResponse.status === 200) {
+                console.log("Applied design requests: ", appliedResponse.data.body);
+                setAppliedRequests(appliedResponse.data.body || []);
+            } else {
+                console.error('Failed to fetch applied design requests');
+                setAppliedRequests([]);
+            }
+
+            // Handle rejected requests response
+            if (rejectedResponse && rejectedResponse.status === 200) {
+                console.log("Rejected design requests: ", rejectedResponse.data.body);
+                setRejectedRequests(rejectedResponse.data.body || []);
+            } else {
+                console.error('Failed to fetch rejected design requests');
+                setRejectedRequests([]);
+            }
+
+            // Set error only if all APIs fail
+            if ((!availableResponse || availableResponse.status !== 200) && 
+                (!appliedResponse || appliedResponse.status !== 200) &&
+                (!rejectedResponse || rejectedResponse.status !== 200)) {
+                setError('Failed to fetch design requests data');
+            }
+
+        } catch (err) {
+            console.error("Error fetching design requests:", err);
+            setError('An error occurred while fetching design requests');
+            setAvailableRequests([]);
+            setAppliedRequests([]);
+            setRejectedRequests([]);
+        } finally {
+            setLoading(false);
+            setIsRetrying(false);
         }
-        
-        // Sort quotations
+    }, []);
+
+    // Initial data fetch - fetch all APIs
+    useEffect(() => {
+        fetchAllData();
+    }, [fetchAllData]);
+
+    // Handle window focus - refresh all APIs
+    useEffect(() => {
+        const handleFocus = () => {
+            fetchAllData(false);
+        };
+
+        window.addEventListener('focus', handleFocus);
+        return () => {
+            window.removeEventListener('focus', handleFocus);
+        };
+    }, [fetchAllData]);
+
+    // Handle URL parameter for opening specific request
+    useEffect(() => {
+        if (loading) return;
+        if (!openIdParam || openedRef.current) return;
+
+        const id = Number(openIdParam);
+        // Check in both applied and rejected requests
+        const appliedTarget = appliedRequests.find(req => Number(req.id) === id);
+        const rejectedTarget = rejectedRequests.find(req => Number(req.id) === id);
+        const target = appliedTarget || rejectedTarget;
+
+        if (target) {
+            handleViewAppliedDetail(id);
+            openedRef.current = true;
+            navigate('/designer/quotation-management', {replace: true});
+        }
+    }, [loading, openIdParam, appliedRequests, rejectedRequests, navigate]);
+
+    // Filter and sort available requests
+    const filteredAvailableRequests = useMemo(() => {
+        let filtered = availableRequests.filter(request => request.status === 'pending');
+
         filtered.sort((a, b) => {
             let aValue, bValue;
-            
-            switch (sortBy) {
-                case 'id':
-                    aValue = a.id;
-                    bValue = b.id;
-                    break;
-                case 'designRequestName':
-                    aValue = a.designRequestName.toLowerCase();
-                    bValue = b.designRequestName.toLowerCase();
-                    break;
-                case 'schoolName':
-                    aValue = a.schoolName.toLowerCase();
-                    bValue = b.schoolName.toLowerCase();
-                    break;
-                case 'price':
-                    aValue = a.price;
-                    bValue = b.price;
-                    break;
-                case 'deliveryWithin':
-                    aValue = a.deliveryWithin;
-                    bValue = b.deliveryWithin;
-                    break;
-                case 'status':
-                    aValue = a.status.toLowerCase();
-                    bValue = b.status.toLowerCase();
-                    break;
+
+            switch (availableSortBy) {
                 case 'creationDate':
-                default:
                     aValue = new Date(a.creationDate);
                     bValue = new Date(b.creationDate);
                     break;
+                case 'name':
+                    aValue = a.name || '';
+                    bValue = b.name || '';
+                    break;
+                case 'school':
+                    aValue = a.school?.business || a.school?.name || '';
+                    bValue = b.school?.business || b.school?.name || '';
+                    break;
+                default:
+                    aValue = a[availableSortBy];
+                    bValue = b[availableSortBy];
             }
-            
-            if (sortOrder === 'ascend') {
+
+            if (availableSortOrder === 'ascend') {
                 return aValue > bValue ? 1 : -1;
             } else {
-                return aValue < bValue ? -1 : 1;
+                return aValue < bValue ? 1 : -1;
             }
         });
-        
+
         return filtered;
-    }, [quotations, activeTab, sortBy, sortOrder]);
+    }, [availableRequests, availableSortBy, availableSortOrder]);
+
+    // Filter and sort applied requests
+    const filteredAppliedRequests = useMemo(() => {
+        let filtered = appliedRequests;
+
+        filtered.sort((a, b) => {
+            let aValue, bValue;
+
+            switch (appliedSortBy) {
+                case 'creationDate':
+                    aValue = new Date(a.creationDate);
+                    bValue = new Date(b.creationDate);
+                    break;
+                case 'name':
+                    aValue = a.name || '';
+                    bValue = b.name || '';
+                    break;
+                case 'school':
+                    aValue = a.school?.business || a.school?.name || '';
+                    bValue = b.school?.business || b.school?.name || '';
+                    break;
+                default:
+                    aValue = a[appliedSortBy];
+                    bValue = b[appliedSortBy];
+            }
+
+            if (appliedSortOrder === 'ascend') {
+                return aValue > bValue ? 1 : -1;
+            } else {
+                return aValue < bValue ? 1 : -1;
+            }
+        });
+
+        return filtered;
+    }, [appliedRequests, appliedSortBy, appliedSortOrder]);
+
+    // Filter and sort rejected requests
+    const filteredRejectedRequests = useMemo(() => {
+        let filtered = rejectedRequests;
+
+        filtered.sort((a, b) => {
+            let aValue, bValue;
+
+            switch (rejectedSortBy) {
+                case 'creationDate':
+                    aValue = new Date(a.creationDate);
+                    bValue = new Date(b.creationDate);
+                    break;
+                case 'name':
+                    aValue = a.name || '';
+                    bValue = b.name || '';
+                    break;
+                case 'school':
+                    aValue = a.school?.business || a.school?.name || '';
+                    bValue = b.school?.business || b.school?.name || '';
+                    break;
+                default:
+                    aValue = a[rejectedSortBy];
+                    bValue = b[rejectedSortBy];
+            }
+
+            if (rejectedSortOrder === 'ascend') {
+                return aValue > bValue ? 1 : -1;
+            } else {
+                return aValue < bValue ? 1 : -1;
+            }
+        });
+
+        return filtered;
+    }, [rejectedRequests, rejectedSortBy, rejectedSortOrder]);
 
     // Calculate statistics
     const stats = useMemo(() => {
-        const total = quotations.length;
-        const pending = quotations.filter(q => q.status === 'pending').length;
-        const accepted = quotations.filter(q => q.status === 'accepted').length;
-        const rejected = quotations.filter(q => q.status === 'rejected').length;
-        
-        return {total, pending, accepted, rejected};
-    }, [quotations]);
+        const available = filteredAvailableRequests.length;
+        const applied = filteredAppliedRequests.length;
+        const rejected = filteredRejectedRequests.length;
+
+        return {available, applied, rejected};
+    }, [filteredAvailableRequests, filteredAppliedRequests, filteredRejectedRequests]);
 
     // Handle tab change
     const handleTabChange = (event, newValue) => {
         setActiveTab(newValue);
     };
 
-    // Handle sort change
-    const handleSortChange = (field) => {
-        if (sortBy === field) {
-            setSortOrder(sortOrder === 'ascend' ? 'descend' : 'ascend');
-        } else {
-            setSortBy(field);
-            setSortOrder('ascend');
+    // Handle view available detail
+    const handleViewAvailableDetail = useCallback((id) => {
+        const request = availableRequests.find(req => req.id === id);
+        setSelectedAvailableRequest(request);
+        setIsAvailableModalVisible(true);
+    }, [availableRequests]);
+
+    // Handle view applied detail (works for both applied and rejected)
+    const handleViewAppliedDetail = useCallback((id) => {
+        // Check in applied requests first
+        let request = appliedRequests.find(req => req.id === id);
+        let isRejectedRequest = false;
+        
+        // If not found in applied, check in rejected
+        if (!request) {
+            request = rejectedRequests.find(req => req.id === id);
+            isRejectedRequest = true;
         }
-    };
+        
+        // Create a copy of the request with the flag instead of mutating
+        if (request) {
+            const requestWithFlag = {
+                ...request,
+                _isRejectedRequest: isRejectedRequest
+            };
+            setSelectedAppliedRequest(requestWithFlag);
+        } else {
+            setSelectedAppliedRequest(null);
+        }
+        
+        setIsAppliedModalVisible(true);
+    }, [appliedRequests, rejectedRequests]);
 
-    // Handle view detail
-    const handleViewDetail = (quotation) => {
-        setSelectedQuotation(quotation);
-        setIsDetailDialogOpen(true);
-    };
+    // Handle cancel modals
+    const handleCancelAvailable = useCallback(() => {
+        setIsAvailableModalVisible(false);
+        setSelectedAvailableRequest(null);
+    }, []);
 
-    // Handle close detail dialog
-    const handleCloseDetailDialog = () => {
-        setIsDetailDialogOpen(false);
-        setSelectedQuotation(null);
-    };
+    const handleCancelApplied = useCallback(() => {
+        setIsAppliedModalVisible(false);
+        setSelectedAppliedRequest(null);
+    }, []);
 
-    // Handle refresh
-    const handleRefresh = () => {
-        setLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            setLoading(false);
-            enqueueSnackbar('Data refreshed successfully', {variant: 'success'});
-        }, 1000);
-    };
+    // Handle retry - fetch all APIs
+    const handleRetry = useCallback(() => {
+        setIsRetrying(true);
+        fetchAllData();
+    }, [fetchAllData]);
 
     // Handle table change
     const handleTableChange = useCallback((pagination, filters, sorter) => {
         if (sorter.field) {
-            setSortBy(sorter.field);
-            setSortOrder(sorter.order);
+            if (activeTab === 0) {
+                setAvailableSortBy(sorter.field);
+                setAvailableSortOrder(sorter.order);
+            } else if (activeTab === 1) {
+                setAppliedSortBy(sorter.field);
+                setAppliedSortOrder(sorter.order);
+            } else {
+                setRejectedSortBy(sorter.field);
+                setRejectedSortOrder(sorter.order);
+            }
         }
-    }, []);
+    }, [activeTab]);
 
-    // Table columns
-    const columns = useMemo(() => [
+    // Available requests columns
+    const availableColumns = useMemo(() => [
         {
             title: 'ID',
             dataIndex: 'id',
             key: 'id',
-            width: 80,
-            align: 'center',
+            align: 'left',
             sorter: true,
             defaultSortOrder: 'descend',
-            render: (id) => (
+            width: 120,
+            render: (text) => (
                 <Typography variant="body2" sx={{
                     color: '#7c3aed',
                     fontWeight: 600,
                     fontFamily: 'monospace'
                 }}>
-                    #{id}
+                    {parseID(text, 'dr')}
                 </Typography>
-            )
-        },
-        {
-            title: 'Design Request',
-            dataIndex: 'designRequestName',
-            key: 'designRequestName',
-            width: 200,
-            sorter: true,
-            render: (name, record) => (
-                <Box>
-                    <Typography variant="body2" sx={{fontWeight: 600, mb: 0.5}}>
-                        {name}
-                    </Typography>
-                    <Typography variant="caption" sx={{color: '#6b7280'}}>
-                        {parseID(record.designRequestId, 'dr')}
-                    </Typography>
-                </Box>
-            )
-        },
-        {
-            title: 'School',
-            dataIndex: 'schoolName',
-            key: 'schoolName',
-            width: 150,
-            sorter: true,
-            render: (name) => (
-                <Typography variant="body2" sx={{color: '#374151'}}>
-                    {name}
-                </Typography>
-            )
-        },
-        {
-            title: 'Price',
-            dataIndex: 'price',
-            key: 'price',
-            width: 120,
-            align: 'right',
-            sorter: true,
-            render: (price) => (
-                <Typography variant="body2" sx={{
-                    color: '#059669',
-                    fontWeight: 600,
-                    fontFamily: 'monospace'
-                }}>
-                    {formatCurrency(price)}
-                </Typography>
-            )
-        },
-        {
-            title: 'Delivery',
-            dataIndex: 'deliveryWithin',
-            key: 'deliveryWithin',
-            width: 100,
-            align: 'center',
-            sorter: true,
-            render: (days) => (
-                <Chip
-                    icon={<TimeIcon />}
-                    label={`${days} days`}
-                    size="small"
-                    sx={{
-                        backgroundColor: '#dbeafe',
-                        color: '#1d4ed8',
-                        fontWeight: 600
-                    }}
-                />
-            )
+            ),
         },
         {
             title: 'Status',
             dataIndex: 'status',
             key: 'status',
+            align: 'left',
             width: 120,
-            align: 'center',
-            sorter: true,
-            render: (status) => {
-                const config = getStatusConfig(status);
-                return (
-                    <Tag color={config.antdColor}>
-                        {config.label}
-                    </Tag>
-                    );
-            }
+            render: (text) => statusTag(text),
         },
         {
-            title: 'Created',
+            title: 'Request Date',
             dataIndex: 'creationDate',
             key: 'creationDate',
-            width: 120,
-            align: 'center',
+            align: 'left',
+            width: 150,
             sorter: true,
-            defaultSortOrder: 'descend',
-            render: (date) => (
-                <Typography variant="body2" sx={{color: '#6b7280'}}>
-                    {formatDate(date)}
-                </Typography>
-            )
+            render: (text) => {
+                const daysDiff = calculateDaysDiff(text);
+                return (
+                    <Box>
+                        <Typography variant="body2" sx={{color: '#475569'}}>
+                            {formatDate(text)}
+                        </Typography>
+                        <Typography variant="caption" sx={{
+                            color: daysDiff < 1 ? '#059669' : daysDiff < 7 ? '#f59e0b' : '#dc2626',
+                            fontWeight: 600
+                        }}>
+                            {daysDiff < 1 ? 'Today' : daysDiff === 1 ? '1 day ago' : `${daysDiff} days ago`}
+                        </Typography>
+                    </Box>
+                );
+            },
+        },
+        {
+            title: 'Design Name',
+            dataIndex: 'name',
+            key: 'name',
+            align: 'left',
+            width: 'auto',
+            sorter: true,
+            render: (text, record) => {
+                const designName = record.name || 'Design Request';
+                return (
+                    <Typography variant="body2" sx={{color: '#1e293b', fontWeight: 500}}>
+                        {designName}
+                    </Typography>
+                );
+            },
+        },
+        {
+            title: 'School Name',
+            dataIndex: 'school',
+            key: 'school',
+            align: 'left',
+            width: 300,
+            sorter: true,
+            render: (text, record) => {
+                const schoolName = record.school?.business || record.school?.name || 'School Name';
+                return (
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                        <Typography variant="body2" sx={{fontWeight: 500, color: '#2c3e50'}}>
+                            {schoolName}
+                        </Typography>
+                    </Box>
+                );
+            },
         },
         {
             title: 'Actions',
             key: 'actions',
-            width: 100,
             align: 'center',
+            width: 100,
             fixed: 'right',
             render: (_, record) => (
-                <Tooltip title="View Details">
-                    <IconButton
-                        onClick={() => handleViewDetail(record)}
-                        size="small"
+                <Space size="middle">
+                    <Tooltip title="View Details">
+                        <IconButton
+                            onClick={() => handleViewAvailableDetail(record.id)}
+                            sx={{
+                                color: '#7c3aed',
+                                '&:hover': {
+                                    backgroundColor: 'rgba(124, 58, 237, 0.1)',
+                                    transform: 'scale(1.1)'
+                                },
+                                transition: 'all 0.2s ease'
+                            }}
+                            size="small"
+                        >
+                            <InfoIcon/>
+                        </IconButton>
+                    </Tooltip>
+                </Space>
+            ),
+        },
+    ], [handleViewAvailableDetail]);
+
+    // Applied requests columns
+    const appliedColumns = useMemo(() => [
+        {
+            title: 'ID',
+            dataIndex: 'id',
+            key: 'id',
+            align: 'left',
+            sorter: true,
+            defaultSortOrder: 'descend',
+            width: 120,
+            render: (text) => (
+                <Typography variant="body2" sx={{
+                    color: '#667eea',
+                    fontWeight: 600,
+                    fontFamily: 'monospace'
+                }}>
+                    {parseID(text, 'dr')}
+                </Typography>
+            ),
+        },
+        {
+            title: 'Status',
+            dataIndex: 'status',
+            key: 'status',
+            align: 'left',
+            width: 120,
+            filters: [...new Set(filteredAppliedRequests.map(request => request.status))].map(status => ({
+                text: status,
+                value: status
+            })),
+            onFilter: (value, record) => record.status.indexOf(value) === 0,
+            render: (text) => statusTag(text),
+        },
+        {
+            title: 'Request Date',
+            dataIndex: 'creationDate',
+            key: 'creationDate',
+            align: 'left',
+            width: 150,
+            sorter: true,
+            render: (text) => {
+                const daysDiff = calculateDaysDiff(text);
+                return (
+                    <Box>
+                        <Typography variant="body2" sx={{color: '#475569'}}>
+                            {formatDate(text)}
+                        </Typography>
+                        <Typography variant="caption" sx={{
+                            color: daysDiff < 1 ? '#059669' : daysDiff < 10 ? '#f59e0b' : '#dc2626',
+                            fontWeight: 600
+                        }}>
+                            {daysDiff < 1 ? 'Today' : daysDiff === 1 ? '1 day ago' : `${daysDiff} days ago`}
+                        </Typography>
+                    </Box>
+                );
+            },
+        },
+        {
+            title: 'Design Name',
+            dataIndex: 'name',
+            key: 'name',
+            align: 'left',
+            width: 'auto',
+            render: (text, record) => {
+                const designName = record.name || 'Design Request';
+                return (
+                    <Typography variant="body2" sx={{color: '#34495e', fontWeight: 500}}>
+                        {designName}
+                    </Typography>
+                );
+            },
+        },
+        {
+            title: 'School Name',
+            dataIndex: 'school',
+            key: 'school',
+            align: 'left',
+            width: 300,
+            render: (text, record) => {
+                const schoolName = record.school?.business || 'School Name';
+                return (
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                        <Typography variant="body2" sx={{fontWeight: 500, color: '#2c3e50'}}>
+                            {schoolName}
+                        </Typography>
+                    </Box>
+                );
+            },
+        },
+        {
+            title: 'Actions',
+            key: 'actions',
+            align: 'center',
+            width: 100,
+            fixed: 'right',
+            render: (_, record) => (
+                <Space size="middle">
+                    <Tooltip title="View Details">
+                        <IconButton
+                            onClick={() => handleViewAppliedDetail(record.id)}
+                            sx={{
+                                color: '#667eea',
+                                '&:hover': {
+                                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                                    transform: 'scale(1.1)'
+                                },
+                                transition: 'all 0.2s ease'
+                            }}
+                            size="small"
+                        >
+                            <InfoIcon/>
+                        </IconButton>
+                    </Tooltip>
+                </Space>
+            ),
+        },
+    ], [handleViewAppliedDetail, filteredAppliedRequests]);
+
+    // Rejected requests columns
+    const rejectedColumns = useMemo(() => [
+        {
+            title: 'ID',
+            dataIndex: 'id',
+            key: 'id',
+            align: 'left',
+            sorter: true,
+            defaultSortOrder: 'descend',
+            width: 120,
+            render: (text) => (
+                <Typography variant="body2" sx={{
+                    color: '#dc2626',
+                    fontWeight: 600,
+                    fontFamily: 'monospace'
+                }}>
+                    {parseID(text, 'dr')}
+                </Typography>
+            ),
+        },
+        {
+            title: 'Status',
+            dataIndex: 'status',
+            key: 'status',
+            align: 'left',
+            width: 120,
+            render: (text) => {
+                // Force rejected status to always show as "Rejected" with red color
+                return (
+                    <Chip
+                        label="Rejected"
                         sx={{
-                            color: '#7c3aed',
-                            '&:hover': {
-                                backgroundColor: 'rgba(124, 58, 237, 0.1)',
-                                transform: 'scale(1.1)'
-                            },
-                            transition: 'all 0.2s ease'
+                            backgroundColor: '#fee2e2',
+                            color: '#dc2626',
+                            fontWeight: 600,
+                            border: '1px solid #fecaca'
                         }}
-                    >
-                        <InfoIcon />
-                    </IconButton>
-                </Tooltip>
-            )
-        }
-    ], [handleViewDetail]);
+                        size="small"
+                    />
+                );
+            },
+        },
+        {
+            title: 'Request Date',
+            dataIndex: 'creationDate',
+            key: 'creationDate',
+            align: 'left',
+            width: 150,
+            sorter: true,
+            render: (text) => {
+                const daysDiff = calculateDaysDiff(text);
+                return (
+                    <Box>
+                        <Typography variant="body2" sx={{color: '#475569'}}>
+                            {formatDate(text)}
+                        </Typography>
+                        <Typography variant="caption" sx={{
+                            color: daysDiff < 1 ? '#059669' : daysDiff < 10 ? '#f59e0b' : '#dc2626',
+                            fontWeight: 600
+                        }}>
+                            {daysDiff < 1 ? 'Today' : daysDiff === 1 ? '1 day ago' : `${daysDiff} days ago`}
+                        </Typography>
+                    </Box>
+                );
+            },
+        },
+        {
+            title: 'Design Name',
+            dataIndex: 'name',
+            key: 'name',
+            align: 'left',
+            width: 'auto',
+            sorter: true,
+            render: (text, record) => {
+                const designName = record.name || 'Design Request';
+                return (
+                    <Typography variant="body2" sx={{color: '#dc2626', fontWeight: 500}}>
+                        {designName}
+                    </Typography>
+                );
+            },
+        },
+        {
+            title: 'School Name',
+            dataIndex: 'school',
+            key: 'school',
+            align: 'left',
+            width: 300,
+            sorter: true,
+            render: (text, record) => {
+                const schoolName = record.school?.business || 'School Name';
+                return (
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                        <Typography variant="body2" sx={{fontWeight: 500, color: '#2c3e50'}}>
+                            {schoolName}
+                        </Typography>
+                    </Box>
+                );
+            },
+        },
+        // Removed Actions column completely for rejected requests
+    ], []);
 
     if (loading) {
         return <LoadingState />;
@@ -761,58 +872,23 @@ export default function DesignerQuotationManagement() {
         return (
             <ErrorStateComponent
                 error={error}
-                onRetry={handleRefresh}
-                isRetrying={loading}
+                onRetry={handleRetry}
+                isRetrying={isRetrying}
             />
         );
     }
 
+    const currentData = activeTab === 0 ? filteredAvailableRequests : 
+                       activeTab === 1 ? filteredAppliedRequests : 
+                       filteredRejectedRequests;
+    const currentColumns = activeTab === 0 ? availableColumns : 
+                          activeTab === 1 ? appliedColumns : 
+                          rejectedColumns;
+
     return (
         <Box sx={{p: 3}}>
             {/* Header Section */}
-            <HeaderSection onRefresh={handleRefresh} stats={stats} />
-
-            {/* Statistics Cards */}
-            <Box sx={{mb: 4}}>
-                <Grid container spacing={3}>
-                    <Grid item xs={12} sm={6} md={3} sx={{flex: 1}}>
-                        <StatCard
-                            icon={<AssignmentIcon sx={{color: '#7c3aed'}} />}
-                            value={stats.total}
-                            label="Total Quotations"
-                            color="#7c3aed"
-                            bgColor="#ede9fe"
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={3} sx={{flex: 1}}>
-                        <StatCard
-                            icon={<ScheduleIcon sx={{color: '#f59e0b'}} />}
-                            value={stats.pending}
-                            label="Pending"
-                            color="#f59e0b"
-                            bgColor="#fef3c7"
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={3} sx={{flex: 1}}>
-                        <StatCard
-                            icon={<CheckCircleIcon sx={{color: '#059669'}} />}
-                            value={stats.accepted}
-                            label="Accepted"
-                            color="#059669"
-                            bgColor="#d1fae5"
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={3} sx={{flex: 1}}>
-                        <StatCard
-                            icon={<CancelIcon sx={{color: '#dc2626'}} />}
-                            value={stats.rejected}
-                            label="Rejected"
-                            color="#dc2626"
-                            bgColor="#fee2e2"
-                        />
-                    </Grid>
-                </Grid>
-            </Box>
+            <HeaderSection activeTab={activeTab} />
 
             {/* Main Content */}
             <Paper sx={{
@@ -820,46 +896,12 @@ export default function DesignerQuotationManagement() {
                 border: "1px solid #e2e8f0",
                 overflow: "hidden"
             }}>
-                {/* Sort Info and Tabs */}
+                {/* Tabs */}
                 <Box sx={{
                     p: 3,
                     borderBottom: '1px solid #e5e7eb',
                     backgroundColor: '#f8fafc'
                 }}>
-                    <Box sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        mb: 3
-                    }}>
-                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
-                                                    <Typography variant="body2" sx={{color: '#6b7280'}}>
-                            Sorted by: <strong>{
-                                sortBy === 'id' ? 'ID' : 
-                                sortBy === 'designRequestName' ? 'Design Request' : 
-                                sortBy === 'schoolName' ? 'School' : 
-                                sortBy === 'price' ? 'Price' : 
-                                sortBy === 'deliveryWithin' ? 'Delivery Time' : 
-                                sortBy === 'status' ? 'Status' : 
-                                'Creation Date'
-                            }</strong>
-                        </Typography>
-                            <Chip
-                                label={sortOrder === 'ascend' ? 'Ascending' : 'Descending'}
-                                size="small"
-                                sx={{
-                                    backgroundColor: 'rgba(124, 58, 237, 0.1)',
-                                    color: '#7c3aed',
-                                    fontWeight: 600
-                                }}
-                            />
-                        </Box>
-                        
-                        <Typography variant="body2" sx={{color: '#6b7280'}}>
-                            {filteredQuotations.length} quotation{filteredQuotations.length !== 1 ? 's' : ''} found
-                        </Typography>
-                    </Box>
-
                     <Tabs
                         value={activeTab}
                         onChange={handleTabChange}
@@ -877,17 +919,16 @@ export default function DesignerQuotationManagement() {
                             }
                         }}
                     >
-                        <Tab label={`All (${stats.total})`} />
-                        <Tab label={`Pending (${stats.pending})`} />
-                        <Tab label={`Accepted (${stats.accepted})`} />
-                        <Tab label={`Rejected (${stats.rejected})`} />
+                        <Tab label={`Available Requests (${stats.available})`} />
+                        <Tab label={`Applied Requests (${stats.applied})`} />
+                        <Tab label={`Rejected Requests (${stats.rejected})`} />
                     </Tabs>
                 </Box>
 
                 {/* Table Section */}
                 <TableSection
-                    columns={columns}
-                    filteredQuotations={filteredQuotations}
+                    columns={currentColumns}
+                    data={currentData}
                     loading={loading}
                     stats={stats}
                     activeTab={activeTab}
@@ -895,11 +936,18 @@ export default function DesignerQuotationManagement() {
                 />
             </Paper>
 
-            {/* Quotation Detail Dialog */}
-            <QuotationDetailDialog
-                open={isDetailDialogOpen}
-                onClose={handleCloseDetailDialog}
-                quotation={selectedQuotation}
+            {/* Available Request Detail Modal */}
+            <DesignerPendingDesignDetail
+                visible={isAvailableModalVisible}
+                onCancel={handleCancelAvailable}
+                request={selectedAvailableRequest}
+            />
+
+            {/* Applied Request Detail Modal */}
+            <AppliedRequestDetail
+                visible={isAppliedModalVisible}
+                onCancel={handleCancelApplied}
+                request={selectedAppliedRequest}
             />
         </Box>
     );
