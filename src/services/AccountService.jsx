@@ -55,3 +55,10 @@ export const updatePartnerProfile = async (data) => {
     const response = await axiosClient.put("/account/partner/profile", data)
     return response || null;
 }
+
+export const getPartnerProfileForQuotation = async (partnerId) => {
+    const response = await axiosClient.post("/account/partner/profile", {
+        partnerId: partnerId
+    })
+    return response || null;
+}

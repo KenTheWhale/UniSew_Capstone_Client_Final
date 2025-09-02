@@ -26,6 +26,7 @@ import {enqueueSnackbar} from "notistack";
 import {createDesignRequest, getFabrics, importDesign} from "../../../services/DesignService.jsx";
 import {uploadCloudinary} from "../../../services/UploadImageService.jsx";
 import DisplayImage from "../../ui/DisplayImage.jsx";
+import {getConfigByKey, configKey} from "../../../services/SystemService.jsx";
 
 
 export default function SchoolCreateDesign() {
@@ -157,10 +158,38 @@ export default function SchoolCreateDesign() {
 
     const MAX_IMAGES = 4;
     const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
-    const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    // Remove static ALLOWED_EXTENSIONS as it will be dynamic
 
     const [uniformFabrics, setUniformFabrics] = useState([]);
+    
+    // Add state for media configuration
+    const [mediaConfig, setMediaConfig] = useState({
+        imgFormat: [],
+        maxImgSize: 5 // default value in MB
+    });
 
+    // Fetch media configuration on component mount
+    useEffect(() => {
+        async function fetchMediaConfig() {
+            try {
+                const response = await getConfigByKey(configKey.media);
+                if (response && response.data && response.data.body && response.data.body.media) {
+                    const media = response.data.body.media;
+                    setMediaConfig({
+                        imgFormat: media.imgFormat || [],
+                        maxImgSize: media.maxImgSize || 5
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching media config:', error);
+                // Keep default values on error
+            }
+        }
+        
+        fetchMediaConfig();
+    }, []);
+
+    // Validation functions
     const isBoyInfoComplete = (uniformType) => {
         const boyDetails = designRequest.uniformTypes[uniformType].details.boy;
         const shirt = boyDetails.shirt;
@@ -270,12 +299,26 @@ export default function SchoolCreateDesign() {
             if (fieldType === 'pantsFabric') return !boyDetails.pants.fabric;
             if (fieldType === 'logoHeight' && designRequest.designType === 'import') return !boyDetails.shirt.logoHeight;
             if (fieldType === 'logoWidth' && designRequest.designType === 'import') return !boyDetails.shirt.logoWidth;
+            
+            // Design image validation for import mode
+            if (designRequest.designType === 'import') {
+                if (fieldType === 'shirtFrontDesignImage') return !boyDetails.shirt.frontDesignImage;
+                if (fieldType === 'shirtBackDesignImage') return !boyDetails.shirt.backDesignImage;
+                if (fieldType === 'pantsFrontDesignImage') return !boyDetails.pants.frontDesignImage;
+                if (fieldType === 'pantsBackDesignImage') return !boyDetails.pants.backDesignImage;
+            }
         } else {
             const girlDetails = designRequest.uniformTypes[uniformType].details.girl;
             if (fieldType === 'shirtFabric') return !girlDetails.shirt.fabric;
             if (fieldType === 'shirtLogoPlacement') return !girlDetails.shirt.logoPlacement;
             if (fieldType === 'logoHeight' && designRequest.designType === 'import') return !girlDetails.shirt.logoHeight;
             if (fieldType === 'logoWidth' && designRequest.designType === 'import') return !girlDetails.shirt.logoWidth;
+
+            // Design image validation for import mode
+            if (designRequest.designType === 'import') {
+                if (fieldType === 'shirtFrontDesignImage') return !girlDetails.shirt.frontDesignImage;
+                if (fieldType === 'shirtBackDesignImage') return !girlDetails.shirt.backDesignImage;
+            }
 
             if (uniformType === 'regular') {
                 if (fieldType === 'bottomType') return !designRequest.uniformTypes.regular.details.girl.bottomType;
@@ -285,13 +328,32 @@ export default function SchoolCreateDesign() {
                     const bottomFabric = bottomType === 'skirt' ? girlDetails.skirt.fabric : girlDetails.pants.fabric;
                     return !bottomFabric;
                 }
+                
+                // Bottom item design images for import mode
+                if (designRequest.designType === 'import') {
+                    const bottomType = designRequest.uniformTypes.regular.details.girl.bottomType;
+                    if (bottomType === 'skirt') {
+                        if (fieldType === 'bottomFrontDesignImage') return !girlDetails.skirt.frontDesignImage;
+                        if (fieldType === 'bottomBackDesignImage') return !girlDetails.skirt.backDesignImage;
+                    } else if (bottomType === 'pants') {
+                        if (fieldType === 'bottomFrontDesignImage') return !girlDetails.pants.frontDesignImage;
+                        if (fieldType === 'bottomBackDesignImage') return !girlDetails.pants.backDesignImage;
+                    }
+                }
             } else if (uniformType === 'physicalEducation') {
                 if (fieldType === 'pantsFabric') return !girlDetails.pants.fabric;
+                
+                // Pants design images for PE uniforms in import mode
+                if (designRequest.designType === 'import') {
+                    if (fieldType === 'pantsFrontDesignImage') return !girlDetails.pants.frontDesignImage;
+                    if (fieldType === 'pantsBackDesignImage') return !girlDetails.pants.backDesignImage;
+                }
             }
         }
         return false;
     };
 
+    // Existing useEffect for fabrics
     useEffect(() => {
         async function FetchFabrics() {
             return await getFabrics()
@@ -332,18 +394,24 @@ export default function SchoolCreateDesign() {
         });
     }, [])
 
+    // Updated handleFileChange to use dynamic validation
     const handleFileChange = (event) => {
         const file = event.target.files[0];
         if (file) {
-            const ext = file.name.split('.').pop().toLowerCase();
-            if (!ALLOWED_EXTENSIONS.includes(ext)) {
-                enqueueSnackbar('Only JPG, JPEG, PNG, GIF, WEBP files are allowed for logo.', {variant: 'error'});
+            const ext = '.' + file.name.split('.').pop().toLowerCase();
+            
+            // Get allowed formats from API config
+            const allowedFormats = mediaConfig.imgFormat.map(format => format.format);
+            
+            if (allowedFormats.length > 0 && !allowedFormats.includes(ext)) {
+                const formatList = allowedFormats.join(', ').toUpperCase();
+                enqueueSnackbar(`Only ${formatList} files are allowed for logo.`, {variant: 'error'});
                 return;
             }
 
-            const MAX_LOGO_SIZE = 5 * 1024 * 1024;
-            if (file.size > MAX_LOGO_SIZE) {
-                enqueueSnackbar('Logo file must be less than 5MB.', {variant: 'error'});
+            const maxSizeInBytes = mediaConfig.maxImgSize * 1024 * 1024;
+            if (file.size > maxSizeInBytes) {
+                enqueueSnackbar(`Logo file must be less than ${mediaConfig.maxImgSize}MB.`, {variant: 'error'});
                 return;
             }
 
@@ -1288,112 +1356,142 @@ export default function SchoolCreateDesign() {
                         </Box>
 
                         {designRequest.designType === 'import' && (
-                            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                                <Box>
-                                    <Typography variant="subtitle2" sx={{ 
-                                        mb: 1, 
-                                        fontWeight: '600',
-                                        color: isFieldMissing(uniformType, 'boy', 'logoHeight') ? '#d32f2f' : '#1e293b'
-                                    }}>
-                                        Logo Height (cm) *
-                                    </Typography>
-                                    <TextField
-                                        type="number"
-                                        size="small"
-                                        placeholder="Enter logo height"
-                                        value={designRequest.uniformTypes[uniformType].details.boy.shirt.logoHeight}
-                                        onChange={(e) => {
-                                            setDesignRequest(prev => ({
-                                                ...prev,
-                                                uniformTypes: {
-                                                    ...prev.uniformTypes,
-                                                    [uniformType]: {
-                                                        ...prev.uniformTypes[uniformType],
-                                                        details: {
-                                                            ...prev.uniformTypes[uniformType].details,
-                                                            boy: {
-                                                                ...prev.uniformTypes[uniformType].details.boy,
-                                                                shirt: {
-                                                                    ...prev.uniformTypes[uniformType].details.boy.shirt,
-                                                                    logoHeight: e.target.value
+                            <>
+                                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                                    <Box>
+                                        <Typography variant="subtitle2" sx={{ 
+                                            mb: 1, 
+                                            fontWeight: '600',
+                                            color: isFieldMissing(uniformType, 'boy', 'logoHeight') ? '#d32f2f' : '#1e293b'
+                                        }}>
+                                            Logo Height (cm) *
+                                        </Typography>
+                                        <TextField
+                                            type="number"
+                                            size="small"
+                                            placeholder="Enter logo height"
+                                            value={designRequest.uniformTypes[uniformType].details.boy.shirt.logoHeight}
+                                            onChange={(e) => {
+                                                setDesignRequest(prev => ({
+                                                    ...prev,
+                                                    uniformTypes: {
+                                                        ...prev.uniformTypes,
+                                                        [uniformType]: {
+                                                            ...prev.uniformTypes[uniformType],
+                                                            details: {
+                                                                ...prev.uniformTypes[uniformType].details,
+                                                                boy: {
+                                                                    ...prev.uniformTypes[uniformType].details.boy,
+                                                                    shirt: {
+                                                                        ...prev.uniformTypes[uniformType].details.boy.shirt,
+                                                                        logoHeight: e.target.value
+                                                                    }
                                                                 }
                                                             }
                                                         }
                                                     }
-                                                }
-                                            }));
-                                        }}
-                                        sx={{
-                                            '& .MuiOutlinedInput-root': {
-                                                '& fieldset': {
-                                                    borderColor: isFieldMissing(uniformType, 'boy', 'logoHeight') ? '#d32f2f' : '#c0c0c0',
+                                                }));
+                                            }}
+                                            sx={{
+                                                '& .MuiOutlinedInput-root': {
+                                                    '& fieldset': {
+                                                        borderColor: isFieldMissing(uniformType, 'boy', 'logoHeight') ? '#d32f2f' : '#c0c0c0',
+                                                    },
+                                                    '&:hover fieldset': {
+                                                        borderColor: isFieldMissing(uniformType, 'boy', 'logoHeight') ? '#d32f2f' : '#2e7d32',
+                                                    },
+                                                    '&.Mui-focused fieldset': {
+                                                        borderColor: isFieldMissing(uniformType, 'boy', 'logoHeight') ? '#d32f2f' : '#2e7d32',
+                                                    },
                                                 },
-                                                '&:hover fieldset': {
-                                                    borderColor: isFieldMissing(uniformType, 'boy', 'logoHeight') ? '#d32f2f' : '#2e7d32',
-                                                },
-                                                '&.Mui-focused fieldset': {
-                                                    borderColor: isFieldMissing(uniformType, 'boy', 'logoHeight') ? '#d32f2f' : '#2e7d32',
-                                                },
-                                            },
-                                        }}
-                                    />
-                                </Box>
-                                <Box>
-                                    <Typography variant="subtitle2" sx={{ 
-                                        mb: 1, 
-                                        fontWeight: '600',
-                                        color: isFieldMissing(uniformType, 'boy', 'logoWidth') ? '#d32f2f' : '#1e293b'
-                                    }}>
-                                        Logo Width (cm) *
-                                    </Typography>
-                                    <TextField
-                                        type="number"
-                                        size="small"
-                                        placeholder="Enter logo width"
-                                        value={designRequest.uniformTypes[uniformType].details.boy.shirt.logoWidth}
-                                        onChange={(e) => {
-                                            setDesignRequest(prev => ({
-                                                ...prev,
-                                                uniformTypes: {
-                                                    ...prev.uniformTypes,
-                                                    [uniformType]: {
-                                                        ...prev.uniformTypes[uniformType],
-                                                        details: {
-                                                            ...prev.uniformTypes[uniformType].details,
-                                                            boy: {
-                                                                ...prev.uniformTypes[uniformType].details.boy,
-                                                                shirt: {
-                                                                    ...prev.uniformTypes[uniformType].details.boy.shirt,
-                                                                    logoWidth: e.target.value
+                                            }}
+                                        />
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="subtitle2" sx={{ 
+                                            mb: 1, 
+                                            fontWeight: '600',
+                                            color: isFieldMissing(uniformType, 'boy', 'logoWidth') ? '#d32f2f' : '#1e293b'
+                                        }}>
+                                            Logo Width (cm) *
+                                        </Typography>
+                                        <TextField
+                                            type="number"
+                                            size="small"
+                                            placeholder="Enter logo width"
+                                            value={designRequest.uniformTypes[uniformType].details.boy.shirt.logoWidth}
+                                            onChange={(e) => {
+                                                setDesignRequest(prev => ({
+                                                    ...prev,
+                                                    uniformTypes: {
+                                                        ...prev.uniformTypes,
+                                                        [uniformType]: {
+                                                            ...prev.uniformTypes[uniformType],
+                                                            details: {
+                                                                ...prev.uniformTypes[uniformType].details,
+                                                                boy: {
+                                                                    ...prev.uniformTypes[uniformType].details.boy,
+                                                                    shirt: {
+                                                                        ...prev.uniformTypes[uniformType].details.boy.shirt,
+                                                                        logoWidth: e.target.value
+                                                                    }
                                                                 }
                                                             }
                                                         }
                                                     }
-                                                }
-                                            }));
-                                        }}
-                                        sx={{
-                                            '& .MuiOutlinedInput-root': {
-                                                '& fieldset': {
-                                                    borderColor: isFieldMissing(uniformType, 'boy', 'logoWidth') ? '#d32f2f' : '#c0c0c0',
+                                                }));
+                                            }}
+                                            sx={{
+                                                '& .MuiOutlinedInput-root': {
+                                                    '& fieldset': {
+                                                        borderColor: isFieldMissing(uniformType, 'boy', 'logoWidth') ? '#d32f2f' : '#c0c0c0',
+                                                    },
+                                                    '&:hover fieldset': {
+                                                        borderColor: isFieldMissing(uniformType, 'boy', 'logoWidth') ? '#d32f2f' : '#2e7d32',
+                                                    },
+                                                    '&.Mui-focused fieldset': {
+                                                        borderColor: isFieldMissing(uniformType, 'boy', 'logoWidth') ? '#d32f2f' : '#2e7d32',
+                                                    },
                                                 },
-                                                '&:hover fieldset': {
-                                                    borderColor: isFieldMissing(uniformType, 'boy', 'logoWidth') ? '#d32f2f' : '#2e7d32',
-                                                },
-                                                '&.Mui-focused fieldset': {
-                                                    borderColor: isFieldMissing(uniformType, 'boy', 'logoWidth') ? '#d32f2f' : '#2e7d32',
-                                                },
-                                            },
-                                        }}
-                                    />
+                                            }}
+                                        />
+                                    </Box>
                                 </Box>
-                            </Box>
+                                <Box sx={{ 
+                                    mt: 1, 
+                                    p: 2, 
+                                    backgroundColor: '#f0f7ff', 
+                                    borderRadius: '8px',
+                                    border: '1px solid #e3f2fd'
+                                }}>
+                                    <Typography variant="body2" sx={{ 
+                                        color: '#1976d2', 
+                                        fontWeight: '600',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1,
+                                        mb: 0.5
+                                    }}>
+                                        💡 Useful Tip:
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ 
+                                        color: '#1976d2', 
+                                        fontWeight: '500'
+                                    }}>
+                                        If you don't know the exact logo dimensions, please contact your designer to get accurate information.
+                                    </Typography>
+                                </Box>
+                            </>
                         )}
 
                         {designRequest.designType === 'import' && (
                             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                                 <Box>
-                                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                                    <Typography variant="subtitle2" sx={{ 
+                                        mb: 1, 
+                                        fontWeight: '600',
+                                        color: isFieldMissing(uniformType, 'boy', 'shirtFrontDesignImage') ? '#d32f2f' : '#1e293b'
+                                    }}>
                                         Front Design Image *
                                     </Typography>
                                     <Box sx={{
@@ -1456,7 +1554,11 @@ export default function SchoolCreateDesign() {
                                     </Box>
                                 </Box>
                                 <Box>
-                                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                                    <Typography variant="subtitle2" sx={{ 
+                                        mb: 1, 
+                                        fontWeight: '600',
+                                        color: isFieldMissing(uniformType, 'boy', 'shirtBackDesignImage') ? '#d32f2f' : '#1e293b'
+                                    }}>
                                         Back Design Image *
                                     </Typography>
                                     <Box sx={{
@@ -1962,7 +2064,11 @@ export default function SchoolCreateDesign() {
                             {designRequest.designType === 'import' && (
                                 <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                                     <Box>
-                                        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                                        <Typography variant="subtitle2" sx={{ 
+                                            mb: 1, 
+                                            fontWeight: '600',
+                                            color: isFieldMissing(uniformType, 'boy', 'pantsFrontDesignImage') ? '#d32f2f' : '#1e293b'
+                                        }}>
                                             Front Design Image *
                                         </Typography>
                                         <Box sx={{
@@ -2025,7 +2131,11 @@ export default function SchoolCreateDesign() {
                                         </Box>
                                     </Box>
                                     <Box>
-                                        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                                        <Typography variant="subtitle2" sx={{ 
+                                            mb: 1, 
+                                            fontWeight: '600',
+                                            color: isFieldMissing(uniformType, 'boy', 'pantsBackDesignImage') ? '#d32f2f' : '#1e293b'
+                                        }}>
                                             Back Design Image *
                                         </Typography>
                                         <Box sx={{
@@ -2436,9 +2546,142 @@ export default function SchoolCreateDesign() {
                         </Box>
 
                         {designRequest.designType === 'import' && (
+                            <>
+                                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                                    <Box>
+                                        <Typography variant="subtitle2" sx={{ 
+                                            mb: 1, 
+                                            fontWeight: '600',
+                                            color: isFieldMissing(uniformType, 'girl', 'logoHeight') ? '#d32f2f' : '#1e293b'
+                                        }}>
+                                            Logo Height (cm) *
+                                        </Typography>
+                                        <TextField
+                                            type="number"
+                                            size="small"
+                                            placeholder="Enter logo height"
+                                            value={designRequest.uniformTypes[uniformType].details.girl.shirt.logoHeight}
+                                            onChange={(e) => {
+                                                setDesignRequest(prev => ({
+                                                    ...prev,
+                                                    uniformTypes: {
+                                                        ...prev.uniformTypes,
+                                                        [uniformType]: {
+                                                            ...prev.uniformTypes[uniformType],
+                                                            details: {
+                                                                ...prev.uniformTypes[uniformType].details,
+                                                                girl: {
+                                                                    ...prev.uniformTypes[uniformType].details.girl,
+                                                                    shirt: {
+                                                                        ...prev.uniformTypes[uniformType].details.girl.shirt,
+                                                                        logoHeight: e.target.value
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }));
+                                            }}
+                                            sx={{
+                                                '& .MuiOutlinedInput-root': {
+                                                    '& fieldset': {
+                                                        borderColor: isFieldMissing(uniformType, 'girl', 'logoHeight') ? '#d32f2f' : '#c0c0c0',
+                                                    },
+                                                    '&:hover fieldset': {
+                                                        borderColor: isFieldMissing(uniformType, 'girl', 'logoHeight') ? '#d32f2f' : '#2e7d32',
+                                                    },
+                                                    '&.Mui-focused fieldset': {
+                                                        borderColor: isFieldMissing(uniformType, 'girl', 'logoHeight') ? '#d32f2f' : '#2e7d32',
+                                                    },
+                                                },
+                                            }}
+                                        />
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="subtitle2" sx={{ 
+                                            mb: 1, 
+                                            fontWeight: '600',
+                                            color: isFieldMissing(uniformType, 'girl', 'logoWidth') ? '#d32f2f' : '#1e293b'
+                                        }}>
+                                            Logo Width (cm) *
+                                        </Typography>
+                                        <TextField
+                                            type="number"
+                                            size="small"
+                                            placeholder="Enter logo width"
+                                            value={designRequest.uniformTypes[uniformType].details.girl.shirt.logoWidth}
+                                            onChange={(e) => {
+                                                setDesignRequest(prev => ({
+                                                    ...prev,
+                                                    uniformTypes: {
+                                                        ...prev.uniformTypes,
+                                                        [uniformType]: {
+                                                            ...prev.uniformTypes[uniformType],
+                                                            details: {
+                                                                ...prev.uniformTypes[uniformType].details,
+                                                                girl: {
+                                                                    ...prev.uniformTypes[uniformType].details.girl,
+                                                                    shirt: {
+                                                                        ...prev.uniformTypes[uniformType].details.girl.shirt,
+                                                                        logoWidth: e.target.value
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }));
+                                            }}
+                                            sx={{
+                                                '& .MuiOutlinedInput-root': {
+                                                    '& fieldset': {
+                                                        borderColor: isFieldMissing(uniformType, 'girl', 'logoWidth') ? '#d32f2f' : '#c0c0c0',
+                                                    },
+                                                    '&:hover fieldset': {
+                                                        borderColor: isFieldMissing(uniformType, 'girl', 'logoWidth') ? '#d32f2f' : '#2e7d32',
+                                                    },
+                                                    '&.Mui-focused fieldset': {
+                                                        borderColor: isFieldMissing(uniformType, 'girl', 'logoWidth') ? '#d32f2f' : '#2e7d32',
+                                                    },
+                                                },
+                                            }}
+                                        />
+                                    </Box>
+                                </Box>
+                                <Box sx={{ 
+                                    mt: 1, 
+                                    p: 2, 
+                                    backgroundColor: '#f0f7ff', 
+                                    borderRadius: '8px',
+                                    border: '1px solid #e3f2fd'
+                                }}>
+                                    <Typography variant="body2" sx={{ 
+                                        color: '#1976d2', 
+                                        fontWeight: '600',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1,
+                                        mb: 0.5
+                                    }}>
+                                        💡 Useful Tip:
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ 
+                                        color: '#1976d2', 
+                                        fontWeight: '500'
+                                    }}>
+                                        If you don't know the exact logo dimensions, please contact your designer to get accurate information.
+                                    </Typography>
+                                </Box>
+                            </>
+                        )}
+
+                        {designRequest.designType === 'import' && (
                             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                                 <Box>
-                                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                                    <Typography variant="subtitle2" sx={{ 
+                                        mb: 1, 
+                                        fontWeight: '600',
+                                        color: isFieldMissing(uniformType, 'girl', 'shirtFrontDesignImage') ? '#d32f2f' : '#1e293b'
+                                    }}>
                                         Front Design Image *
                                     </Typography>
                                     <Box sx={{
@@ -2501,7 +2744,11 @@ export default function SchoolCreateDesign() {
                                     </Box>
                                 </Box>
                                 <Box>
-                                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                                    <Typography variant="subtitle2" sx={{ 
+                                        mb: 1, 
+                                        fontWeight: '600',
+                                        color: isFieldMissing(uniformType, 'girl', 'shirtBackDesignImage') ? '#d32f2f' : '#1e293b'
+                                    }}>
                                         Back Design Image *
                                     </Typography>
                                     <Box sx={{
@@ -3079,7 +3326,11 @@ export default function SchoolCreateDesign() {
                         {designRequest.designType === 'import' && (
                             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                                 <Box>
-                                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                                    <Typography variant="subtitle2" sx={{ 
+                                        mb: 1, 
+                                        fontWeight: '600',
+                                        color: isFieldMissing(uniformType, 'girl', uniformType === 'regular' ? 'bottomFrontDesignImage' : 'pantsFrontDesignImage') ? '#d32f2f' : '#1e293b'
+                                    }}>
                                         Front Design Image *
                                     </Typography>
                                     <Box sx={{
@@ -3149,7 +3400,11 @@ export default function SchoolCreateDesign() {
                                     </Box>
                                 </Box>
                                 <Box>
-                                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: '600' }}>
+                                    <Typography variant="subtitle2" sx={{ 
+                                        mb: 1, 
+                                        fontWeight: '600',
+                                        color: isFieldMissing(uniformType, 'girl', uniformType === 'regular' ? 'bottomBackDesignImage' : 'pantsBackDesignImage') ? '#d32f2f' : '#1e293b'
+                                    }}>
                                         Back Design Image *
                                     </Typography>
                                     <Box sx={{
@@ -3554,7 +3809,7 @@ export default function SchoolCreateDesign() {
                                 </Button>
                             </label>
                             <Typography variant="body2" sx={{color: '#64748b'}}>
-                                Supported formats: JPG, PNG, GIF, WEBP (Max 5MB)
+                                Supported formats: {mediaConfig.imgFormat.map(format => format.format.toUpperCase()).join(', ')} (Max {mediaConfig.maxImgSize}MB)
                             </Typography>
                             {designRequest.logo.preview && (
                                 <Box sx={{mt: 2}}>

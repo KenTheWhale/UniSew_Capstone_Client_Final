@@ -2562,7 +2562,7 @@ export default function DesignerChat() {
                         if (updatedRequest) {
                             if (updatedRequest.status === 'completed') {
                                 setIsDeliveryModalVisible(false);
-                                window.location.href = '/designer/applied/requests';
+                                window.location.href = '/designer/quotations';
                                 return;
                             }
                             setRequestData(updatedRequest);
@@ -2627,7 +2627,7 @@ export default function DesignerChat() {
                             const updatedRequest = latestResponse.data.body;
                             if (updatedRequest) {
                                 if (updatedRequest.status === 'completed') {
-                                    window.location.href = '/designer/applied/requests';
+                                    window.location.href = '/designer/quotations';
                                     return;
                                 }
                                 setRequestData(updatedRequest);

@@ -25,6 +25,11 @@ export const getAppliedDesignerDesignRequests = async () => {
     return response || null
 }
 
+export const getRejectedDesignerDesignRequests = async () => {
+    const response = await axiosClient.post("/design/designer/rejected")
+    return response || null
+}
+
 export const getDesignRequestDetailForDesigner = async (requestId) => {
     const response = await axiosClient.get(`/design/designer/request/detail?id=${requestId}`)
     return response || null

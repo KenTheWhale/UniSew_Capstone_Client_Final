@@ -955,7 +955,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                     fontSize: '10px',
                                                                     fontWeight: 600
                                                                 }}>
-                                                                    âš?
+                                                                    ï¿½?
                                                                 </Box>
                                                                 <Text style={{
                                                                     fontSize: '11px',
@@ -1726,7 +1726,7 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                     fontSize: '10px',
                                                                     fontWeight: 600
                                                                 }}>
-                                                                    âš?
+                                                                    ï¿½?
                                                                 </Box>
                                                                 <Text style={{
                                                                     fontSize: '11px',
