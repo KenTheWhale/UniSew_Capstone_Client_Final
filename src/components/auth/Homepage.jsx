@@ -32,27 +32,28 @@ const features = [
 
 const testimonials = [
     {
-        name: "Sarah Johnson",
-        role: "Principal, Green Valley School",
+        name: "Nguyễn Thị Lan",
+        role: "Trường tiểu học An Phú ",
         avatar: "https://randomuser.me/api/portraits/women/32.jpg",
         content:
-            "UniSew transformed our uniform ordering process. Easy to interact with my favourite designer",
+            "UniSew đã thay đổi hoàn toàn cách chúng tôi đặt đồng phục. Dễ dàng trao đổi với nhà thiết kế yêu thích, quy trình rất thuận tiện.",
     },
     {
-        name: "Michael Chen",
-        role: "Head Teacher, Sunrise Academy",
+        name: "Trần Minh Quân",
+        role: " Trường tiểu học Tân Phú Trung",
         avatar: "https://randomuser.me/api/portraits/men/44.jpg",
         content:
-            "Excellent service and interaction with designer. The online platform makes it so easy to manage our uniform needs.",
+            "Dịch vụ tuyệt vời và tương tác nhanh chóng với nhà thiết kế. Nền tảng trực tuyến giúp quản lý đồng phục của trường cực kỳ dễ dàng.",
     },
     {
-        name: "Emily Rodriguez",
-        role: "Administrator, Bright Future School",
+        name: "Lê Hoàng Anh",
+        role: " Trường tiểu học Phú Mỹ Hưng",
         avatar: "https://randomuser.me/api/portraits/women/67.jpg",
         content:
-            "Professional, reliable, and cost-effective. Highly recommend UniSew for any school's uniform needs.",
+            "Chuyên nghiệp, uy tín và tiết kiệm chi phí. Tôi rất khuyến khích các trường sử dụng UniSew để đặt may đồng phục.",
     },
 ];
+
 
 function handleJoinNow() {
     const access = getAccessCookie('access');
@@ -83,7 +84,11 @@ function handleJoinNow() {
 
 export default function Homepage() {
     const theme = useTheme();
-    const [statsNumber, setStatsNumber] = useState([]);
+    const [statsNumber, setStatsNumber] = useState({
+        numberSchoolAccount: 0,
+        numberDesignerAccount: 0,
+        numberGarmentAccount: 0,
+    });
 
     const today = new Date();
     const isSameYear = today.getFullYear() === 2025;
@@ -111,22 +116,19 @@ export default function Homepage() {
         },
     ];
 
-    async function GetNumberAccount() {
-        try {
-            const response = await getNumberAccount();
-            if (response && response.status === 200) {
-                console.log("home response", response);
-                setStatsNumber(response.data.body || []);
-            }
-        } catch (e) {
-            console.log("error in getNumberAccount", e);
-        }
-    }
-
     useEffect(() => {
-        GetNumberAccount()
+        (async () => {
+            try {
+                const res = await getNumberAccount();
+                if (res?.status === 200) {
+                    setStatsNumber(res.data.body ?? {});
+                }
+            } catch (e) {
+                console.log("error in getNumberAccount", e);
+            }
+        })();
+    }, []);
 
-    }, [])
 
     useMediaQuery(theme.breakpoints.down("md"));
     return (
