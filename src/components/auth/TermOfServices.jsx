@@ -76,15 +76,15 @@ const TermOfServices = () => {
                 },
                 {
                     subtitle: "2. Payment Terms",
-                    text: "50% deposit is required upon contract signing. Remaining balance is due upon delivery. We accept bank transfers, VNPAY, and cash payments."
+                    text: "Payment is made through a simple two-step process with convenient options via VNPAY and local bank cards."
                 },
                 {
                     subtitle: "3. Pricing",
                     text: "All prices are quoted in Vietnamese Dong (VND) and are subject to change without notice. Final pricing is confirmed in the contract."
                 },
                 {
-                    subtitle: "4. Cancellation Policy",
-                    text: "Orders can be cancelled within 24 hours of placement. Cancellations after production begins may incur charges."
+                    subtitle: "4. Report & Feedback Policy",
+                    text: "Schools can submit reports or feedback directly through the platform, ensuring issues are addressed promptly and transparently."
                 }
             ]
         },
@@ -98,7 +98,7 @@ const TermOfServices = () => {
                 },
                 {
                     subtitle: "2. Quality Standards",
-                    text: "All products meet child safety standards and undergo quality control checks. We provide 6-month warranty for manufacturing defects."
+                    text: "All products meet child safety standards and undergo quality control checks."
                 },
                 {
                     subtitle: "3. Materials and Specifications",
@@ -107,28 +107,6 @@ const TermOfServices = () => {
                 {
                     subtitle: "4. Samples and Approvals",
                     text: "Physical samples can be provided at additional cost. Final approval is required before mass production."
-                }
-            ]
-        },
-        delivery: {
-            title: "Delivery and Returns",
-            icon: <SchoolIcon/>,
-            content: [
-                {
-                    subtitle: "1. Delivery Service",
-                    text: "Free nationwide delivery for orders over 100 pieces. Express delivery available at additional cost."
-                },
-                {
-                    subtitle: "2. Delivery Timeline",
-                    text: "Delivery timelines are estimates. We will provide tracking information when available."
-                },
-                {
-                    subtitle: "3. Acceptance of Delivery",
-                    text: "Inspect products upon delivery. Report any issues within 24 hours for immediate resolution."
-                },
-                {
-                    subtitle: "4. Return Policy",
-                    text: "Returns accepted for manufacturing defects within 30 days. Size exchanges available within 7 days."
                 }
             ]
         },
