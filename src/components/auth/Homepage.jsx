@@ -394,7 +394,6 @@ export default function Homepage() {
                 </Container>
             </Box>
 
-            {}
             <Box sx={{background: "#f8fafc", py: 10}}>
                 <Container maxWidth="xl">
                     <Box sx={{textAlign: "center", mb: 8}}>
@@ -423,20 +422,24 @@ export default function Homepage() {
                         </Typography>
                     </Box>
 
-                    <Grid container spacing={2} justifyContent="center">
+                    <Grid container sx={{width: "100%", gap: 2}}>
                         {features.map((feature, index) => (
-                            <Grid item xs={3} sm={3} md={3} key={index}>
+                            <Grid sx={{flex: 1}} key={index}>
                                 <Paper
                                     elevation={0}
                                     sx={{
-                                        maxWidth: 350,
                                         width: "100%",
-                                        mx: "auto",
+                                        height: 280,
                                         p: 4,
                                         borderRadius: 3,
                                         background: "white",
                                         border: "1px solid rgba(108,99,255,0.1)",
                                         transition: "all 0.3s ease",
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        justifyContent: "flex-start",
+                                        alignItems: "center",
+                                        textAlign: "center",
                                         "&:hover": {
                                             transform: "translateY(-5px)",
                                             boxShadow: "0 15px 35px rgba(108,99,255,0.1)",
@@ -453,7 +456,7 @@ export default function Homepage() {
                                     </Typography>
                                     <Typography
                                         variant="body1"
-                                        sx={{color: "#64748b", lineHeight: 1.7}}
+                                        sx={{color: "#64748b", lineHeight: 1.7, flex: 1}}
                                     >
                                         {feature.description}
                                     </Typography>
