@@ -31,6 +31,7 @@ import {Card, Col, DatePicker, Row, Space, Typography as AntTypography} from 'an
 import 'antd/dist/reset.css';
 import {getSchoolDesign} from '../../../services/DesignService.jsx';
 import {createOrder, getSizes} from '../../../services/OrderService.jsx';
+import {getConfigByKey, configKey} from '../../../services/SystemService.jsx';
 import DisplayImage from '../../ui/DisplayImage.jsx';
 import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
 import {GiSkirt} from "react-icons/gi";
@@ -50,6 +51,7 @@ export default function SchoolCreateOrder() {
     const [selectedSizes, setSelectedSizes] = useState({});
     const [selectedUniformSizes, setSelectedUniformSizes] = useState({});
     const [selectedUniformSizeQuantities, setSelectedUniformSizeQuantities] = useState({});
+    const [orderConfig, setOrderConfig] = useState({ minUniformQty: 50 }); // Default fallback
 
     const [showItemDialog, setShowItemDialog] = useState(false);
     const [showSizeSpecsDialog, setShowSizeSpecsDialog] = useState(false);
@@ -90,9 +92,23 @@ export default function SchoolCreateOrder() {
         }
     };
 
+    const fetchOrderConfig = async () => {
+        try {
+            const response = await getConfigByKey(configKey.order);
+            if (response && response.status === 200) {
+                console.log("Order config: ", response.data.body);
+                setOrderConfig(response.data.body.order || { minUniformQty: 50 });
+            }
+        } catch (err) {
+            console.error("Error fetching order config:", err);
+            // Keep default fallback value
+        }
+    };
+
     useEffect(() => {
         fetchSchoolDesigns();
         fetchSizes();
+        fetchOrderConfig();
     }, []);
 
     const handleDesignSelect = (event) => {
@@ -148,7 +164,7 @@ export default function SchoolCreateOrder() {
 
         const totalQuantity = getTotalQuantity();
 
-        return allUniformsHaveItems && totalQuantity >= 50;
+        return allUniformsHaveItems && totalQuantity >= orderConfig.minUniformQty;
     };
 
     const validateOrder = () => {
@@ -1127,22 +1143,22 @@ export default function SchoolCreateOrder() {
                                         mt: 4,
                                         p: 3,
                                         borderRadius: 3,
-                                        background: getTotalQuantity() >= 50 
+                                        background: getTotalQuantity() >= orderConfig.minUniformQty 
                                             ? 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(129, 199, 132, 0.15) 100%)'
                                             : 'linear-gradient(135deg, rgba(244, 67, 54, 0.1) 0%, rgba(239, 83, 80, 0.15) 100%)',
-                                        border: getTotalQuantity() >= 50 
+                                        border: getTotalQuantity() >= orderConfig.minUniformQty 
                                             ? '1px solid #4caf50' 
                                             : '1px solid #f44336'
                                     }}>
                                         <Typography variant="h6" sx={{
                                             fontWeight: 600,
-                                            color: getTotalQuantity() >= 50 ? '#2e7d32' : '#d32f2f',
+                                            color: getTotalQuantity() >= orderConfig.minUniformQty ? '#2e7d32' : '#d32f2f',
                                             mb: 2,
                                             display: 'flex',
                                             alignItems: 'center',
                                             gap: 1
                                         }}>
-                                            {getTotalQuantity() >= 50 ? '✅' : '⚠️'} Order Summary
+                                            {getTotalQuantity() >= orderConfig.minUniformQty ? '✅' : '⚠️'} Order Summary
                                         </Typography>
                                         <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1}}>
                                             <Typography variant="body1" sx={{
@@ -1152,7 +1168,7 @@ export default function SchoolCreateOrder() {
                                                 Total Uniforms Selected:
                                             </Typography>
                                             <Typography variant="h5" sx={{
-                                                color: getTotalQuantity() >= 50 ? '#2e7d32' : '#d32f2f',
+                                                color: getTotalQuantity() >= orderConfig.minUniformQty ? '#2e7d32' : '#d32f2f',
                                                 fontWeight: 700
                                             }}>
                                                 {getTotalQuantity()}
@@ -1169,11 +1185,11 @@ export default function SchoolCreateOrder() {
                                                 color: '#64748b',
                                                 fontWeight: 600
                                             }}>
-                                                50 uniforms
+                                                {orderConfig.minUniformQty} uniforms
                                             </Typography>
                                         </Box>
                                         
-                                        {getTotalQuantity() < 50 && (
+                                        {getTotalQuantity() < orderConfig.minUniformQty && (
                                             <Typography variant="body2" sx={{
                                                 color: '#d32f2f',
                                                 fontWeight: 500,
@@ -1183,11 +1199,11 @@ export default function SchoolCreateOrder() {
                                                 backgroundColor: 'rgba(244, 67, 54, 0.1)',
                                                 border: '1px solid rgba(244, 67, 54, 0.2)'
                                             }}>
-                                                You need to select {50 - getTotalQuantity()} more uniforms to meet the minimum order requirement.
+                                                You need to select {orderConfig.minUniformQty - getTotalQuantity()} more uniforms to meet the minimum order requirement.
                                             </Typography>
                                         )}
                                         
-                                        {getTotalQuantity() >= 50 && (
+                                        {getTotalQuantity() >= orderConfig.minUniformQty && (
                                             <Typography variant="body2" sx={{
                                                 color: '#2e7d32',
                                                 fontWeight: 500,
@@ -1275,7 +1291,7 @@ export default function SchoolCreateOrder() {
                                             Creating Order...
                                         </>
                                     ) : (
-                                        `Create Order (${getTotalQuantity()} uniforms)`
+                                        `Create Order`
                                     )}
                                 </Button>
 

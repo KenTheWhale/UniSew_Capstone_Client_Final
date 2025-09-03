@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {Avatar, Badge, Box, Card, CardContent, Chip, IconButton, Tooltip, Typography} from '@mui/material';
+import {Avatar, Badge, Box, Card, CardContent, Chip, IconButton, Tooltip, Typography, Rating, Paper} from '@mui/material';
 import {
     AccessTime as TimeIcon,
     AttachMoney as MoneyIcon,
@@ -11,7 +11,7 @@ import {
     StickyNote2 as NoteIcon,
     TableChart as TableChartIcon
 } from '@mui/icons-material';
-import {Button, Divider, Modal, Select, Tag, Typography as AntTypography} from 'antd';
+import {Button, Divider, Modal, Select, Tag, Typography as AntTypography, Spin, Carousel} from 'antd';
 import {
     CheckCircleOutlined,
     ClockCircleOutlined,
@@ -34,6 +34,19 @@ import {viewQuotation} from '../../../../services/OrderService.jsx';
 import OrderPaymentPopup from './OrderPaymentPopup.jsx';
 import {getPhoneLink} from '../../../../utils/PhoneUtil.jsx';
 import {Typography as MuiTypography} from '@mui/material';
+import {getPartnerProfileForQuotation} from '../../../../services/AccountService.jsx';
+import {getConfigByKey, configKey} from '../../../../services/SystemService.jsx';
+import PersonSearchIcon from '@mui/icons-material/PersonSearch';
+import EmailIcon from '@mui/icons-material/Email';
+import PhoneIcon from '@mui/icons-material/Phone';
+import BusinessIcon from '@mui/icons-material/Business';
+import HomeIcon from '@mui/icons-material/Home';
+import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import BlockIcon from '@mui/icons-material/Block';
+import WorkIcon from '@mui/icons-material/Work';
+import TaxIcon from '@mui/icons-material/Receipt';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
 export function statusTag(status) {
     let color;
@@ -64,99 +77,323 @@ export function statusTag(status) {
 
 // Garment Profile Modal Component
 const GarmentProfileModal = ({open, onClose, garment}) => {
+    const [profileData, setProfileData] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    };
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            if (!garment || !open) return;
+            
+            try {
+                setLoading(true);
+                setError(null);
+                const response = await getPartnerProfileForQuotation(garment.id);
+                
+                if (response?.status === 200 && response.data?.body) {
+                    setProfileData(response.data.body);
+                } else {
+                    setError('Failed to load profile data');
+                }
+            } catch (error) {
+                console.error('Error fetching partner profile:', error);
+                setError('Failed to load profile data');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProfile();
+    }, [garment, open]);
+
     if (!garment) return null;
-    const customer = garment.customer || {};
+
+    const customer = profileData?.customer || garment.customer || {};
     const account = customer.account || {};
+    const feedbacks = profileData?.feedbacks?.filter(feedback => !feedback.report) || [];
+
     return (
         <Modal
             open={open}
             onCancel={onClose}
             footer={null}
             centered
-            width={480}
+            width={800}
             title={
                 <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
-                    <TeamOutlined style={{color: '#1976d2', fontSize: 28}}/>
+                    <PersonSearchIcon style={{color: '#1976d2', fontSize: 28}}/>
                     <MuiTypography variant="h6" sx={{fontWeight: 700, color: '#1e293b', m: 0}}>
                         Garment Factory Profile
                     </MuiTypography>
                 </Box>
             }
+            styles={{
+                body: {
+                    maxHeight: '70vh',
+                    overflowY: 'auto',
+                    padding: '24px'
+                }
+            }}
         >
-            <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', py: 2}}>
-                <Badge
-                    overlap="circular"
-                    anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
-                    badgeContent={
-                        account.status === 'active' ? (
-                            <CheckCircleOutlined
-                                style={{color: '#16a34a', fontSize: 28, backgroundColor: 'white', borderRadius: '50%', padding: 2}}/>
-                        ) : (
-                            <StopOutlined style={{color: '#dc2626', fontSize: 28, backgroundColor: 'white', borderRadius: '50%', padding: 2}}/>
-                        )
-                    }
-                >
-                    <Avatar
-                        src={customer.avatar}
-                        alt={customer.name}
-                        sx={{width: 96, height: 96, mb: 2, border: '3px solid #1976d2'}}
-                    >
-                        {customer.name?.charAt(0)}
-                    </Avatar>
-                </Badge>
-                <MuiTypography variant="h5" sx={{fontWeight: 700, color: '#1976d2', mb: 1, textAlign: 'center'}}>
-                    {customer.name}
-                </MuiTypography>
-                <MuiTypography variant="h6" sx={{fontWeight: 600, color: '#2e7d32', mb: 1, textAlign: 'center'}}>
-                    {customer.business}
-                </MuiTypography>
-                <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mb: 1}}>
-                    <StarFilled style={{color: '#f59e0b', fontSize: 16}}/>
-                    <MuiTypography variant="body2" sx={{
-                        color: '#f59e0b',
-                        fontWeight: 600
-                    }}>{garment.rating?.toFixed(1) || 0}</MuiTypography>
+            {loading ? (
+                <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4}}>
+                    <Spin size="large" />
                 </Box>
-                <Divider sx={{width: '100%', my: 2}}/>
-                <Box sx={{width: '100%', display: 'flex', flexDirection: 'column', gap: 1}}>
-                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                        <MailOutlined style={{color: '#1976d2'}}/>
-                        <MuiTypography variant="body2"
-                                       sx={{color: '#1e293b', fontWeight: 500}}>{account.email}</MuiTypography>
-                    </Box>
-                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                        <PhoneOutlined style={{color: '#1976d2'}}/>
-                        <MuiTypography variant="body2"
-                                       sx={{color: '#1e293b', fontWeight: 500}}>{customer.phone}</MuiTypography>
-                    </Box>
-                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                        <HomeOutlined style={{color: '#1976d2'}}/>
-                        <MuiTypography variant="body2"
-                                       sx={{color: '#1e293b', fontWeight: 500}}>{customer.address}</MuiTypography>
-                    </Box>
-                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                        <ShopOutlined style={{color: '#1976d2'}}/>
-                        <MuiTypography variant="body2"
-                                       sx={{color: '#1e293b', fontWeight: 500}}>{customer.business}</MuiTypography>
-                    </Box>
-                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                        <CalendarOutlined style={{color: '#1976d2'}}/>
-                        <MuiTypography variant="body2" sx={{
-                            color: '#1e293b',
-                            fontWeight: 500
-                        }}>Registered: {account.registerDate}</MuiTypography>
-                    </Box>
-                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                        <Chip
-                            label={account.status === 'active' ? 'Active' : 'Inactive'}
-                            color={account.status === 'active' ? 'success' : 'error'}
-                            size="small"
-                            sx={{fontWeight: 600}}
-                        />
-                        <Chip label={account.role} color="primary" size="small"/>
-                    </Box>
+            ) : error ? (
+                <Box sx={{textAlign: 'center', py: 4}}>
+                    <MuiTypography color="error">{error}</MuiTypography>
                 </Box>
-            </Box>
+            ) : (
+                <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
+                    {/* Header Section */}
+                    <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', py: 2}}>
+                        <Badge
+                            overlap="circular"
+                            anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
+                            badgeContent={
+                                account.status === 'active' ? (
+                                    <CheckCircleIcon sx={{color: '#16a34a', fontSize: 28, bgcolor: 'white', borderRadius: '50%'}}/>
+                                ) : (
+                                    <BlockIcon sx={{color: '#dc2626', fontSize: 28, bgcolor: 'white', borderRadius: '50%'}}/>
+                                )
+                            }
+                        >
+                            <Avatar
+                                src={customer.avatar}
+                                alt={customer.name}
+                                sx={{width: 96, height: 96, mb: 2, border: '3px solid #1976d2'}}
+                            >
+                                {customer.name?.charAt(0)}
+                            </Avatar>
+                        </Badge>
+                        <MuiTypography variant="h5" sx={{fontWeight: 700, color: '#1976d2', mb: 1, textAlign: 'center'}}>
+                            {customer.name}
+                        </MuiTypography>
+                        <MuiTypography variant="h6" sx={{fontWeight: 600, color: '#2e7d32', mb: 1, textAlign: 'center'}}>
+                            {customer.business}
+                        </MuiTypography>
+                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mb: 2}}>
+                            <Rating 
+                                value={profileData?.rating || garment.rating || 0} 
+                                precision={0.1} 
+                                readOnly 
+                                size="small"
+                                icon={<StarIcon fontSize="inherit"/>}
+                            />
+                            <MuiTypography variant="body2" sx={{color: '#f59e0b', fontWeight: 600}}>
+                                {(profileData?.rating || garment.rating)?.toFixed(1) || 0}
+                            </MuiTypography>
+                        </Box>
+                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                            <Chip
+                                label={account.status === 'active' ? 'Active' : 'Inactive'}
+                                color={account.status === 'active' ? 'success' : 'error'}
+                                size="small"
+                                sx={{fontWeight: 600}}
+                            />
+                            <Chip label={account.role} color="primary" size="small"/>
+                        </Box>
+                    </Box>
+
+                    <Divider />
+
+                    {/* Basic Information */}
+                    <Box>
+                        <MuiTypography variant="h6" sx={{fontWeight: 600, mb: 2, color: '#1e293b'}}>
+                            Basic Information
+                        </MuiTypography>
+                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 1.5}}>
+                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                <EmailIcon sx={{color: '#1976d2', fontSize: 20}}/>
+                                <MuiTypography variant="body2" sx={{color: '#1e293b', fontWeight: 500}}>
+                                    {account.email}
+                                </MuiTypography>
+                            </Box>
+                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                <PhoneIcon sx={{color: '#1976d2', fontSize: 20}}/>
+                                <MuiTypography variant="body2" sx={{color: '#1e293b', fontWeight: 500}}>
+                                    {customer.phone}
+                                </MuiTypography>
+                            </Box>
+                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                <HomeIcon sx={{color: '#1976d2', fontSize: 20}}/>
+                                <MuiTypography variant="body2" sx={{color: '#1e293b', fontWeight: 500}}>
+                                    {customer.address}
+                                </MuiTypography>
+                            </Box>
+                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                <BusinessIcon sx={{color: '#1976d2', fontSize: 20}}/>
+                                <MuiTypography variant="body2" sx={{color: '#1e293b', fontWeight: 500}}>
+                                    {customer.business}
+                                </MuiTypography>
+                            </Box>
+                            {customer.taxCode && (
+                                <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                    <TaxIcon sx={{color: '#1976d2', fontSize: 20}}/>
+                                    <MuiTypography variant="body2" sx={{color: '#1e293b', fontWeight: 500}}>
+                                        Tax Code: {customer.taxCode}
+                                    </MuiTypography>
+                                </Box>
+                            )}
+                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                <AssignmentIndIcon sx={{color: '#1976d2', fontSize: 20}}/>
+                                <MuiTypography variant="body2" sx={{color: '#1e293b', fontWeight: 500}}>
+                                    Registered: {formatDate(account.registerDate)}
+                                </MuiTypography>
+                            </Box>
+                        </Box>
+                    </Box>
+
+                    {/* Working Hours */}
+                    {profileData?.startTime && profileData?.endTime && (
+                        <>
+                            <Divider />
+                            <Box>
+                                <MuiTypography variant="h6" sx={{fontWeight: 600, mb: 2, color: '#1e293b'}}>
+                                    Working Hours
+                                </MuiTypography>
+                                <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                    <WorkIcon sx={{color: '#1976d2', fontSize: 20}}/>
+                                    <MuiTypography variant="body2" sx={{color: '#1e293b', fontWeight: 500}}>
+                                        {profileData.startTime} - {profileData.endTime}
+                                    </MuiTypography>
+                                </Box>
+                            </Box>
+                        </>
+                    )}
+
+                    {/* Thumbnails */}
+                    {profileData?.thumbnails && profileData.thumbnails.length > 0 && (
+                        <>
+                            <Divider />
+                            <Box>
+                                <MuiTypography variant="h6" sx={{fontWeight: 600, mb: 2, color: '#1e293b'}}>
+                                    Portfolio
+                                </MuiTypography>
+                                <Carousel autoplay dots={true} infinite={true}>
+                                    {profileData.thumbnails.map((thumbnail, index) => (
+                                        <Box key={index} sx={{textAlign: 'center', p: 2}}>
+                                            <DisplayImage
+                                                imageUrl={thumbnail}
+                                                alt={`Portfolio ${index + 1}`}
+                                                width="100%"
+                                                height="200px"
+                                                style={{objectFit: 'cover', borderRadius: '8px'}}
+                                            />
+                                        </Box>
+                                    ))}
+                                </Carousel>
+                            </Box>
+                        </>
+                    )}
+
+                    {/* Feedbacks */}
+                    {feedbacks.length > 0 && (
+                        <>
+                            <Divider />
+                            <Box>
+                                <MuiTypography variant="h6" sx={{fontWeight: 600, mb: 2, color: '#1e293b'}}>
+                                    Customer Feedbacks ({feedbacks.length})
+                                </MuiTypography>
+                                <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                                    {feedbacks.slice(0, 3).map((feedback, index) => (
+                                        <Paper key={feedback.id} elevation={0} sx={{
+                                            p: 2,
+                                            border: '1px solid #e2e8f0',
+                                            borderRadius: 2
+                                        }}>
+                                            {/* Feedback Header */}
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 1}}>
+                                                <Avatar
+                                                    src={feedback.sender.avatar}
+                                                    alt={feedback.sender.name}
+                                                    sx={{width: 32, height: 32}}
+                                                >
+                                                    {feedback.sender.name.charAt(0)}
+                                                </Avatar>
+                                                <Box sx={{flex: 1}}>
+                                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap'}}>
+                                                        <MuiTypography variant="body2" sx={{fontWeight: 600, color: '#1e293b'}}>
+                                                            {feedback.sender.name}
+                                                        </MuiTypography>
+                                                        <MuiTypography variant="body2" sx={{color: '#64748b', fontWeight: 400}}>
+                                                            from
+                                                        </MuiTypography>
+                                                        <MuiTypography variant="body2" sx={{color: '#64748b', fontWeight: 500}}>
+                                                            {feedback.sender.business}
+                                                        </MuiTypography>
+                                                    </Box>
+                                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                                        <Rating 
+                                                            value={feedback.rating} 
+                                                            readOnly 
+                                                            size="small"
+                                                            icon={<StarIcon fontSize="inherit"/>}
+                                                        />
+                                                        <MuiTypography variant="caption" sx={{color: '#64748b'}}>
+                                                            {feedback.creationDate}
+                                                        </MuiTypography>
+                                                    </Box>
+                                                </Box>
+                                            </Box>
+
+                                            {/* Feedback Content */}
+                                            <MuiTypography variant="body2" sx={{mb: 2, color: '#1e293b'}}>
+                                                {feedback.content}
+                                            </MuiTypography>
+
+                                            {/* Media (Images and Video) */}
+                                            {(feedback.images?.length > 0 || feedback.video) && (
+                                                <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 1}}>
+                                                    {feedback.images?.map((image, imgIndex) => (
+                                                        <DisplayImage
+                                                            key={imgIndex}
+                                                            imageUrl={image}
+                                                            alt={`Feedback image ${imgIndex + 1}`}
+                                                            width="80px"
+                                                            height="80px"
+                                                            style={{objectFit: 'cover', borderRadius: '4px'}}
+                                                        />
+                                                    ))}
+                                                    {feedback.video && (
+                                                        <Box sx={{
+                                                            position: 'relative',
+                                                            width: '80px',
+                                                            height: '80px',
+                                                            backgroundColor: '#f1f5f9',
+                                                            borderRadius: '4px',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            cursor: 'pointer',
+                                                            border: '1px solid #e2e8f0'
+                                                        }} onClick={() => window.open(feedback.video, '_blank')}>
+                                                            <PlayArrowIcon sx={{color: '#1976d2', fontSize: 32}} />
+                                                        </Box>
+                                                    )}
+                                                </Box>
+                                            )}
+                                        </Paper>
+                                    ))}
+                                    {feedbacks.length > 3 && (
+                                        <MuiTypography variant="body2" sx={{textAlign: 'center', color: '#64748b'}}>
+                                            ... and {feedbacks.length - 3} more feedback{feedbacks.length - 3 > 1 ? 's' : ''}
+                                        </MuiTypography>
+                                    )}
+                                </Box>
+                            </Box>
+                        </>
+                    )}
+                </Box>
+            )}
         </Modal>
     );
 };
@@ -178,6 +415,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [profileModalOpen, setProfileModalOpen] = useState(false);
     const [profileGarment, setProfileGarment] = useState(null);
+    const [businessConfig, setBusinessConfig] = useState(null);
 
     if (!order) return null;
 
@@ -186,6 +424,22 @@ export default function OrderDetailPopup({open, onClose, order}) {
             fetchQuotations();
         }
     }, [open, order?.id]);
+
+    // Fetch business configuration on component mount
+    useEffect(() => {
+        const fetchBusinessConfig = async () => {
+            try {
+                const response = await getConfigByKey(configKey.business);
+                if (response?.status === 200 && response.data?.body?.business) {
+                    setBusinessConfig(response.data.body.business);
+                }
+            } catch (error) {
+                console.error('Error fetching business config:', error);
+            }
+        };
+
+        fetchBusinessConfig();
+    }, []);
 
     const fetchQuotations = async () => {
         try {
@@ -222,11 +476,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
     };
 
     const calculateServiceFee = (price) => {
-        if (price > 10000000) {
-            return 200000;
-        } else {
-            return Math.round(price * 0.02);
-        }
+        return Math.round(price * (businessConfig?.serviceRate || 0));
     };
 
     const handleQuotationClick = (quotation) => {
@@ -759,6 +1009,12 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                   icon={<CalendarIcon style={{fontSize: 14}}/>}
                                                   label={`Est. Delivery: ${formatDate(quotation.earlyDeliveryDate)}`}
                                                   sx={{height: 26}}/>
+                                            {quotation.depositRate && (
+                                                <Chip size="medium" variant="outlined"
+                                                      icon={<MoneyIcon style={{fontSize: 14}}/>}
+                                                      label={`Deposit: ${quotation.depositRate}%`}
+                                                      sx={{height: 26, bgcolor: '#fff3cd', borderColor: '#ffc107', color: '#856404'}}/>
+                                            )}
                                         </Box>
 
 
@@ -951,9 +1207,9 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                     <span style={{fontWeight: 700, color: '#2e7d32'}}>
                                             {selectedQuotation.garment?.customer?.business || 'Unknown Factory'}
                                         </span>.
-                                    {order.status === 'pending' && (
+                                    {order.status === 'pending' && selectedQuotation.depositRate && (
                                         <span style={{color: '#d97706', fontWeight: 600}}>
-                                                {' '}A deposit of 50% is required to proceed with this order.
+                                                {' '}A deposit of {selectedQuotation.depositRate}% is required to proceed with this order.
                                             </span>
                                     )}
                                 </Typography>
@@ -1006,7 +1262,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                 color: '#475569',
                                                 fontSize: '12px'
                                             }}>
-                                                Service fee {selectedQuotation.price <= 10000000 ? '(2% total)' : ''}
+                                                Service fee {businessConfig?.serviceRate ? `(${(businessConfig.serviceRate * 100).toFixed(0)}% total)` : selectedQuotation.price <= 10000000 ? '(2% total)' : ''}
                                             </Typography>
                                             <Typography variant="body2" sx={{
                                                 color: '#1e293b',
@@ -1066,7 +1322,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                         color: '#d97706',
                                                         fontSize: '10px'
                                                     }}>
-                                                        50% of total amount
+                                                        {selectedQuotation.depositRate || 50}% of total amount
                                                     </Typography>
                                                 </Box>
                                                 <Typography variant="body2" sx={{
@@ -1074,7 +1330,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                     fontWeight: 700,
                                                     fontSize: '12px'
                                                 }}>
-                                                    {Math.round((selectedQuotation.price + calculateServiceFee(selectedQuotation.price)) * 0.5).toLocaleString('vi-VN')} VND
+                                                    {Math.round((selectedQuotation.price + calculateServiceFee(selectedQuotation.price)) * ((selectedQuotation.depositRate || 50) / 100)).toLocaleString('vi-VN')} VND
                                                 </Typography>
                                             </Box>
                                         )}
@@ -1102,9 +1358,30 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                 margin: 0
                                             }}>
                                                 {order.status === 'pending'
-                                                    ? Math.round((selectedQuotation.price + calculateServiceFee(selectedQuotation.price)) * 0.5).toLocaleString('vi-VN') + ' VND'
+                                                    ? Math.round((selectedQuotation.price + calculateServiceFee(selectedQuotation.price)) * ((selectedQuotation.depositRate || 50) / 100)).toLocaleString('vi-VN') + ' VND'
                                                     : (selectedQuotation.price + calculateServiceFee(selectedQuotation.price)).toLocaleString('vi-VN') + ' VND'
                                                 }
+                                            </Typography>
+                                        </Box>
+
+                                        {/* Shipping Note */}
+                                        <Box sx={{
+                                            mt: 2,
+                                            p: 1.5,
+                                            backgroundColor: '#f0f9ff',
+                                            borderRadius: 1,
+                                            border: '1px solid #bae6fd'
+                                        }}>
+                                            <Typography variant="caption" sx={{
+                                                color: '#0369a1',
+                                                fontSize: '11px',
+                                                fontStyle: 'italic',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 0.5
+                                            }}>
+                                                <InfoIcon sx={{fontSize: 12}}/>
+                                                Note: This amount does not include shipping costs
                                             </Typography>
                                         </Box>
                                     </Box>

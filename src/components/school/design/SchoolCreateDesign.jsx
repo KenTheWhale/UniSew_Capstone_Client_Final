@@ -168,6 +168,12 @@ export default function SchoolCreateDesign() {
         maxImgSize: 5 // default value in MB
     });
 
+    // Add state for design configuration
+    const [designConfig, setDesignConfig] = useState({
+        positions: [],
+        illustrationImage: "/logoPos.png" // fallback to static image
+    });
+
     // Fetch media configuration on component mount
     useEffect(() => {
         async function fetchMediaConfig() {
@@ -186,7 +192,24 @@ export default function SchoolCreateDesign() {
             }
         }
         
+        async function fetchDesignConfig() {
+            try {
+                const response = await getConfigByKey(configKey.design);
+                if (response && response.data && response.data.body && response.data.body.design) {
+                    const design = response.data.body.design;
+                    setDesignConfig({
+                        positions: design.positions || [],
+                        illustrationImage: design.illustrationImage || "/logoPos.png"
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching design config:', error);
+                // Keep default values on error
+            }
+        }
+        
         fetchMediaConfig();
+        fetchDesignConfig();
     }, []);
 
     // Validation functions
@@ -454,13 +477,20 @@ export default function SchoolCreateDesign() {
     const handleImageUpload = (e, uniformType, gender, itemType) => {
         const files = Array.from(e.target.files);
         const validFiles = files.filter(file => {
-            const ext = file.name.split('.').pop().toLowerCase();
-            if (!ALLOWED_EXTENSIONS.includes(ext)) {
-                enqueueSnackbar('Only JPG, JPEG, PNG, GIF, WEBP files are allowed.', {variant: 'error'});
+            const ext = '.' + file.name.split('.').pop().toLowerCase();
+            
+            // Get allowed formats from API config
+            const allowedFormats = mediaConfig.imgFormat.map(format => format.format);
+            
+            if (allowedFormats.length > 0 && !allowedFormats.includes(ext)) {
+                const formatList = allowedFormats.join(', ').toUpperCase();
+                enqueueSnackbar(`Only ${formatList} files are allowed.`, {variant: 'error'});
                 return false;
             }
-            if (file.size > MAX_IMAGE_SIZE) {
-                enqueueSnackbar('Each image must be less than 10MB.', {variant: 'error'});
+            
+            const maxSizeInBytes = mediaConfig.maxImgSize * 1024 * 1024;
+            if (file.size > maxSizeInBytes) {
+                enqueueSnackbar(`Each image must be less than ${mediaConfig.maxImgSize}MB.`, {variant: 'error'});
                 return false;
             }
             return true;
@@ -1245,7 +1275,7 @@ export default function SchoolCreateDesign() {
                                         />
                                     </Button>
                                     <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
-                                        JPG, PNG, GIF, WEBP up to 10MB each
+                                        {mediaConfig.imgFormat.map(format => format.format.toUpperCase()).join(', ')} up to {mediaConfig.maxImgSize}MB each
                                     </Typography>
 
                                     {shirtImages.length > 0 && (
@@ -1759,15 +1789,9 @@ export default function SchoolCreateDesign() {
                                     <MenuItem value="">
                                         <em>No logo placement</em>
                                     </MenuItem>
-                                    <MenuItem value="Left Sleeve">Left Sleeve</MenuItem>
-                                    <MenuItem value="Right Sleeve">Right Sleeve</MenuItem>
-                                    <MenuItem value="Left Chest">Left Chest</MenuItem>
-                                    <MenuItem value="Right Chest">Right Chest</MenuItem>
-                                    <MenuItem value="Front Hip">Front Hip</MenuItem>
-                                    <MenuItem value="Back Neck">Back Neck</MenuItem>
-                                    <MenuItem value="Back Through Shoulders">Back Through Shoulders</MenuItem>
-                                    <MenuItem value="Center Back">Center Back</MenuItem>
-                                    <MenuItem value="Bottom Back">Bottom Back</MenuItem>
+                                    {designConfig.positions.map((position, index) => (
+                                        <MenuItem key={index} value={position.p}>{position.p}</MenuItem>
+                                    ))}
                                 </Select>
                             </FormControl>
                         </Box>
@@ -1800,7 +1824,7 @@ export default function SchoolCreateDesign() {
                             p: 2
                         }}>
                             <img
-                                src="/logoPos.png"
+                                src={designConfig.illustrationImage}
                                 alt="Logo Placement Guide"
                                 style={{
                                     maxWidth: '100%',
@@ -1951,7 +1975,7 @@ export default function SchoolCreateDesign() {
                                         />
                                     </Button>
                                     <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
-                                        JPG, PNG, GIF, WEBP up to 10MB each
+                                        {mediaConfig.imgFormat.map(format => format.format.toUpperCase()).join(', ')} up to {mediaConfig.maxImgSize}MB each
                                     </Typography>
 
                                     {pantsImages.length > 0 && (
@@ -2435,7 +2459,7 @@ export default function SchoolCreateDesign() {
                                         />
                                     </Button>
                                     <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
-                                        JPG, PNG, GIF, WEBP up to 10MB each
+                                        {mediaConfig.imgFormat.map(format => format.format.toUpperCase()).join(', ')} up to {mediaConfig.maxImgSize}MB each
                                     </Typography>
 
                                     {shirtImages.length > 0 && (
@@ -2950,15 +2974,9 @@ export default function SchoolCreateDesign() {
                                     <MenuItem value="">
                                         <em>No logo placement</em>
                                     </MenuItem>
-                                    <MenuItem value="Left Sleeve">Left Sleeve</MenuItem>
-                                    <MenuItem value="Right Sleeve">Right Sleeve</MenuItem>
-                                    <MenuItem value="Left Chest">Left Chest</MenuItem>
-                                    <MenuItem value="Right Chest">Right Chest</MenuItem>
-                                    <MenuItem value="Front Hip">Front Hip</MenuItem>
-                                    <MenuItem value="Back Neck">Back Neck</MenuItem>
-                                    <MenuItem value="Back Through Shoulders">Back Through Shoulders</MenuItem>
-                                    <MenuItem value="Center Back">Center Back</MenuItem>
-                                    <MenuItem value="Bottom Back">Bottom Back</MenuItem>
+                                    {designConfig.positions.map((position, index) => (
+                                        <MenuItem key={index} value={position.p}>{position.p}</MenuItem>
+                                    ))}
                                 </Select>
                             </FormControl>
                         </Box>
@@ -2991,7 +3009,7 @@ export default function SchoolCreateDesign() {
                             p: 2
                         }}>
                             <img
-                                src="/logoPos.png"
+                                src={designConfig.illustrationImage}
                                 alt="Logo Placement Guide"
                                 style={{
                                     maxWidth: '100%',
@@ -3201,7 +3219,7 @@ export default function SchoolCreateDesign() {
                                         />
                                     </Button>
                                     <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
-                                        JPG, PNG, GIF, WEBP up to 10MB each
+                                        {mediaConfig.imgFormat.map(format => format.format.toUpperCase()).join(', ')} up to {mediaConfig.maxImgSize}MB each
                                     </Typography>
 
                                     {bottomImages.length > 0 && (

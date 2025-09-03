@@ -226,7 +226,7 @@ export default function PaymentResult() {
 
             const emailData = buildEmailData(true, paymentType, parseInt(vnpAmount) / 100);
             console.log('Sending success email with data:', emailData);
-            const emailResponse = await sendEmail(emailType.PAYMENT, emailData);
+            const emailResponse = await sendEmail(emailType.payment, emailData);
 
             if (emailResponse && emailResponse.status === 200) {
                 console.log('Success email sent successfully');
@@ -264,7 +264,7 @@ export default function PaymentResult() {
         try {
             const emailData = buildEmailData(false, paymentType, parseInt(vnpAmount) / 100);
             console.log('Sending failure email with data:', emailData);
-            const emailResponse = await sendEmail(emailType.PAYMENT, emailData);
+            const emailResponse = await sendEmail(emailType.payment, emailData);
 
             if (emailResponse && emailResponse.status === 200) {
                 console.log('Failure email sent successfully');
@@ -587,7 +587,7 @@ export default function PaymentResult() {
             <Container maxWidth="md">
                 <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4}}>
 
-                    {}
+
                     <Paper
                         elevation={0}
                         sx={{
@@ -631,7 +631,7 @@ export default function PaymentResult() {
                                     }
                                 </Typography.Paragraph>
 
-                                {}
+
                                 {vnpTxnRef && (
                                     <Box sx={{
                                         mt: 3,
@@ -641,7 +641,7 @@ export default function PaymentResult() {
                                         boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
                                         overflow: 'hidden'
                                     }}>
-                                        {}
+
                                         <Box sx={{
                                             p: 4,
                                             background: 'linear-gradient(135deg, #52c41a 0%, #389e0d 100%)',
@@ -692,7 +692,7 @@ export default function PaymentResult() {
                                             </Box>
                                         </Box>
 
-                                        {}
+
                                         <Box sx={{p: 4}}>
                                             <Box sx={{
                                                 display: 'grid',
@@ -700,7 +700,7 @@ export default function PaymentResult() {
                                                 gap: 3
                                             }}>
 
-                                                {}
+
                                                 {vnpAmount && (
                                                     <Box sx={{
                                                         p: 3,
@@ -751,7 +751,7 @@ export default function PaymentResult() {
                                                     </Box>
                                                 )}
 
-                                                {}
+
                                                 <Box sx={{
                                                     p: 3,
                                                     backgroundColor: '#fef3c7',
@@ -804,7 +804,7 @@ export default function PaymentResult() {
                                                 </Box>
                                             </Box>
 
-                                            {}
+
                                             <Box sx={{
                                                 mt: 4,
                                                 p: 3,
@@ -826,7 +826,6 @@ export default function PaymentResult() {
                                     </Box>
                                 )}
 
-                                {}
                                 <Box sx={{display: 'flex', gap: 3, mt: 2}}>
                                     <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
                                         <SafetyCertificateOutlined style={{color: '#52c41a', fontSize: '16px'}}/>
@@ -865,7 +864,6 @@ export default function PaymentResult() {
                                     again.
                                 </Typography.Paragraph>
 
-                                {}
                                 {vnpResponseCode && vnpResponseCode !== '00' && (
                                     <Box sx={{
                                         mt: 2,
@@ -889,7 +887,6 @@ export default function PaymentResult() {
                         )}
                     </Paper>
 
-                    {}
                     {success && (quotationDetails || orderDetails || revisionPurchaseDetails || walletDetails) && (
                         <Paper
                             elevation={0}
@@ -1133,7 +1130,6 @@ export default function PaymentResult() {
 
                                 <Divider style={{margin: '16px 0'}}/>
 
-                                {}
                                 <Box>
                                     <Typography.Title level={4} style={{
                                         margin: '0 0 16px 0',
@@ -1169,7 +1165,6 @@ export default function PaymentResult() {
 
                                         {isDepositPayment && (
                                             <>
-                                                {}
                                                 <Box sx={{
                                                     display: 'flex',
                                                     justifyContent: 'space-between',
@@ -1195,7 +1190,7 @@ export default function PaymentResult() {
 
                                         {!isOrderPayment && !isDepositPayment && !isRevisionPurchase && !isWalletPayment && (
                                             <>
-                                                {}
+
                                                 {designServiceFee && (
                                                     <Box sx={{
                                                         display: 'flex',
@@ -1320,7 +1315,7 @@ export default function PaymentResult() {
                         </Paper>
                     )}
 
-                    {}
+
                     <Box sx={{
                         display: 'flex',
                         flexDirection: 'column',

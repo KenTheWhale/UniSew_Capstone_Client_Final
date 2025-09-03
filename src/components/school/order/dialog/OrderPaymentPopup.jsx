@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Button, Modal, Spin, Typography} from 'antd';
 import {
     CalendarOutlined,
@@ -12,14 +12,48 @@ import {Box, Chip, Paper} from '@mui/material';
 import {parseID} from "../../../../utils/ParseIDUtil.jsx";
 import {getPaymentUrl} from "../../../../services/PaymentService.jsx";
 import {enqueueSnackbar} from "notistack";
-import {serviceFee} from "../../../../configs/FixedVariables.jsx";
+import {getConfigByKey, configKey} from "../../../../services/SystemService.jsx";
 import {getPhoneLink} from "../../../../utils/PhoneUtil.jsx";
 
 export default function OrderPaymentPopup({visible, onCancel, selectedQuotationDetails}) {
+    const [businessConfig, setBusinessConfig] = useState(null);
+    const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+
+    // Fetch business configuration on component mount
+    useEffect(() => {
+        const fetchBusinessConfig = async () => {
+            try {
+                const response = await getConfigByKey(configKey.business);
+                if (response?.status === 200 && response.data?.body?.business) {
+                    setBusinessConfig(response.data.body.business);
+                }
+            } catch (error) {
+                console.error('Error fetching business config:', error);
+            }
+        };
+
+        fetchBusinessConfig();
+    }, []);
+
+    // Reset loading state when modal visibility changes
+    useEffect(() => {
+        if (!visible) {
+            setIsProcessingPayment(false);
+        }
+    }, [visible]);
+
+    const calculateServiceFee = (price) => {
+        return Math.round(price * (businessConfig?.serviceRate || 0));
+    };
+
+    const handleCancel = () => {
+        setIsProcessingPayment(false);
+        onCancel();
+    };
 
     if (!selectedQuotationDetails || !selectedQuotationDetails.quotation || !selectedQuotationDetails.order) {
         return (
-            <Modal open={visible} onCancel={onCancel} footer={null} centered>
+            <Modal open={visible} onCancel={handleCancel} footer={null} centered>
                 <Box sx={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -41,11 +75,15 @@ export default function OrderPaymentPopup({visible, onCancel, selectedQuotationD
 
     const handleProceedToPayment = async () => {
         try {
+            setIsProcessingPayment(true);
+            
             const subtotal = Math.round(quotation?.price || 0);
-            const fee = Math.round(serviceFee(subtotal));
+            const fee = calculateServiceFee(subtotal);
             const totalAmount = Math.round(subtotal + fee);
             const isDeposit = order?.status === 'pending';
-            const paymentAmount = isDeposit ? Math.round(totalAmount * 0.5) : totalAmount;
+            // Use the actual deposit rate from quotation API, fallback to 50% if not available
+            const depositRate = (quotation?.depositRate || 50) / 100;
+            const paymentAmount = isDeposit ? Math.round(totalAmount * depositRate) : totalAmount;
 
             const quotationDetailsToStore = {
                 quotation: quotation,
@@ -71,9 +109,11 @@ export default function OrderPaymentPopup({visible, onCancel, selectedQuotationD
             if (response && response.status === 200) {
                 window.location.href = response.data.body.url;
             } else {
+                setIsProcessingPayment(false);
                 enqueueSnackbar('Failed to generate payment URL. Please try again.', {variant: 'error'})
             }
         } catch (error) {
+            setIsProcessingPayment(false);
             enqueueSnackbar('Error generating payment URL', {variant: 'error'})
         }
     };
@@ -95,23 +135,29 @@ export default function OrderPaymentPopup({visible, onCancel, selectedQuotationD
                 </Box>
             }
             open={visible}
-            onCancel={onCancel}
+            onCancel={handleCancel}
             centered
             footer={[
-                <Button key="back" onClick={onCancel} style={{marginRight: 8}}>
+                <Button 
+                    key="back" 
+                    onClick={handleCancel} 
+                    style={{marginRight: 8}}
+                    disabled={isProcessingPayment}
+                >
                     Cancel
                 </Button>,
                 <Button
                     key="submit"
                     type="primary"
                     onClick={handleProceedToPayment}
-                    icon={<CreditCardOutlined/>}
+                    loading={isProcessingPayment}
+                    icon={!isProcessingPayment ? <CreditCardOutlined/> : null}
                     style={{
                         backgroundColor: '#2e7d32',
                         borderColor: '#2e7d32'
                     }}
                 >
-                    Proceed to Payment
+                    {isProcessingPayment ? 'Processing...' : 'Proceed to Payment'}
                 </Button>,
             ]}
             width={800}
@@ -321,7 +367,7 @@ export default function OrderPaymentPopup({visible, onCancel, selectedQuotationD
                                     <strong>Payment Type</strong>
                                 </Typography.Text>
                                 <Typography.Text style={{color: '#1e293b', fontSize: '16px', fontWeight: 'bold'}}>
-                                    {order?.status === 'pending' ? 'Deposit (50%)' : 'Full Payment'}
+                                    {order?.status === 'pending' ? `Deposit (${quotation?.depositRate || 50}%)` : 'Full Payment'}
                                 </Typography.Text>
                             </Box>
                         </Box>
@@ -362,7 +408,7 @@ export default function OrderPaymentPopup({visible, onCancel, selectedQuotationD
                                 Service Fee
                             </Typography.Title>
                             <Typography.Text type="secondary" style={{fontSize: '14px'}}>
-                                Platform service charge
+                                Platform service charge {businessConfig?.serviceRate ? `(${(businessConfig.serviceRate * 100).toFixed(0)}% total)` : ''}
                             </Typography.Text>
                         </Box>
                     </Box>
@@ -382,7 +428,7 @@ export default function OrderPaymentPopup({visible, onCancel, selectedQuotationD
                         <Typography.Title level={4} style={{margin: 0, color: '#f57c00'}}>
                             {(() => {
                                 const subtotal = Math.round(quotation?.price || 0);
-                                const fee = Math.round(serviceFee(subtotal));
+                                const fee = calculateServiceFee(subtotal);
                                 return fee.toLocaleString('vi-VN') + ' VND';
                             })()}
                         </Typography.Title>
@@ -454,19 +500,20 @@ export default function OrderPaymentPopup({visible, onCancel, selectedQuotationD
                     <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                         <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                             <CheckCircleOutlined style={{color: '#2e7d32', fontSize: '20px'}}/>
-                            <Typography.Title level={5} style={{margin: 0, color: '#2e7d32'}}>
-                                {order?.status === 'pending' ? 'Deposit Amount' : 'Total Amount'}
-                            </Typography.Title>
-                        </Box>
-                        <Typography.Title level={3} style={{margin: 0, color: '#2e7d32', fontWeight: 'bold'}}>
-                            {(() => {
-                                const subtotal = Math.round(quotation?.price || 0);
-                                const fee = Math.round(serviceFee(subtotal));
-                                const totalAmount = Math.round(subtotal + fee);
-                                const finalAmount = order?.status === 'pending' ? Math.round(totalAmount * 0.5) : totalAmount;
-                                return finalAmount.toLocaleString('vi-VN') + ' VND';
-                            })()}
+                                                    <Typography.Title level={5} style={{margin: 0, color: '#2e7d32'}}>
+                            {order?.status === 'pending' ? 'Deposit Amount' : 'Total Amount'}
                         </Typography.Title>
+                    </Box>
+                    <Typography.Title level={3} style={{margin: 0, color: '#2e7d32', fontWeight: 'bold'}}>
+                        {(() => {
+                            const subtotal = Math.round(quotation?.price || 0);
+                            const fee = calculateServiceFee(subtotal);
+                            const totalAmount = Math.round(subtotal + fee);
+                            const depositRate = (quotation?.depositRate || 50) / 100;
+                            const finalAmount = order?.status === 'pending' ? Math.round(totalAmount * depositRate) : totalAmount;
+                            return finalAmount.toLocaleString('vi-VN') + ' VND';
+                        })()}
+                    </Typography.Title>
                     </Box>
                 </Paper>
             </Box>
