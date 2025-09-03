@@ -56,10 +56,13 @@ const testimonials = [
 
 
 function handleJoinNow() {
-    const access = getAccessCookie('access');
+    const access = getAccessCookie();
     if (access == null) {
+        console.log("access cookie =", getAccessCookie());
         window.location.href = '/login';
+        return;
     }
+    console.log("access cookiein =", getAccessCookie());
     const role = access.role
     switch (role) {
         case 'admin':
@@ -75,7 +78,7 @@ function handleJoinNow() {
             window.location.href = '/garment/orders';
             break;
         default:
-            window.location.href = '/home';
+            window.location.href = '/login';
             break;
     }
 
@@ -302,25 +305,6 @@ export default function Homepage() {
                                     flawless.
                                 </li>
                             </Box>
-                            <Button
-                                variant="contained"
-                                size="large"
-                                sx={{
-                                    background: "#1976d2",
-                                    color: "white",
-                                    fontWeight: 700,
-                                    px: 4,
-                                    py: 1.2,
-                                    fontSize: "1.1rem",
-                                    borderRadius: 2,
-                                    textTransform: "none",
-                                    boxShadow: "0 2px 8px rgba(25,118,210,0.10)",
-                                    alignSelf: "flex-start",
-                                    "&:hover": {background: "#1565c0"},
-                                }}
-                            >
-                                Discover UniSew
-                            </Button>
                         </Box>
                     </Box>
                 </Container>
@@ -745,6 +729,7 @@ export default function Homepage() {
                                         boxShadow: "0 12px 35px rgba(0,0,0,0.3)",
                                     },
                                     transition: "all 0.3s ease",
+                                    zIndex: 10
                                 }}
                                 onClick={handleJoinNow}
                             >

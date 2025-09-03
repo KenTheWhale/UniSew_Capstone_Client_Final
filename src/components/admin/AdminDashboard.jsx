@@ -21,7 +21,6 @@ import {DatePicker} from 'antd';
 import {BarChart, LineChart, PieChart} from '@mui/x-charts';
 import {
     AccountBalanceWalletOutlined,
-    AttachMoneyOutlined,
     BlockOutlined,
     CheckCircleOutlined,
     PeopleOutlined,
@@ -1111,7 +1110,7 @@ export default function AdminDashboard() {
                                 <Skeleton variant="rectangular" height={100} sx={{borderRadius: 2}}/>
                             ) : (
                                 <StatCard
-                                    icon={<AttachMoneyOutlined style={{fontSize: 28}}/>}
+                                    icon={<Typography variant="h4" sx={{fontWeight: 'bold', color: '#28a745'}}>₫</Typography>}
                                     value={formatVND((transactionData?.data?.overview || transactionData?.body?.overview || transactionData?.overview)?.totalAmount || 0)}
                                     label="Total Transaction Amount"
                                     color="#28a745"

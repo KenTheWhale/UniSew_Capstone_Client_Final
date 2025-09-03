@@ -23,7 +23,6 @@ export default function PrivacyPolicy() {
                 "To improve, personalize, and expand our services.",
                 "To understand and analyze how you use our services.",
                 "To develop new products, services, features, and functionality.",
-                "To communicate with you for customer service and marketing purposes.",
                 "To send you emails and important updates.",
                 "To find and prevent fraud."
             ]

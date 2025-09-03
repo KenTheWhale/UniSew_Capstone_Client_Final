@@ -478,7 +478,7 @@ export default function SchoolDesign() {
                                     handleOpenReport(record);
                                     handleCloseMenu();
                                 }}
-                                disabled={record.status === 'imported' || record.status === 'pending' || !!record.feedback}
+                                disabled={record.status === 'imported' || record.status === 'pending' || !!record.feedback || (record.status === 'canceled' && !record.finalDesignQuotation)}
                             >
                                 <ReportIcon fontSize="small" sx={{
                                     mr: 1,

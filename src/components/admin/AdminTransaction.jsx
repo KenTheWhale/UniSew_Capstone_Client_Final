@@ -13,7 +13,7 @@ import {
     Typography
 } from "@mui/material";
 import {Badge, Descriptions, Empty, Input, Modal, Select, Table, Tag} from 'antd';
-import {CreditCardOutlined, DollarOutlined, PayCircleOutlined, ReloadOutlined, StopOutlined} from '@ant-design/icons';
+import {CheckOutlined, CreditCardOutlined, PayCircleOutlined, ReloadOutlined, StopOutlined} from '@ant-design/icons';
 import {AccountBalance, PictureAsPdf, Visibility} from '@mui/icons-material';
 import {enqueueSnackbar} from 'notistack';
 import {getTransactions} from '../../services/PaymentService.jsx';
@@ -156,7 +156,6 @@ export default function AdminTransaction() {
                 }
 
                 setTransactions(transactionsData);
-                enqueueSnackbar(`Loaded ${transactionsData.length} transactions successfully`, {variant: 'success'});
             } else {
                 enqueueSnackbar('Failed to load transactions', {variant: 'error'});
                 setTransactions([]);
@@ -802,13 +801,13 @@ export default function AdminTransaction() {
                 ) : (
                     <>
                         <StatCard
-                            icon={<DollarOutlined style={{fontSize: 24}}/>}
+                            icon={<Typography variant="h5" sx={{fontWeight: 'bold', color: '#dc3545'}}>₫</Typography>}
                             value={stats.total}
                             label="Total Transactions"
                             color="#dc3545"
                         />
                         <StatCard
-                            icon={<PayCircleOutlined style={{fontSize: 24}}/>}
+                            icon={<CheckOutlined style={{fontSize: 24}}/>}
                             value={stats.success}
                             label="Successful"
                             color="#52c41a"
@@ -826,13 +825,13 @@ export default function AdminTransaction() {
                             color="#faad14"
                         />
                         <StatCard
-                            icon={<DollarOutlined style={{fontSize: 24}}/>}
+                            icon={<Typography variant="h5" sx={{fontWeight: 'bold', color: '#1890ff'}}>₫</Typography>}
                             value={formatCompactCurrency(stats.totalAmount)}
                             label="Total Amount"
                             color="#1890ff"
                         />
                         <StatCard
-                            icon={<PayCircleOutlined style={{fontSize: 24}}/>}
+                            icon={<Typography variant="h5" sx={{fontWeight: 'bold', color: '#1890ff'}}>₫</Typography>}
                             value={formatCompactCurrency(stats.totalFees)}
                             label="Total Fees"
                             color="#722ed1"

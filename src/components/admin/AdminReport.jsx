@@ -43,7 +43,7 @@ import {
     Warning as WarningIcon
 } from '@mui/icons-material';
 import {enqueueSnackbar} from 'notistack';
-import {approveReport, getAllReport} from '../../services/FeedbackService';
+import {approveReport, getAllReport, approveAppeal} from '../../services/FeedbackService';
 import {refundTransaction} from '../../services/PaymentService';
 import DisplayImage from '../ui/DisplayImage';
 import dayjs from 'dayjs';
@@ -62,6 +62,14 @@ export default function AdminReport() {
     const [orderDetailOpen, setOrderDetailOpen] = useState(false);
     const [designRequestDetailOpen, setDesignRequestDetailOpen] = useState(false);
     const [problemLevel, setProblemLevel] = useState('');
+    
+    // Appeals management state
+    const [appealsDialogOpen, setAppealsDialogOpen] = useState(false);
+    const [selectedAppeals, setSelectedAppeals] = useState([]);
+    const [approvingAppeal, setApprovingAppeal] = useState(false);
+    const [appealResponse, setAppealResponse] = useState('');
+    const [appealDialogOpen, setAppealDialogOpen] = useState(false);
+    const [selectedAppeal, setSelectedAppeal] = useState(null);
 
     useEffect(() => {
         fetchReports();
@@ -84,7 +92,7 @@ export default function AdminReport() {
 
     const handleViewDetail = (report) => {
         console.log('Selected report:', report);
-        console.log('isReport value:', report.isReport);
+        console.log('report value:', report.report);
         console.log('images:', report.images);
         setSelectedReport(report);
         setDetailDialogOpen(true);
@@ -109,6 +117,76 @@ export default function AdminReport() {
         setMessageForSchool('');
         setMessageForPartner('');
         setProblemLevel('');
+    };
+
+    // Handle appeals management
+    const handleViewAppeals = (report) => {
+        setSelectedReport(report);
+        setSelectedAppeals(report.appeals || []);
+        setAppealsDialogOpen(true);
+    };
+
+    const handleCloseAppeals = () => {
+        setAppealsDialogOpen(false);
+        setSelectedAppeals([]);
+    };
+
+    // Handle approve/reject appeal dialog
+    const handleOpenAppealDialog = (appeal, action) => {
+        setSelectedAppeal(appeal);
+        setAppealResponse('');
+        setAppealDialogOpen(true);
+    };
+
+    const handleCloseAppealDialog = () => {
+        setAppealDialogOpen(false);
+        setSelectedAppeal(null);
+        setAppealResponse('');
+    };
+
+    const handleSubmitAppealDecision = async (approved) => {
+        if (!selectedAppeal) return;
+        
+        // Validate admin response
+        if (!appealResponse.trim()) {
+            enqueueSnackbar('Please provide an admin response', { variant: 'error' });
+            return;
+        }
+
+        try {
+            setApprovingAppeal(true);
+            
+            const payload = {
+                appealId: selectedAppeal.id,
+                adminResponse: appealResponse.trim(),
+                approved: approved
+            };
+
+            console.log('Appeal decision payload:', payload);
+
+            const response = await approveAppeal(payload);
+            
+            if (response && response.status === 200) {
+                enqueueSnackbar(
+                    `Appeal ${approved ? 'approved' : 'rejected'} successfully`, 
+                    { variant: 'success' }
+                );
+                
+                // Refresh reports to get updated data
+                fetchReports();
+                
+                // Close dialogs
+                handleCloseAppealDialog();
+                handleCloseAppeals();
+            } else {
+                enqueueSnackbar(`Failed to ${approved ? 'approve' : 'reject'} appeal`, { variant: 'error' });
+            }
+        } catch (error) {
+            console.error('Error processing appeal:', error);
+            enqueueSnackbar(`Failed to ${approved ? 'approve' : 'reject'} appeal`, { variant: 'error' });
+        } finally {
+            setApprovingAppeal(false);
+        }
     };
 
     const handleSubmitApproval = async () => {
@@ -562,7 +640,8 @@ export default function AdminReport() {
                                         '&:hover': {
                                             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
                                             transform: 'translateY(-2px)'
-                                        }
+                                        },
+                                        minHeight: "270px"
                                     }}>
                                         <CardContent sx={{p: 3}}>
                                             <Box sx={{
@@ -573,17 +652,13 @@ export default function AdminReport() {
                                             }}>
                                                 <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                                                     <Avatar sx={{
-                                                        bgcolor: report.isReport ? '#ef4444' : '#10b981',
+                                                        bgcolor: report.report ? '#ef4444' : '#10b981',
                                                         width: 40,
                                                         height: 40
                                                     }}>
-                                                        {report.isReport ? <ReportIcon/> : <FeedbackIcon/>}
+                                                        {report.report ? <ReportIcon/> : <FeedbackIcon/>}
                                                     </Avatar>
                                                     <Box>
-                                                        <Typography variant="h6"
-                                                                    sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                                            Report ID: {parseID(report.id, "rp")}
-                                                        </Typography>
                                                         <Typography variant="body2" sx={{color: '#64748b'}}>
                                                             {report.order ? `Order ${parseID(report.order.id, "ord")}` :
                                                                 report.designRequest ? `Design Request ${parseID(report.designRequest.id, "dr")}` : 'General Report'}
@@ -602,7 +677,7 @@ export default function AdminReport() {
                                                         )}
                                                     </Box>
                                                 </Box>
-                                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1}}>
                                                     <Chip
                                                         label={report.status}
                                                         sx={{
@@ -632,6 +707,26 @@ export default function AdminReport() {
                                                     >
                                                         View Details
                                                     </Button>
+                                                    
+                                                    {/* View Appeals Button - Only for reports with appeals */}
+                                                    {report.report && report.appeals && report.appeals.length > 0 && (
+                                                        <Button
+                                                            variant="contained"
+                                                            size="small"
+                                                            startIcon={<CheckCircleIcon/>}
+                                                            onClick={() => handleViewAppeals(report)}
+                                                            sx={{
+                                                                background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                                                                color: 'white',
+                                                                fontWeight: 'bold',
+                                                                '&:hover': {
+                                                                    background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)'
+                                                                }
+                                                            }}
+                                                        >
+                                                            View Appeals ({report.appeals.length})
+                                                        </Button>
+                                                    )}
                                                 </Box>
                                             </Box>
 
@@ -784,7 +879,7 @@ export default function AdminReport() {
                                     {selectedReport.images && selectedReport.images.length > 0 && (
                                         <Box sx={{flex: 1}}>
                                             <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                {selectedReport.isReport ? 'Evidence Images' : 'Attached Images'}
+                                                {selectedReport.report ? 'Evidence Images' : 'Attached Images'}
                                             </Typography>
                                             <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                                 {selectedReport.images.length} image{selectedReport.images.length > 1 ? 's' : ''}
@@ -794,7 +889,7 @@ export default function AdminReport() {
                                     {(selectedReport.video || selectedReport.designRequest?.feedback?.video) && (
                                         <Box sx={{flex: 1}}>
                                             <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                {selectedReport.isReport ? 'Evidence Video' : 'Attached Video'}
+                                                {selectedReport.report ? 'Evidence Video' : 'Attached Video'}
                                             </Typography>
                                             <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
                                                 <VideocamIcon sx={{fontSize: 16, color: '#8b5cf6'}}/>
@@ -1043,7 +1138,7 @@ export default function AdminReport() {
                                     </Typography>
                                     <Rating value={selectedReport.rating} readOnly size="large"/>
                                     <Typography variant="body2" sx={{color: '#64748b', mt: 1}}>
-                                        {selectedReport.isReport
+                                        {selectedReport.report
                                             ? 'Severity rating of the reported issue'
                                             : 'User experience rating'
                                         }
@@ -1060,7 +1155,7 @@ export default function AdminReport() {
                                     border: '1px solid #e2e8f0'
                                 }}>
                                     <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
-                                        {selectedReport.isReport ? 'Evidence Images' : 'Attached Images'} ({selectedReport.images.length})
+                                        {selectedReport.report ? 'Evidence Images' : 'Attached Images'} ({selectedReport.images.length})
                                     </Typography>
                                     <Grid container spacing={2}>
                                         {selectedReport.images.map((image, index) => (
@@ -1112,7 +1207,7 @@ export default function AdminReport() {
                                     border: '1px solid #e2e8f0'
                                 }}>
                                     <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
-                                        {selectedReport.isReport ? 'Evidence Video' : 'Attached Video'}
+                                        {selectedReport.report ? 'Evidence Video' : 'Attached Video'}
                                     </Typography>
                                     <Box sx={{
                                         display: 'flex',
@@ -1153,14 +1248,14 @@ export default function AdminReport() {
                                     }}>
                                         <VideocamIcon sx={{color: '#8b5cf6', fontSize: 20}}/>
                                         <Typography variant="body2" sx={{color: '#5b21b6', fontWeight: 500}}>
-                                            {selectedReport.isReport ? 'Evidence video for this report' : 'Video attachment for feedback'}
+                                            {selectedReport.report ? 'Evidence video for this report' : 'Video attachment for feedback'}
                                         </Typography>
                                     </Box>
                                 </Paper>
                             )}
 
                             {}
-                            {selectedReport.isReport && !selectedReport.images && selectedReport.imageUrl && (
+                            {selectedReport.report && !selectedReport.images && selectedReport.imageUrl && (
                                 <Paper elevation={0} sx={{
                                     p: 3,
                                     backgroundColor: '#f8fafc',
@@ -1306,7 +1401,7 @@ export default function AdminReport() {
                                         Type
                                     </Typography>
                                     <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                        {selectedReport?.isReport ? 'Report' : 'Feedback'}
+                                        {selectedReport?.report ? 'Report' : 'Feedback'}
                                     </Typography>
                                 </Grid>
                                 <Grid item xs={12}>
@@ -1556,14 +1651,87 @@ export default function AdminReport() {
                 <DialogContent sx={{p: 4}}>
                     {selectedReport?.order && (
                         <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
+                            {/* Header Card */}
+                            <Paper elevation={0} sx={{
+                                background: 'linear-gradient(135deg, rgba(63, 81, 181, 0.05) 0%, rgba(48, 63, 159, 0.08) 100%)',
+                                border: '1px solid rgba(63, 81, 181, 0.1)',
+                                borderRadius: 2,
+                                p: 3
+                            }}>
+                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1,
+                                        flex: 1
+                                    }}>
+                                        <Typography variant="h5" sx={{
+                                            fontWeight: 'bold', 
+                                            color: '#1e293b',
+                                            fontSize: '1.25rem'
+                                        }}>
+                                            {selectedReport.order.selectedDesign?.designRequest?.name || `Order ${parseID(selectedReport.order.id, "ord")}`}
+                                        </Typography>
+                                    </Box>
+                                    <Chip
+                                        label={parseID(selectedReport.order.id, 'ord')}
+                                        sx={{
+                                            backgroundColor: '#e3f2fd',
+                                            color: '#1976d2',
+                                            fontWeight: 'bold',
+                                            fontSize: '0.75rem'
+                                        }}
+                                    />
+                                </Box>
+                                <Typography variant="body2" sx={{color: '#64748b', fontSize: '0.875rem'}}>
+                                    Created: {formatDate(selectedReport.order.orderDate)}
+                                </Typography>
+                            </Paper>
+
+                            {/* Status Section */}
+                            <Paper elevation={0} sx={{
+                                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(37, 99, 235, 0.12) 100%)',
+                                border: '2px solid rgba(59, 130, 246, 0.2)',
+                                borderRadius: 3,
+                                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.1)',
+                                p: 3
+                            }}>
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    <Chip
+                                        label={selectedReport.order.status}
+                                        sx={{
+                                            backgroundColor: '#3b82f6',
+                                            color: 'white',
+                                            fontWeight: 'bold',
+                                            fontSize: '1rem',
+                                            padding: '8px 16px',
+                                            transform: 'scale(1.2)',
+                                            filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.15))'
+                                        }}
+                                    />
+                                </Box>
+                            </Paper>
+
                             {/* Order Summary */}
                             <Paper elevation={0} sx={{
                                 p: 3,
-                                background: 'linear-gradient(135deg, rgba(63, 81, 181, 0.05) 0%, rgba(48, 63, 159, 0.08) 100%)',
+                                backgroundColor: '#f8fafc',
                                 borderRadius: 2,
-                                border: '1px solid rgba(63, 81, 181, 0.1)'
+                                border: '1px solid #e2e8f0'
                             }}>
-                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
+                                <Typography variant="h6" sx={{
+                                    fontWeight: 'bold', 
+                                    mb: 2, 
+                                    color: '#1e293b',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1
+                                }}>
+                                    <InfoIcon sx={{color: '#3f51b5'}}/>
                                     Order Summary
                                 </Typography>
                                 <Box sx={{display: 'flex', gap: 3, width: '100%'}}>
@@ -1628,17 +1796,17 @@ export default function AdminReport() {
                                             {selectedReport.order.price?.toLocaleString('vi-VN')} VND
                                         </Typography>
                                         <Typography variant="body2" sx={{color: '#64748b'}}>
-                                            Total Price
+                                            Base Price
                                         </Typography>
                                     </Box>
                                 </Box>
                             </Paper>
 
                             {/* School & Garment Information */}
-                            <Paper elevation={0} sx={{
-                                p: 3,
-                                backgroundColor: '#f8fafc',
-                                borderRadius: 2,
+                                    <Paper elevation={0} sx={{
+                                        p: 3,
+                                        backgroundColor: '#f8fafc',
+                                        borderRadius: 2,
                                 border: '1px solid #e2e8f0'
                             }}>
                                 <Typography variant="h6" sx={{
@@ -1811,9 +1979,9 @@ export default function AdminReport() {
                                                 </Typography>
                                             </Box>
                                         </Box>
-                                    </Box>
-                                </Box>
-                            </Paper>
+                                            </Box>
+                                        </Box>
+                                    </Paper>
 
                             {/* Order Items Table */}
                             {selectedReport.order.orderDetails && selectedReport.order.orderDetails.length > 0 && (
@@ -2497,14 +2665,14 @@ export default function AdminReport() {
                                                     textTransform: 'uppercase',
                                                     mb: 1
                                                 }}>
-                                                    School Name
-                                                </Typography>
+                                                School Name
+                                            </Typography>
                                                 <Typography variant="body1" sx={{
                                                     fontWeight: 'bold', 
                                                     color: '#1e293b'
                                                 }}>
-                                                    {selectedReport.designRequest.school.business}
-                                                </Typography>
+                                                {selectedReport.designRequest.school.business}
+                                            </Typography>
                                             </Box>
                                             <Box sx={{
                                                 flex: 1,
@@ -2520,14 +2688,14 @@ export default function AdminReport() {
                                                     textTransform: 'uppercase',
                                                     mb: 1
                                                 }}>
-                                                    Contact Person
-                                                </Typography>
+                                                Contact Person
+                                            </Typography>
                                                 <Typography variant="body1" sx={{
                                                     fontWeight: 'bold', 
                                                     color: '#1e293b'
                                                 }}>
-                                                    {selectedReport.designRequest.school.name}
-                                                </Typography>
+                                                {selectedReport.designRequest.school.name}
+                                            </Typography>
                                             </Box>
                                             <Box sx={{
                                                 flex: 1,
@@ -2547,14 +2715,14 @@ export default function AdminReport() {
                                                         fontSize: '0.75rem',
                                                         textTransform: 'uppercase'
                                                     }}>
-                                                        Phone
-                                                    </Typography>
+                                                Phone
+                                            </Typography>
                                                     <Typography variant="body1" sx={{
                                                         fontWeight: 'bold', 
                                                         color: '#1e293b'
                                                     }}>
-                                                        {selectedReport.designRequest.school.phone}
-                                                    </Typography>
+                                                {selectedReport.designRequest.school.phone}
+                                            </Typography>
                                                 </Box>
                                             </Box>
                                             <Box sx={{
@@ -2571,14 +2739,14 @@ export default function AdminReport() {
                                                     textTransform: 'uppercase',
                                                     mb: 1
                                                 }}>
-                                                    Tax Code
-                                                </Typography>
+                                                Tax Code
+                                            </Typography>
                                                 <Typography variant="body1" sx={{
                                                     fontWeight: 'bold', 
                                                     color: '#1e293b'
                                                 }}>
-                                                    {selectedReport.designRequest.school.taxCode}
-                                                </Typography>
+                                                {selectedReport.designRequest.school.taxCode}
+                                            </Typography>
                                             </Box>
                                         </Box>
                                         
@@ -2601,15 +2769,15 @@ export default function AdminReport() {
                                                     textTransform: 'uppercase',
                                                     mb: 1
                                                 }}>
-                                                    Address
-                                                </Typography>
+                                                Address
+                                            </Typography>
                                                 <Typography variant="body1" sx={{
                                                     fontWeight: 'bold', 
                                                     color: '#1e293b',
                                                     lineHeight: 1.4
                                                 }}>
-                                                    {selectedReport.designRequest.school.address}
-                                                </Typography>
+                                                {selectedReport.designRequest.school.address}
+                                            </Typography>
                                             </Box>
                                         </Box>
                                     </Box>
@@ -2650,19 +2818,19 @@ export default function AdminReport() {
                                                                 p: 2,
                                                                 mb: 2,
                                                                 background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.15) 100%)',
-                                                                borderRadius: 2,
+                                                        borderRadius: 2,
                                                                 border: '1px solid rgba(59, 130, 246, 0.2)',
                                                                 display: 'flex',
                                                                 alignItems: 'center',
                                                                 gap: 1
-                                                            }}>
-                                                                <Box sx={{
+                                                    }}>
+                                                            <Box sx={{
                                                                     width: 24,
                                                                     height: 24,
                                                                     borderRadius: '50%',
                                                                     background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
                                                                     justifyContent: 'center',
                                                                     fontSize: '12px'
                                                                 }}>
@@ -2686,7 +2854,7 @@ export default function AdminReport() {
                                                                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
                                                                         {/* Regular Uniform */}
                                                                         {regularBoyItems.length > 0 && (
-                                                                            <Box>
+                                                                <Box>
                                                                                 <Box sx={{
                                                                                     p: 1.5,
                                                                                     mb: 2,
@@ -2739,14 +2907,14 @@ export default function AdminReport() {
                                                                                                     <DesignIcon sx={{fontSize: 14}}/>
                                                                                                 </Avatar>
                                                                                                 <Box sx={{flex: 1}}>
-                                                                                                    <Typography variant="subtitle2" sx={{
-                                                                                                        fontWeight: 'bold',
+                                                                    <Typography variant="subtitle2" sx={{
+                                                                        fontWeight: 'bold',
                                                                                                         color: '#1e293b',
                                                                                                         fontSize: '0.875rem'
                                                                                                     }}>
                                                                                                         {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {item.category}
-                                                                                                    </Typography>
-                                                                                                </Box>
+                                                                    </Typography>
+                                                                </Box>
                                                                                                 <Chip
                                                                                                     label={`#${index + 1}`}
                                                                                                     size="small"
@@ -2757,10 +2925,10 @@ export default function AdminReport() {
                                                                                                         fontSize: '0.6rem'
                                                                                                     }}
                                                                                                 />
-                                                                                            </Box>
+                                                            </Box>
                                                                                             <Grid container spacing={1}>
                                                                                                 <Grid item xs={6}>
-                                                                                                    <Box sx={{
+                                                            <Box sx={{
                                                                                                         p: 1,
                                                                                                         background: 'rgba(16, 185, 129, 0.08)',
                                                                                                         borderRadius: 1,
@@ -2789,8 +2957,8 @@ export default function AdminReport() {
                                                                                                         background: 'rgba(124, 58, 237, 0.08)',
                                                                                                         borderRadius: 1,
                                                                                                         border: '1px solid rgba(124, 58, 237, 0.15)',
-                                                                                                        display: 'flex',
-                                                                                                        alignItems: 'center',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
                                                                                                         gap: 0.5
                                                                                                     }}>
                                                                                                         <Box sx={{
@@ -2879,10 +3047,10 @@ export default function AdminReport() {
                                                                                                         textTransform: 'uppercase',
                                                                                                         fontSize: '0.65rem',
                                                                                                         display: 'block',
-                                                                                                        mb: 1
-                                                                                                    }}>
+                                                                mb: 1
+                                                            }}>
                                                                                                         SAMPLES ({item.sampleImages.length})
-                                                                                                    </Typography>
+                                                                </Typography>
                                                                                                     <Box sx={{display: 'flex', gap: 1, flexWrap: 'wrap'}}>
                                                                                                         {item.sampleImages.map((image, imgIndex) => (
                                                                                                             <Box key={imgIndex} sx={{
@@ -2922,9 +3090,9 @@ export default function AdminReport() {
                                                                                     alignItems: 'center',
                                                                                     gap: 1
                                                                                 }}>
-                                                                                    <Box sx={{
-                                                                                        width: 20,
-                                                                                        height: 20,
+                                                                <Box sx={{
+                                                                    width: 20,
+                                                                    height: 20,
                                                                                         borderRadius: '50%',
                                                                                         background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
                                                                                         display: 'flex',
@@ -3022,7 +3190,7 @@ export default function AdminReport() {
                                                                                                             width: 12,
                                                                                                             height: 12,
                                                                                                             borderRadius: '50%',
-                                                                                                            backgroundColor: item.color || '#000',
+                                                                    backgroundColor: item.color || '#000',
                                                                                                             border: '1px solid #ffffff',
                                                                                                             boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
                                                                                                             flexShrink: 0
@@ -3041,9 +3209,9 @@ export default function AdminReport() {
                                                                                                                 fontWeight: 500,
                                                                                                                 fontSize: '0.7rem'
                                                                                                             }}>
-                                                                                                                {item.color}
-                                                                                                            </Typography>
-                                                                                                        </Box>
+                                                                    {item.color}
+                                                                </Typography>
+                                                            </Box>
                                                                                                     </Box>
                                                                                                 </Grid>
                                                                                                 <Grid item xs={6}>
@@ -3060,16 +3228,16 @@ export default function AdminReport() {
                                                                                                             fontSize: '0.65rem'
                                                                                                         }}>
                                                                                                             LOGO
-                                                                                                        </Typography>
+                                                                </Typography>
                                                                                                         <Typography variant="body2" sx={{
                                                                                                             color: '#1e293b',
                                                                                                             fontWeight: 500,
                                                                                                             fontSize: '0.75rem'
                                                                                                         }}>
                                                                                                             {item.logoPosition || 'No logo'}
-                                                                                                        </Typography>
+                                                            </Typography>
                                                                                                     </Box>
-                                                                                                </Grid>
+                                                </Grid>
                                                                                                 <Grid item xs={6}>
                                                                                                     <Box sx={{
                                                                                                         p: 1,
@@ -3094,7 +3262,7 @@ export default function AdminReport() {
                                                                                                             {item.note || 'No note'}
                                                                                                         </Typography>
                                                                                                     </Box>
-                                                                                                </Grid>
+                                        </Grid>
                                                                                             </Grid>
                                                                                             {item.sampleImages && item.sampleImages.length > 0 && (
                                                                                                 <Box sx={{mt: 1.5, pt: 1.5, borderTop: '1px solid #f1f5f9'}}>
@@ -3242,6 +3410,511 @@ export default function AdminReport() {
                         }}
                     >
                         Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Appeals Management Dialog */}
+            <Dialog
+                open={appealsDialogOpen}
+                onClose={handleCloseAppeals}
+                maxWidth="md"
+                fullWidth
+                PaperProps={{
+                    sx: {borderRadius: 3}
+                }}
+            >
+                <DialogTitle sx={{
+                    background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                    color: 'white',
+                    position: 'relative'
+                }}>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                        <CheckCircleIcon/>
+                        <Typography variant="h6" sx={{fontWeight: 'bold'}}>
+                            Appeals Management
+                        </Typography>
+                    </Box>
+                    <IconButton
+                        onClick={handleCloseAppeals}
+                        sx={{
+                            position: 'absolute',
+                            right: 8,
+                            top: 8,
+                            color: 'white'
+                        }}
+                    >
+                        <CloseIcon/>
+                    </IconButton>
+                </DialogTitle>
+
+                <DialogContent sx={{p: 4}}>
+                    {selectedAppeals.length === 0 ? (
+                        <Box sx={{
+                            textAlign: 'center',
+                            py: 8,
+                            backgroundColor: '#f8fafc',
+                            borderRadius: 2,
+                            border: '2px dashed #cbd5e1'
+                        }}>
+                            <CheckCircleIcon sx={{fontSize: 64, color: '#94a3b8', mb: 2}}/>
+                            <Typography variant="h6" sx={{color: '#64748b', mb: 1}}>
+                                No Appeals Found
+                            </Typography>
+                            <Typography variant="body2" sx={{color: '#94a3b8'}}>
+                                This report has no appeals to review.
+                            </Typography>
+                        </Box>
+                    ) : (
+                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
+                            <Typography variant="h6" sx={{fontWeight: 'bold', color: '#1e293b', mb: 2}}>
+                                Appeals for Report: {selectedReport?.id ? parseID(selectedReport.id, "rp") : 'N/A'}
+                            </Typography>
+                            
+                            {selectedAppeals.map((appeal, index) => (
+                                <Card key={appeal.id} elevation={0} sx={{
+                                    border: '1px solid #e2e8f0',
+                                    borderRadius: 3,
+                                    transition: 'all 0.3s ease',
+                                    background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                                    '&:hover': {
+                                        boxShadow: '0 12px 32px rgba(0, 0, 0, 0.08)',
+                                        transform: 'translateY(-2px)'
+                                    }
+                                }}>
+                                    <CardContent sx={{p: 0}}>
+                                        {/* Header Section */}
+                                        <Box sx={{
+                                            p: 3,
+                                            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(37, 99, 235, 0.08) 100%)',
+                                            borderBottom: '1px solid #e2e8f0',
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center'
+                                        }}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                <Avatar sx={{
+                                                    bgcolor: '#3b82f6',
+                                                    width: 40,
+                                                    height: 40,
+                                                    fontWeight: 'bold'
+                                                }}>
+                                                    {index + 1}
+                                                </Avatar>
+                                                <Box>
+                                                    <Typography variant="h6" sx={{fontWeight: 'bold', color: '#1e293b', mb: 0.5}}>
+                                                        Appeal {parseID(appeal.id, "ap")}
+                                                    </Typography>
+                                                    <Typography variant="body2" sx={{color: '#64748b'}}>
+                                                        Submitted: {appeal.creationDate ? dayjs(appeal.creationDate).format('DD/MM/YYYY') : 'Unknown'}
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+                                            <Chip
+                                                label={appeal.status || 'pending'}
+                                                sx={{
+                                                    backgroundColor: appeal.status === 'approved' ? '#dcfce7' : 
+                                                                   appeal.status === 'under-review' ? '#fef3c7' : '#f3f4f6',
+                                                    color: appeal.status === 'approved' ? '#065f46' : 
+                                                           appeal.status === 'under-review' ? '#92400e' : '#374151',
+                                                    fontWeight: 'bold',
+                                                    textTransform: 'uppercase',
+                                                    fontSize: '0.75rem',
+                                                    letterSpacing: '0.5px'
+                                                }}
+                                            />
+                                        </Box>
+
+                                        {/* Appellant Information */}
+                                        {appeal.appeallant && (
+                                            <Box sx={{p: 3, borderBottom: '1px solid #f1f5f9'}}>
+                                                <Typography variant="subtitle2" sx={{
+                                                    color: '#6b7280',
+                                                    fontWeight: 600,
+                                                    textTransform: 'uppercase',
+                                                    fontSize: '0.75rem',
+                                                    letterSpacing: '0.5px',
+                                                    mb: 2
+                                                }}>
+                                                    Appellant Information
+                                                </Typography>
+                                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                    <Avatar
+                                                        src={appeal.appeallant.avatar}
+                                                        sx={{width: 48, height: 48}}
+                                                    >
+                                                        {appeal.appeallant.name?.charAt(0)}
+                                                    </Avatar>
+                                                    <Box sx={{flex: 1}}>
+                                                        <Typography variant="subtitle1" sx={{
+                                                            fontWeight: 'bold',
+                                                            color: '#1e293b',
+                                                            mb: 0.5
+                                                        }}>
+                                                            {appeal.appeallant.name}
+                                                        </Typography>
+                                                        <Typography variant="body2" sx={{color: '#64748b', mb: 0.5}}>
+                                                            {appeal.appeallant.email}
+                                                        </Typography>
+                                                        <Chip
+                                                            label={appeal.appeallant.type}
+                                                            size="small"
+                                                            sx={{
+                                                                backgroundColor: '#e0e7ff',
+                                                                color: '#3730a3',
+                                                                fontWeight: 'bold',
+                                                                fontSize: '0.7rem',
+                                                                textTransform: 'capitalize'
+                                                            }}
+                                                        />
+                                                    </Box>
+                                                </Box>
+                                            </Box>
+                                        )}
+
+                                        {/* Appeal Content */}
+                                        <Box sx={{p: 3, borderBottom: '1px solid #f1f5f9'}}>
+                                            <Typography variant="subtitle2" sx={{
+                                                color: '#6b7280',
+                                                fontWeight: 600,
+                                                textTransform: 'uppercase',
+                                                fontSize: '0.75rem',
+                                                letterSpacing: '0.5px',
+                                                mb: 2
+                                            }}>
+                                                Appeal Reason
+                                            </Typography>
+                                            <Box sx={{
+                                                p: 3,
+                                                backgroundColor: '#f8fafc',
+                                                borderRadius: 2,
+                                                border: '1px solid #e2e8f0',
+                                                borderLeft: '4px solid #3b82f6'
+                                            }}>
+                                                <Typography variant="body1" sx={{
+                                                    color: '#1e293b',
+                                                    lineHeight: 1.6,
+                                                    fontStyle: 'italic'
+                                                }}>
+                                                    "{appeal.reason}"
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+
+                                        {/* Video Evidence */}
+                                        {appeal.videoUrl && (
+                                            <Box sx={{p: 3, borderBottom: '1px solid #f1f5f9'}}>
+                                                <Typography variant="subtitle2" sx={{
+                                                    color: '#6b7280',
+                                                    fontWeight: 600,
+                                                    textTransform: 'uppercase',
+                                                    fontSize: '0.75rem',
+                                                    letterSpacing: '0.5px',
+                                                    mb: 2
+                                                }}>
+                                                    Video Evidence
+                                                </Typography>
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 2,
+                                                    p: 2,
+                                                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                                                    borderRadius: 2,
+                                                    border: '1px solid rgba(139, 92, 246, 0.2)'
+                                                }}>
+                                                    <Avatar sx={{
+                                                        bgcolor: '#8b5cf6',
+                                                        width: 32,
+                                                        height: 32
+                                                    }}>
+                                                        <VideocamIcon sx={{fontSize: 18}}/>
+                                                    </Avatar>
+                                                    <Box sx={{flex: 1}}>
+                                                        <Typography variant="body2" sx={{
+                                                            color: '#5b21b6',
+                                                            fontWeight: 600,
+                                                            mb: 0.5
+                                                        }}>
+                                                            Video Evidence Attached
+                                                        </Typography>
+                                                        <Typography variant="caption" sx={{color: '#7c3aed'}}>
+                                                            Click to view evidence video
+                                                        </Typography>
+                                                    </Box>
+                                                    <Button
+                                                        size="small"
+                                                        variant="outlined"
+                                                        startIcon={<VideocamIcon/>}
+                                                        onClick={() => window.open(appeal.videoUrl, '_blank')}
+                                                        sx={{
+                                                            borderColor: '#8b5cf6',
+                                                            color: '#8b5cf6',
+                                                            '&:hover': {
+                                                                borderColor: '#7c3aed',
+                                                                backgroundColor: 'rgba(139, 92, 246, 0.1)'
+                                                            }
+                                                        }}
+                                                    >
+                                                        View Video
+                                                    </Button>
+                                                </Box>
+                                            </Box>
+                                        )}
+
+                                        {/* Approval Information */}
+                                        {appeal.approvedDate && (
+                                            <Box sx={{p: 3, borderBottom: '1px solid #f1f5f9'}}>
+                                                <Typography variant="subtitle2" sx={{
+                                                    color: '#6b7280',
+                                                    fontWeight: 600,
+                                                    textTransform: 'uppercase',
+                                                    fontSize: '0.75rem',
+                                                    letterSpacing: '0.5px',
+                                                    mb: 2
+                                                }}>
+                                                    Decision Information
+                                                </Typography>
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 2,
+                                                    p: 2,
+                                                    backgroundColor: '#dcfce7',
+                                                    borderRadius: 2,
+                                                    border: '1px solid #bbf7d0'
+                                                }}>
+                                                    <CheckCircleIcon sx={{color: '#059669', fontSize: 20}}/>
+                                                    <Typography variant="body2" sx={{color: '#065f46', fontWeight: 600}}>
+                                                        Decision made on: {dayjs(appeal.approvedDate).format('DD/MM/YYYY HH:mm')}
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+                                        )}
+
+                                        {/* Action Buttons */}
+                                        {(appeal.status === 'pending' || appeal.status === 'under-review') && (
+                                            <Box sx={{p: 3, backgroundColor: '#f8fafc'}}>
+                                                <Typography variant="subtitle2" sx={{
+                                                    color: '#6b7280',
+                                                    fontWeight: 600,
+                                                    textTransform: 'uppercase',
+                                                    fontSize: '0.75rem',
+                                                    letterSpacing: '0.5px',
+                                                    mb: 2
+                                                }}>
+                                                    Admin Actions
+                                                </Typography>
+                                                <Box sx={{display: 'flex', gap: 2}}>
+                                                    <Button
+                                                        variant="contained"
+                                                        startIcon={<CheckCircleIcon/>}
+                                                        onClick={() => handleOpenAppealDialog(appeal, 'approve')}
+                                                        disabled={approvingAppeal}
+                                                        sx={{
+                                                            flex: 1,
+                                                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                                            color: 'white',
+                                                            fontWeight: 'bold',
+                                                            py: 1.5,
+                                                            '&:hover': {
+                                                                background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                                                                boxShadow: '0 8px 20px rgba(16, 185, 129, 0.3)'
+                                                            }
+                                                        }}
+                                                    >
+                                                        Approve Appeal
+                                                    </Button>
+                                                    <Button
+                                                        variant="outlined"
+                                                        startIcon={<WarningIcon/>}
+                                                        onClick={() => handleOpenAppealDialog(appeal, 'reject')}
+                                                        disabled={approvingAppeal}
+                                                        sx={{
+                                                            flex: 1,
+                                                            borderColor: '#ef4444',
+                                                            color: '#ef4444',
+                                                            fontWeight: 'bold',
+                                                            py: 1.5,
+                                                            '&:hover': {
+                                                                borderColor: '#dc2626',
+                                                                backgroundColor: '#fef2f2',
+                                                                boxShadow: '0 8px 20px rgba(239, 68, 68, 0.2)'
+                                                            }
+                                                        }}
+                                                    >
+                                                        Reject Appeal
+                                                    </Button>
+                                                </Box>
+                                            </Box>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </Box>
+                    )}
+                </DialogContent>
+
+                <DialogActions sx={{p: 3, pt: 0}}>
+                    <Button
+                        onClick={handleCloseAppeals}
+                        sx={{
+                            color: '#64748b',
+                            borderColor: '#d1d5db',
+                            '&:hover': {
+                                borderColor: '#9ca3af',
+                                backgroundColor: '#f9fafb'
+                            }
+                        }}
+                    >
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Appeal Decision Dialog */}
+            <Dialog
+                open={appealDialogOpen}
+                onClose={handleCloseAppealDialog}
+                maxWidth="sm"
+                fullWidth
+                PaperProps={{
+                    sx: {borderRadius: 3}
+                }}
+            >
+                <DialogTitle sx={{
+                    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                    color: 'white',
+                    position: 'relative'
+                }}>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                        <CheckCircleIcon/>
+                        <Typography variant="h6" sx={{fontWeight: 'bold'}}>
+                            Appeal Decision
+                        </Typography>
+                    </Box>
+                    <IconButton
+                        onClick={handleCloseAppealDialog}
+                        sx={{
+                            position: 'absolute',
+                            right: 8,
+                            top: 8,
+                            color: 'white'
+                        }}
+                    >
+                        <CloseIcon/>
+                    </IconButton>
+                </DialogTitle>
+
+                <DialogContent sx={{p: 4}}>
+                    {selectedAppeal && (
+                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
+                            {/* Appeal Summary */}
+                            <Paper elevation={0} sx={{
+                                p: 3,
+                                backgroundColor: '#f8fafc',
+                                borderRadius: 2,
+                                border: '1px solid #e2e8f0'
+                            }}>
+                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
+                                    Appeal Summary
+                                </Typography>
+                                <Typography variant="body2" sx={{color: '#64748b', mb: 1}}>
+                                    Appeal Reason:
+                                </Typography>
+                                <Typography variant="body1" sx={{color: '#1e293b', mb: 2, fontStyle: 'italic'}}>
+                                    "{selectedAppeal.reason}"
+                                </Typography>
+                                {selectedAppeal.videoUrl && (
+                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                        <VideocamIcon sx={{color: '#8b5cf6', fontSize: 16}}/>
+                                        <Typography variant="body2" sx={{color: '#8b5cf6', fontWeight: 500}}>
+                                            Video evidence attached
+                                        </Typography>
+                                    </Box>
+                                )}
+                            </Paper>
+
+                            {/* Admin Response */}
+                            <Box>
+                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
+                                    Admin Response (Required)
+                                </Typography>
+                                <TextField
+                                    fullWidth
+                                    multiline
+                                    rows={4}
+                                    value={appealResponse}
+                                    onChange={(e) => setAppealResponse(e.target.value)}
+                                    placeholder="Enter your response to this appeal..."
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            '& fieldset': {
+                                                borderColor: '#d1d5db',
+                                            },
+                                            '&:hover fieldset': {
+                                                borderColor: '#9ca3af',
+                                            },
+                                            '&.Mui-focused fieldset': {
+                                                borderColor: '#3b82f6',
+                                            },
+                                        },
+                                    }}
+                                />
+                                <Typography variant="body2" sx={{color: '#64748b', mt: 1, fontStyle: 'italic'}}>
+                                    This response will be sent to the garment factory.
+                                </Typography>
+                            </Box>
+                        </Box>
+                    )}
+                </DialogContent>
+
+                <DialogActions sx={{p: 3, pt: 0}}>
+                    <Button
+                        onClick={handleCloseAppealDialog}
+                        sx={{
+                            color: '#64748b',
+                            borderColor: '#d1d5db',
+                            '&:hover': {
+                                borderColor: '#9ca3af',
+                                backgroundColor: '#f9fafb'
+                            }
+                        }}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={() => handleSubmitAppealDecision(false)}
+                        disabled={approvingAppeal || !appealResponse.trim()}
+                        variant="outlined"
+                        sx={{
+                            borderColor: '#ef4444',
+                            color: '#ef4444',
+                            '&:hover': {
+                                borderColor: '#dc2626',
+                                backgroundColor: '#fef2f2'
+                            }
+                        }}
+                    >
+                        {approvingAppeal ? 'Processing...' : 'Reject Appeal'}
+                    </Button>
+                    <Button
+                        onClick={() => handleSubmitAppealDecision(true)}
+                        disabled={approvingAppeal || !appealResponse.trim()}
+                        variant="contained"
+                        sx={{
+                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                            color: 'white',
+                            fontWeight: 'bold',
+                            '&:hover': {
+                                background: 'linear-gradient(135deg, #059669 0%, #047857 100%)'
+                            },
+                            '&:disabled': {
+                                background: '#9ca3af'
+                            }
+                        }}
+                    >
+                        {approvingAppeal ? 'Processing...' : 'Approve Appeal'}
                     </Button>
                 </DialogActions>
             </Dialog>
