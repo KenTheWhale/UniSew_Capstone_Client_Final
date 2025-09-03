@@ -8,22 +8,26 @@ import {
     Chip,
     CircularProgress,
     Dialog,
+    DialogActions,
     DialogContent,
     DialogTitle,
     Divider,
     Fade,
     IconButton,
+    LinearProgress,
     Paper,
     Rating,
     Skeleton,
     Tab,
     Tabs,
+    TextField,
     Typography
 } from '@mui/material';
 import {
     CalendarMonth as CalendarIcon,
     CheckCircle as CheckCircleIcon,
     Close as CloseIcon,
+    CloudUpload as CloudUploadIcon,
     Email as EmailIcon,
     Feedback as FeedbackIcon,
     Image as ImageIcon,
@@ -31,11 +35,15 @@ import {
     Report as ReportIcon,
     Schedule as ScheduleIcon,
     Star as StarIcon,
+    Videocam as VideocamIcon,
+    Visibility as VisibilityIcon,
     ZoomIn as ZoomInIcon
 } from '@mui/icons-material';
 import {Empty} from 'antd';
-import {getFeedbacksByDesigner} from '../../services/FeedbackService.jsx';
+import {getFeedbacksByDesigner, giveEvidence} from '../../services/FeedbackService.jsx';
+import {uploadCloudinaryVideo, uploadCloudinary} from '../../services/UploadImageService.jsx';
 import DisplayImage from '../ui/DisplayImage.jsx';
+import {enqueueSnackbar} from 'notistack';
 
 // Utility functions
 const formatDate = (dateString) => {
@@ -122,7 +130,7 @@ const FeedbackSkeleton = () => (
 );
 
 // FeedbackCard Component
-const FeedbackCard = React.memo(({feedback, onImageClick, isReport = false}) => {
+const FeedbackCard = React.memo(({feedback, onImageClick, onGiveEvidence, onViewDetail, isReport = false}) => {
     const statusConfig = getStatusConfig(feedback.status);
 
     return (
@@ -183,11 +191,60 @@ const FeedbackCard = React.memo(({feedback, onImageClick, isReport = false}) => 
                             variant="outlined"
                             sx={{mb: 1, fontWeight: 600}}
                         />
-                        <Box sx={{display: 'flex', alignItems: 'center', gap: 0.5}}>
+                        <Box sx={{display: 'flex', alignItems: 'center', gap: 0.5, mb: 1}}>
                             <CalendarIcon sx={{fontSize: 16, color: '#64748b'}}/>
                             <Typography variant="caption" sx={{color: '#64748b'}}>
                                 {formatDate(feedback.creationDate)}
                             </Typography>
+                        </Box>
+                        
+                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'flex-end'}}>
+                            {/* View Details Button */}
+                            <Button
+                                variant="outlined"
+                                size="small"
+                                startIcon={<VisibilityIcon/>}
+                                onClick={() => onViewDetail(feedback)}
+                                sx={{
+                                    borderColor: isReport ? '#ef4444' : '#3b82f6',
+                                    color: isReport ? '#ef4444' : '#3b82f6',
+                                    fontWeight: 600,
+                                    fontSize: '0.75rem',
+                                    px: 2,
+                                    py: 0.5,
+                                    '&:hover': {
+                                        borderColor: isReport ? '#dc2626' : '#2563eb',
+                                        backgroundColor: isReport ? '#fef2f2' : '#eff6ff'
+                                    }
+                                }}
+                            >
+                                View Details
+                            </Button>
+                            
+                            {/* Give Evidence Button - Only show for reports where partnerContent is null */}
+                            {isReport && !feedback.partnerContent && (
+                                <Button
+                                    variant="contained"
+                                    size="small"
+                                    startIcon={<CloudUploadIcon/>}
+                                    onClick={() => onGiveEvidence(feedback)}
+                                    sx={{
+                                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                        color: 'white',
+                                        fontWeight: 600,
+                                        fontSize: '0.75rem',
+                                        px: 2,
+                                        py: 0.5,
+                                        boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
+                                        '&:hover': {
+                                            background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                                            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)'
+                                        }
+                                    }}
+                                >
+                                    Give Evidence
+                                </Button>
+                            )}
                         </Box>
                     </Box>
                 </Box>
@@ -201,10 +258,10 @@ const FeedbackCard = React.memo(({feedback, onImageClick, isReport = false}) => 
                         color: '#374151',
                         lineHeight: 1.6,
                         mb: 2,
-                        fontStyle: feedback.content ? 'normal' : 'italic'
+                        fontStyle: feedback.schoolContent ? 'normal' : 'italic'
                     }}
                 >
-                    {feedback.content || 'No feedback content provided'}
+                    {feedback.schoolContent || 'No feedback content provided'}
                 </Typography>
 
                 {/* Images */}
@@ -367,6 +424,23 @@ export default function DesignerFeedback() {
     const [selectedImage, setSelectedImage] = useState(null);
     const [imageDialogOpen, setImageDialogOpen] = useState(false);
     const [activeTab, setActiveTab] = useState(0);
+    
+    // Detail dialog state
+    const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+    const [selectedDetailFeedback, setSelectedDetailFeedback] = useState(null);
+    
+    // Give Evidence dialog state
+    const [evidenceDialogOpen, setEvidenceDialogOpen] = useState(false);
+    const [selectedFeedback, setSelectedFeedback] = useState(null);
+    const [evidenceContent, setEvidenceContent] = useState('');
+    const [evidenceFiles, setEvidenceFiles] = useState([]);
+    const [evidenceVideoFile, setEvidenceVideoFile] = useState(null);
+    const [evidenceImageUrls, setEvidenceImageUrls] = useState([]);
+    const [evidenceVideoUrl, setEvidenceVideoUrl] = useState('');
+    const [uploadingEvidence, setUploadingEvidence] = useState(false);
+    const [evidenceUploadProgress, setEvidenceUploadProgress] = useState(0);
+    const [submittingEvidence, setSubmittingEvidence] = useState(false);
+    const [evidenceUploadType, setEvidenceUploadType] = useState('image'); // 'image' or 'video'
 
     const fetchFeedbacks = useCallback(async (showLoading = true) => {
         try {
@@ -412,6 +486,206 @@ export default function DesignerFeedback() {
     const handleTabChange = useCallback((event, newValue) => {
         setActiveTab(newValue);
     }, []);
+    
+    // Detail dialog handlers
+    const handleViewDetail = useCallback((feedback) => {
+        setSelectedDetailFeedback(feedback);
+        setDetailDialogOpen(true);
+    }, []);
+    
+    const handleCloseDetail = useCallback(() => {
+        setDetailDialogOpen(false);
+        setSelectedDetailFeedback(null);
+    }, []);
+    
+    // Give Evidence handlers
+    const handleOpenGiveEvidence = useCallback((feedback) => {
+        setSelectedFeedback(feedback);
+        setEvidenceDialogOpen(true);
+        setEvidenceContent('');
+        setEvidenceFiles([]);
+        setEvidenceVideoFile(null);
+        setEvidenceImageUrls([]);
+        setEvidenceVideoUrl('');
+        setEvidenceUploadProgress(0);
+        setEvidenceUploadType('image');
+    }, []);
+    
+    const handleCloseGiveEvidence = useCallback(() => {
+        setEvidenceDialogOpen(false);
+        setSelectedFeedback(null);
+        setEvidenceContent('');
+        setEvidenceFiles([]);
+        setEvidenceVideoFile(null);
+        setEvidenceImageUrls([]);
+        setEvidenceVideoUrl('');
+        setEvidenceUploadProgress(0);
+        setUploadingEvidence(false);
+        setSubmittingEvidence(false);
+        setEvidenceUploadType('image');
+    }, []);
+    
+    // Evidence upload handlers
+    const handleEvidenceImageUpload = useCallback(async (files) => {
+        if (!files || files.length === 0) {
+            console.log('No files provided for upload');
+            return;
+        }
+        
+        console.log('Starting image upload for', files.length, 'files');
+        
+        try {
+            setUploadingEvidence(true);
+            setEvidenceUploadProgress(0);
+            const uploadedUrls = [];
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                console.log(`Uploading file ${i + 1}/${files.length}:`, file.name, 'Size:', file.size);
+                
+                // Check file size (max 10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    enqueueSnackbar(`File ${file.name} is too large. Maximum size is 10MB.`, {variant: 'error'});
+                    continue;
+                }
+                
+                const result = await uploadCloudinary(file);
+                console.log(`Upload result for ${file.name}:`, result);
+                
+                // Update progress manually
+                const progress = ((i + 1) / files.length) * 100;
+                setEvidenceUploadProgress(Math.round(progress));
+                
+                if (result) {
+                    uploadedUrls.push(result);
+                    console.log(`Successfully uploaded: ${file.name} -> ${result}`);
+                } else {
+                    console.error(`Failed to upload: ${file.name}`);
+                    enqueueSnackbar(`Failed to upload ${file.name}`, {variant: 'warning'});
+                }
+            }
+            
+            console.log('All uploads completed. URLs:', uploadedUrls);
+            // Append new URLs to existing ones instead of replacing
+            setEvidenceImageUrls(prev => [...prev, ...uploadedUrls]);
+            setEvidenceUploadProgress(100);
+            
+            if (uploadedUrls.length > 0) {
+                enqueueSnackbar(`${uploadedUrls.length} image(s) uploaded successfully!`, {variant: 'success'});
+            } else {
+                enqueueSnackbar('No images were uploaded successfully.', {variant: 'error'});
+            }
+            
+        } catch (error) {
+            console.error('Error uploading images:', error);
+            enqueueSnackbar('Failed to upload images. Please try again.', {variant: 'error'});
+        } finally {
+            setUploadingEvidence(false);
+        }
+    }, []);
+    
+    const handleEvidenceVideoUpload = useCallback(async (file) => {
+        if (!file) {
+            console.log('No video file provided for upload');
+            return;
+        }
+        
+        console.log('Starting video upload:', file.name, 'Size:', file.size);
+        
+        try {
+            setUploadingEvidence(true);
+            setEvidenceUploadProgress(0);
+            
+            // Check file size (max 50MB)
+            if (file.size > 50 * 1024 * 1024) {
+                enqueueSnackbar(`Video file is too large. Maximum size is 50MB.`, {variant: 'error'});
+                return;
+            }
+            
+            const result = await uploadCloudinaryVideo(file, (progress) => {
+                console.log('Video upload progress:', progress);
+                setEvidenceUploadProgress(progress);
+            });
+            
+            console.log('Video upload result:', result);
+            
+            if (result) {
+                setEvidenceVideoUrl(result);
+                enqueueSnackbar('Video uploaded successfully!', {variant: 'success'});
+            } else {
+                enqueueSnackbar('Failed to upload video. Please try again.', {variant: 'error'});
+            }
+            
+        } catch (error) {
+            console.error('Error uploading video:', error);
+            enqueueSnackbar('Failed to upload video. Please try again.', {variant: 'error'});
+        } finally {
+            setUploadingEvidence(false);
+        }
+    }, []);
+    
+    const handleSubmitEvidence = useCallback(async () => {
+        if (!selectedFeedback) return;
+        
+        // Validation
+        if (!evidenceContent.trim()) {
+            enqueueSnackbar('Please provide evidence content', {variant: 'error'});
+            return;
+        }
+        
+        if (evidenceUploadType === 'image' && evidenceImageUrls.length === 0) {
+            enqueueSnackbar('Please upload at least one image as evidence', {variant: 'error'});
+            return;
+        }
+        
+        if (evidenceUploadType === 'video' && !evidenceVideoUrl) {
+            enqueueSnackbar('Please upload a video as evidence', {variant: 'error'});
+            return;
+        }
+        
+        try {
+            setSubmittingEvidence(true);
+            
+            // Prepare payload matching GiveEvidenceRequest structure
+            const payload = {
+                reportId: parseInt(selectedFeedback.id),
+                content: evidenceContent.trim(),
+                imageUrls: evidenceUploadType === 'image' ? evidenceImageUrls : [],
+                videoUrl: evidenceUploadType === 'video' ? evidenceVideoUrl : null
+            };
+            
+            console.log('Submitting evidence with payload:', payload);
+            
+            const response = await giveEvidence(payload);
+            
+            if (response && response.status === 200) {
+                enqueueSnackbar('Evidence submitted successfully!', {
+                    variant: 'success',
+                    autoHideDuration: 5000
+                });
+                handleCloseGiveEvidence();
+                
+                // Refresh feedbacks to get updated status
+                fetchFeedbacks(false);
+            } else {
+                throw new Error(response?.data?.message || 'Failed to submit evidence');
+            }
+            
+        } catch (error) {
+            console.error('Error submitting evidence:', error);
+            
+            const errorMessage = error.response?.data?.message || 
+                               error.message || 
+                               'Failed to submit evidence. Please try again.';
+            
+            enqueueSnackbar(errorMessage, {
+                variant: 'error',
+                autoHideDuration: 5000
+            });
+        } finally {
+            setSubmittingEvidence(false);
+        }
+    }, [selectedFeedback, evidenceContent, evidenceUploadType, evidenceImageUrls, evidenceVideoUrl, handleCloseGiveEvidence, fetchFeedbacks]);
 
     // Filter feedbacks and reports
     const {feedbacks, reports} = useMemo(() => {
@@ -600,6 +874,8 @@ export default function DesignerFeedback() {
                                             key={feedback.id}
                                             feedback={feedback}
                                             onImageClick={handleImageClick}
+                                            onGiveEvidence={handleOpenGiveEvidence}
+                                            onViewDetail={handleViewDetail}
                                             isReport={false}
                                         />
                                     ))}
@@ -640,6 +916,8 @@ export default function DesignerFeedback() {
                                             key={report.id}
                                             feedback={report}
                                             onImageClick={handleImageClick}
+                                            onGiveEvidence={handleOpenGiveEvidence}
+                                            onViewDetail={handleViewDetail}
                                             isReport={true}
                                         />
                                     ))}
@@ -687,6 +965,951 @@ export default function DesignerFeedback() {
                         />
                     )}
                 </DialogContent>
+            </Dialog>
+
+            {/* Give Evidence Dialog */}
+            <Dialog
+                open={evidenceDialogOpen}
+                onClose={handleCloseGiveEvidence}
+                maxWidth="md"
+                fullWidth
+                PaperProps={{
+                    sx: {borderRadius: 3}
+                }}
+            >
+                <DialogTitle sx={{
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: 'white',
+                    position: 'relative'
+                }}>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                        <CloudUploadIcon/>
+                        <Typography variant="h6" sx={{fontWeight: 'bold'}}>
+                            Provide Evidence
+                        </Typography>
+                    </Box>
+                    <IconButton
+                        onClick={handleCloseGiveEvidence}
+                        disabled={submittingEvidence}
+                        sx={{
+                            position: 'absolute',
+                            right: 8,
+                            top: 8,
+                            color: 'white'
+                        }}
+                    >
+                        <CloseIcon/>
+                    </IconButton>
+                </DialogTitle>
+
+                <DialogContent sx={{p: 4}}>
+                    {selectedFeedback && (
+                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
+                            {/* Report Summary */}
+                            <Paper elevation={0} sx={{
+                                p: 3,
+                                backgroundColor: '#f8fafc',
+                                borderRadius: 2,
+                                border: '1px solid #e2e8f0'
+                            }}>
+                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
+                                    Report Details
+                                </Typography>
+                                <Box>
+                                    <Typography variant="body2" sx={{color: '#64748b'}}>
+                                        Report Content:
+                                    </Typography>
+                                    <Typography variant="body1" sx={{color: '#1e293b', fontStyle: 'italic'}}>
+                                        "{selectedFeedback.schoolContent || selectedFeedback.content}"
+                                    </Typography>
+                                </Box>
+                            </Paper>
+
+                            {/* Evidence Content */}
+                            <Box>
+                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
+                                    Evidence Description (Required)
+                                </Typography>
+                                <TextField
+                                    fullWidth
+                                    multiline
+                                    rows={4}
+                                    value={evidenceContent}
+                                    onChange={(e) => setEvidenceContent(e.target.value)}
+                                    placeholder="Provide detailed explanation of your evidence..."
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            '& fieldset': {
+                                                borderColor: '#d1d5db',
+                                            },
+                                            '&:hover fieldset': {
+                                                borderColor: '#9ca3af',
+                                            },
+                                            '&.Mui-focused fieldset': {
+                                                borderColor: '#10b981',
+                                            },
+                                        },
+                                    }}
+                                />
+                                <Typography variant="body2" sx={{color: '#64748b', mt: 1, fontStyle: 'italic'}}>
+                                    Explain how your evidence addresses the report concerns.
+                                </Typography>
+                            </Box>
+
+                            {/* Upload Type Selection */}
+                            <Paper elevation={0} sx={{
+                                p: 3,
+                                backgroundColor: '#f0fdf4',
+                                borderRadius: 2,
+                                border: '1px solid #bbf7d0'
+                            }}>
+                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#065f46'}}>
+                                    Evidence Type
+                                </Typography>
+                                <Box sx={{display: 'flex', gap: 2, mb: 3}}>
+                                    <Button
+                                        variant={evidenceUploadType === 'image' ? 'contained' : 'outlined'}
+                                        startIcon={<ImageIcon/>}
+                                        onClick={() => {
+                                            setEvidenceUploadType('image');
+                                            setEvidenceVideoFile(null);
+                                            setEvidenceVideoUrl('');
+                                        }}
+                                        disabled={uploadingEvidence}
+                                        sx={{
+                                            backgroundColor: evidenceUploadType === 'image' ? '#10b981' : 'transparent',
+                                            borderColor: '#10b981',
+                                            color: evidenceUploadType === 'image' ? 'white' : '#10b981',
+                                            '&:hover': {
+                                                backgroundColor: evidenceUploadType === 'image' ? '#059669' : '#f0fdf4',
+                                                borderColor: '#059669'
+                                            }
+                                        }}
+                                    >
+                                        Upload Multiple Images
+                                    </Button>
+                                    <Button
+                                        variant={evidenceUploadType === 'video' ? 'contained' : 'outlined'}
+                                        startIcon={<VideocamIcon/>}
+                                        onClick={() => {
+                                            setEvidenceUploadType('video');
+                                            setEvidenceFiles([]);
+                                            setEvidenceImageUrls([]);
+                                        }}
+                                        disabled={uploadingEvidence}
+                                        sx={{
+                                            backgroundColor: evidenceUploadType === 'video' ? '#10b981' : 'transparent',
+                                            borderColor: '#10b981',
+                                            color: evidenceUploadType === 'video' ? 'white' : '#10b981',
+                                            '&:hover': {
+                                                backgroundColor: evidenceUploadType === 'video' ? '#059669' : '#f0fdf4',
+                                                borderColor: '#059669'
+                                            }
+                                        }}
+                                    >
+                                        Upload Video
+                                    </Button>
+                                </Box>
+
+                                {/* Image Upload */}
+                                {evidenceUploadType === 'image' && (
+                                    <Box>
+                                        <input
+                                            id="evidence-image-upload"
+                                            type="file"
+                                            accept="image/*"
+                                            multiple
+                                            style={{display: 'none'}}
+                                            onChange={(e) => {
+                                                const files = Array.from(e.target.files);
+                                                if (files.length > 0) {
+                                                    // Thêm files mới vào danh sách hiện tại
+                                                    const newFiles = [...evidenceFiles, ...files];
+                                                    setEvidenceFiles(newFiles);
+                                                    handleEvidenceImageUpload(files); // Chỉ upload files mới
+                                                }
+                                                e.target.value = ''; // Reset input để có thể chọn lại cùng file
+                                            }}
+                                            disabled={uploadingEvidence}
+                                        />
+                                        <label htmlFor="evidence-image-upload">
+                                            <Box sx={{
+                                                border: '2px dashed #bbf7d0',
+                                                borderRadius: 2,
+                                                p: 3,
+                                                textAlign: 'center',
+                                                cursor: uploadingEvidence ? 'not-allowed' : 'pointer',
+                                                backgroundColor: 'white',
+                                                '&:hover': {
+                                                    borderColor: uploadingEvidence ? '#bbf7d0' : '#059669',
+                                                    backgroundColor: uploadingEvidence ? 'white' : '#f0fdf4'
+                                                }
+                                            }}>
+                                                <CloudUploadIcon sx={{fontSize: 48, color: '#10b981', mb: 2}}/>
+                                                <Typography variant="h6" sx={{color: '#065f46', mb: 1}}>
+                                                    {uploadingEvidence ? 'Uploading...' : 'Click to upload multiple images'}
+                                                </Typography>
+                                                <Typography variant="body2" sx={{color: '#047857'}}>
+                                                    Support: JPG, PNG, GIF (Max 10MB each) • Multiple files allowed
+                                                </Typography>
+
+                                                {/* Uploaded Images Preview */}
+                                                {evidenceImageUrls.length > 0 && (
+                                                    <Box sx={{mt: 2}}>
+                                                        <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2}}>
+                                                            <Typography variant="body2" sx={{color: '#059669', fontWeight: 600}}>
+                                                                ✓ {evidenceImageUrls.length} image(s) uploaded
+                                                            </Typography>
+                                                            <Box sx={{display: 'flex', gap: 1}}>
+                                                                <Button
+                                                                    size="small"
+                                                                    variant="outlined"
+                                                                    startIcon={<CloudUploadIcon />}
+                                                                    onClick={() => document.getElementById('evidence-image-upload').click()}
+                                                                    disabled={uploadingEvidence}
+                                                                    sx={{
+                                                                        fontSize: '0.75rem',
+                                                                        minWidth: 'auto',
+                                                                        px: 1,
+                                                                        py: 0.5,
+                                                                        borderColor: '#10b981',
+                                                                        color: '#10b981',
+                                                                        '&:hover': {
+                                                                            borderColor: '#059669',
+                                                                            backgroundColor: '#f0fdf4'
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    Add More
+                                                                </Button>
+                                                                <Button
+                                                                    size="small"
+                                                                    variant="outlined"
+                                                                    color="error"
+                                                                    startIcon={<CloseIcon />}
+                                                                    onClick={() => {
+                                                                        setEvidenceImageUrls([]);
+                                                                        setEvidenceFiles([]);
+                                                                    }}
+                                                                    disabled={uploadingEvidence}
+                                                                    sx={{
+                                                                        fontSize: '0.75rem',
+                                                                        minWidth: 'auto',
+                                                                        px: 1,
+                                                                        py: 0.5
+                                                                    }}
+                                                                >
+                                                                    Remove All
+                                                                </Button>
+                                                            </Box>
+                                                        </Box>
+                                                        <Box sx={{display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center'}}>
+                                                            {evidenceImageUrls.map((url, index) => (
+                                                                <Box key={index} sx={{
+                                                                    position: 'relative',
+                                                                    width: 80,
+                                                                    height: 80,
+                                                                    borderRadius: 1,
+                                                                    overflow: 'hidden',
+                                                                    border: '2px solid #10b981',
+                                                                    cursor: 'pointer',
+                                                                    '&:hover .remove-btn': {
+                                                                        opacity: 1
+                                                                    }
+                                                                }}>
+                                                                    <DisplayImage
+                                                                        imageUrl={url}
+                                                                        alt={`Evidence ${index + 1}`}
+                                                                        width="80px"
+                                                                        height="80px"
+                                                                    />
+                                                                    <IconButton
+                                                                        className="remove-btn"
+                                                                        size="small"
+                                                                        sx={{
+                                                                            position: 'absolute',
+                                                                            top: 2,
+                                                                            right: 2,
+                                                                            backgroundColor: 'rgba(239, 68, 68, 0.9)',
+                                                                            color: 'white',
+                                                                            width: 20,
+                                                                            height: 20,
+                                                                            opacity: 0,
+                                                                            transition: 'opacity 0.2s',
+                                                                            '&:hover': {
+                                                                                backgroundColor: '#dc2626'
+                                                                            }
+                                                                        }}
+                                                                        onClick={() => {
+                                                                            const newUrls = evidenceImageUrls.filter((_, i) => i !== index);
+                                                                            setEvidenceImageUrls(newUrls);
+                                                                        }}
+                                                                        disabled={uploadingEvidence}
+                                                                    >
+                                                                        <CloseIcon sx={{fontSize: 14}} />
+                                                                    </IconButton>
+                                                                </Box>
+                                                            ))}
+                                                        </Box>
+                                                    </Box>
+                                                )}
+
+                                                {/* Upload Progress */}
+                                                {uploadingEvidence && (
+                                                    <Box sx={{mt: 2}}>
+                                                        <LinearProgress
+                                                            variant="determinate"
+                                                            value={evidenceUploadProgress}
+                                                            sx={{
+                                                                height: 8,
+                                                                borderRadius: 4,
+                                                                backgroundColor: '#d1fae5',
+                                                                '& .MuiLinearProgress-bar': {
+                                                                    backgroundColor: '#10b981',
+                                                                    borderRadius: 4
+                                                                }
+                                                            }}
+                                                        />
+                                                        <Typography variant="body2" sx={{color: '#059669', mt: 1, fontWeight: 500}}>
+                                                            {evidenceUploadProgress}% uploaded
+                                                        </Typography>
+                                                    </Box>
+                                                )}
+                                            </Box>
+                                        </label>
+                                    </Box>
+                                )}
+
+                                {/* Video Upload */}
+                                {evidenceUploadType === 'video' && (
+                                    <Box>
+                                        <input
+                                            id="evidence-video-upload"
+                                            type="file"
+                                            accept="video/*"
+                                            style={{display: 'none'}}
+                                            onChange={(e) => {
+                                                const file = e.target.files[0];
+                                                if (file) {
+                                                    setEvidenceVideoFile(file);
+                                                    handleEvidenceVideoUpload(file);
+                                                }
+                                                e.target.value = ''; // Reset input để có thể chọn lại cùng file
+                                            }}
+                                            disabled={uploadingEvidence}
+                                        />
+                                        <label htmlFor="evidence-video-upload">
+                                            <Box sx={{
+                                                border: '2px dashed #bbf7d0',
+                                                borderRadius: 2,
+                                                p: 3,
+                                                textAlign: 'center',
+                                                cursor: uploadingEvidence ? 'not-allowed' : 'pointer',
+                                                backgroundColor: 'white',
+                                                '&:hover': {
+                                                    borderColor: uploadingEvidence ? '#bbf7d0' : '#059669',
+                                                    backgroundColor: uploadingEvidence ? 'white' : '#f0fdf4'
+                                                }
+                                            }}>
+                                                <VideocamIcon sx={{fontSize: 48, color: '#10b981', mb: 2}}/>
+                                                <Typography variant="h6" sx={{color: '#065f46', mb: 1}}>
+                                                    {uploadingEvidence ? 'Uploading...' : 'Click to upload video'}
+                                                </Typography>
+                                                <Typography variant="body2" sx={{color: '#047857'}}>
+                                                    Support: MP4, AVI, MOV (Max 50MB)
+                                                </Typography>
+
+                                                {/* Uploaded Video Preview */}
+                                                {evidenceVideoUrl && (
+                                                    <Box sx={{mt: 2}}>
+                                                        <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2}}>
+                                                            <Typography variant="body2" sx={{color: '#059669', fontWeight: 600}}>
+                                                                ✓ Video uploaded successfully
+                                                            </Typography>
+                                                            <Button
+                                                                size="small"
+                                                                variant="outlined"
+                                                                color="error"
+                                                                startIcon={<CloseIcon />}
+                                                                onClick={() => {
+                                                                    setEvidenceVideoUrl('');
+                                                                    setEvidenceVideoFile(null);
+                                                                }}
+                                                                disabled={uploadingEvidence}
+                                                                sx={{
+                                                                    fontSize: '0.75rem',
+                                                                    minWidth: 'auto',
+                                                                    px: 1,
+                                                                    py: 0.5
+                                                                }}
+                                                            >
+                                                                Remove
+                                                            </Button>
+                                                        </Box>
+                                                        <Box sx={{
+                                                            maxWidth: 400,
+                                                            mx: 'auto',
+                                                            borderRadius: 2,
+                                                            overflow: 'hidden',
+                                                            border: '2px solid #10b981'
+                                                        }}>
+                                                            <video
+                                                                controls
+                                                                style={{
+                                                                    width: '100%',
+                                                                    height: 'auto',
+                                                                    display: 'block'
+                                                                }}
+                                                                preload="metadata"
+                                                            >
+                                                                <source src={evidenceVideoUrl} type="video/mp4" />
+                                                                <source src={evidenceVideoUrl} type="video/webm" />
+                                                                <source src={evidenceVideoUrl} type="video/ogg" />
+                                                                Your browser does not support the video tag.
+                                                            </video>
+                                                        </Box>
+                                                    </Box>
+                                                )}
+
+                                                {/* Upload Progress */}
+                                                {uploadingEvidence && (
+                                                    <Box sx={{mt: 2}}>
+                                                        <LinearProgress
+                                                            variant="determinate"
+                                                            value={evidenceUploadProgress}
+                                                            sx={{
+                                                                height: 8,
+                                                                borderRadius: 4,
+                                                                backgroundColor: '#d1fae5',
+                                                                '& .MuiLinearProgress-bar': {
+                                                                    backgroundColor: '#10b981',
+                                                                    borderRadius: 4
+                                                                }
+                                                            }}
+                                                        />
+                                                        <Typography variant="body2" sx={{color: '#059669', mt: 1, fontWeight: 500}}>
+                                                            {evidenceUploadProgress}% uploaded
+                                                        </Typography>
+                                                    </Box>
+                                                )}
+                                            </Box>
+                                        </label>
+                                    </Box>
+                                )}
+                            </Paper>
+
+                            {/* Important Notice */}
+                            <Paper elevation={0} sx={{
+                                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.08) 100%)',
+                                border: '1px solid rgba(16, 185, 129, 0.1)',
+                                borderRadius: 2,
+                                p: 3
+                            }}>
+                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#047857'}}>
+                                    📝 Important Guidelines
+                                </Typography>
+                                <Typography variant="body2" sx={{color: '#065f46', lineHeight: 1.6}}>
+                                    • Provide clear and relevant evidence that addresses the report concerns<br/>
+                                    • Upload either images OR video, not both<br/>
+                                    • Ensure your evidence is high quality and clearly visible<br/>
+                                    • Be honest and transparent in your response
+                                </Typography>
+                            </Paper>
+                        </Box>
+                    )}
+                </DialogContent>
+
+                <DialogActions sx={{p: 3, pt: 0}}>
+                    <Button
+                        onClick={handleCloseGiveEvidence}
+                        disabled={submittingEvidence}
+                        sx={{
+                            color: '#64748b',
+                            borderColor: '#d1d5db',
+                            '&:hover': {
+                                borderColor: '#9ca3af',
+                                backgroundColor: '#f9fafb'
+                            }
+                        }}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={handleSubmitEvidence}
+                        disabled={
+                            submittingEvidence || 
+                            !evidenceContent.trim() || 
+                            (evidenceUploadType === 'image' && evidenceImageUrls.length === 0) ||
+                            (evidenceUploadType === 'video' && !evidenceVideoUrl) ||
+                            uploadingEvidence
+                        }
+                        variant="contained"
+                        sx={{
+                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                            color: 'white',
+                            fontWeight: 'bold',
+                            '&:hover': {
+                                background: 'linear-gradient(135deg, #059669 0%, #047857 100%)'
+                            },
+                            '&:disabled': {
+                                background: '#9ca3af'
+                            }
+                        }}
+                    >
+                        {submittingEvidence ? (
+                            <>
+                                <CircularProgress size={16} sx={{mr: 1, color: 'white'}}/>
+                                Submitting...
+                            </>
+                        ) : (
+                            'Submit Evidence'
+                        )}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Detail Dialog */}
+            <Dialog
+                open={detailDialogOpen}
+                onClose={handleCloseDetail}
+                maxWidth="md"
+                fullWidth
+                PaperProps={{
+                    sx: {borderRadius: 3}
+                }}
+            >
+                <DialogTitle sx={{
+                    background: selectedDetailFeedback?.report 
+                        ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
+                        : 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
+                    color: 'white',
+                    position: 'relative'
+                }}>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                        {selectedDetailFeedback?.report ? <ReportIcon/> : <FeedbackIcon/>}
+                        <Typography variant="h6" sx={{fontWeight: 'bold'}}>
+                            {selectedDetailFeedback?.report ? 'Report Details' : 'Feedback Details'}
+                        </Typography>
+                    </Box>
+                    <IconButton
+                        onClick={handleCloseDetail}
+                        sx={{
+                            position: 'absolute',
+                            right: 8,
+                            top: 8,
+                            color: 'white'
+                        }}
+                    >
+                        <CloseIcon/>
+                    </IconButton>
+                </DialogTitle>
+
+                <DialogContent sx={{p: 4}}>
+                    {selectedDetailFeedback && (
+                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
+                            {/* Sender Information */}
+                            <Paper elevation={0} sx={{
+                                p: 3,
+                                backgroundColor: '#f8fafc',
+                                borderRadius: 2,
+                                border: '1px solid #e2e8f0'
+                            }}>
+                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
+                                    From School
+                                </Typography>
+                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                    <Avatar
+                                        src={selectedDetailFeedback.sender?.avatar}
+                                        alt={selectedDetailFeedback.sender?.name}
+                                        sx={{width: 56, height: 56}}
+                                    >
+                                        <PersonIcon/>
+                                    </Avatar>
+                                    <Box>
+                                        <Typography variant="h6" sx={{fontWeight: 600, color: '#1e293b'}}>
+                                            {selectedDetailFeedback.sender?.name || 'Anonymous'}
+                                        </Typography>
+                                        <Typography variant="body2" sx={{color: '#64748b'}}>
+                                            {selectedDetailFeedback.sender?.email || 'No email provided'}
+                                        </Typography>
+                                        <Typography variant="body2" sx={{color: '#64748b'}}>
+                                            Created: {formatDate(selectedDetailFeedback.creationDate)}
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                            </Paper>
+
+                            {/* Content */}
+                            <Paper elevation={0} sx={{
+                                p: 3,
+                                backgroundColor: '#f8fafc',
+                                borderRadius: 2,
+                                border: '1px solid #e2e8f0'
+                            }}>
+                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
+                                    {selectedDetailFeedback.report ? 'Report Content' : 'Feedback Content'}
+                                </Typography>
+                                <Typography variant="body1" sx={{color: '#1e293b', lineHeight: 1.6}}>
+                                    {selectedDetailFeedback.schoolContent || selectedDetailFeedback.content || 'No content provided'}
+                                </Typography>
+                            </Paper>
+
+                            {/* Rating (only for feedback, not reports) */}
+                            {!selectedDetailFeedback.report && (
+                                <Paper elevation={0} sx={{
+                                    p: 3,
+                                    backgroundColor: '#f8fafc',
+                                    borderRadius: 2,
+                                    border: '1px solid #e2e8f0'
+                                }}>
+                                    <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
+                                        Rating
+                                    </Typography>
+                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                        <Rating
+                                            value={selectedDetailFeedback.rating}
+                                            readOnly
+                                            size="large"
+                                            icon={<StarIcon fontSize="inherit"/>}
+                                        />
+                                        <Typography variant="h6" sx={{color: '#f59e0b', fontWeight: 600}}>
+                                            {selectedDetailFeedback.rating}/5
+                                        </Typography>
+                                    </Box>
+                                </Paper>
+                            )}
+
+                            {/* Images */}
+                            {selectedDetailFeedback.images && selectedDetailFeedback.images.length > 0 && (
+                                <Paper elevation={0} sx={{
+                                    p: 3,
+                                    backgroundColor: '#f8fafc',
+                                    borderRadius: 2,
+                                    border: '1px solid #e2e8f0'
+                                }}>
+                                    <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
+                                        {selectedDetailFeedback.report ? 'School Evidence Images' : 'Attached Images'} ({selectedDetailFeedback.images.length})
+                                    </Typography>
+                                    <Box sx={{display: 'flex', gap: 2, flexWrap: 'wrap'}}>
+                                        {selectedDetailFeedback.images.map((image, index) => (
+                                            <Box
+                                                key={image.id || index}
+                                                sx={{
+                                                    position: 'relative',
+                                                    width: 120,
+                                                    height: 120,
+                                                    borderRadius: 2,
+                                                    overflow: 'hidden',
+                                                    border: '2px solid #e2e8f0',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s ease',
+                                                    '&:hover': {
+                                                        borderColor: selectedDetailFeedback.report ? '#ef4444' : '#7c3aed',
+                                                        transform: 'scale(1.05)'
+                                                    }
+                                                }}
+                                                onClick={() => handleImageClick(image.url)}
+                                            >
+                                                <DisplayImage
+                                                    imageUrl={image.url}
+                                                    alt={`Image ${index + 1}`}
+                                                    width="100%"
+                                                    height="100%"
+                                                    style={{objectFit: 'cover'}}
+                                                />
+                                                <Box
+                                                    sx={{
+                                                        position: 'absolute',
+                                                        top: 0,
+                                                        left: 0,
+                                                        right: 0,
+                                                        bottom: 0,
+                                                        background: 'rgba(0,0,0,0)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        opacity: 0,
+                                                        transition: 'opacity 0.2s ease',
+                                                        '&:hover': {
+                                                            opacity: 1,
+                                                            background: 'rgba(0,0,0,0.5)'
+                                                        }
+                                                    }}
+                                                >
+                                                    <ZoomInIcon sx={{color: 'white', fontSize: 32}}/>
+                                                </Box>
+                                                <Box
+                                                    sx={{
+                                                        position: 'absolute',
+                                                        top: 8,
+                                                        right: 8,
+                                                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                                                        color: 'white',
+                                                        borderRadius: '50%',
+                                                        width: 24,
+                                                        height: 24,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        fontSize: '12px',
+                                                        fontWeight: 'bold'
+                                                    }}
+                                                >
+                                                    {index + 1}
+                                                </Box>
+                                            </Box>
+                                        ))}
+                                    </Box>
+                                </Paper>
+                            )}
+
+                            {/* Additional Single Image (fallback for older data structure) */}
+                            {selectedDetailFeedback.report && !selectedDetailFeedback.images && selectedDetailFeedback.imageUrl && (
+                                <Paper elevation={0} sx={{
+                                    p: 3,
+                                    backgroundColor: '#f8fafc',
+                                    borderRadius: 2,
+                                    border: '1px solid #e2e8f0'
+                                }}>
+                                    <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
+                                        School Evidence Image
+                                    </Typography>
+                                    <Box sx={{
+                                        width: '100%',
+                                        height: 200,
+                                        borderRadius: 2,
+                                        overflow: 'hidden',
+                                        border: '2px solid #e2e8f0',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        '&:hover': {
+                                            borderColor: '#ef4444',
+                                            transform: 'scale(1.02)'
+                                        }
+                                    }}
+                                    onClick={() => handleImageClick(selectedDetailFeedback.imageUrl)}
+                                    >
+                                        <DisplayImage
+                                            imageUrl={selectedDetailFeedback.imageUrl}
+                                            alt="Report evidence"
+                                            width="100%"
+                                            height="200px"
+                                            style={{objectFit: 'cover'}}
+                                        />
+                                    </Box>
+                                </Paper>
+                            )}
+
+                            {/* School Video (if exists) */}
+                            {selectedDetailFeedback.schoolVideo && (
+                                <Paper elevation={0} sx={{
+                                    p: 3,
+                                    backgroundColor: '#f8fafc',
+                                    borderRadius: 2,
+                                    border: '1px solid #e2e8f0'
+                                }}>
+                                    <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
+                                        School Video Evidence
+                                    </Typography>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        borderRadius: 2,
+                                        overflow: 'hidden',
+                                        border: '2px solid #e2e8f0',
+                                        backgroundColor: '#000'
+                                    }}>
+                                        <video
+                                            src={selectedDetailFeedback.schoolVideo}
+                                            controls
+                                            style={{
+                                                width: '100%',
+                                                maxWidth: '600px',
+                                                height: 'auto',
+                                                maxHeight: '400px',
+                                                objectFit: 'contain'
+                                            }}
+                                            onError={(e) => {
+                                                console.error('School video failed to load:', e);
+                                                e.target.style.display = 'none';
+                                                e.target.parentNode.innerHTML = '<div style="color: #ef4444; padding: 20px; text-align: center;">School video failed to load</div>';
+                                            }}
+                                        />
+                                    </Box>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: 1,
+                                        mt: 2,
+                                        p: 2,
+                                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                        borderRadius: 2,
+                                        border: '1px solid rgba(59, 130, 246, 0.2)'
+                                    }}>
+                                        <VideocamIcon sx={{color: '#3b82f6', fontSize: 20}}/>
+                                        <Typography variant="body2" sx={{color: '#1e40af', fontWeight: 500}}>
+                                            Video evidence from school
+                                        </Typography>
+                                    </Box>
+                                </Paper>
+                            )}
+
+                            {/* Partner Response (if exists) */}
+                            {selectedDetailFeedback.partnerContent && (
+                                <Paper elevation={0} sx={{
+                                    p: 3,
+                                    backgroundColor: '#f0fdf4',
+                                    borderRadius: 2,
+                                    border: '1px solid #bbf7d0'
+                                }}>
+                                    <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#065f46'}}>
+                                        Your Response
+                                    </Typography>
+                                    <Typography variant="body1" sx={{color: '#047857', lineHeight: 1.6, mb: 2}}>
+                                        {selectedDetailFeedback.partnerContent}
+                                    </Typography>
+                                    
+                                    {/* Partner Evidence Images */}
+                                    {selectedDetailFeedback.partnerImageUrls && selectedDetailFeedback.partnerImageUrls.length > 0 && (
+                                        <Box sx={{mt: 2}}>
+                                            <Typography variant="subtitle1" sx={{fontWeight: 'bold', mb: 2, color: '#065f46'}}>
+                                                Evidence Images ({selectedDetailFeedback.partnerImageUrls.length})
+                                            </Typography>
+                                            <Box sx={{display: 'flex', gap: 2, flexWrap: 'wrap'}}>
+                                                {selectedDetailFeedback.partnerImageUrls.map((imageUrl, index) => (
+                                                    <Box
+                                                        key={index}
+                                                        sx={{
+                                                            position: 'relative',
+                                                            width: 120,
+                                                            height: 120,
+                                                            borderRadius: 2,
+                                                            overflow: 'hidden',
+                                                            border: '2px solid #10b981',
+                                                            cursor: 'pointer',
+                                                            transition: 'all 0.2s ease',
+                                                            '&:hover': {
+                                                                borderColor: '#059669',
+                                                                transform: 'scale(1.05)'
+                                                            }
+                                                        }}
+                                                        onClick={() => handleImageClick(imageUrl)}
+                                                    >
+                                                        <DisplayImage
+                                                            imageUrl={imageUrl}
+                                                            alt={`Evidence image ${index + 1}`}
+                                                            width="100%"
+                                                            height="100%"
+                                                            style={{objectFit: 'cover'}}
+                                                        />
+                                                        <Box
+                                                            sx={{
+                                                                position: 'absolute',
+                                                                top: 0,
+                                                                left: 0,
+                                                                right: 0,
+                                                                bottom: 0,
+                                                                background: 'rgba(0,0,0,0)',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                opacity: 0,
+                                                                transition: 'opacity 0.2s ease',
+                                                                '&:hover': {
+                                                                    opacity: 1,
+                                                                    background: 'rgba(0,0,0,0.5)'
+                                                                }
+                                                            }}
+                                                        >
+                                                            <ZoomInIcon sx={{color: 'white', fontSize: 32}}/>
+                                                        </Box>
+                                                    </Box>
+                                                ))}
+                                            </Box>
+                                        </Box>
+                                    )}
+                                    
+                                    {/* Partner Evidence Video */}
+                                    {selectedDetailFeedback.partnerVideo && (
+                                        <Box sx={{mt: 2}}>
+                                            <Typography variant="subtitle1" sx={{fontWeight: 'bold', mb: 2, color: '#065f46'}}>
+                                                Evidence Video
+                                            </Typography>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                borderRadius: 2,
+                                                overflow: 'hidden',
+                                                border: '2px solid #10b981',
+                                                backgroundColor: '#000'
+                                            }}>
+                                                <video
+                                                    src={selectedDetailFeedback.partnerVideo}
+                                                    controls
+                                                    style={{
+                                                        width: '100%',
+                                                        maxWidth: '600px',
+                                                        height: 'auto',
+                                                        maxHeight: '400px',
+                                                        objectFit: 'contain'
+                                                    }}
+                                                    preload="metadata"
+                                                    onError={(e) => {
+                                                        console.error('Partner video failed to load:', e);
+                                                        console.log('Video URL:', selectedDetailFeedback.partnerVideo);
+                                                        e.target.style.display = 'none';
+                                                        e.target.parentNode.innerHTML = '<div style="color: #ef4444; padding: 20px; text-align: center;">Partner video failed to load</div>';
+                                                    }}
+                                                />
+                                            </Box>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: 1,
+                                                mt: 2,
+                                                p: 2,
+                                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                                borderRadius: 2,
+                                                border: '1px solid rgba(16, 185, 129, 0.2)'
+                                            }}>
+                                                <VideocamIcon sx={{color: '#10b981', fontSize: 20}}/>
+                                                <Typography variant="body2" sx={{color: '#065f46', fontWeight: 500}}>
+                                                    Evidence video from designer
+                                                </Typography>
+                                            </Box>
+                                            
+                                            {/* Fallback link if video doesn't load */}
+                                            <Typography variant="caption" sx={{color: '#64748b', mt: 1, display: 'block', textAlign: 'center'}}>
+                                                Can't play video? <a href={selectedDetailFeedback.partnerVideo} target="_blank" rel="noopener noreferrer" style={{color: '#10b981'}}>Open in new tab</a>
+                                            </Typography>
+                                        </Box>
+                                    )}
+                                </Paper>
+                            )}
+                        </Box>
+                    )}
+                </DialogContent>
+
+                <DialogActions sx={{p: 3}}>
+                    <Button
+                        onClick={handleCloseDetail}
+                        variant="outlined"
+                        sx={{
+                            color: '#64748b',
+                            borderColor: '#d1d5db',
+                            '&:hover': {
+                                borderColor: '#9ca3af',
+                                backgroundColor: '#f9fafb'
+                            }
+                        }}
+                    >
+                        Close
+                    </Button>
+                </DialogActions>
             </Dialog>
         </Box>
     );
