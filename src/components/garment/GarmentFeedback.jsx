@@ -25,7 +25,6 @@ import {
     Typography
 } from '@mui/material';
 import {
-    FlagCircle as FlagIcon,
     Assignment as OrderIcon,
     AttachMoney as MoneyIcon,
     Business as BusinessIcon,
@@ -50,8 +49,8 @@ import {
     ZoomIn as ZoomInIcon
 } from '@mui/icons-material';
 import {Empty} from 'antd';
-import {getReportsByGarment, appealReport} from '../../services/FeedbackService.jsx';
-import {uploadCloudinaryVideo} from '../../services/UploadImageService.jsx';
+import {getReportsByGarment, giveEvidence} from '../../services/FeedbackService.jsx';
+import {uploadCloudinaryVideo, uploadCloudinary} from '../../services/UploadImageService.jsx';
 import DisplayImage from '../ui/DisplayImage.jsx';
 import {parseID} from "../../utils/ParseIDUtil.jsx";
 import dayjs from 'dayjs';
@@ -131,7 +130,7 @@ const FeedbackSkeleton = () => (
 );
 
 // FeedbackCard Component
-const FeedbackCard = React.memo(({feedback, onImageClick, onViewDetail, onAppeal}) => {
+const FeedbackCard = React.memo(({feedback, onImageClick, onViewDetail, onGiveEvidence}) => {
     const isReport = feedback.report;
     
 
@@ -422,28 +421,25 @@ const FeedbackCard = React.memo(({feedback, onImageClick, onViewDetail, onAppeal
                             </Button>
                             
 
-                            
-                            {/* Appeal Button - Only show for reports with status not under-review */}
-                            {feedback.report && feedback.status && 
-                             !feedback.status.toLowerCase().includes('under-review') && 
-                             (!feedback.appeals || feedback.appeals.length === 0) && (
+                            {/* Give Evidence Button - Only show for reports where partnerContent is null */}
+                            {feedback.report && !feedback.partnerContent && (
                                 <Button
                                     variant="contained"
-                                    startIcon={<FlagIcon/>}
-                                    onClick={() => onAppeal(feedback)}
+                                    startIcon={<CloudUploadIcon/>}
+                                    onClick={() => onGiveEvidence(feedback)}
                                     sx={{
-                                        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                                         color: 'white',
                                         fontWeight: 600,
                                         px: 3,
-                                        boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
+                                        boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
                                         '&:hover': {
-                                            background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
-                                            boxShadow: '0 6px 16px rgba(245, 158, 11, 0.4)'
+                                            background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                                            boxShadow: '0 6px 16px rgba(16, 185, 129, 0.4)'
                                         }
                                     }}
                                 >
-                                    Submit Appeal
+                                    Give Evidence
                                 </Button>
                             )}
                         </Box>
@@ -549,14 +545,19 @@ export default function GarmentFeedback() {
     const [detailDialogOpen, setDetailDialogOpen] = useState(false);
     const [orderDetailOpen, setOrderDetailOpen] = useState(false);
     
-    // Appeal dialog state
-    const [appealDialogOpen, setAppealDialogOpen] = useState(false);
-    const [appealReason, setAppealReason] = useState('');
-    const [appealVideoFile, setAppealVideoFile] = useState(null);
-    const [appealVideoUrl, setAppealVideoUrl] = useState('');
-    const [uploadingVideo, setUploadingVideo] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState(0);
-    const [submittingAppeal, setSubmittingAppeal] = useState(false);
+
+    
+    // Give Evidence dialog state
+    const [evidenceDialogOpen, setEvidenceDialogOpen] = useState(false);
+    const [evidenceContent, setEvidenceContent] = useState('');
+    const [evidenceFiles, setEvidenceFiles] = useState([]);
+    const [evidenceVideoFile, setEvidenceVideoFile] = useState(null);
+    const [evidenceImageUrls, setEvidenceImageUrls] = useState([]);
+    const [evidenceVideoUrl, setEvidenceVideoUrl] = useState('');
+    const [uploadingEvidence, setUploadingEvidence] = useState(false);
+    const [evidenceUploadProgress, setEvidenceUploadProgress] = useState(0);
+    const [submittingEvidence, setSubmittingEvidence] = useState(false);
+    const [evidenceUploadType, setEvidenceUploadType] = useState('image'); // 'image' or 'video'
     
 
 
@@ -625,131 +626,158 @@ export default function GarmentFeedback() {
         setOrderDetailOpen(false);
     }, []);
 
-    // Appeal handlers
-    const handleOpenAppeal = useCallback((feedback) => {
+    
+    
+    // Give Evidence handlers
+    const handleOpenGiveEvidence = useCallback((feedback) => {
         setSelectedFeedback(feedback);
-        setAppealDialogOpen(true);
-        setAppealReason('');
-        setAppealVideoFile(null);
-        setAppealVideoUrl('');
-        setUploadProgress(0);
+        setEvidenceDialogOpen(true);
+        setEvidenceContent('');
+        setEvidenceFiles([]);
+        setEvidenceVideoFile(null);
+        setEvidenceImageUrls([]);
+        setEvidenceVideoUrl('');
+        setEvidenceUploadProgress(0);
+        setEvidenceUploadType('image');
+    }, []);
+    
+    const handleCloseGiveEvidence = useCallback(() => {
+        setEvidenceDialogOpen(false);
+        setEvidenceContent('');
+        setEvidenceFiles([]);
+        setEvidenceVideoFile(null);
+        setEvidenceImageUrls([]);
+        setEvidenceVideoUrl('');
+        setEvidenceUploadProgress(0);
+        setUploadingEvidence(false);
+        setSubmittingEvidence(false);
+        setEvidenceUploadType('image');
     }, []);
 
-    const handleCloseAppeal = useCallback(() => {
-        setAppealDialogOpen(false);
-        setAppealReason('');
-        setAppealVideoFile(null);
-        setAppealVideoUrl('');
-        setUploadProgress(0);
-        setUploadingVideo(false);
-        setSubmittingAppeal(false);
-    }, []);
 
-    const handleVideoUpload = useCallback(async (file) => {
+    
+    // Evidence upload handlers
+    const handleEvidenceImageUpload = useCallback(async (files) => {
+        if (!files || files.length === 0) return;
+        
         try {
-            setUploadingVideo(true);
-            setUploadProgress(0);
+            setUploadingEvidence(true);
+            setEvidenceUploadProgress(0);
+            const uploadedUrls = [];
             
-            const videoUrl = await uploadCloudinaryVideo(file, (progressEvent) => {
-                const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-                setUploadProgress(progress);
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const result = await uploadCloudinary(file, (progress) => {
+                    const totalProgress = ((i / files.length) + (progress / 100 / files.length)) * 100;
+                    setEvidenceUploadProgress(Math.round(totalProgress));
+                });
+                
+                if (result && result.secure_url) {
+                    uploadedUrls.push(result.secure_url);
+                }
+            }
+            
+            setEvidenceImageUrls(uploadedUrls);
+            setEvidenceUploadProgress(100);
+            
+            if (uploadedUrls.length > 0) {
+                enqueueSnackbar(`${uploadedUrls.length} image(s) uploaded successfully!`, {variant: 'success'});
+            }
+            
+        } catch (error) {
+            console.error('Error uploading images:', error);
+            enqueueSnackbar('Failed to upload images. Please try again.', {variant: 'error'});
+        } finally {
+            setUploadingEvidence(false);
+        }
+    }, []);
+    
+    const handleEvidenceVideoUpload = useCallback(async (file) => {
+        if (!file) return;
+        
+        try {
+            setUploadingEvidence(true);
+            setEvidenceUploadProgress(0);
+            
+            const result = await uploadCloudinaryVideo(file, (progress) => {
+                setEvidenceUploadProgress(progress);
             });
             
-            return videoUrl;
-        } catch (err) {
-            console.error('Error uploading video:', err);
-            enqueueSnackbar('Failed to upload video', {variant: 'error'});
-            throw err;
+            if (result && result.secure_url) {
+                setEvidenceVideoUrl(result.secure_url);
+                enqueueSnackbar('Video uploaded successfully!', {variant: 'success'});
+            }
+            
+        } catch (error) {
+            console.error('Error uploading video:', error);
+            enqueueSnackbar('Failed to upload video. Please try again.', {variant: 'error'});
         } finally {
-            setUploadingVideo(false);
-            setUploadProgress(0);
+            setUploadingEvidence(false);
         }
     }, []);
-
-    const handleVideoChange = useCallback(async (event) => {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        try {
-            const uploadedVideoUrl = await handleVideoUpload(file);
-            setAppealVideoFile(file);
-            setAppealVideoUrl(uploadedVideoUrl);
-        } catch (err) {
-            console.error('Upload failed for video:', file.name, err);
+    
+    const handleSubmitEvidence = useCallback(async () => {
+        if (!selectedFeedback) return;
+        
+        // Validation
+        if (!evidenceContent.trim()) {
+            enqueueSnackbar('Please provide evidence content', {variant: 'error'});
+            return;
         }
         
-        event.target.value = '';
-    }, [handleVideoUpload]);
-
-    const handleRemoveVideo = useCallback(() => {
-        setAppealVideoFile(null);
-        setAppealVideoUrl('');
-        setUploadProgress(0);
-    }, []);
-
-    const handleSubmitAppeal = useCallback(async () => {
-        if (!selectedFeedback || !appealReason.trim()) {
-            enqueueSnackbar('Please provide a reason for your appeal', {variant: 'error'});
+        if (evidenceUploadType === 'image' && evidenceImageUrls.length === 0) {
+            enqueueSnackbar('Please upload at least one image as evidence', {variant: 'error'});
             return;
         }
-
-        // Validate reason length
-        if (appealReason.trim().length < 10) {
-            enqueueSnackbar('Appeal reason must be at least 10 characters long', {variant: 'error'});
+        
+        if (evidenceUploadType === 'video' && !evidenceVideoUrl) {
+            enqueueSnackbar('Please upload a video as evidence', {variant: 'error'});
             return;
         }
-
-        if (appealReason.trim().length > 500) {
-            enqueueSnackbar('Appeal reason cannot exceed 500 characters', {variant: 'error'});
-            return;
-        }
-
+        
         try {
-            setSubmittingAppeal(true);
+            setSubmittingEvidence(true);
             
-            // Prepare payload matching GiveAppealsRequest structure
+            // Prepare payload matching GiveEvidenceRequest structure
             const payload = {
-                reportId: parseInt(selectedFeedback.id), // Ensure it's integer
-                reason: appealReason.trim(),
-                videoUrl: appealVideoUrl && appealVideoUrl.trim() !== '' ? appealVideoUrl.trim() : null
+                reportId: parseInt(selectedFeedback.id),
+                content: evidenceContent.trim(),
+                imageUrls: evidenceUploadType === 'image' ? evidenceImageUrls : [],
+                videoUrl: evidenceUploadType === 'video' ? evidenceVideoUrl : null
             };
-
-            console.log('Submitting appeal with payload:', payload);
             
-            // Call appealReport API
-            const response = await appealReport(payload);
+            console.log('Submitting evidence with payload:', payload);
+            
+            const response = await giveEvidence(payload);
             
             if (response && response.status === 200) {
-                enqueueSnackbar('Appeal submitted successfully! Your appeal will be reviewed by administrators.', {
+                enqueueSnackbar('Evidence submitted successfully!', {
                     variant: 'success',
                     autoHideDuration: 5000
                 });
-                handleCloseAppeal();
+                handleCloseGiveEvidence();
                 
                 // Refresh feedbacks to get updated status
                 fetchFeedbacks(false);
             } else {
-                throw new Error(response?.data?.message || 'Failed to submit appeal');
+                throw new Error(response?.data?.message || 'Failed to submit evidence');
             }
             
         } catch (error) {
-            console.error('Error submitting appeal:', error);
+            console.error('Error submitting evidence:', error);
             
-            // Handle different error scenarios
             const errorMessage = error.response?.data?.message || 
                                error.message || 
-                               'Failed to submit appeal. Please try again.';
+                               'Failed to submit evidence. Please try again.';
             
             enqueueSnackbar(errorMessage, {
                 variant: 'error',
                 autoHideDuration: 5000
             });
         } finally {
-            setSubmittingAppeal(false);
+            setSubmittingEvidence(false);
         }
-    }, [selectedFeedback, appealReason, appealVideoUrl, handleCloseAppeal, fetchFeedbacks]);
-
-
+    }, [selectedFeedback, evidenceContent, evidenceUploadType, evidenceImageUrls, evidenceVideoUrl, handleCloseGiveEvidence, fetchFeedbacks]);
 
     // Filter feedbacks and reports
     const {feedbacks, reports} = useMemo(() => {
@@ -936,7 +964,7 @@ export default function GarmentFeedback() {
                                             feedback={feedback}
                                             onImageClick={handleImageClick}
                                             onViewDetail={handleViewDetail}
-                                            onAppeal={handleOpenAppeal}
+                                            onGiveEvidence={handleOpenGiveEvidence}
                                         />
                                     ))}
                                 </Box>
@@ -977,7 +1005,7 @@ export default function GarmentFeedback() {
                                             feedback={report}
                                             onImageClick={handleImageClick}
                                             onViewDetail={handleViewDetail}
-                                            onAppeal={handleOpenAppeal}
+                                            onGiveEvidence={handleOpenGiveEvidence}
                                         />
                                     ))}
                                 </Box>
@@ -1747,10 +1775,12 @@ export default function GarmentFeedback() {
                 </DialogActions>
             </Dialog>
 
-            {/* Appeal Dialog */}
+
+
+            {/* Give Evidence Dialog */}
             <Dialog
-                open={appealDialogOpen}
-                onClose={handleCloseAppeal}
+                open={evidenceDialogOpen}
+                onClose={handleCloseGiveEvidence}
                 maxWidth="md"
                 fullWidth
                 PaperProps={{
@@ -1758,18 +1788,19 @@ export default function GarmentFeedback() {
                 }}
             >
                 <DialogTitle sx={{
-                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                     color: 'white',
                     position: 'relative'
                 }}>
                     <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
-                        <FlagIcon/>
+                        <CloudUploadIcon/>
                         <Typography variant="h6" sx={{fontWeight: 'bold'}}>
-                            Submit Appeal
+                            Provide Evidence
                         </Typography>
                     </Box>
                     <IconButton
-                        onClick={handleCloseAppeal}
+                        onClick={handleCloseGiveEvidence}
+                        disabled={submittingEvidence}
                         sx={{
                             position: 'absolute',
                             right: 8,
@@ -1786,93 +1817,36 @@ export default function GarmentFeedback() {
                         <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
                             {/* Report Summary */}
                             <Paper elevation={0} sx={{
-                                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(217, 119, 6, 0.08) 100%)',
-                                border: '1px solid rgba(245, 158, 11, 0.1)',
-                                borderRadius: 2,
-                                p: 3
-                            }}>
-                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
-                                    Report Summary
-                                </Typography>
-                                <Box sx={{display: 'flex', gap: 2, mb: 2}}>
-                                    <Box sx={{flex: 1}}>
-                                        <Typography variant="body2" sx={{color: '#64748b'}}>
-                                            Report ID
-                                        </Typography>
-                                        <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                            {parseID(selectedFeedback.id, "rp")}
-                                        </Typography>
-                                    </Box>
-                                    <Box sx={{flex: 1}}>
-                                        <Typography variant="body2" sx={{color: '#64748b'}}>
-                                            Current Status
-                                        </Typography>
-                                        <Chip
-                                            label={selectedFeedback.status}
-                                            sx={{
-                                                backgroundColor: (() => {
-                                                    const status = selectedFeedback.status?.toLowerCase();
-                                                    if (status?.includes('approved') || status?.includes('accepted')) return '#dcfce7';
-                                                    if (status?.includes('rejected')) return '#fecaca';
-                                                    return '#f1f5f9';
-                                                })(),
-                                                color: (() => {
-                                                    const status = selectedFeedback.status?.toLowerCase();
-                                                    if (status?.includes('approved') || status?.includes('accepted')) return '#065f46';
-                                                    if (status?.includes('rejected')) return '#dc2626';
-                                                    return '#475569';
-                                                })(),
-                                                fontWeight: 'bold',
-                                                fontSize: '0.75rem'
-                                            }}
-                                        />
-                                    </Box>
-                                </Box>
-                                <Box>
-                                    <Typography variant="body2" sx={{color: '#64748b'}}>
-                                        Report Content
-                                    </Typography>
-                                    <Typography variant="body1" sx={{color: '#1e293b', fontStyle: 'italic'}}>
-                                        "{selectedFeedback.content}"
-                                    </Typography>
-                                </Box>
-                            </Paper>
-
-                            {/* Appeal Information */}
-                            <Paper elevation={0} sx={{
-                                background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(220, 38, 38, 0.08) 100%)',
-                                border: '1px solid rgba(239, 68, 68, 0.1)',
-                                borderRadius: 2,
-                                p: 3
-                            }}>
-                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#dc2626'}}>
-                                    ⚠️ Important Notice
-                                </Typography>
-                                <Typography variant="body2" sx={{color: '#7f1d1d', lineHeight: 1.6}}>
-                                    • Appeals must be submitted within the specified timeframe<br/>
-                                    • Provide detailed reasons and evidence to support your appeal<br/>
-                                    • Video evidence is recommended but optional<br/>
-                                    • False appeals may result in penalties
-                                </Typography>
-                            </Paper>
-
-                            {/* Appeal Reason */}
-                            <Paper elevation={0} sx={{
                                 p: 3,
                                 backgroundColor: '#f8fafc',
                                 borderRadius: 2,
                                 border: '1px solid #e2e8f0'
                             }}>
                                 <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
-                                    Appeal Reason *
+                                    Report Details
+                                </Typography>
+                                <Box>
+                                    <Typography variant="body2" sx={{color: '#64748b'}}>
+                                        Report Content:
+                                    </Typography>
+                                    <Typography variant="body1" sx={{color: '#1e293b', fontStyle: 'italic'}}>
+                                        "{selectedFeedback.schoolcontent}"
+                                    </Typography>
+                                </Box>
+                            </Paper>
+
+                            {/* Evidence Content */}
+                            <Box>
+                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
+                                    Evidence Description (Required)
                                 </Typography>
                                 <TextField
                                     fullWidth
                                     multiline
                                     rows={4}
-                                    value={appealReason}
-                                    onChange={(e) => setAppealReason(e.target.value)}
-                                    placeholder="Please explain why you believe this report should be reconsidered. Provide specific details and context..."
+                                    value={evidenceContent}
+                                    onChange={(e) => setEvidenceContent(e.target.value)}
+                                    placeholder="Provide detailed explanation of your evidence..."
                                     sx={{
                                         '& .MuiOutlinedInput-root': {
                                             '& fieldset': {
@@ -1882,125 +1856,221 @@ export default function GarmentFeedback() {
                                                 borderColor: '#9ca3af',
                                             },
                                             '&.Mui-focused fieldset': {
-                                                borderColor: '#f59e0b',
+                                                borderColor: '#10b981',
                                             },
                                         },
                                     }}
                                 />
-                                <Typography variant="caption" sx={{
-                                    color: appealReason.length < 10 ? '#ef4444' : appealReason.length > 500 ? '#ef4444' : '#64748b', 
-                                    mt: 1, 
-                                    display: 'block'
-                                }}>
-                                    {appealReason.length}/500 characters {appealReason.length < 10 && '(minimum 10 characters required)'}
+                                <Typography variant="body2" sx={{color: '#64748b', mt: 1, fontStyle: 'italic'}}>
+                                    Explain how your evidence addresses the report concerns.
                                 </Typography>
-                            </Paper>
+                            </Box>
 
-                            {/* Video Evidence */}
+                            {/* Upload Type Selection */}
                             <Paper elevation={0} sx={{
                                 p: 3,
-                                backgroundColor: '#f8fafc',
+                                backgroundColor: '#f0fdf4',
                                 borderRadius: 2,
-                                border: '1px solid #e2e8f0'
+                                border: '1px solid #bbf7d0'
                             }}>
-                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
-                                    Video Evidence (Optional)
+                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#065f46'}}>
+                                    Evidence Type
                                 </Typography>
-                                
-                                {/* Video Display */}
-                                {appealVideoFile && (
-                                    <Box sx={{mb: 3}}>
-                                        <Box sx={{
-                                            position: 'relative',
-                                            width: '100%',
-                                            maxWidth: 500,
-                                            mx: 'auto',
-                                            borderRadius: 2,
-                                            overflow: 'hidden',
-                                            border: '2px solid #e2e8f0',
-                                            backgroundColor: '#000'
-                                        }}>
-                                            <video
-                                                src={appealVideoUrl}
-                                                controls
-                                                style={{
-                                                    width: '100%',
-                                                    height: '300px',
-                                                    objectFit: 'contain'
-                                                }}
-                                            />
-                                            <IconButton
-                                                onClick={handleRemoveVideo}
-                                                sx={{
-                                                    position: 'absolute',
-                                                    top: 8,
-                                                    right: 8,
-                                                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                                                    color: 'white',
-                                                    '&:hover': {
-                                                        backgroundColor: 'rgba(0, 0, 0, 0.9)'
-                                                    }
-                                                }}
-                                                size="small"
-                                            >
-                                                <CloseIcon/>
-                                            </IconButton>
-                                        </Box>
-                                        <Typography variant="body2" sx={{textAlign: 'center', mt: 1, color: '#64748b'}}>
-                                            Video: {appealVideoFile.name}
-                                        </Typography>
-                                    </Box>
-                                )}
+                                <Box sx={{display: 'flex', gap: 2, mb: 3}}>
+                                    <Button
+                                        variant={evidenceUploadType === 'image' ? 'contained' : 'outlined'}
+                                        startIcon={<ImageIcon/>}
+                                        onClick={() => {
+                                            setEvidenceUploadType('image');
+                                            setEvidenceVideoFile(null);
+                                            setEvidenceVideoUrl('');
+                                        }}
+                                        disabled={uploadingEvidence}
+                                        sx={{
+                                            backgroundColor: evidenceUploadType === 'image' ? '#10b981' : 'transparent',
+                                            borderColor: '#10b981',
+                                            color: evidenceUploadType === 'image' ? 'white' : '#10b981',
+                                            '&:hover': {
+                                                backgroundColor: evidenceUploadType === 'image' ? '#059669' : '#f0fdf4',
+                                                borderColor: '#059669'
+                                            }
+                                        }}
+                                    >
+                                        Upload Images
+                                    </Button>
+                                    <Button
+                                        variant={evidenceUploadType === 'video' ? 'contained' : 'outlined'}
+                                        startIcon={<VideocamIcon/>}
+                                        onClick={() => {
+                                            setEvidenceUploadType('video');
+                                            setEvidenceFiles([]);
+                                            setEvidenceImageUrls([]);
+                                        }}
+                                        disabled={uploadingEvidence}
+                                        sx={{
+                                            backgroundColor: evidenceUploadType === 'video' ? '#10b981' : 'transparent',
+                                            borderColor: '#10b981',
+                                            color: evidenceUploadType === 'video' ? 'white' : '#10b981',
+                                            '&:hover': {
+                                                backgroundColor: evidenceUploadType === 'video' ? '#059669' : '#f0fdf4',
+                                                borderColor: '#059669'
+                                            }
+                                        }}
+                                    >
+                                        Upload Video
+                                    </Button>
+                                </Box>
 
-                                {/* Upload Area */}
-                                {!appealVideoFile && (
-                                    <Box sx={{
-                                        border: '2px dashed #f59e0b',
-                                        borderRadius: 2,
-                                        p: 3,
-                                        textAlign: 'center',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.3s ease',
-                                        backgroundColor: 'rgba(245, 158, 11, 0.05)',
-                                        '&:hover': {
-                                            borderColor: '#d97706',
-                                            backgroundColor: 'rgba(245, 158, 11, 0.1)'
-                                        }
-                                    }}>
+                                {/* Image Upload */}
+                                {evidenceUploadType === 'image' && (
+                                    <Box>
                                         <input
+                                            id="evidence-image-upload"
                                             type="file"
-                                            accept="video/*"
-                                            onChange={handleVideoChange}
+                                            accept="image/*"
+                                            multiple
                                             style={{display: 'none'}}
-                                            id="appeal-video-upload"
-                                            disabled={uploadingVideo}
+                                            onChange={(e) => {
+                                                const files = Array.from(e.target.files);
+                                                setEvidenceFiles(files);
+                                                handleEvidenceImageUpload(files);
+                                            }}
+                                            disabled={uploadingEvidence}
                                         />
-                                        <label htmlFor="appeal-video-upload">
-                                            <Box sx={{cursor: 'pointer'}}>
-                                                <VideocamIcon sx={{fontSize: 48, color: '#f59e0b', mb: 2}}/>
-                                                <Typography variant="h6" sx={{color: '#1e293b', mb: 1}}>
-                                                    {uploadingVideo ? `Uploading... ${uploadProgress}%` : 'Upload Video Evidence'}
+                                        <label htmlFor="evidence-image-upload">
+                                            <Box sx={{
+                                                border: '2px dashed #bbf7d0',
+                                                borderRadius: 2,
+                                                p: 3,
+                                                textAlign: 'center',
+                                                cursor: uploadingEvidence ? 'not-allowed' : 'pointer',
+                                                backgroundColor: 'white',
+                                                '&:hover': {
+                                                    borderColor: uploadingEvidence ? '#bbf7d0' : '#059669',
+                                                    backgroundColor: uploadingEvidence ? 'white' : '#f0fdf4'
+                                                }
+                                            }}>
+                                                <CloudUploadIcon sx={{fontSize: 48, color: '#10b981', mb: 2}}/>
+                                                <Typography variant="h6" sx={{color: '#065f46', mb: 1}}>
+                                                    Click to upload images
                                                 </Typography>
-                                                <Typography variant="body2" sx={{color: '#64748b', mb: 2}}>
-                                                    Upload video evidence to support your appeal (MP4, AVI, MOV, etc.)
+                                                <Typography variant="body2" sx={{color: '#047857'}}>
+                                                    Support: JPG, PNG, GIF (Max 10MB each)
                                                 </Typography>
-                                                {uploadingVideo && (
+
+                                                {/* Uploaded Images Preview */}
+                                                {evidenceImageUrls.length > 0 && (
+                                                    <Box sx={{mt: 2, display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center'}}>
+                                                        {evidenceImageUrls.map((url, index) => (
+                                                            <Box key={index} sx={{
+                                                                width: 80,
+                                                                height: 80,
+                                                                borderRadius: 1,
+                                                                overflow: 'hidden',
+                                                                border: '2px solid #10b981'
+                                                            }}>
+                                                                <DisplayImage
+                                                                    imageUrl={url}
+                                                                    alt={`Evidence ${index + 1}`}
+                                                                    width="80px"
+                                                                    height="80px"
+                                                                />
+                                                            </Box>
+                                                        ))}
+                                                    </Box>
+                                                )}
+
+                                                {/* Upload Progress */}
+                                                {uploadingEvidence && (
                                                     <Box sx={{mt: 2}}>
-                                                        <LinearProgress 
-                                                            variant="determinate" 
-                                                            value={uploadProgress}
+                                                        <LinearProgress
+                                                            variant="determinate"
+                                                            value={evidenceUploadProgress}
                                                             sx={{
-                                                                height: 6,
-                                                                borderRadius: 3,
-                                                                backgroundColor: '#e2e8f0',
+                                                                height: 8,
+                                                                borderRadius: 4,
+                                                                backgroundColor: '#d1fae5',
                                                                 '& .MuiLinearProgress-bar': {
-                                                                    backgroundColor: '#f59e0b',
-                                                                    borderRadius: 3
+                                                                    backgroundColor: '#10b981',
+                                                                    borderRadius: 4
                                                                 }
                                                             }}
                                                         />
-                                                        <Typography variant="body2" sx={{color: '#f59e0b', mt: 1, fontWeight: 500}}>
-                                                            {uploadProgress}% completed
+                                                        <Typography variant="body2" sx={{color: '#059669', mt: 1, fontWeight: 500}}>
+                                                            {evidenceUploadProgress}% uploaded
+                                                        </Typography>
+                                                    </Box>
+                                                )}
+                                            </Box>
+                                        </label>
+                                    </Box>
+                                )}
+
+                                {/* Video Upload */}
+                                {evidenceUploadType === 'video' && (
+                                    <Box>
+                                        <input
+                                            id="evidence-video-upload"
+                                            type="file"
+                                            accept="video/*"
+                                            style={{display: 'none'}}
+                                            onChange={(e) => {
+                                                const file = e.target.files[0];
+                                                if (file) {
+                                                    setEvidenceVideoFile(file);
+                                                    handleEvidenceVideoUpload(file);
+                                                }
+                                            }}
+                                            disabled={uploadingEvidence}
+                                        />
+                                        <label htmlFor="evidence-video-upload">
+                                            <Box sx={{
+                                                border: '2px dashed #bbf7d0',
+                                                borderRadius: 2,
+                                                p: 3,
+                                                textAlign: 'center',
+                                                cursor: uploadingEvidence ? 'not-allowed' : 'pointer',
+                                                backgroundColor: 'white',
+                                                '&:hover': {
+                                                    borderColor: uploadingEvidence ? '#bbf7d0' : '#059669',
+                                                    backgroundColor: uploadingEvidence ? 'white' : '#f0fdf4'
+                                                }
+                                            }}>
+                                                <VideocamIcon sx={{fontSize: 48, color: '#10b981', mb: 2}}/>
+                                                <Typography variant="h6" sx={{color: '#065f46', mb: 1}}>
+                                                    Click to upload video
+                                                </Typography>
+                                                <Typography variant="body2" sx={{color: '#047857'}}>
+                                                    Support: MP4, AVI, MOV (Max 50MB)
+                                                </Typography>
+
+                                                {/* Uploaded Video Preview */}
+                                                {evidenceVideoUrl && (
+                                                    <Box sx={{mt: 2}}>
+                                                        <Typography variant="body2" sx={{color: '#059669', fontWeight: 600}}>
+                                                            ✓ Video uploaded successfully
+                                                        </Typography>
+                                                    </Box>
+                                                )}
+
+                                                {/* Upload Progress */}
+                                                {uploadingEvidence && (
+                                                    <Box sx={{mt: 2}}>
+                                                        <LinearProgress
+                                                            variant="determinate"
+                                                            value={evidenceUploadProgress}
+                                                            sx={{
+                                                                height: 8,
+                                                                borderRadius: 4,
+                                                                backgroundColor: '#d1fae5',
+                                                                '& .MuiLinearProgress-bar': {
+                                                                    backgroundColor: '#10b981',
+                                                                    borderRadius: 4
+                                                                }
+                                                            }}
+                                                        />
+                                                        <Typography variant="body2" sx={{color: '#059669', mt: 1, fontWeight: 500}}>
+                                                            {evidenceUploadProgress}% uploaded
                                                         </Typography>
                                                     </Box>
                                                 )}
@@ -2009,14 +2079,32 @@ export default function GarmentFeedback() {
                                     </Box>
                                 )}
                             </Paper>
+
+                            {/* Important Notice */}
+                            <Paper elevation={0} sx={{
+                                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.08) 100%)',
+                                border: '1px solid rgba(16, 185, 129, 0.1)',
+                                borderRadius: 2,
+                                p: 3
+                            }}>
+                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#047857'}}>
+                                    📝 Important Guidelines
+                                </Typography>
+                                <Typography variant="body2" sx={{color: '#065f46', lineHeight: 1.6}}>
+                                    • Provide clear and relevant evidence that addresses the report concerns<br/>
+                                    • Upload either images OR video, not both<br/>
+                                    • Ensure your evidence is high quality and clearly visible<br/>
+                                    • Be honest and transparent in your response
+                                </Typography>
+                            </Paper>
                         </Box>
                     )}
                 </DialogContent>
 
                 <DialogActions sx={{p: 3, pt: 0}}>
                     <Button
-                        onClick={handleCloseAppeal}
-                        disabled={submittingAppeal}
+                        onClick={handleCloseGiveEvidence}
+                        disabled={submittingEvidence}
                         sx={{
                             color: '#64748b',
                             borderColor: '#d1d5db',
@@ -2029,28 +2117,34 @@ export default function GarmentFeedback() {
                         Cancel
                     </Button>
                     <Button
-                        onClick={handleSubmitAppeal}
-                        disabled={submittingAppeal || !appealReason.trim() || appealReason.trim().length < 10 || appealReason.trim().length > 500}
+                        onClick={handleSubmitEvidence}
+                        disabled={
+                            submittingEvidence || 
+                            !evidenceContent.trim() || 
+                            (evidenceUploadType === 'image' && evidenceImageUrls.length === 0) ||
+                            (evidenceUploadType === 'video' && !evidenceVideoUrl) ||
+                            uploadingEvidence
+                        }
                         variant="contained"
                         sx={{
-                            background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                             color: 'white',
                             fontWeight: 'bold',
                             '&:hover': {
-                                background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)'
+                                background: 'linear-gradient(135deg, #059669 0%, #047857 100%)'
                             },
                             '&:disabled': {
                                 background: '#9ca3af'
                             }
                         }}
                     >
-                        {submittingAppeal ? (
+                        {submittingEvidence ? (
                             <>
                                 <CircularProgress size={16} sx={{mr: 1, color: 'white'}}/>
                                 Submitting...
                             </>
                         ) : (
-                            'Submit Appeal'
+                            'Submit Evidence'
                         )}
                     </Button>
                 </DialogActions>

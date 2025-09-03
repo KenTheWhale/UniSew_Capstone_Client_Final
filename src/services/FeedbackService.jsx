@@ -44,3 +44,8 @@ export const approveAppeal = async (data) => {
     const response = await axiosClient.post(`/feedback/appeals/approval`, data)
     return response || null
 }
+
+export const giveEvidence = async (data) => {
+    const response = await axiosClient.put(`/feedback/report/evidence`, data)
+    return response || null
+}
