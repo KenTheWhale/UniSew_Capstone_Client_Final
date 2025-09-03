@@ -18,7 +18,6 @@ const ProtectedRoute = lazy(() => import("./configs/ProtectedRoute.jsx"));
 const About = lazy(() => import("./components/auth/About.jsx"));
 const SchoolDesign = lazy(() => import("./components/school/design/SchoolDesign.jsx"));
 const SchoolDashboardLayout = lazy(() => import("./layouts/school/SchoolDashboardLayout.jsx"));
-const Contact = lazy(() => import("./components/auth/Contact.jsx"));
 const SchoolChat = lazy(() => import("./components/school/design/SchoolChat.jsx"));
 const SchoolCreateDesign = lazy(() => import('./components/school/design/SchoolCreateDesign.jsx'));
 const PaymentResult = lazy(() => import("./components/school/PaymentResult.jsx"));
@@ -143,14 +142,6 @@ const router = createBrowserRouter([
                 element: (
                     <Suspense fallback={<LoadingFallback />}>
                         <About />
-                    </Suspense>
-                )
-            },
-            {
-                path: 'contact',
-                element: (
-                    <Suspense fallback={<LoadingFallback />}>
-                        <Contact />
                     </Suspense>
                 )
             },

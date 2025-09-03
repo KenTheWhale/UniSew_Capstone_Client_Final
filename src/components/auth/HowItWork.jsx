@@ -1,4 +1,5 @@
 import React from 'react';
+import {getAccessCookie} from "../../utils/CookieUtil.jsx";
 
 export default function HowItWork() {
     const steps = [
@@ -11,13 +12,13 @@ export default function HowItWork() {
         {
             number: '02',
             title: 'Await Designer Bids',
-            description: 'Once your request is live, designers will review it and submit their proposals to work on your project.',
+            description: 'Once your request is live, designers will review it and submit their quotations to work on your project.',
             icon: '⏳'
         },
         {
             number: '03',
             title: 'Select a Designer and Quotation',
-            description: 'Review the proposals, choose the designer that best fits your needs, and select their preferred design quotation.',
+            description: 'Review the quotations, choose the designer that best fits your needs, and select their preferred design quotation.',
             icon: '👨‍🎨'
         },
         {
@@ -40,14 +41,14 @@ export default function HowItWork() {
         },
         {
             number: '07',
-            title: 'Await Factory Quotes',
-            description: 'Your order will be sent to various garment factories who will then provide their quotes for production.',
+            title: 'Await Factory Quotations',
+            description: 'Your order will be sent to various garment factories who will then provide their quotations for production.',
             icon: '🏭'
         },
         {
             number: '08',
-            title: 'Select Factory and Pay',
-            description: 'Review the factory quotes, select the best option, and complete the payment to initiate production.',
+            title: 'Select Garment Factory and Make a Payment',
+            description: 'Review the garment factory quotes, select the best option, and complete the payment to initiate production.',
             icon: '💰'
         },
         {
@@ -57,6 +58,34 @@ export default function HowItWork() {
             icon: '📦🎉'
         }
     ];
+     function handleJoinNow() {
+        const access = getAccessCookie();
+        if (access == null) {
+            console.log("access cookie =", getAccessCookie());
+            window.location.href = '/login';
+            return;
+        }
+        console.log("access cookiein =", getAccessCookie());
+        const role = access.role
+        switch (role) {
+            case 'admin':
+                window.location.href = '/admin/dashboard';
+                break;
+            case 'school':
+                window.location.href = '/school/design';
+                break;
+            case 'designer':
+                window.location.href = '/designer/requests';
+                break;
+            case 'garment':
+                window.location.href = '/garment/orders';
+                break;
+            default:
+                window.location.href = '/login';
+                break;
+        }
+
+    }
 
     return (
         <div style={{
@@ -175,7 +204,8 @@ export default function HowItWork() {
                     cursor: 'pointer',
                     boxShadow: '0 4px 10px rgba(52, 152, 219, 0.3)',
                     transition: 'all 0.3s ease'
-                }}>
+                }}
+                onClick={handleJoinNow}>
                     Start Now
                 </button>
             </div>
