@@ -247,7 +247,7 @@ const FeedbackCard = React.memo(({feedback, onImageClick, onViewDetail, onGiveEv
                             sx={{
                                 color: '#374151',
                                 lineHeight: 1.6,
-                                fontStyle: feedback.content ? 'normal' : 'italic',
+                                fontStyle: feedback.schoolContent ? 'normal' : 'italic',
                                 backgroundColor: '#f8fafc',
                                 p: 2,
                                 borderRadius: 2,
@@ -255,7 +255,7 @@ const FeedbackCard = React.memo(({feedback, onImageClick, onViewDetail, onGiveEv
                                 borderLeft: `4px solid ${isReport ? '#ef4444' : '#3f51b5'}`
                             }}
                         >
-                            {feedback.content || 'No content provided'}
+                            {feedback.schoolContent || 'No content provided'}
                         </Typography>
                     </Box>
 
@@ -1330,7 +1330,7 @@ export default function GarmentFeedback() {
                                     Content
                                 </Typography>
                                 <Typography variant="body1" sx={{color: '#1e293b', lineHeight: 1.6}}>
-                                    {selectedFeedback.content || 'No content provided'}
+                                    {selectedFeedback.schoolContent || 'No content provided'}
                                 </Typography>
                             </Paper>
 

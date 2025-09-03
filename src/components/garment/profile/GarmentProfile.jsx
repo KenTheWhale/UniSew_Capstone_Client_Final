@@ -1193,6 +1193,8 @@ export default function GarmentProfile() {
                                 position: 'relative',
                                 overflow: 'hidden',
                                 boxShadow: '0 20px 40px rgba(0,0,0,0.1), 0 8px 16px rgba(0,0,0,0.05)',
+                                display: 'flex',
+                                flexDirection: 'column',
                                 '&::before': {
                                     content: '""',
                                     position: 'absolute',
@@ -1266,8 +1268,23 @@ export default function GarmentProfile() {
                                     display: 'flex',
                                     flexDirection: 'column',
                                     gap: 2,
-                                    maxHeight: '600px',
-                                    overflowY: 'auto'
+                                    flex: 1,
+                                    overflowY: 'auto',
+                                    pr: 1,
+                                    '&::-webkit-scrollbar': {
+                                        width: '8px',
+                                    },
+                                    '&::-webkit-scrollbar-track': {
+                                        background: '#f1f5f9',
+                                        borderRadius: '4px',
+                                    },
+                                    '&::-webkit-scrollbar-thumb': {
+                                        background: '#cbd5e1',
+                                        borderRadius: '4px',
+                                        '&:hover': {
+                                            background: '#94a3b8',
+                                        }
+                                    },
                                 }}>
                                     {Array.isArray(transactions) && transactions.map((transaction) => {
                                         const isReceiver = isCurrentUserReceiver(transaction);
