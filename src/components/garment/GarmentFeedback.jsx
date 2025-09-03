@@ -1830,7 +1830,7 @@ export default function GarmentFeedback() {
                                         Report Content:
                                     </Typography>
                                     <Typography variant="body1" sx={{color: '#1e293b', fontStyle: 'italic'}}>
-                                        "{selectedFeedback.schoolcontent}"
+                                        "{selectedFeedback.schoolContent}"
                                     </Typography>
                                 </Box>
                             </Paper>
