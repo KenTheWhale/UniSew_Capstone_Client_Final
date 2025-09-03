@@ -161,7 +161,7 @@ export default function SchoolOrderList() {
     }, [fetchOrders]);
 
     const handleViewDetail = (order) => {
-        if (order.status === 'processing' || order.status === 'delivering') {
+        if (order.status === 'processing' || order.status === 'delivering' || order.status === 'completed') {
             sessionStorage.setItem('trackingOrderId', order.id);
             navigate('/school/order/status');
         } else {
