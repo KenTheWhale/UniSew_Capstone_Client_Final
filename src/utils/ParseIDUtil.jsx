@@ -18,15 +18,8 @@ export const parseID = (id, type) => {
         return null;
     }
 
-    const numericId = Number(id);
 
-    if (isNaN(numericId)) {
-        console.error("Input is not a valid number.");
-        return null;
-    }
-
-
-    const paddedId = String(numericId).padStart(3, '0');
+    const paddedId = String(id).padStart(3, '0');
 
     return `${prefix}${paddedId}`;
 }
