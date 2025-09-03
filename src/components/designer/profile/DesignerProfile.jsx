@@ -1034,7 +1034,7 @@ export default function DesignerProfile() {
 
                             <Grid container spacing={3}>
                                 <Grid sx={{width: '100%'}}>
-                                    <Box sx={{display: 'flex', gap: 3, width: '100%', justifyContent: 'space-between'}}>
+                                    <Box sx={{display: 'flex', gap: 3, width: '100%', justifyContent: 'space-between', alignItems: 'stretch'}}>
                                         <Box sx={{flex: 1}}>
                                             <Card
                                                 elevation={6}
@@ -1042,7 +1042,7 @@ export default function DesignerProfile() {
                                                     border: '2px solid #bbf7d0',
                                                     borderRadius: 3,
                                                     background: 'linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)',
-                                                    height: 'max-content',
+                                                    height: '100%',
                                                     display: 'flex',
                                                     flexDirection: 'column',
                                                     width: '100%',
@@ -1079,9 +1079,13 @@ export default function DesignerProfile() {
                                                             <Typography variant="body1" sx={{
                                                                 color: '#475569',
                                                                 fontWeight: 600,
-                                                                fontSize: '14px'
+                                                                fontSize: '14px',
+                                                                wordWrap: 'break-word',
+                                                                overflowWrap: 'break-word',
+                                                                hyphens: 'auto',
+                                                                lineHeight: 1.3
                                                             }}>
-                                                                {bankInfo ? `${bankInfo.name} ${bankInfo.shortName} ` : 'Bank information not available'}
+                                                                {bankInfo ? `${bankInfo.name} (${bankInfo.shortName})` : 'Bank information not available'}
                                                             </Typography>
                                                         </Box>
                                                         <Box>
@@ -1112,7 +1116,7 @@ export default function DesignerProfile() {
                                                     border: '2px solid #fde68a',
                                                     borderRadius: 3,
                                                     background: 'linear-gradient(135deg, #fef3c7 0%, #ffffff 100%)',
-                                                    height: 'max-content',
+                                                    height: '100%',
                                                     display: 'flex',
                                                     flexDirection: 'column',
                                                     width: '100%',

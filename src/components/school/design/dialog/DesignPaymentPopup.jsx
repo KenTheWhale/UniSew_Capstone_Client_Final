@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {Button, Modal, Spin, Typography} from 'antd';
 import {
     CalendarOutlined,
@@ -15,9 +15,37 @@ import {getPhoneLink} from "../../../../utils/PhoneUtil.jsx";
 import {getPaymentUrl} from "../../../../services/PaymentService.jsx";
 import {enqueueSnackbar} from "notistack";
 import {serviceFee} from "../../../../configs/FixedVariables.jsx";
+import {getConfigByKey, configKey} from "../../../../services/SystemService.jsx";
 
 export default function DesignPaymentPopup({visible, onCancel, selectedQuotationDetails}) {
     const [isLoading, setIsLoading] = useState(false);
+    const [loadingMessage, setLoadingMessage] = useState('');
+    const [businessConfig, setBusinessConfig] = useState(null);
+
+    // Fetch business configuration on component mount
+    useEffect(() => {
+        const fetchBusinessConfig = async () => {
+            try {
+                const response = await getConfigByKey(configKey.business);
+                if (response?.status === 200 && response.data?.body?.business) {
+                    setBusinessConfig(response.data.body.business);
+                }
+            } catch (error) {
+                console.error('Error fetching business config:', error);
+            }
+        };
+
+        fetchBusinessConfig();
+    }, []);
+
+    // Service fee calculation using API config
+    const calculateServiceFee = useCallback((amount) => {
+        if (businessConfig?.serviceRate) {
+            return Math.round(amount * businessConfig.serviceRate);
+        }
+        // Fallback to hardcoded serviceFee function if API config is not available
+        return serviceFee(amount);
+    }, [businessConfig]);
 
     if (!selectedQuotationDetails) {
         return (
@@ -43,11 +71,13 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
 
     const handleProceedToPayment = async () => {
         setIsLoading(true);
+        setLoadingMessage('Preparing payment details...');
+        
         try {
             const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
             const rawSubtotal = quotation.price + (extraRevision * (quotation.extraRevisionPrice || 0));
             const subtotal = Math.round(rawSubtotal);
-            const fee = Math.round(serviceFee(subtotal));
+            const fee = Math.round(calculateServiceFee(subtotal));
             const totalAmount = Math.round(subtotal + fee);
 
             const quotationDetailsToStore = {
@@ -58,9 +88,10 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
                 totalAmount: totalAmount
             };
             sessionStorage.setItem('paymentQuotationDetails', JSON.stringify(quotationDetailsToStore));
-
             sessionStorage.setItem('currentPaymentType', 'design');
 
+            setLoadingMessage('Connecting to payment gateway...');
+            
             const response = await getPaymentUrl(
                 totalAmount,
                 `Payment for design quotation - Design Request ${parseID(request.id, 'dr')}`,
@@ -69,14 +100,21 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
             );
 
             if (response && response.status === 200) {
-                window.location.href = response.data.body.url;
+                setLoadingMessage('Redirecting to secure payment...');
+                // Add a small delay to show the message before redirecting
+                setTimeout(() => {
+                    window.location.href = response.data.body.url;
+                }, 500);
             } else {
-                enqueueSnackbar('Failed to generate payment URL. Please try again.', {variant: 'error'})
+                enqueueSnackbar('Failed to generate payment URL. Please try again.', {variant: 'error'});
+                setIsLoading(false);
+                setLoadingMessage('');
             }
         } catch (error) {
-            enqueueSnackbar('Error generating payment URL', {variant: 'error'})
-        } finally {
+            console.error('Payment URL generation error:', error);
+            enqueueSnackbar('Error generating payment URL. Please try again.', {variant: 'error'});
             setIsLoading(false);
+            setLoadingMessage('');
         }
     };
 
@@ -119,7 +157,7 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
                         borderColor: '#2e7d32'
                     }}
                 >
-                    {isLoading ? 'Processing...' : 'Proceed to Payment'}
+                    {isLoading ? (loadingMessage || 'Processing...') : 'Proceed to Payment'}
                 </Button>,
             ]}
             width={800}
@@ -135,7 +173,43 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
                 }
             }}
         >
-            <Box sx={{width: '100%'}}>
+            <Box sx={{width: '100%', position: 'relative'}}>
+                {/* Loading overlay */}
+                {isLoading && (
+                    <Box sx={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 1000,
+                        borderRadius: 2
+                    }}>
+                        <Spin size="large" />
+                        <Typography.Text style={{
+                            marginTop: 16,
+                            color: '#2e7d32',
+                            fontSize: '16px',
+                            fontWeight: 600
+                        }}>
+                            {loadingMessage || 'Processing...'}
+                        </Typography.Text>
+                        <Typography.Text style={{
+                            marginTop: 8,
+                            color: '#64748b',
+                            fontSize: '14px',
+                            textAlign: 'center'
+                        }}>
+                            Please do not close this window
+                        </Typography.Text>
+                    </Box>
+                )}
+                
                 {}
                 <Box sx={{
                     mb: 4,
@@ -397,7 +471,10 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
                                 Service Fee
                             </Typography.Title>
                             <Typography.Text type="secondary" style={{fontSize: '14px'}}>
-                                Platform service charge
+                                {businessConfig?.serviceRate 
+                                    ? `Platform service charge (${(businessConfig.serviceRate * 100).toFixed(0)}%)`
+                                    : 'Platform service charge'
+                                }
                             </Typography.Text>
                         </Box>
                     </Box>
@@ -412,14 +489,14 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
                         border: '1px solid rgba(255, 152, 0, 0.2)'
                     }}>
                         <Typography.Text style={{color: '#475569', fontSize: '14px'}}>
-                            <strong>Service Fee:</strong>
+                            <strong>Service Fee{businessConfig?.serviceRate ? ` (${(businessConfig.serviceRate * 100).toFixed(0)}%)` : ''}:</strong>
                         </Typography.Text>
                         <Typography.Title level={4} style={{margin: 0, color: '#f57c00'}}>
                             {(() => {
                                 const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
                                 const rawSubtotal = quotation.price + (extraRevision * (quotation.extraRevisionPrice || 0));
                                 const subtotal = Math.round(rawSubtotal);
-                                const fee = Math.round(serviceFee(subtotal));
+                                const fee = Math.round(calculateServiceFee(subtotal));
                                 return fee.toLocaleString('vi-VN') + ' VND';
                             })()}
                         </Typography.Title>
@@ -476,7 +553,7 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
                                 const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
                                 const rawSubtotal = quotation.price + (extraRevision * (quotation.extraRevisionPrice || 0));
                                 const subtotal = Math.round(rawSubtotal);
-                                const fee = Math.round(serviceFee(subtotal));
+                                const fee = Math.round(calculateServiceFee(subtotal));
                                 const totalAmount = Math.round(subtotal + fee);
                                 return totalAmount.toLocaleString('vi-VN') + ' VND';
                             })()}

@@ -50,6 +50,7 @@ import {uploadCloudinary} from '../../../services/UploadImageService.jsx';
 import {enqueueSnackbar} from 'notistack';
 import dayjs from 'dayjs';
 import 'dayjs/locale/vi';
+import {parseID} from '../../../utils/ParseIDUtil.jsx';
 
 export default function SchoolProfile() {
     const [profileData, setProfileData] = useState(null);
@@ -973,7 +974,7 @@ export default function SchoolProfile() {
 
                             <Grid container spacing={3}>
                                 <Grid sx={{width: '100%'}}>
-                                    <Box sx={{display: 'flex', gap: 3, width: '100%', justifyContent: 'space-between'}}>
+                                    <Box sx={{display: 'flex', gap: 3, width: '100%', justifyContent: 'space-between', alignItems: 'stretch'}}>
                                         <Box sx={{flex: 1}}>
                                             <Card
                                                 elevation={6}
@@ -981,7 +982,7 @@ export default function SchoolProfile() {
                                                     border: '2px solid #bbf7d0',
                                                     borderRadius: 3,
                                                     background: 'linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)',
-                                                    height: 'max-content',
+                                                    height: '100%',
                                                     display: 'flex',
                                                     flexDirection: 'column',
                                                     width: '100%',
@@ -1018,7 +1019,8 @@ export default function SchoolProfile() {
                                                             <Typography variant="body1" sx={{
                                                                 color: '#475569',
                                                                 fontWeight: 600,
-                                                                fontSize: '14px'
+                                                                fontSize: '14px',
+                                                                wordWrap: 'break-word'
                                                             }}>
                                                                 {bankInfo ? `${bankInfo.name} ${bankInfo.shortName} ` : 'Bank information not available'}
                                                             </Typography>
@@ -1051,7 +1053,7 @@ export default function SchoolProfile() {
                                                     border: '2px solid #fde68a',
                                                     borderRadius: 3,
                                                     background: 'linear-gradient(135deg, #fef3c7 0%, #ffffff 100%)',
-                                                    height: 'max-content',
+                                                    height: '100%',
                                                     display: 'flex',
                                                     flexDirection: 'column',
                                                     width: '100%',
@@ -1257,7 +1259,7 @@ export default function SchoolProfile() {
                                                                     color: '#64748b',
                                                                     fontSize: '14px'
                                                                 }}>
-                                                                    {isReceiver ? 'Received from' : 'Sent to'} {otherParty?.name || 'Unknown'}
+                                                                    {isReceiver ? 'Received from' : 'Sent to'} {otherParty?.business || 'Unknown'}
                                                                 </Typography>
                                                             </Box>
                                                         </Box>
@@ -1292,19 +1294,27 @@ export default function SchoolProfile() {
                                                         borderTop: '1px solid #f1f5f9'
                                                     }}>
                                                         <Box sx={{display: 'flex', gap: 3}}>
-                                                            <Box>
-                                                                <Typography variant="body2"
-                                                                            sx={{color: '#64748b', fontSize: '12px'}}>
-                                                                    Business
-                                                                </Typography>
-                                                                <Typography variant="body2" sx={{
-                                                                    color: '#475569',
-                                                                    fontWeight: 500,
-                                                                    fontSize: '13px'
-                                                                }}>
-                                                                    {otherParty?.business || 'N/A'}
-                                                                </Typography>
-                                                            </Box>
+                                                            {transaction.itemId && transaction.itemId !== 0 && (
+                                                                <Box>
+                                                                    <Typography variant="body2"
+                                                                                sx={{color: '#64748b', fontSize: '12px'}}>
+                                                                        {transaction.paymentType === 'design' ? 'Request ID' : 'Order ID'}
+                                                                    </Typography>
+                                                                    <Chip
+                                                                        label={transaction.paymentType === 'design' ? 
+                                                                            parseID(transaction.itemId, 'dr') : 
+                                                                            parseID(transaction.itemId, 'ord')}
+                                                                        size="small"
+                                                                        sx={{
+                                                                            backgroundColor: transaction.paymentType === 'design' ? '#f3e8ff' : '#e0f2fe',
+                                                                            color: transaction.paymentType === 'design' ? '#7c3aed' : '#0369a1',
+                                                                            fontWeight: 600,
+                                                                            fontSize: '10px',
+                                                                            height: '20px'
+                                                                        }}
+                                                                    />
+                                                                </Box>
+                                                            )}
                                                             {transaction.serviceFee > 0 && (
                                                                 <Box>
                                                                     <Typography variant="body2" sx={{
@@ -1322,23 +1332,6 @@ export default function SchoolProfile() {
                                                                     </Typography>
                                                                 </Box>
                                                             )}
-                                                            <Box>
-                                                                <Typography variant="body2"
-                                                                            sx={{color: '#64748b', fontSize: '12px'}}>
-                                                                    Balance Type
-                                                                </Typography>
-                                                                <Chip
-                                                                    label={transaction.balanceType}
-                                                                    size="small"
-                                                                    sx={{
-                                                                        backgroundColor: transaction.balanceType === 'balance' ? '#e0f2fe' : '#f3e8ff',
-                                                                        color: transaction.balanceType === 'balance' ? '#0369a1' : '#7c3aed',
-                                                                        fontWeight: 500,
-                                                                        fontSize: '10px',
-                                                                        height: '20px'
-                                                                    }}
-                                                                />
-                                                            </Box>
                                                         </Box>
 
                                                         <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>

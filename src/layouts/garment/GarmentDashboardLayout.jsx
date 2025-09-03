@@ -175,7 +175,7 @@ function Navbar({activeMenu, navigate}) {
                     fontSize: "0.75rem",
                     letterSpacing: "1px"
                 }}>
-                    PROFILE MANAGEMENT
+                    ACCOUNT MANAGEMENT
                 </Typography>
                 <Box sx={{mb: 3}}>
                     <Box
@@ -199,7 +199,7 @@ function Navbar({activeMenu, navigate}) {
                         <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
                             <AccountBox sx={{color: "inherit", fontSize: 20}}/>
                             <Typography variant="body2" sx={{fontWeight: 500}}>
-                                Profile
+                                Profile Setting
                             </Typography>
                         </Box>
                     </Box>
