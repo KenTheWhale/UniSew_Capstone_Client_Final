@@ -390,7 +390,7 @@ const FeedbackCard = React.memo(({feedback, onImageClick, onViewDetail, onAppeal
                                     {feedback.order.price && (
                                         <Box>
                                             <Typography variant="caption" sx={{color: '#64748b', textTransform: 'uppercase', fontWeight: 600}}>
-                                                Total Price
+                                                Base Price
                                             </Typography>
                                             <Typography variant="body2" sx={{fontWeight: 600, color: '#ef4444'}}>
                                                 {feedback.order.price.toLocaleString('vi-VN')} VND

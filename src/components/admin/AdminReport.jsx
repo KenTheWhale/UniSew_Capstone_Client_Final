@@ -1796,7 +1796,7 @@ export default function AdminReport() {
                                             {selectedReport.order.price?.toLocaleString('vi-VN')} VND
                                         </Typography>
                                         <Typography variant="body2" sx={{color: '#64748b'}}>
-                                            Total Price
+                                            Base Price
                                         </Typography>
                                     </Box>
                                 </Box>

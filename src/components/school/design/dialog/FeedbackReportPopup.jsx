@@ -509,7 +509,7 @@ export default function FeedbackReportPopup({
                                         fontSize: '0.9rem'
                                     }}>
                                         {requestData?.orderDetails 
-                                            ? requestData.orderDetails.reduce((sum, detail) => sum + detail.quantity, 0)
+                                            ? requestData.orderDetails.reduce((sum, detail) => sum + detail.quantity, 0)/2
                                             : 'N/A'
                                         }
                                     </Typography>
