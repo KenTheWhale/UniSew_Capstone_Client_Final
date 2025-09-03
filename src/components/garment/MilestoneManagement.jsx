@@ -3193,74 +3193,76 @@ export default function MilestoneManagement() {
                             </Box>
                         </Box>
 
-                        <Box sx={{
-                            border: '2px dashed rgba(63, 81, 181, 0.3)',
-                            borderRadius: 2,
-                            p: 4,
-                            textAlign: 'center',
-                            backgroundColor: 'rgba(63, 81, 181, 0.02)',
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease',
-                            '&:hover': {
-                                borderColor: 'rgba(63, 81, 181, 0.5)',
-                                backgroundColor: 'rgba(63, 81, 181, 0.05)'
-                            }
-                        }}
-                             onClick={() => document.getElementById('image-upload').click()}
-                        >
-                            {selectedImage ? (
-                                <Box>
-                                    <video
-                                        src={URL.createObjectURL(selectedImage)}
-                                        controls
-                                        style={{
-                                            maxWidth: '100%',
-                                            maxHeight: '200px',
-                                            borderRadius: '8px',
-                                            marginBottom: '16px'
-                                        }}
-                                    />
-                                    <Typography variant="body2" sx={{color: '#64748b'}}>
-                                        Click to change video
-                                    </Typography>
-                                </Box>
-                            ) : (
-                                <Box>
-                                    <Avatar sx={{
-                                        width: 80,
-                                        height: 80,
-                                        background: 'linear-gradient(135deg, rgba(63, 81, 181, 0.1) 0%, rgba(48, 63, 159, 0.15) 100%)',
-                                        border: '2px solid rgba(63, 81, 181, 0.2)',
-                                        mb: 2
-                                    }}>
-                                        <AssignmentIcon sx={{fontSize: 40, color: '#3f51b5'}}/>
-                                    </Avatar>
-                                    <Typography variant="h6" sx={{color: '#1e293b', mb: 1, fontWeight: 600}}>
-                                        Upload Video
-                                    </Typography>
-                                    <Typography variant="body2" sx={{color: '#64748b', mb: 2}}>
-                                        Click to select a video file
-                                    </Typography>
-                                    <Typography variant="caption" sx={{color: '#94a3b8'}}>
-                                        Supported formats: MP4, AVI, MOV, WMV, FLV, WebM, MKV, M4V, 3GP (Max 50MB)
-                                    </Typography>
-                                </Box>
-                            )}
-                            <input
-                                id="image-upload"
-                                type="file"
-                                accept="video/mp4, video/avi, video/mov, video/wmv, video/flv, video/webm, video/mkv, video/m4v, video/3gp"
-                                style={{display: 'none'}}
-                                onChange={(e) => {
-                                    const file = e.target.files[0];
-                                    if (file) {
-                                        setSelectedImage(file);
-                                    }
-                                }}
-                            />
-                        </Box>
+                        {!uploadingImage && (
+                            <Box sx={{
+                                border: '2px dashed rgba(63, 81, 181, 0.3)',
+                                borderRadius: 2,
+                                p: 4,
+                                textAlign: 'center',
+                                backgroundColor: 'rgba(63, 81, 181, 0.02)',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                '&:hover': {
+                                    borderColor: 'rgba(63, 81, 181, 0.5)',
+                                    backgroundColor: 'rgba(63, 81, 181, 0.05)'
+                                }
+                            }}
+                                 onClick={() => document.getElementById('image-upload').click()}
+                            >
+                                {selectedImage ? (
+                                    <Box>
+                                        <video
+                                            src={URL.createObjectURL(selectedImage)}
+                                            controls
+                                            style={{
+                                                maxWidth: '100%',
+                                                maxHeight: '200px',
+                                                borderRadius: '8px',
+                                                marginBottom: '16px'
+                                            }}
+                                        />
+                                        <Typography variant="body2" sx={{color: '#64748b'}}>
+                                            Click to change video
+                                        </Typography>
+                                    </Box>
+                                ) : (
+                                    <Box>
+                                        <Avatar sx={{
+                                            width: 80,
+                                            height: 80,
+                                            background: 'linear-gradient(135deg, rgba(63, 81, 181, 0.1) 0%, rgba(48, 63, 159, 0.15) 100%)',
+                                            border: '2px solid rgba(63, 81, 181, 0.2)',
+                                            mb: 2
+                                        }}>
+                                            <AssignmentIcon sx={{fontSize: 40, color: '#3f51b5'}}/>
+                                        </Avatar>
+                                        <Typography variant="h6" sx={{color: '#1e293b', mb: 1, fontWeight: 600}}>
+                                            Upload Video
+                                        </Typography>
+                                        <Typography variant="body2" sx={{color: '#64748b', mb: 2}}>
+                                            Click to select a video file
+                                        </Typography>
+                                        <Typography variant="caption" sx={{color: '#94a3b8'}}>
+                                            Supported formats: MP4, AVI, MOV, WMV, FLV, WebM, MKV, M4V, 3GP (Max 50MB)
+                                        </Typography>
+                                    </Box>
+                                )}
+                                <input
+                                    id="image-upload"
+                                    type="file"
+                                    accept="video/mp4, video/avi, video/mov, video/wmv, video/flv, video/webm, video/mkv, video/m4v, video/3gp"
+                                    style={{display: 'none'}}
+                                    onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                            setSelectedImage(file);
+                                        }
+                                    }}
+                                />
+                            </Box>
+                        )}
 
-                        {/* Upload Progress Bar */}
+                        {/* Upload Progress Bar - Only show when uploading */}
                         {uploadingImage && (
                             <Box sx={{
                                 mt: 3,
@@ -3327,12 +3329,17 @@ export default function MilestoneManagement() {
                                 setSelectedImage(null);
                                 setUploadProgress(0);
                             }}
+                            disabled={uploadingImage}
                             sx={{
                                 color: '#64748b',
                                 borderColor: '#d1d5db',
                                 '&:hover': {
                                     borderColor: '#9ca3af',
                                     backgroundColor: '#f9fafb'
+                                },
+                                '&:disabled': {
+                                    color: '#9ca3af',
+                                    borderColor: '#d1d5db'
                                 }
                             }}
                         >
@@ -3354,7 +3361,10 @@ export default function MilestoneManagement() {
                                     let videoUrl = '';
                                     if (selectedImage) {
                                         const uploadResponse = await uploadCloudinaryVideo(selectedImage, (progress) => {
-                                            setUploadProgress(progress);
+                                            // Throttle progress updates to prevent excessive re-renders
+                                            if (progress % 5 === 0 || progress === 100) {
+                                                setUploadProgress(progress);
+                                            }
                                         });
                                         if (uploadResponse) {
                                             videoUrl = uploadResponse;
