@@ -564,7 +564,7 @@ export default function PartnerRegister() {
                         receiver: formData.email
                     }
 
-                    sendEmail(emailType.CONFIRMATION, emailParam).then(() => {
+                    sendEmail(emailType.confirmation, emailParam).then(() => {
                         setSuccess(true)
                         setLoading(false)
                     }).catch((error) => {

@@ -48,8 +48,10 @@ import {
     updateMilestoneStatus,
     viewPhase
 } from '../../services/OrderService';
+import {getConfigByKey, configKey} from '../../services/SystemService';
 import {uploadCloudinary, uploadCloudinaryVideo} from '../../services/UploadImageService';
 import {calculateShippingTime} from '../../services/ShippingService';
+import {sendEmail2, emailType} from '../../services/EmailService';
 import {DatePicker} from '@mui/x-date-pickers/DatePicker';
 import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
 import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs';
@@ -152,14 +154,52 @@ export default function MilestoneManagement() {
     const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
     const [shippingCalculationError, setShippingCalculationError] = useState(null);
 
+    // Configuration states
+    const [orderConfig, setOrderConfig] = useState(null);
+    const [maxAssignedMilestone, setMaxAssignedMilestone] = useState(5); // Default value
+    const [configLoading, setConfigLoading] = useState(true);
+    const [mediaConfig, setMediaConfig] = useState(null);
 
     const [activeTab, setActiveTab] = useState('manage');
 
     useEffect(() => {
+        fetchOrderConfig();
+        fetchMediaConfig();
         fetchPhases();
         fetchOrders();
     }, []);
 
+
+    const fetchOrderConfig = async () => {
+        try {
+            setConfigLoading(true);
+            const response = await getConfigByKey(configKey.order);
+            if (response && response.data && response.data.body && response.data.body.order) {
+                const config = response.data.body.order;
+                setOrderConfig(config);
+                setMaxAssignedMilestone(config.maxAssignedMilestone || 5);
+            }
+        } catch (error) {
+            console.error('Error fetching order configuration:', error);
+            enqueueSnackbar('Failed to load order configuration', {variant: 'warning'});
+            // Keep default value of 5 if config fails to load
+        } finally {
+            setConfigLoading(false);
+        }
+    };
+
+    const fetchMediaConfig = async () => {
+        try {
+            const response = await getConfigByKey(configKey.media);
+            if (response && response.data && response.data.body && response.data.body.media) {
+                const config = response.data.body.media;
+                setMediaConfig(config);
+            }
+        } catch (error) {
+            console.error('Error fetching media configuration:', error);
+            enqueueSnackbar('Failed to load media configuration', {variant: 'warning'});
+        }
+    };
 
     const fetchPhases = async () => {
         try {
@@ -323,6 +363,12 @@ export default function MilestoneManagement() {
         if (isSelected) {
             setSelectedPhases(selectedPhases.filter(p => p.id !== phase.id));
         } else {
+            // Check if we've reached the maximum milestone limit
+            if (selectedPhases.length >= maxAssignedMilestone) {
+                enqueueSnackbar(`Cannot add more phases. Maximum ${maxAssignedMilestone} phases allowed per order.`, {variant: 'warning'});
+                return;
+            }
+
             const hasStageAtMaximum = selectedPhases.some((_, index) => {
                 const stage = index + 1;
                 const stageDuration = stageDurations[stage];
@@ -392,6 +438,13 @@ export default function MilestoneManagement() {
         if (draggedPhase) {
             const isAlreadySelected = selectedPhases.find(p => p.id === draggedPhase.id);
             if (!isAlreadySelected) {
+                // Check if we've reached the maximum milestone limit
+                if (selectedPhases.length >= maxAssignedMilestone) {
+                    enqueueSnackbar(`Cannot add more phases. Maximum ${maxAssignedMilestone} phases allowed per order.`, {variant: 'warning'});
+                    setDraggedPhase(null);
+                    return;
+                }
+
                 const hasStageAtMaximum = selectedPhases.some((_, index) => {
                     const stage = index + 1;
                     const stageDuration = stageDurations[stage];
@@ -853,7 +906,31 @@ export default function MilestoneManagement() {
         });
     };
 
-    if (phasesLoading || ordersLoading) {
+    const getVideoFormatsString = () => {
+        if (!mediaConfig || !mediaConfig.videoFormat) {
+            return 'MP4, AVI, MOV, WMV, FLV, WebM, MKV, M4V, 3GP';
+        }
+        return mediaConfig.videoFormat.map(format => format.format.toUpperCase().replace('.', '')).join(', ');
+    };
+
+    const getMaxVideoSize = () => {
+        if (!mediaConfig || !mediaConfig.maxVideoSize) {
+            return 50;
+        }
+        return mediaConfig.maxVideoSize;
+    };
+
+    const getVideoAcceptString = () => {
+        if (!mediaConfig || !mediaConfig.videoFormat) {
+            return 'video/mp4, video/avi, video/mov, video/wmv, video/flv, video/webm, video/mkv, video/m4v, video/3gp';
+        }
+        return mediaConfig.videoFormat.map(format => {
+            const ext = format.format.toLowerCase().replace('.', '');
+            return `video/${ext}`;
+        }).join(', ');
+    };
+
+    if (phasesLoading || ordersLoading || configLoading) {
         return (
             <Box sx={{
                 display: 'flex',
@@ -995,8 +1072,8 @@ export default function MilestoneManagement() {
                         </Box>
 
                         <Box sx={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))',
+                            display: 'flex',
+                            flexWrap: 'wrap',
                             gap: 3
                         }}>
                             {orders.filter(order => {
@@ -1008,7 +1085,13 @@ export default function MilestoneManagement() {
                                 const hasMilestone = orderMilestone.length > 0;
 
                                 return (
-                                    <Box key={order.id}>
+                                    <Box key={order.id} sx={{ 
+                                        flex: '0 0 calc(50% - 12px)', 
+                                        minWidth: '400px',
+                                        '@media (max-width: 900px)': {
+                                            flex: '0 0 100%'
+                                        }
+                                    }}>
                                         <Card elevation={0} sx={{
                                             borderRadius: 2,
                                             border: '2px solid #3f51b5',
@@ -1179,8 +1262,11 @@ export default function MilestoneManagement() {
 
                         <Box sx={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))',
-                            gap: 3
+                            gridTemplateColumns: 'repeat(2, 1fr)',
+                            gap: 3,
+                            '@media (max-width: 960px)': {
+                                gridTemplateColumns: '1fr'
+                            }
                         }}>
                             {orders.filter(order => {
                                 const orderMilestone = order.milestone || [];
@@ -1368,36 +1454,27 @@ export default function MilestoneManagement() {
                                 </Typography>
                                 <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
                                     <Typography variant="caption" sx={{color: '#64748b'}}>
-                                        {phases.length}/10 phases created
+                                        {phases.length} phases created
                                     </Typography>
-                                    {phases.length >= 10 && (
-                                        <Typography variant="caption" sx={{color: '#d32f2f', fontWeight: 600}}>
-                                            (Maximum reached)
-                                        </Typography>
-                                    )}
                                 </Box>
                             </Box>
                             <Button
                                 variant="contained"
                                 startIcon={<AddIcon/>}
                                 onClick={() => setCreatePhaseDialogOpen(true)}
-                                disabled={phases.length >= 10}
                                 sx={{
-                                    backgroundColor: phases.length >= 10 ? '#9ca3af' : '#3f51b5',
+                                    backgroundColor: '#3f51b5',
                                     color: 'white',
                                     fontWeight: 600,
                                     px: 3,
                                     py: 1.5,
                                     borderRadius: 2,
                                     '&:hover': {
-                                        backgroundColor: phases.length >= 10 ? '#9ca3af' : '#303f9f'
-                                    },
-                                    '&:disabled': {
-                                        backgroundColor: '#9ca3af'
+                                        backgroundColor: '#303f9f'
                                     }
                                 }}
                             >
-                                {phases.length >= 10 ? 'Max Phases Reached' : 'Create Phase'}
+                                Create Phase
                             </Button>
                         </Box>
 
@@ -1406,9 +1483,9 @@ export default function MilestoneManagement() {
                             flexWrap: 'wrap',
                             gap: 3,
                             '& > *': {
-                                flex: '1 1 calc(25% - 18px)',
+                                flex: '1 1 calc(33.333% - 16px)',
                                 minWidth: '280px',
-                                maxWidth: 'calc(25% - 18px)'
+                                maxWidth: 'calc(33.333% - 16px)'
                             }
                         }}>
                             {phases.map((phase) => (
@@ -1508,23 +1585,19 @@ export default function MilestoneManagement() {
                                     variant="contained"
                                     startIcon={<AddIcon/>}
                                     onClick={() => setCreatePhaseDialogOpen(true)}
-                                    disabled={phases.length >= 10}
                                     sx={{
-                                        backgroundColor: phases.length >= 10 ? '#9ca3af' : '#3f51b5',
+                                        backgroundColor: '#3f51b5',
                                         color: 'white',
                                         fontWeight: 600,
                                         px: 3,
                                         py: 1.5,
                                         borderRadius: 2,
                                         '&:hover': {
-                                            backgroundColor: phases.length >= 10 ? '#9ca3af' : '#303f9f'
-                                        },
-                                        '&:disabled': {
-                                            backgroundColor: '#9ca3af'
+                                            backgroundColor: '#303f9f'
                                         }
                                     }}
                                 >
-                                    {phases.length >= 10 ? 'Max Phases Reached' : 'Create First Phase'}
+                                    Create First Phase
                                 </Button>
                             </Box>
                         )}
@@ -1752,6 +1825,24 @@ export default function MilestoneManagement() {
                                     <Typography variant="h6" sx={{fontWeight: 600, mb: 2, color: '#1e293b'}}>
                                         Available Phases (Drag to add / Drop here to remove)
                                     </Typography>
+                                    {selectedPhases.length >= maxAssignedMilestone && (
+                                        <Box sx={{
+                                            p: 2,
+                                            mb: 2,
+                                            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(217, 119, 6, 0.05) 100%)',
+                                            border: '1px solid rgba(245, 158, 11, 0.15)',
+                                            borderRadius: 2,
+                                            borderLeft: '4px solid #f59e0b'
+                                        }}>
+                                            <Typography variant="body2" sx={{
+                                                color: '#92400e',
+                                                fontWeight: 600,
+                                                fontSize: '0.85rem'
+                                            }}>
+                                                ⚠️ Maximum milestone limit reached ({maxAssignedMilestone} phases). Remove a phase to add more.
+                                            </Typography>
+                                        </Box>
+                                    )}
                                     <Paper elevation={0} sx={{
                                         p: 2,
                                         border: isDragOverAvailable ? '2px dashed #3f51b5' : '1px solid #e2e8f0',
@@ -1771,24 +1862,33 @@ export default function MilestoneManagement() {
                                                 elevation={0}
                                                 draggable
                                                 onDragStart={(e) => handleDragStart(e, phase)}
-                                                onClick={() => handlePhaseSelection(phase)}
+                                                onClick={() => {
+                                                    if (selectedPhases.length >= maxAssignedMilestone && !selectedPhases.find(p => p.id === phase.id)) {
+                                                        enqueueSnackbar(`Cannot add more phases. Maximum ${maxAssignedMilestone} phases allowed per order.`, {variant: 'warning'});
+                                                        return;
+                                                    }
+                                                    handlePhaseSelection(phase);
+                                                }}
                                                 sx={{
                                                     mb: 2,
-                                                    cursor: 'grab',
+                                                    cursor: (selectedPhases.length >= maxAssignedMilestone && !selectedPhases.find(p => p.id === phase.id)) ? 'not-allowed' : 'grab',
                                                     border: selectedPhases.find(p => p.id === phase.id)
                                                         ? '2px solid #3f51b5'
                                                         : '1px solid #e2e8f0',
                                                     borderRadius: 2,
                                                     backgroundColor: selectedPhases.find(p => p.id === phase.id)
                                                         ? '#eff6ff'
-                                                        : '#ffffff',
+                                                        : (selectedPhases.length >= maxAssignedMilestone && !selectedPhases.find(p => p.id === phase.id))
+                                                            ? '#f9fafb'
+                                                            : '#ffffff',
+                                                    opacity: (selectedPhases.length >= maxAssignedMilestone && !selectedPhases.find(p => p.id === phase.id)) ? 0.6 : 1,
                                                     transition: 'all 0.2s ease',
                                                     '&:hover': {
-                                                        borderColor: '#3f51b5',
-                                                        backgroundColor: '#f8fafc'
+                                                        borderColor: (selectedPhases.length >= maxAssignedMilestone && !selectedPhases.find(p => p.id === phase.id)) ? '#e2e8f0' : '#3f51b5',
+                                                        backgroundColor: (selectedPhases.length >= maxAssignedMilestone && !selectedPhases.find(p => p.id === phase.id)) ? '#f9fafb' : '#f8fafc'
                                                     },
                                                     '&:active': {
-                                                        cursor: 'grabbing'
+                                                        cursor: (selectedPhases.length >= maxAssignedMilestone && !selectedPhases.find(p => p.id === phase.id)) ? 'not-allowed' : 'grabbing'
                                                     }
                                                 }}
                                             >
@@ -1826,7 +1926,7 @@ export default function MilestoneManagement() {
                                         mb: 2
                                     }}>
                                         <Typography variant="h6" sx={{fontWeight: 600, color: '#1e293b'}}>
-                                            Selected Phases ({selectedPhases.length}) - Drag to reorder
+                                            Selected Phases ({selectedPhases.length}/{maxAssignedMilestone}) - Drag to reorder
                                         </Typography>
                                         {selectedPhases.length > 0 && (
                                             <Button
@@ -3242,14 +3342,14 @@ export default function MilestoneManagement() {
                                         Click to select a video file
                                     </Typography>
                                     <Typography variant="caption" sx={{color: '#94a3b8'}}>
-                                        Supported formats: MP4, AVI, MOV, WMV, FLV, WebM, MKV, M4V, 3GP (Max 50MB)
+                                        Supported formats: {getVideoFormatsString()} (Max {getMaxVideoSize()}MB)
                                     </Typography>
                                 </Box>
                             )}
                             <input
                                 id="image-upload"
                                 type="file"
-                                accept="video/mp4, video/avi, video/mov, video/wmv, video/flv, video/webm, video/mkv, video/m4v, video/3gp"
+                                accept={getVideoAcceptString()}
                                 style={{display: 'none'}}
                                 onChange={(e) => {
                                     const file = e.target.files[0];
@@ -3342,8 +3442,9 @@ export default function MilestoneManagement() {
                             variant="contained"
                             disabled={!selectedImage || uploadingImage}
                             onClick={async () => {
-                                if (selectedImage && selectedImage.size > 50 * 1024 * 1024) {
-                                    enqueueSnackbar('Please select a video file under 50MB', {variant: 'warning'});
+                                const maxSize = getMaxVideoSize() * 1024 * 1024;
+                                if (selectedImage && selectedImage.size > maxSize) {
+                                    enqueueSnackbar(`Please select a video file under ${getMaxVideoSize()}MB`, {variant: 'warning'});
                                     return;
                                 }
 
@@ -3370,6 +3471,37 @@ export default function MilestoneManagement() {
 
                                     if (response && response.status === 200) {
                                         enqueueSnackbar('Phase completed successfully!', {variant: 'success'});
+                                        
+                                                                                // Send email notification
+                                        try {
+                                            const user = JSON.parse(localStorage.getItem('user') || '{}');
+                                            const currentPhaseData = viewingOrder?.milestone?.find(p => p.stage === currentPhase);
+                                            
+                                            // Find next phase (next stage after current completed phase)
+                                            const nextPhaseData = viewingOrder?.milestone?.find(p => p.stage === currentPhase + 1);
+                                            
+                                            const emailData = {
+                                                school_name: viewingOrder?.school?.business || '',
+                                                milestone_name: currentPhaseData?.name || '',
+                                                milestone_stage: currentPhase.toString(),
+                                                order_id: parseID(viewingOrder.id, 'ord'),
+                                                garment_name: user?.customer?.business || '',
+                                                phase_name: nextPhaseData?.name || 'Delivering',
+                                                milestone_start_date: currentPhaseData?.startDate ? dayjs(currentPhaseData.startDate).format('DD/MM/YYYY') : '',
+                                                milestone_end_date: currentPhaseData?.endDate ? dayjs(currentPhaseData.endDate).format('DD/MM/YYYY') : '',
+                                                milestone_completed_date: dayjs().format('DD/MM/YYYY'),
+                                                receiver: viewingOrder?.school?.account?.email || ''
+                                            };
+                                            
+                                            console.log("emailData: ", emailData);
+                                            
+                                            await sendEmail2(emailType.milestone, emailData);
+                                            console.log('Email sent successfully for milestone completion');
+                                        } catch (emailError) {
+                                            console.error('Error sending email:', emailError);
+                                            // Don't show error to user as the main action succeeded
+                                        }
+
                                         setUploadImageDialogOpen(false);
                                         setSelectedImage(null);
                                         setUploadProgress(0);
@@ -3480,7 +3612,7 @@ export default function MilestoneManagement() {
                                     Order Details
                                 </Typography>
                                 <Typography variant="body2" sx={{opacity: 0.9, fontWeight: 500}}>
-                                    Order #{selectedOrderDetail?.id}
+                                    {parseID(selectedOrderDetail?.id, 'ord')}
                                 </Typography>
                             </Box>
                         </Box>
@@ -4727,19 +4859,17 @@ export default function MilestoneManagement() {
                                 </Card>
 
                                 <Box sx={{
-                                    display: 'grid',
-                                    gridTemplateColumns: {
-                                        xs: '1fr',
-                                        md: selectedItemImages.logoImageUrl ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)'
-                                    },
-                                    gap: 3
+                                    display: 'flex',
+                                    gap: 3,
+                                    flexDirection: { xs: 'column', md: 'row' }
                                 }}>
-                                    {selectedItemImages.logoImageUrl && (
+                                    {selectedItemImages.logoImageUrl && selectedItemImages.type === 'shirt' && (
                                         <Card sx={{
                                             border: '1px solid #e2e8f0',
                                             borderRadius: 2,
                                             overflow: 'hidden',
                                             transition: 'all 0.3s ease',
+                                            flex: 1,
                                             '&:hover': {
                                                 transform: 'translateY(-2px)',
                                                 boxShadow: '0 8px 32px rgba(63, 81, 181, 0.15)'
@@ -4787,6 +4917,7 @@ export default function MilestoneManagement() {
                                             borderRadius: 2,
                                             overflow: 'hidden',
                                             transition: 'all 0.3s ease',
+                                            flex: 1,
                                             '&:hover': {
                                                 transform: 'translateY(-2px)',
                                                 boxShadow: '0 8px 32px rgba(63, 81, 181, 0.15)'
@@ -4834,6 +4965,7 @@ export default function MilestoneManagement() {
                                             borderRadius: 2,
                                             overflow: 'hidden',
                                             transition: 'all 0.3s ease',
+                                            flex: 1,
                                             '&:hover': {
                                                 transform: 'translateY(-2px)',
                                                 boxShadow: '0 8px 32px rgba(63, 81, 181, 0.15)'

@@ -138,7 +138,8 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
         totalPrice: '',
         deliveryTime: '',
         note: '',
-        validUntil: ''
+        validUntil: '',
+        depositRate: ''
     });
     const [submittingQuotation, setSubmittingQuotation] = useState(false);
     const [deliveryTimeError, setDeliveryTimeError] = useState('');
@@ -148,6 +149,7 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
     const [selectedDeliveryDate, setSelectedDeliveryDate] = useState('');
     const [priceError, setPriceError] = useState('');
     const [validUntilError, setValidUntilError] = useState('');
+    const [depositRateError, setDepositRateError] = useState('');
     const [sizes, setSizes] = useState([]);
     const [showSizeSpecsDialog, setShowSizeSpecsDialog] = useState(false);
     const [selectedSizeSpecs, setSelectedSizeSpecs] = useState(null);
@@ -356,6 +358,19 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                 return;
             }
 
+            const depositRate = parseFloat(quotationData.depositRate);
+            if (!quotationData.depositRate || depositRate < 0.1) {
+                enqueueSnackbar('Deposit rate must be at least 0.1%', {variant: 'error'});
+                setSubmittingQuotation(false);
+                return;
+            }
+
+            if (depositRate > 100) {
+                enqueueSnackbar('Deposit rate cannot exceed 100%', {variant: 'error'});
+                setSubmittingQuotation(false);
+                return;
+            }
+
             const deliveryDays = parseInt(quotationData.deliveryTime);
             if (deliveryOption === 'days' && deliveryDays < 1) {
                 enqueueSnackbar('Delivery time must be at least 1 day', {variant: 'error'});
@@ -431,6 +446,7 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                 earlyDeliveryDate: earlyDeliveryDate.toISOString().split('T')[0],
                 acceptanceDeadline: quotationData.validUntil,
                 price: parseInt(quotationData.totalPrice) || 0,
+                depositRate: parseFloat(quotationData.depositRate) || 0,
                 note: quotationData.note || ''
             };
 
@@ -443,9 +459,12 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                     totalPrice: '',
                     deliveryTime: '',
                     note: '',
-                    validUntil: ''
+                    validUntil: '',
+                    depositRate: ''
                 });
-                window.location.reload()
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
             } else {
                 enqueueSnackbar('Failed to send quotation. Please try again.', {variant: 'error'});
             }
@@ -481,6 +500,33 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
         }
 
         setPriceError('');
+    };
+
+    const handleDepositRateChange = (value) => {
+        const numericValue = value.replace(/[^\d.]/g, '');
+        setQuotationData(prev => ({
+            ...prev,
+            depositRate: numericValue
+        }));
+
+        if (!numericValue) {
+            setDepositRateError('');
+            return;
+        }
+
+        const rate = parseFloat(numericValue);
+
+        if (rate < 0.1) {
+            setDepositRateError('Deposit rate must be at least 0.1%');
+            return;
+        }
+
+        if (rate > 100) {
+            setDepositRateError('Deposit rate cannot exceed 100%');
+            return;
+        }
+
+        setDepositRateError('');
     };
 
     const handleDeliveryTimeChange = (value) => {
@@ -600,7 +646,7 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
         const calculatedDate = new Date(orderDate);
         calculatedDate.setDate(orderDate.getDate() + deliveryDays);
 
-        return calculatedDate.toISOString().split('T')[0];
+        return formatDate(calculatedDate.toISOString().split('T')[0]);
     };
 
     useEffect(() => {
@@ -2012,6 +2058,45 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                     mb: 1,
                                                     color: '#1e293b'
                                                 }}>
+                                                    Deposit Rate (%) *
+                                                </Typography>
+                                                <TextField
+                                                    type="text"
+                                                    value={quotationData.depositRate}
+                                                    onChange={(e) => handleDepositRateChange(e.target.value)}
+                                                    size="small"
+                                                    fullWidth
+                                                    placeholder="Enter deposit rate (0.1% - 100%)"
+                                                    error={!!depositRateError}
+                                                    helperText={depositRateError || 'Deposit rate range: 0.1% - 100%'}
+                                                    sx={{
+                                                        '& .MuiOutlinedInput-root': {
+                                                            background: 'rgba(255, 255, 255, 0.9)',
+                                                            '& fieldset': {
+                                                                borderColor: depositRateError ? '#ef4444' : 'rgba(63, 81, 181, 0.3)'
+                                                            },
+                                                            '&:hover fieldset': {
+                                                                borderColor: depositRateError ? '#ef4444' : 'rgba(63, 81, 181, 0.5)'
+                                                            },
+                                                            '&.Mui-focused fieldset': {
+                                                                borderColor: depositRateError ? '#ef4444' : '#3f51b5'
+                                                            }
+                                                        },
+                                                        '& .MuiFormHelperText-root': {
+                                                            color: depositRateError ? '#ef4444' : '#64748b',
+                                                            fontSize: '0.75rem',
+                                                            marginTop: 0.5
+                                                        }
+                                                    }}
+                                                />
+                                            </Box>
+
+                                            <Box>
+                                                <Typography variant="body2" sx={{
+                                                    fontWeight: 600,
+                                                    mb: 1,
+                                                    color: '#1e293b'
+                                                }}>
                                                     Delivery Time *
                                                 </Typography>
 
@@ -2143,37 +2228,48 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                         onChange={(e) => handleDeliveryDateChange(e.target.value)}
                                                         size="small"
                                                         fullWidth
-                                                        placeholder="Select delivery date"
+                                                        placeholder="dd/MM/yyyy"
+                                                        label="Delivery Date"
+                                                        InputLabelProps={{ shrink: true }}
                                                         error={!!deliveryTimeError}
-                                                        helperText={deliveryTimeError || (() => {
-                                                            if (shippingLeadTime) {
-                                                                const maxDeliveryTime = getMaxDeliveryTime();
-                                                                if (maxDeliveryTime) {
-                                                                    return `Select a date
-                                                                            from tomorrow until ${formatDate(maxDeliveryTime.toISOString().split('T')[0])} (accounting for shipping time)`;
-                                                                }
-                                                            }
-                                                            return 'Select a date from tomorrow until before deadline';
-                                                        })()}
-                                                        inputProps={{
-                                                            min: (() => {
-                                                                const tomorrow = new Date();
-                                                                tomorrow.setDate(tomorrow.getDate() + 1);
-                                                                return tomorrow.toISOString().split('T')[0];
-                                                            })(),
-                                                            max: (() => {
-                                                                // Sử dụng shipping lead time nếu có, nếu không thì dùng deadline - 1 ngày
-                                                                if (shippingLeadTime) {
-                                                                    const maxDeliveryTime = getMaxDeliveryTime();
-                                                                    if (maxDeliveryTime) {
-                                                                        return maxDeliveryTime.toISOString().split('T')[0];
+                                                        helperText={
+                                                            deliveryTimeError || 
+                                                            (selectedDeliveryDate 
+                                                                ? `Selected date: ${formatDate(selectedDeliveryDate)}`
+                                                                : (() => {
+                                                                    if (shippingLeadTime) {
+                                                                        const maxDeliveryTime = getMaxDeliveryTime();
+                                                                        if (maxDeliveryTime) {
+                                                                            return `Select a date from tomorrow until ${formatDate(maxDeliveryTime.toISOString().split('T')[0])} (accounting for shipping time)`;
+                                                                        }
                                                                     }
-                                                                }
+                                                                    return 'Select a date from tomorrow until before deadline';
+                                                                })()
+                                                            )
+                                                        }
+                                                        slotProps={{
+                                                            htmlInput: {
+                                                                min: (() => {
+                                                                    const tomorrow = new Date();
+                                                                    tomorrow.setDate(tomorrow.getDate() + 1);
+                                                                    return tomorrow.toISOString().split('T')[0];
+                                                                })(),
+                                                                max: (() => {
+                                                                    // Sử dụng shipping lead time nếu có, nếu không thì dùng deadline - 1 ngày
+                                                                    if (shippingLeadTime) {
+                                                                        const maxDeliveryTime = getMaxDeliveryTime();
+                                                                        if (maxDeliveryTime) {
+                                                                            return maxDeliveryTime.toISOString().split('T')[0];
+                                                                        }
+                                                                    }
 
-                                                                const orderDeadline = new Date(mergedOrderData.deadline);
-                                                                orderDeadline.setDate(orderDeadline.getDate() - 1);
-                                                                return orderDeadline.toISOString().split('T')[0];
-                                                            })()
+                                                                    const orderDeadline = new Date(mergedOrderData.deadline);
+                                                                    orderDeadline.setDate(orderDeadline.getDate() - 1);
+                                                                    return orderDeadline.toISOString().split('T')[0];
+                                                                })(),
+                                                                lang: 'vi-VN',
+                                                                'data-date-format': 'dd/MM/yyyy'
+                                                            }
                                                         }}
                                                         sx={{
                                                             '& .MuiOutlinedInput-root': {
@@ -2192,6 +2288,15 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                                 color: deliveryTimeError ? '#ef4444' : '#64748b',
                                                                 fontSize: '0.75rem',
                                                                 marginTop: 0.5
+                                                            },
+                                                            '& input[type="date"]::-webkit-datetime-edit': {
+                                                                direction: 'ltr'
+                                                            },
+                                                            '& input[type="date"]::-webkit-inner-spin-button': {
+                                                                display: 'none'
+                                                            },
+                                                            '& input[type="date"]::-webkit-calendar-picker-indicator': {
+                                                                opacity: 0.7
                                                             }
                                                         }}
                                                     />
@@ -2228,7 +2333,8 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                                 }
                                                                 return `Order date: ${formatDate(mergedOrderData.orderDate)}`;
                                                             })()}
-                                                            inputProps={{
+                                                            slotProps={{
+                                                                htmlInput: {
                                                                 min: 1,
                                                                 max: (() => {
                                                                     if (shippingLeadTime) {
@@ -2245,8 +2351,11 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                                         return Math.ceil((deadlineDate - orderDate) / (1000 * 60 * 60 * 24)) - maxDays - 1;
                                                                     }
                                                                     return Math.ceil((new Date(mergedOrderData.deadline) - new Date(mergedOrderData.orderDate)) / (1000 * 60 * 60 * 24)) - 1;
-                                                                })()
-                                                            }}
+                                                                })(),
+                                                                lang: 'vi-VN',
+                                                                'data-date-format': 'dd/MM/yyyy'
+                                                            }
+                                                        }}
                                                             sx={{
                                                                 '& .MuiOutlinedInput-root': {
                                                                     background: 'rgba(255, 255, 255, 0.9)',
@@ -2275,14 +2384,14 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                                 borderRadius: 1,
                                                                 border: '1px solid rgba(16, 185, 129, 0.2)'
                                                             }}>
-                                                                <Typography variant="caption" sx={{
-                                                                    color: '#065f46',
-                                                                    fontWeight: 500,
-                                                                    display: 'block'
-                                                                }}>
-                                                                    Estimated Delivery
-                                                                    Date: {formatDate(getCalculatedDeliveryDate())}
-                                                                </Typography>
+                                                                                                                                        <Typography variant="caption" sx={{
+                                                                            color: '#065f46',
+                                                                            fontWeight: 500,
+                                                                            display: 'block'
+                                                                        }}>
+                                                                            Estimated Delivery
+                                                                            Date: {getCalculatedDeliveryDate()}
+                                                                        </Typography>
                                                             </Box>
                                                         )}
                                                     </Box>
@@ -2293,7 +2402,7 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                             <Box>
                                                 <Typography variant="body2" sx={{
                                                     fontWeight: 600,
-                                                    mb: 1,
+                                                    mb: 2,
                                                     color: '#1e293b'
                                                 }}>
                                                     Valid Until *
@@ -2301,6 +2410,8 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                 <TextField
                                                     type="date"
                                                     value={quotationData.validUntil}
+                                                    label="Valid Until Date"
+                                                    placeholder="dd/MM/yyyy"
                                                     onChange={(e) => {
                                                         const selectedDate = e.target.value;
                                                         setQuotationData({
@@ -2359,37 +2470,47 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                     fullWidth
                                                     InputLabelProps={{shrink: true}}
                                                     error={!!validUntilError}
-                                                    helperText={validUntilError || 'Select a date at least 2 days before delivery date'}
-                                                    inputProps={{
-                                                        min: (() => {
-                                                            const tomorrow = new Date();
-                                                            tomorrow.setDate(tomorrow.getDate() + 1);
-                                                            return tomorrow.toISOString().split('T')[0];
-                                                        })(),
-                                                        max: (() => {
-                                                            const orderDeadline = new Date(mergedOrderData.deadline);
-                                                            const dayBeforeDeadline = new Date(orderDeadline);
-                                                            dayBeforeDeadline.setDate(orderDeadline.getDate() - 1);
+                                                    helperText={
+                                                        validUntilError || 
+                                                        (quotationData.validUntil 
+                                                            ? `Selected date: ${formatDate(quotationData.validUntil)}`
+                                                            : 'Select a date at least 2 days before delivery date'
+                                                        )
+                                                    }
+                                                    slotProps={{
+                                                        htmlInput: {
+                                                            min: (() => {
+                                                                const tomorrow = new Date();
+                                                                tomorrow.setDate(tomorrow.getDate() + 1);
+                                                                return tomorrow.toISOString().split('T')[0];
+                                                            })(),
+                                                            max: (() => {
+                                                                const orderDeadline = new Date(mergedOrderData.deadline);
+                                                                const dayBeforeDeadline = new Date(orderDeadline);
+                                                                dayBeforeDeadline.setDate(orderDeadline.getDate() - 1);
 
-                                                            let twoDaysBeforeDelivery = null;
-                                                            if (deliveryOption === 'date' && selectedDeliveryDate) {
-                                                                const deliveryDate = new Date(selectedDeliveryDate);
-                                                                twoDaysBeforeDelivery = new Date(deliveryDate);
-                                                                twoDaysBeforeDelivery.setDate(deliveryDate.getDate() - 2);
-                                                            } else if (deliveryOption === 'days' && quotationData.deliveryTime) {
-                                                                const orderDate = new Date(mergedOrderData.orderDate);
-                                                                const deliveryDate = new Date(orderDate);
-                                                                deliveryDate.setDate(orderDate.getDate() + parseInt(quotationData.deliveryTime));
-                                                                twoDaysBeforeDelivery = new Date(deliveryDate);
-                                                                twoDaysBeforeDelivery.setDate(deliveryDate.getDate() - 2);
-                                                            }
+                                                                let twoDaysBeforeDelivery = null;
+                                                                if (deliveryOption === 'date' && selectedDeliveryDate) {
+                                                                    const deliveryDate = new Date(selectedDeliveryDate);
+                                                                    twoDaysBeforeDelivery = new Date(deliveryDate);
+                                                                    twoDaysBeforeDelivery.setDate(deliveryDate.getDate() - 2);
+                                                                } else if (deliveryOption === 'days' && quotationData.deliveryTime) {
+                                                                    const orderDate = new Date(mergedOrderData.orderDate);
+                                                                    const deliveryDate = new Date(orderDate);
+                                                                    deliveryDate.setDate(orderDate.getDate() + parseInt(quotationData.deliveryTime));
+                                                                    twoDaysBeforeDelivery = new Date(deliveryDate);
+                                                                    twoDaysBeforeDelivery.setDate(deliveryDate.getDate() - 2);
+                                                                }
 
-                                                            if (twoDaysBeforeDelivery && twoDaysBeforeDelivery < dayBeforeDeadline) {
-                                                                return twoDaysBeforeDelivery.toISOString().split('T')[0];
-                                                            } else {
-                                                                return dayBeforeDeadline.toISOString().split('T')[0];
-                                                            }
-                                                        })()
+                                                                if (twoDaysBeforeDelivery && twoDaysBeforeDelivery < dayBeforeDeadline) {
+                                                                    return twoDaysBeforeDelivery.toISOString().split('T')[0];
+                                                                } else {
+                                                                    return dayBeforeDeadline.toISOString().split('T')[0];
+                                                                }
+                                                            })(),
+                                                            lang: 'vi-VN',
+                                                            'data-date-format': 'dd/MM/yyyy'
+                                                        }
                                                     }}
                                                     sx={{
                                                         '& .MuiOutlinedInput-root': {
@@ -2408,6 +2529,15 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                             color: validUntilError ? '#ef4444' : '#64748b',
                                                             fontSize: '0.75rem',
                                                             marginTop: 0.5
+                                                        },
+                                                        '& input[type="date"]::-webkit-datetime-edit': {
+                                                            direction: 'ltr'
+                                                        },
+                                                        '& input[type="date"]::-webkit-inner-spin-button': {
+                                                            display: 'none'
+                                                        },
+                                                        '& input[type="date"]::-webkit-calendar-picker-indicator': {
+                                                            opacity: 0.7
                                                         }
                                                     }}
                                                 />
@@ -2476,6 +2606,8 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                     onClick={handleSubmitQuotation}
                                                     disabled={!quotationData.totalPrice ||
                                                         !!priceError ||
+                                                        !quotationData.depositRate ||
+                                                        !!depositRateError ||
                                                         (deliveryOption === 'date' ? !selectedDeliveryDate : !quotationData.deliveryTime) ||
                                                         !quotationData.validUntil ||
                                                         !!validUntilError ||
