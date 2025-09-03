@@ -658,7 +658,12 @@ export default function GarmentFeedback() {
     
     // Evidence upload handlers
     const handleEvidenceImageUpload = useCallback(async (files) => {
-        if (!files || files.length === 0) return;
+        if (!files || files.length === 0) {
+            console.log('No files provided to handleEvidenceImageUpload');
+            return;
+        }
+        
+        console.log('Starting image upload for', files.length, 'files');
         
         try {
             setUploadingEvidence(true);
@@ -667,13 +672,23 @@ export default function GarmentFeedback() {
             
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                const result = await uploadCloudinary(file, (progress) => {
-                    const totalProgress = ((i / files.length) + (progress / 100 / files.length)) * 100;
-                    setEvidenceUploadProgress(Math.round(totalProgress));
-                });
+                console.log(`Uploading image ${i + 1}/${files.length}:`, file.name, file.size, 'bytes');
+                setEvidenceUploadProgress(Math.round(((i + 0.5) / files.length) * 100));
                 
-                if (result && result.secure_url) {
-                    uploadedUrls.push(result.secure_url);
+                const result = await uploadCloudinary(file);
+                console.log('Upload result:', result);
+                
+                if (result) {
+                    // Handle both direct URL and object response
+                    const imageUrl = typeof result === 'string' ? result : result.secure_url || result.url;
+                    if (imageUrl) {
+                        console.log('Successfully uploaded image:', imageUrl);
+                        uploadedUrls.push(imageUrl);
+                    } else {
+                        console.error('No URL found in upload result:', result);
+                    }
+                } else {
+                    console.error('Upload returned null/undefined result');
                 }
             }
             
@@ -682,6 +697,8 @@ export default function GarmentFeedback() {
             
             if (uploadedUrls.length > 0) {
                 enqueueSnackbar(`${uploadedUrls.length} image(s) uploaded successfully!`, {variant: 'success'});
+            } else {
+                enqueueSnackbar('No images were uploaded successfully.', {variant: 'warning'});
             }
             
         } catch (error) {
@@ -693,19 +710,39 @@ export default function GarmentFeedback() {
     }, []);
     
     const handleEvidenceVideoUpload = useCallback(async (file) => {
-        if (!file) return;
+        if (!file) {
+            console.log('No file provided to handleEvidenceVideoUpload');
+            return;
+        }
+        
+        console.log('Starting video upload:', file.name, file.size, 'bytes');
         
         try {
             setUploadingEvidence(true);
             setEvidenceUploadProgress(0);
             
-            const result = await uploadCloudinaryVideo(file, (progress) => {
-                setEvidenceUploadProgress(progress);
-            });
+            // Show progress during upload
+            const progressInterval = setInterval(() => {
+                setEvidenceUploadProgress(prev => Math.min(prev + 10, 90));
+            }, 500);
             
-            if (result && result.secure_url) {
-                setEvidenceVideoUrl(result.secure_url);
-                enqueueSnackbar('Video uploaded successfully!', {variant: 'success'});
+            const result = await uploadCloudinaryVideo(file);
+            console.log('Video upload result:', result);
+            
+            clearInterval(progressInterval);
+            setEvidenceUploadProgress(100);
+            
+            if (result) {
+                // Handle both direct URL and object response
+                const videoUrl = typeof result === 'string' ? result : result.secure_url || result.url;
+                if (videoUrl) {
+                    setEvidenceVideoUrl(videoUrl);
+                    enqueueSnackbar('Video uploaded successfully!', {variant: 'success'});
+                } else {
+                    enqueueSnackbar('Video upload failed. Please try again.', {variant: 'error'});
+                }
+            } else {
+                enqueueSnackbar('Video upload failed. Please try again.', {variant: 'error'});
             }
             
         } catch (error) {
@@ -1931,9 +1968,14 @@ export default function GarmentFeedback() {
                                             multiple
                                             style={{display: 'none'}}
                                             onChange={(e) => {
+                                                console.log('Image files selected:', e.target.files);
                                                 const files = Array.from(e.target.files);
-                                                setEvidenceFiles(files);
-                                                handleEvidenceImageUpload(files);
+                                                if (files.length > 0) {
+                                                    setEvidenceFiles(files);
+                                                    handleEvidenceImageUpload(files);
+                                                } else {
+                                                    console.log('No files selected');
+                                                }
                                             }}
                                             disabled={uploadingEvidence}
                                         />
@@ -2015,10 +2057,15 @@ export default function GarmentFeedback() {
                                             accept="video/*"
                                             style={{display: 'none'}}
                                             onChange={(e) => {
+                                                console.log('Video file selected:', e.target.files[0]);
                                                 const file = e.target.files[0];
                                                 if (file) {
+                                                    console.log('Video file size:', file.size, 'bytes');
+                                                    console.log('Video file type:', file.type);
                                                     setEvidenceVideoFile(file);
                                                     handleEvidenceVideoUpload(file);
+                                                } else {
+                                                    console.log('No video file selected');
                                                 }
                                             }}
                                             disabled={uploadingEvidence}
