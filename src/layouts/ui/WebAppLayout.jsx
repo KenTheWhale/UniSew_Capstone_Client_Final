@@ -198,19 +198,6 @@ function MainHeader() {
                         >
                             About
                         </Button>
-                        <Button
-                            color="inherit"
-                            sx={{
-                                fontWeight: 600,
-                                color: '#333',
-                                fontSize: 16,
-                                px: 2,
-                                '&:hover': {color: '#1976d2', bgcolor: 'rgba(25,118,210,0.1)'}
-                            }}
-                            onClick={() => window.location.href = '/contact'}
-                        >
-                            Contact
-                        </Button>
                     </Box>
                     <Box sx={{position: 'relative'}}>
                         <Button

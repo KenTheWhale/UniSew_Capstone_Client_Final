@@ -3,8 +3,37 @@ import SchoolIcon from "@mui/icons-material/School";
 import DesignServicesIcon from "@mui/icons-material/DesignServices";
 import FactoryIcon from "@mui/icons-material/Factory";
 import {CheckCircleOutline, Support} from "@mui/icons-material";
+import {getAccessCookie} from "../../utils/CookieUtil.jsx";
 
 export default function About() {
+    function handleJoinNow() {
+        const access = getAccessCookie();
+        if (access == null) {
+            console.log("access cookie =", getAccessCookie());
+            window.location.href = '/login';
+            return;
+        }
+        console.log("access cookiein =", getAccessCookie());
+        const role = access.role
+        switch (role) {
+            case 'admin':
+                window.location.href = '/admin/dashboard';
+                break;
+            case 'school':
+                window.location.href = '/school/design';
+                break;
+            case 'designer':
+                window.location.href = '/designer/requests';
+                break;
+            case 'garment':
+                window.location.href = '/garment/orders';
+                break;
+            default:
+                window.location.href = '/login';
+                break;
+        }
+
+    }
     return (
         <Box sx={{backgroundColor: '#fafafa'}}>
             {}
@@ -213,9 +242,9 @@ export default function About() {
                                     fontSize: "1.1rem"
                                 }}
                             >
-                                <strong>Mission:</strong> To democratize access to high-quality, custom-designed school
-                                uniforms by bridging the gap between educational institutions, creative designers, and
-                                skilled manufacturers through innovative technology.
+                                <strong>Mission:</strong> To simplify and modernize the process of designing and ordering school uniforms by connecting schools with trusted designers and manufacturers on a transparent, efficient, and technology-driven platform.
+
+
                             </Typography>
                             <Typography
                                 variant="body1"
@@ -226,30 +255,8 @@ export default function About() {
                                     fontSize: "1.1rem"
                                 }}
                             >
-                                <strong>Vision:</strong> To become the global leader in educational uniform solutions,
-                                where every student worldwide has access to comfortable, durable, and
-                                identity-reflecting uniforms that enhance their school experience.
+                                <strong>Vision:</strong>  To become the trusted leader in school uniform solutions, providing every educational institution with access to affordable, high-quality uniforms that foster identity and enrich the primary student experience.
                             </Typography>
-                            <Box sx={{display: "flex", gap: 2, flexWrap: "wrap"}}>
-                                <Box sx={{display: "flex", alignItems: "center", gap: 1}}>
-                                    <CheckCircleOutline sx={{color: "#22c55e", fontSize: 20}}/>
-                                    <Typography variant="body2" sx={{color: "#475569", fontWeight: 500}}>
-                                        Quality Assurance
-                                    </Typography>
-                                </Box>
-                                <Box sx={{display: "flex", alignItems: "center", gap: 1}}>
-                                    <CheckCircleOutline sx={{color: "#22c55e", fontSize: 20}}/>
-                                    <Typography variant="body2" sx={{color: "#475569", fontWeight: 500}}>
-                                        Global Reach
-                                    </Typography>
-                                </Box>
-                                <Box sx={{display: "flex", alignItems: "center", gap: 1}}>
-                                    <CheckCircleOutline sx={{color: "#22c55e", fontSize: 20}}/>
-                                    <Typography variant="body2" sx={{color: "#475569", fontWeight: 500}}>
-                                        Innovation Focus
-                                    </Typography>
-                                </Box>
-                            </Box>
                         </Grid>
                     </Grid>
                 </Container>
@@ -325,8 +332,7 @@ export default function About() {
                                         flex: 1,
                                         fontSize: {xs: "0.75rem", md: "0.8rem"}
                                     }}>
-                                        Customized platform specifically built for educational institutions with
-                                        intuitive workflows and school-friendly features.
+                                        A dedicated platform for schools, providing simple workflows and features tailored to the needs of educational institutions.
                                     </Typography>
                                 </Box>
                             </Paper>
@@ -363,7 +369,7 @@ export default function About() {
                                         color: "#1e293b",
                                         fontSize: {xs: "1rem", md: "1.2rem"}
                                     }}>
-                                        Advanced Design Tools
+                                        Seamless Order Management
                                     </Typography>
                                     <Typography variant="body2" sx={{
                                         color: "#64748b",
@@ -371,8 +377,7 @@ export default function About() {
                                         flex: 1,
                                         fontSize: {xs: "0.85rem", md: "0.9rem"}
                                     }}>
-                                        Professional-grade design studio with real-time collaboration, 3D visualization,
-                                        and extensive customization options.
+                                        Streamlined order creation and management with clear requirements, quotations, and real-time progress tracking.
                                     </Typography>
                                 </Box>
                             </Paper>
@@ -399,7 +404,7 @@ export default function About() {
                                     },
                                 }}
                             >
-                                <Box sx={{mb: 2}}>
+                                <Box sx={{mb: 1}}>
                                     <FactoryIcon sx={{fontSize: {xs: 48, md: 56}, color: "#1976d2", mb: 2}}/>
                                 </Box>
                                 <Box sx={{flexGrow: 1, display: "flex", flexDirection: "column"}}>
@@ -408,8 +413,7 @@ export default function About() {
                                         mb: 1.5,
                                         color: "#1e293b",
                                         fontSize: {xs: "1rem", md: "1.2rem"}
-                                    }}>
-                                        Premium Manufacturing
+                                    }}>Premium Manufacturing
                                     </Typography>
                                     <Typography variant="body2" sx={{
                                         color: "#64748b",
@@ -417,58 +421,12 @@ export default function About() {
                                         flex: 1,
                                         fontSize: {xs: "0.85rem", md: "0.9rem"}
                                     }}>
-                                        Partnerships with certified manufacturers ensuring superior quality, ethical
-                                        production, and on-time delivery.
+                                        Reliable partnerships with garment factories, guaranteeing quality, responsibility, and timely delivery.
                                     </Typography>
                                 </Box>
                             </Paper>
                         </Grid>
 
-                        <Grid item xs={6} md={3}>
-                            <Paper
-                                elevation={0}
-                                sx={{
-                                    p: 3,
-                                    borderRadius: 3,
-                                    textAlign: "center",
-                                    height: "100%",
-                                    minHeight: 260,
-                                    background: "white",
-                                    border: "1px solid #e2e8f0",
-                                    transition: "all 0.3s ease",
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    "&:hover": {
-                                        transform: "translateY(-8px)",
-                                        boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
-                                        borderColor: "#1976d2"
-                                    },
-                                }}
-                            >
-                                <Box sx={{mb: 2}}>
-                                    <Support sx={{fontSize: {xs: 48, md: 56}, color: "#1976d2", mb: 2}}/>
-                                </Box>
-                                <Box sx={{flexGrow: 1, display: "flex", flexDirection: "column"}}>
-                                    <Typography variant="h6" sx={{
-                                        fontWeight: 700,
-                                        mb: 1.5,
-                                        color: "#1e293b",
-                                        fontSize: {xs: "1rem", md: "1.2rem"}
-                                    }}>
-                                        24/7 Support
-                                    </Typography>
-                                    <Typography variant="body2" sx={{
-                                        color: "#64748b",
-                                        lineHeight: 1.6,
-                                        flex: 1,
-                                        fontSize: {xs: "0.85rem", md: "0.9rem"}
-                                    }}>
-                                        Dedicated customer success team providing comprehensive support throughout your
-                                        entire uniform journey.
-                                    </Typography>
-                                </Box>
-                            </Paper>
-                        </Grid>
                     </Grid>
                 </Container>
             </Box>
@@ -521,13 +479,13 @@ export default function About() {
                             {
                                 step: "03",
                                 title: "Quality Manufacturing",
-                                description: "Approved designs are sent to our certified manufacturing partners who produce uniforms with the highest quality standards.",
+                                description: "Approved designs are sent to garment factory partners who produce uniforms with the highest quality standards.",
                                 icon: <FactoryIcon sx={{fontSize: 40, color: "#1976d2"}}/>
                             },
                             {
                                 step: "04",
-                                title: "Delivery & Support",
-                                description: "Completed uniforms are delivered to your school with full tracking support and post-delivery customer service.",
+                                title: "Tracking Support",
+                                description: "Completed uniforms are delivered to your school with tracking support.",
                                 icon: <CheckCircleOutline sx={{fontSize: 40, color: "#1976d2"}}/>
                             }
                         ].map((item, index) => (
@@ -599,54 +557,6 @@ export default function About() {
             </Box>
 
             {}
-            <Box sx={{py: {xs: 8, md: 12}, backgroundColor: "#1976d2", color: "white"}}>
-                <Container maxWidth="lg">
-                    <Grid container spacing={4} sx={{textAlign: "center"}} justifyContent="center" alignItems="center">
-                        {[
-                            {number: "500+", label: "Schools Served", sublabel: "Across multiple countries"},
-                            {number: "50k+", label: "Uniforms Delivered", sublabel: "High-quality products"},
-                            {number: "98%", label: "Satisfaction Rate", sublabel: "Customer approval"},
-                            {number: "24/7", label: "Support Available", sublabel: "Always here to help"}
-                        ].map((stat, index) => (
-                            <Grid item xs={6} md={3} key={index}>
-                                <Box sx={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    height: "100%",
-                                    minHeight: 120
-                                }}>
-                                    <Typography
-                                        variant="h2"
-                                        sx={{
-                                            fontWeight: 800,
-                                            mb: 1,
-                                            fontSize: {xs: "2.2rem", md: "3.2rem"},
-                                            lineHeight: 1
-                                        }}
-                                    >
-                                        {stat.number}
-                                    </Typography>
-                                    <Typography variant="h6" sx={{
-                                        fontWeight: 600,
-                                        mb: 0.5,
-                                        fontSize: {xs: "1rem", md: "1.2rem"}
-                                    }}>
-                                        {stat.label}
-                                    </Typography>
-                                    <Typography variant="body2" sx={{
-                                        opacity: 0.85,
-                                        fontSize: {xs: "0.85rem", md: "0.9rem"}
-                                    }}>
-                                        {stat.sublabel}
-                                    </Typography>
-                                </Box>
-                            </Grid>
-                        ))}
-                    </Grid>
-                </Container>
-            </Box>
 
             {}
             <Box sx={{py: {xs: 8, md: 12}, backgroundColor: "#f8fafc", textAlign: "center"}}>
@@ -692,29 +602,9 @@ export default function About() {
                                     boxShadow: "0 8px 25px rgba(25, 118, 210, 0.3)"
                                 }
                             }}
+                            onClick={handleJoinNow}
                         >
                             Start Your Project
-                        </Button>
-                        <Button
-                            variant="outlined"
-                            size="large"
-                            sx={{
-                                px: 4,
-                                py: 1.5,
-                                fontSize: "1.1rem",
-                                fontWeight: 600,
-                                borderRadius: "50px",
-                                textTransform: "none",
-                                borderColor: "#1976d2",
-                                color: "#1976d2",
-                                "&:hover": {
-                                    backgroundColor: "#1976d2",
-                                    color: "white",
-                                    transform: "translateY(-2px)"
-                                }
-                            }}
-                        >
-                            Contact Our Team
                         </Button>
                     </Box>
                 </Container>
