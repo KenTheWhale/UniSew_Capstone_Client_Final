@@ -1085,8 +1085,8 @@ export default function MilestoneManagement() {
                                 const hasMilestone = orderMilestone.length > 0;
 
                                 return (
-                                    <Box key={order.id} sx={{ 
-                                        flex: '0 0 calc(50% - 12px)', 
+                                    <Box key={order.id} sx={{
+                                        flex: '0 0 calc(50% - 12px)',
                                         minWidth: '400px',
                                         '@media (max-width: 900px)': {
                                             flex: '0 0 100%'
@@ -1456,6 +1456,11 @@ export default function MilestoneManagement() {
                                     <Typography variant="caption" sx={{color: '#64748b'}}>
                                         {phases.length} phases created
                                     </Typography>
+                                    {phases.length >= 10 && (
+                                        <Typography variant="caption" sx={{color: '#d32f2f', fontWeight: 600}}>
+                                            (Maximum reached)
+                                        </Typography>
+                                    )}
                                 </Box>
                             </Box>
                             <Button
@@ -3293,72 +3298,74 @@ export default function MilestoneManagement() {
                             </Box>
                         </Box>
 
-                        <Box sx={{
-                            border: '2px dashed rgba(63, 81, 181, 0.3)',
-                            borderRadius: 2,
-                            p: 4,
-                            textAlign: 'center',
-                            backgroundColor: 'rgba(63, 81, 181, 0.02)',
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease',
-                            '&:hover': {
-                                borderColor: 'rgba(63, 81, 181, 0.5)',
-                                backgroundColor: 'rgba(63, 81, 181, 0.05)'
-                            }
-                        }}
-                             onClick={() => document.getElementById('image-upload').click()}
-                        >
-                            {selectedImage ? (
-                                <Box>
-                                    <video
-                                        src={URL.createObjectURL(selectedImage)}
-                                        controls
-                                        style={{
-                                            maxWidth: '100%',
-                                            maxHeight: '200px',
-                                            borderRadius: '8px',
-                                            marginBottom: '16px'
-                                        }}
-                                    />
-                                    <Typography variant="body2" sx={{color: '#64748b'}}>
-                                        Click to change video
-                                    </Typography>
-                                </Box>
-                            ) : (
-                                <Box>
-                                    <Avatar sx={{
-                                        width: 80,
-                                        height: 80,
-                                        background: 'linear-gradient(135deg, rgba(63, 81, 181, 0.1) 0%, rgba(48, 63, 159, 0.15) 100%)',
-                                        border: '2px solid rgba(63, 81, 181, 0.2)',
-                                        mb: 2
-                                    }}>
-                                        <AssignmentIcon sx={{fontSize: 40, color: '#3f51b5'}}/>
-                                    </Avatar>
-                                    <Typography variant="h6" sx={{color: '#1e293b', mb: 1, fontWeight: 600}}>
-                                        Upload Video
-                                    </Typography>
-                                    <Typography variant="body2" sx={{color: '#64748b', mb: 2}}>
-                                        Click to select a video file
-                                    </Typography>
-                                    <Typography variant="caption" sx={{color: '#94a3b8'}}>
-                                        Supported formats: {getVideoFormatsString()} (Max {getMaxVideoSize()}MB)
-                                    </Typography>
-                                </Box>
-                            )}
-                            <input
-                                id="image-upload"
-                                type="file"
-                                accept={getVideoAcceptString()}
-                                style={{display: 'none'}}
-                                onChange={(e) => {
-                                    const file = e.target.files[0];
-                                    if (file) {
-                                        setSelectedImage(file);
-                                    }
-                                }}
-                            />
-                        </Box>
+                        {!uploadingImage && (
+                            <Box sx={{
+                                border: '2px dashed rgba(63, 81, 181, 0.3)',
+                                borderRadius: 2,
+                                p: 4,
+                                textAlign: 'center',
+                                backgroundColor: 'rgba(63, 81, 181, 0.02)',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                '&:hover': {
+                                    borderColor: 'rgba(63, 81, 181, 0.5)',
+                                    backgroundColor: 'rgba(63, 81, 181, 0.05)'
+                                }
+                            }}
+                                 onClick={() => document.getElementById('image-upload').click()}
+                            >
+                                {selectedImage ? (
+                                    <Box>
+                                        <video
+                                            src={URL.createObjectURL(selectedImage)}
+                                            controls
+                                            style={{
+                                                maxWidth: '100%',
+                                                maxHeight: '200px',
+                                                borderRadius: '8px',
+                                                marginBottom: '16px'
+                                            }}
+                                        />
+                                        <Typography variant="body2" sx={{color: '#64748b'}}>
+                                            Click to change video
+                                        </Typography>
+                                    </Box>
+                                ) : (
+                                    <Box>
+                                        <Avatar sx={{
+                                            width: 80,
+                                            height: 80,
+                                            background: 'linear-gradient(135deg, rgba(63, 81, 181, 0.1) 0%, rgba(48, 63, 159, 0.15) 100%)',
+                                            border: '2px solid rgba(63, 81, 181, 0.2)',
+                                            mb: 2
+                                        }}>
+                                            <AssignmentIcon sx={{fontSize: 40, color: '#3f51b5'}}/>
+                                        </Avatar>
+                                        <Typography variant="h6" sx={{color: '#1e293b', mb: 1, fontWeight: 600}}>
+                                            Upload Video
+                                        </Typography>
+                                        <Typography variant="body2" sx={{color: '#64748b', mb: 2}}>
+                                            Click to select a video file
+                                        </Typography>
+                                        <Typography variant="caption" sx={{color: '#94a3b8'}}>
+                                            Supported formats: {getVideoFormatsString()} (Max {getMaxVideoSize()}MB)
+                                        </Typography>
+                                    </Box>
+                                )}
+                                <input
+                                    id="image-upload"
+                                    type="file"
+                                    accept={getVideoAcceptString()}
+                                    style={{display: 'none'}}
+                                    onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                            setSelectedImage(file);
+                                        }
+                                    }}
+                                />
+                            </Box>
+                        )}
 
                         {/* Upload Progress Bar */}
                         {uploadingImage && (
@@ -3427,12 +3434,17 @@ export default function MilestoneManagement() {
                                 setSelectedImage(null);
                                 setUploadProgress(0);
                             }}
+                            disabled={uploadingImage}
                             sx={{
                                 color: '#64748b',
                                 borderColor: '#d1d5db',
                                 '&:hover': {
                                     borderColor: '#9ca3af',
                                     backgroundColor: '#f9fafb'
+                                },
+                                '&:disabled': {
+                                    color: '#9ca3af',
+                                    borderColor: '#d1d5db'
                                 }
                             }}
                         >
@@ -3455,7 +3467,10 @@ export default function MilestoneManagement() {
                                     let videoUrl = '';
                                     if (selectedImage) {
                                         const uploadResponse = await uploadCloudinaryVideo(selectedImage, (progress) => {
-                                            setUploadProgress(progress);
+                                            // Throttle progress updates to prevent excessive re-renders
+                                            if (progress % 5 === 0 || progress === 100) {
+                                                setUploadProgress(progress);
+                                            }
                                         });
                                         if (uploadResponse) {
                                             videoUrl = uploadResponse;
@@ -3471,15 +3486,15 @@ export default function MilestoneManagement() {
 
                                     if (response && response.status === 200) {
                                         enqueueSnackbar('Phase completed successfully!', {variant: 'success'});
-                                        
+
                                                                                 // Send email notification
                                         try {
                                             const user = JSON.parse(localStorage.getItem('user') || '{}');
                                             const currentPhaseData = viewingOrder?.milestone?.find(p => p.stage === currentPhase);
-                                            
+
                                             // Find next phase (next stage after current completed phase)
                                             const nextPhaseData = viewingOrder?.milestone?.find(p => p.stage === currentPhase + 1);
-                                            
+
                                             const emailData = {
                                                 school_name: viewingOrder?.school?.business || '',
                                                 milestone_name: currentPhaseData?.name || '',
@@ -3492,9 +3507,9 @@ export default function MilestoneManagement() {
                                                 milestone_completed_date: dayjs().format('DD/MM/YYYY'),
                                                 receiver: viewingOrder?.school?.account?.email || ''
                                             };
-                                            
+
                                             console.log("emailData: ", emailData);
-                                            
+
                                             await sendEmail2(emailType.milestone, emailData);
                                             console.log('Email sent successfully for milestone completion');
                                         } catch (emailError) {

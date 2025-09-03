@@ -20,7 +20,7 @@ export const getFeedbacksByDesigner = async () => {
     return response || null
 }
 
-export const getFeedbacksByGarment = async () => {
+export const getReportsByGarment = async () => {
     const response = await axiosClient.post(`/feedback/garment`)
     return response || null
 }
@@ -32,5 +32,15 @@ export const getAllReport = async () => {
 
 export const approveReport = async (data) => {
     const response = await axiosClient.post(`/feedback/approval`, data)
+    return response || null
+}
+
+export const appealReport = async (data) => {
+    const response = await axiosClient.post(`/feedback/appeals`, data)
+    return response || null
+}
+
+export const approveAppeal = async (data) => {
+    const response = await axiosClient.post(`/feedback/appeals/approval`, data)
     return response || null
 }

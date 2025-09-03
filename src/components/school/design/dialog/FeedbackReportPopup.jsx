@@ -321,69 +321,231 @@ export default function FeedbackReportPopup({
                 <Box sx={{p: 4}}>
                     {}
                     <Paper elevation={0} sx={{
+                        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(37, 99, 235, 0.08) 100%)',
+                        border: '1px solid rgba(59, 130, 246, 0.1)',
+                        borderRadius: 3,
                         p: 3,
-                        mb: 3,
-                        backgroundColor: '#f8fafc',
-                        borderRadius: 2,
-                        border: '1px solid #e2e8f0'
+                        mb: 3
                     }}>
-                        <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
-                            {requestData?.orderId ? 'Order Information' : 'Request Information'}
-                        </Typography>
-                        <Grid container spacing={2}>
-                            <Grid item xs={12} sm={6}>
-                                <Typography variant="body2" sx={{color: '#64748b'}}>
+                        {/* Header */}
+                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1,
+                                flex: 1
+                            }}>
+                                <Typography variant="h5" sx={{
+                                    fontWeight: 'bold', 
+                                    color: '#1e293b',
+                                    fontSize: '1.25rem'
+                                }}>
+                                    {requestData?.orderId ? (requestData?.name || `Order`) : (requestData?.name || 'Design Request')}
+                                </Typography>
+                            </Box>
+                            <Chip
+                                label={requestData?.orderId ? parseID(requestData.orderId, 'ord') : (requestData?.id ? parseID(requestData.id, 'dr') : 'N/A')}
+                                sx={{
+                                    backgroundColor: requestData?.orderId ? '#e3f2fd' : '#dcfce7',
+                                    color: requestData?.orderId ? '#1976d2' : '#065f46',
+                                    fontWeight: 'bold',
+                                    fontSize: '0.75rem'
+                                }}
+                            />
+                        </Box>
+
+                        {/* Status Badge */}
+                        <Box sx={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            mb: 3
+                        }}>
+                            <Chip
+                                label={requestData?.status || 'N/A'}
+                                sx={{
+                                    backgroundColor: (() => {
+                                        const status = requestData?.status?.toLowerCase();
+                                        if (status === 'completed') return '#10b981';
+                                        if (status === 'pending' || status === 'processing') return '#f59e0b';
+                                        if (status === 'cancelled' || status === 'rejected') return '#ef4444';
+                                        return '#6b7280';
+                                    })(),
+                                    color: 'white',
+                                    fontWeight: 'bold',
+                                    fontSize: '0.875rem',
+                                    padding: '6px 16px',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px',
+                                    transform: 'scale(1.1)',
+                                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                                }}
+                            />
+                        </Box>
+
+                        {/* Information Grid */}
+                        <Box sx={{
+                            display: 'grid',
+                            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' },
+                            gap: 2
+                        }}>
+                            {/* ID Information */}
+                            <Box sx={{
+                                p: 2,
+                                backgroundColor: 'white',
+                                borderRadius: 2,
+                                border: '1px solid #e2e8f0',
+                                textAlign: 'center'
+                            }}>
+                                <Box sx={{
+                                    width: 40,
+                                    height: 40,
+                                    backgroundColor: requestData?.orderId ? '#3f51b5' : '#10b981',
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    mx: 'auto',
+                                    mb: 1
+                                }}>
+                                    <Typography sx={{ color: 'white', fontWeight: 'bold', fontSize: '0.75rem' }}>
+                                        {requestData?.orderId ? 'ORD' : 'REQ'}
+                                    </Typography>
+                                </Box>
+                                <Typography variant="caption" sx={{
+                                    color: '#64748b',
+                                    fontWeight: 600,
+                                    textTransform: 'uppercase',
+                                    fontSize: '0.7rem',
+                                    display: 'block'
+                                }}>
                                     {requestData?.orderId ? 'Order ID' : 'Request ID'}
                                 </Typography>
-                                <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                    {requestData?.orderId ? `${parseID(requestData.orderId, "ord")}` : (requestData?.id ? `${parseID(requestData.id, "dr")}` : 'N/A')}
+                                <Typography variant="h6" sx={{
+                                    fontWeight: 'bold',
+                                    color: '#1e293b',
+                                    fontSize: '0.9rem'
+                                }}>
+                                    {requestData?.orderId ? parseID(requestData.orderId, "ord") : (requestData?.id ? parseID(requestData.id, "dr") : 'N/A')}
                                 </Typography>
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <Typography variant="body2" sx={{color: '#64748b'}}>
+                            </Box>
+
+                            {/* Date/Name Information */}
+                            <Box sx={{
+                                p: 2,
+                                backgroundColor: 'white',
+                                borderRadius: 2,
+                                border: '1px solid #e2e8f0',
+                                textAlign: 'center'
+                            }}>
+                                <Box sx={{
+                                    width: 40,
+                                    height: 40,
+                                    backgroundColor: '#10b981',
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    mx: 'auto',
+                                    mb: 1
+                                }}>
+                                    <Typography sx={{ color: 'white', fontWeight: 'bold', fontSize: '0.75rem' }}>
+                                        {requestData?.orderId ? '📅' : '📝'}
+                                    </Typography>
+                                </Box>
+                                <Typography variant="caption" sx={{
+                                    color: '#64748b',
+                                    fontWeight: 600,
+                                    textTransform: 'uppercase',
+                                    fontSize: '0.7rem',
+                                    display: 'block'
+                                }}>
                                     {requestData?.orderId ? 'Order Date' : 'Request Name'}
                                 </Typography>
-                                <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
+                                <Typography variant="h6" sx={{
+                                    fontWeight: 'bold',
+                                    color: '#1e293b',
+                                    fontSize: '0.9rem'
+                                }}>
                                     {requestData?.orderId ? (requestData?.orderDate || 'N/A') : (requestData?.name || 'N/A')}
                                 </Typography>
-                            </Grid>
+                            </Box>
+
+                            {/* Quantity Information (only for orders) */}
                             {requestData?.orderId && (
-                                <Grid item xs={12} sm={6}>
-                                    <Typography variant="body2" sx={{color: '#64748b'}}>
+                                <Box sx={{
+                                    p: 2,
+                                    backgroundColor: 'white',
+                                    borderRadius: 2,
+                                    border: '1px solid #e2e8f0',
+                                    textAlign: 'center'
+                                }}>
+                                    <Box sx={{
+                                        width: 40,
+                                        height: 40,
+                                        backgroundColor: '#f59e0b',
+                                        borderRadius: '50%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        mx: 'auto',
+                                        mb: 1
+                                    }}>
+                                        <Typography sx={{ color: 'white', fontWeight: 'bold', fontSize: '0.75rem' }}>
+                                            👕
+                                        </Typography>
+                                    </Box>
+                                    <Typography variant="caption" sx={{
+                                        color: '#64748b',
+                                        fontWeight: 600,
+                                        textTransform: 'uppercase',
+                                        fontSize: '0.7rem',
+                                        display: 'block'
+                                    }}>
                                         Total Uniforms
                                     </Typography>
-                                    <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                        {requestData?.orderDetails ? Math.ceil(requestData.orderDetails.reduce((sum, detail) => sum + detail.quantity, 0) / 2) : 'N/A'}
-                                    </Typography>
-                                </Grid>
-                            )}
-                            <Grid item xs={12} sm={6}>
-                                <Typography variant="body2" sx={{color: '#64748b'}}>
-                                    Status
-                                </Typography>
-                                <Chip
-                                    label={requestData?.status || 'N/A'}
-                                    sx={{
-                                        backgroundColor: requestData?.status === 'completed' ? '#d1fae5' : '#fef3c7',
-                                        color: requestData?.status === 'completed' ? '#065f46' : '#92400e',
-                                        fontWeight: 'bold'
-                                    }}
-                                />
-                            </Grid>
-                            {requestData?.orderId && (
-                                <Grid item xs={12} sm={6}>
-                                    <Typography variant="body2" sx={{color: '#64748b'}}>
-                                        Total Uniforms
-                                    </Typography>
-                                    <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                        {requestData?.orderDetails
-                                            ? Math.ceil(requestData.orderDetails.reduce((sum, item) => sum + item.quantity, 0) / 2)
+                                    <Typography variant="h6" sx={{
+                                        fontWeight: 'bold',
+                                        color: '#1e293b',
+                                        fontSize: '0.9rem'
+                                    }}>
+                                        {requestData?.orderDetails 
+                                            ? requestData.orderDetails.reduce((sum, detail) => sum + detail.quantity, 0)/2
                                             : 'N/A'
                                         }
                                     </Typography>
-                                </Grid>
+                                </Box>
                             )}
-                        </Grid>
+                        </Box>
+
+                        {/* Additional Information for Orders */}
+                        {requestData?.orderId && requestData?.price && (
+                            <Box sx={{
+                                mt: 2,
+                                p: 2,
+                                backgroundColor: 'rgba(239, 68, 68, 0.05)',
+                                borderRadius: 2,
+                                border: '1px solid rgba(239, 68, 68, 0.1)',
+                                textAlign: 'center'
+                            }}>
+                                <Typography variant="caption" sx={{
+                                    color: '#ef4444',
+                                    fontWeight: 600,
+                                    textTransform: 'uppercase',
+                                    fontSize: '0.7rem',
+                                    display: 'block',
+                                    mb: 0.5
+                                }}>
+                                    Total Price
+                                </Typography>
+                                <Typography variant="h6" sx={{
+                                    fontWeight: 'bold',
+                                    color: '#ef4444',
+                                    fontSize: '1.1rem'
+                                }}>
+                                    {requestData.price?.toLocaleString('vi-VN')} VND
+                                </Typography>
+                            </Box>
+                        )}
                     </Paper>
 
                     {}
