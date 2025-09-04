@@ -1725,7 +1725,7 @@ export default function AdminReport() {
                                         Content
                                     </Typography>
                                     <Typography variant="body1" sx={{color: '#1e293b', fontStyle: 'italic'}}>
-                                        "{selectedReport?.content}"
+                                        "{selectedReport?.schoolContent}"
                                     </Typography>
                                 </Grid>
                             </Grid>
@@ -1762,7 +1762,7 @@ export default function AdminReport() {
                                                         Low
                                                     </Typography>
                                                     <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                        - Minor issues, minimal impact
+                                                        - Minor issues, minimal impact (25%)
                                                     </Typography>
                                                 </Box>
                                             }
@@ -1778,7 +1778,7 @@ export default function AdminReport() {
                                                         Medium
                                                     </Typography>
                                                     <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                        - Moderate issues, some impact
+                                                        - Moderate issues, some impact (50%)
                                                     </Typography>
                                                 </Box>
                                             }
@@ -1794,7 +1794,7 @@ export default function AdminReport() {
                                                         High
                                                     </Typography>
                                                     <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                        - Significant issues, major impact
+                                                        - Significant issues, major impact (75%)
                                                     </Typography>
                                                 </Box>
                                             }
@@ -1810,7 +1810,7 @@ export default function AdminReport() {
                                                         Serious
                                                     </Typography>
                                                     <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                        - Critical issues, severe impact
+                                                        - Critical issues, severe impact (100%)
                                                     </Typography>
                                                 </Box>
                                             }
