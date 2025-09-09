@@ -5,6 +5,10 @@ import {GoogleOAuthProvider} from "@react-oauth/google";
 import {SnackbarProvider} from 'notistack';
 import {createTheme, CssBaseline, Slide, ThemeProvider} from '@mui/material';
 import {GlobalLoadingOverlay, LoadingProvider} from './contexts/LoadingContext.jsx';
+import MyOrders from "./components/garment/MyOrders.jsx";
+import MyOrderDetail from "./components/garment/MyOrderDetail.jsx";
+import DesignRequestList from "./components/admin/DesignRequestList.jsx";
+import OrderList from "./components/admin/OrderList.jsx";
 
 const DesignerFeedback = lazy(() => import("./components/designer/DesignerFeedback.jsx"));
 const GarmentFeedback = lazy(() => import("./components/garment/GarmentFeedback.jsx"));
@@ -27,7 +31,7 @@ const HowItWork = lazy(() => import("./components/auth/HowItWork.jsx"));
 const PartnerRegister = lazy(() => import("./components/auth/PartnerRegister.jsx"));
 const EmailConfirmation = lazy(() => import("./components/auth/EmailConfirmation.jsx"));
 const DesignerChat = lazy(() => import("./components/designer/DesignerChat.jsx"));
-const AppliedRequestDetail = lazy(() => import("./components/designer/AppliedRequestDetail.jsx"));
+const AppliedRequestDetail = lazy(() => import("./components/designer/dialog/AppliedRequestDetail.jsx"));
 const SchoolProfile = lazy(() => import("./components/school/profile/SchoolProfile.jsx"));
 const DesignerProfile = lazy(() => import("./components/designer/profile/DesignerProfile.jsx"));
 const SchoolOrderManagement = lazy(() => import("./components/school/order/SchoolOrderManagement.jsx"));
@@ -44,7 +48,6 @@ const AdminReport = lazy(() => import("./components/admin/AdminReport.jsx"));
 const PlatformSetting = lazy(() => import("./components/admin/PlatformSetting.jsx"));
 const AdminDashboardLayout = lazy(() => import("./layouts/admin/AdminDashboardLayout.jsx"));
 const MilestoneManagement = lazy(() => import("./components/garment/MilestoneManagement.jsx"));
-const GarmentPendingOrders = lazy(() => import("./components/garment/GarmentPendingOrders.jsx"));
 
 const GarmentProfile = lazy(() => import("./components/garment/profile/GarmentProfile.jsx"));
 
@@ -324,6 +327,22 @@ const router = createBrowserRouter([
                         <PlatformSetting/>
                     </Suspense>
                 )
+            },
+            {
+                path: 'designs',
+                element: (
+                    <Suspense fallback={<LoadingFallback />}>
+                        <DesignRequestList/>
+                    </Suspense>
+                )
+            },
+            {
+                path: 'orders',
+                element: (
+                    <Suspense fallback={<LoadingFallback />}>
+                        <OrderList/>
+                    </Suspense>
+                )
             }
         ]
     },
@@ -399,21 +418,13 @@ const router = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <Navigate to={'/garment/pending/order'} />
+                element: <Navigate to={'/garment/orders'} />
             },
             {
                 path: 'order/detail',
                 element: (
                     <Suspense fallback={<LoadingFallback />}>
                         <GarmentOrderDetail />
-                    </Suspense>
-                )
-            },
-            {
-                path: 'pending/order',
-                element: (
-                    <Suspense fallback={<LoadingFallback />}>
-                        <GarmentPendingOrders />
                     </Suspense>
                 )
             },
@@ -438,6 +449,22 @@ const router = createBrowserRouter([
                 element: (
                     <Suspense fallback={<LoadingFallback />}>
                         <GarmentProfile />
+                    </Suspense>
+                )
+            },
+            {
+                path: 'orders',
+                element: (
+                    <Suspense fallback={<LoadingFallback />}>
+                        <MyOrders />
+                    </Suspense>
+                )
+            },
+            {
+                path: 'my/order/detail',
+                element: (
+                    <Suspense fallback={<LoadingFallback />}>
+                        <MyOrderDetail />
                     </Suspense>
                 )
             }

@@ -1,5 +1,18 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {Avatar, Badge, Box, Card, CardContent, Chip, IconButton, Tooltip, Typography, Rating, Paper} from '@mui/material';
+import {
+    Avatar,
+    Badge,
+    Box,
+    Card,
+    CardContent,
+    Chip,
+    IconButton,
+    Paper,
+    Rating,
+    Tooltip,
+    Typography,
+    Typography as MuiTypography
+} from '@mui/material';
 import {
     AccessTime as TimeIcon,
     AttachMoney as MoneyIcon,
@@ -11,7 +24,7 @@ import {
     StickyNote2 as NoteIcon,
     TableChart as TableChartIcon
 } from '@mui/icons-material';
-import {Button, Divider, Modal, Select, Tag, Typography as AntTypography, Spin, Carousel} from 'antd';
+import {Button, Carousel, Divider, Modal, Select, Spin, Tag, Typography as AntTypography} from 'antd';
 import {
     CheckCircleOutlined,
     ClockCircleOutlined,
@@ -20,22 +33,16 @@ import {
     MailOutlined,
     PhoneOutlined,
     SyncOutlined,
-    UserOutlined,
     TeamOutlined,
-    HomeOutlined,
-    ShopOutlined,
-    CalendarOutlined,
-    StarFilled,
-    StopOutlined
+    UserOutlined
 } from '@ant-design/icons';
 import {parseID} from '../../../../utils/ParseIDUtil.jsx';
 import DisplayImage from '../../../ui/DisplayImage.jsx';
 import {viewQuotation} from '../../../../services/OrderService.jsx';
 import OrderPaymentPopup from './OrderPaymentPopup.jsx';
 import {getPhoneLink} from '../../../../utils/PhoneUtil.jsx';
-import {Typography as MuiTypography} from '@mui/material';
 import {getPartnerProfileForQuotation} from '../../../../services/AccountService.jsx';
-import {getConfigByKey, configKey} from '../../../../services/SystemService.jsx';
+import {configKey, getConfigByKey} from '../../../../services/SystemService.jsx';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -47,6 +54,7 @@ import BlockIcon from '@mui/icons-material/Block';
 import WorkIcon from '@mui/icons-material/Work';
 import TaxIcon from '@mui/icons-material/Receipt';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import OrderDetailTable from '../../../ui/OrderDetailTable.jsx';
 
 export function statusTag(status) {
     let color;
@@ -92,12 +100,12 @@ const GarmentProfileModal = ({open, onClose, garment}) => {
     useEffect(() => {
         const fetchProfile = async () => {
             if (!garment || !open) return;
-            
+
             try {
                 setLoading(true);
                 setError(null);
                 const response = await getPartnerProfileForQuotation(garment.id);
-                
+
                 if (response?.status === 200 && response.data?.body) {
                     setProfileData(response.data.body);
                 } else {
@@ -120,51 +128,38 @@ const GarmentProfileModal = ({open, onClose, garment}) => {
     const account = customer.account || {};
     const feedbacks = profileData?.feedbacks?.filter(feedback => !feedback.report) || [];
 
-    return (
-        <Modal
+    return (<Modal
             open={open}
             onCancel={onClose}
             footer={null}
             centered
             width={800}
-            title={
-                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
-                    <PersonSearchIcon style={{color: '#1976d2', fontSize: 28}}/>
-                    <MuiTypography variant="h6" sx={{fontWeight: 700, color: '#1e293b', m: 0}}>
-                        Garment Factory Profile
-                    </MuiTypography>
-                </Box>
-            }
+            title={<Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                <PersonSearchIcon style={{color: '#1976d2', fontSize: 28}}/>
+                <MuiTypography variant="h6" sx={{fontWeight: 700, color: '#1e293b', m: 0}}>
+                    Garment Factory Profile
+                </MuiTypography>
+            </Box>}
             styles={{
                 body: {
-                    maxHeight: '70vh',
-                    overflowY: 'auto',
-                    padding: '24px'
+                    maxHeight: '70vh', overflowY: 'auto', padding: '24px'
                 }
             }}
         >
-            {loading ? (
-                <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4}}>
-                    <Spin size="large" />
-                </Box>
-            ) : error ? (
-                <Box sx={{textAlign: 'center', py: 4}}>
+            {loading ? (<Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4}}>
+                    <Spin size="large"/>
+                </Box>) : error ? (<Box sx={{textAlign: 'center', py: 4}}>
                     <MuiTypography color="error">{error}</MuiTypography>
-                </Box>
-            ) : (
-                <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
+                </Box>) : (<Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
                     {/* Header Section */}
                     <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', py: 2}}>
                         <Badge
                             overlap="circular"
                             anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
-                            badgeContent={
-                                account.status === 'active' ? (
-                                    <CheckCircleIcon sx={{color: '#16a34a', fontSize: 28, bgcolor: 'white', borderRadius: '50%'}}/>
-                                ) : (
-                                    <BlockIcon sx={{color: '#dc2626', fontSize: 28, bgcolor: 'white', borderRadius: '50%'}}/>
-                                )
-                            }
+                            badgeContent={account.status === 'active' ? (<CheckCircleIcon
+                                    sx={{color: '#16a34a', fontSize: 28, bgcolor: 'white', borderRadius: '50%'}}/>) : (
+                                <BlockIcon
+                                    sx={{color: '#dc2626', fontSize: 28, bgcolor: 'white', borderRadius: '50%'}}/>)}
                         >
                             <Avatar
                                 src={customer.avatar}
@@ -174,17 +169,19 @@ const GarmentProfileModal = ({open, onClose, garment}) => {
                                 {customer.name?.charAt(0)}
                             </Avatar>
                         </Badge>
-                        <MuiTypography variant="h5" sx={{fontWeight: 700, color: '#1976d2', mb: 1, textAlign: 'center'}}>
+                        <MuiTypography variant="h5"
+                                       sx={{fontWeight: 700, color: '#1976d2', mb: 1, textAlign: 'center'}}>
                             {customer.name}
                         </MuiTypography>
-                        <MuiTypography variant="h6" sx={{fontWeight: 600, color: '#2e7d32', mb: 1, textAlign: 'center'}}>
+                        <MuiTypography variant="h6"
+                                       sx={{fontWeight: 600, color: '#2e7d32', mb: 1, textAlign: 'center'}}>
                             {customer.business}
                         </MuiTypography>
                         <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mb: 2}}>
-                            <Rating 
-                                value={profileData?.rating || garment.rating || 0} 
-                                precision={0.1} 
-                                readOnly 
+                            <Rating
+                                value={profileData?.rating || garment.rating || 0}
+                                precision={0.1}
+                                readOnly
                                 size="small"
                                 icon={<StarIcon fontSize="inherit"/>}
                             />
@@ -203,7 +200,7 @@ const GarmentProfileModal = ({open, onClose, garment}) => {
                         </Box>
                     </Box>
 
-                    <Divider />
+                    <Divider/>
 
                     {/* Basic Information */}
                     <Box>
@@ -235,14 +232,12 @@ const GarmentProfileModal = ({open, onClose, garment}) => {
                                     {customer.business}
                                 </MuiTypography>
                             </Box>
-                            {customer.taxCode && (
-                                <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                            {customer.taxCode && (<Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
                                     <TaxIcon sx={{color: '#1976d2', fontSize: 20}}/>
                                     <MuiTypography variant="body2" sx={{color: '#1e293b', fontWeight: 500}}>
                                         Tax Code: {customer.taxCode}
                                     </MuiTypography>
-                                </Box>
-                            )}
+                                </Box>)}
                             <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
                                 <AssignmentIndIcon sx={{color: '#1976d2', fontSize: 20}}/>
                                 <MuiTypography variant="body2" sx={{color: '#1e293b', fontWeight: 500}}>
@@ -253,9 +248,8 @@ const GarmentProfileModal = ({open, onClose, garment}) => {
                     </Box>
 
                     {/* Working Hours */}
-                    {profileData?.startTime && profileData?.endTime && (
-                        <>
-                            <Divider />
+                    {profileData?.startTime && profileData?.endTime && (<>
+                            <Divider/>
                             <Box>
                                 <MuiTypography variant="h6" sx={{fontWeight: 600, mb: 2, color: '#1e293b'}}>
                                     Working Hours
@@ -267,13 +261,11 @@ const GarmentProfileModal = ({open, onClose, garment}) => {
                                     </MuiTypography>
                                 </Box>
                             </Box>
-                        </>
-                    )}
+                        </>)}
 
                     {/* Thumbnails */}
-                    {profileData?.thumbnails && profileData.thumbnails.length > 0 && (
-                        <>
-                            <Divider />
+                    {profileData?.thumbnails && profileData.thumbnails.length > 0 && (<>
+                            <Divider/>
                             <Box>
                                 <MuiTypography variant="h6" sx={{fontWeight: 600, mb: 2, color: '#1e293b'}}>
                                     Portfolio
@@ -288,17 +280,14 @@ const GarmentProfileModal = ({open, onClose, garment}) => {
                                                 height="200px"
                                                 style={{objectFit: 'cover', borderRadius: '8px'}}
                                             />
-                                        </Box>
-                                    ))}
+                                        </Box>))}
                                 </Carousel>
                             </Box>
-                        </>
-                    )}
+                        </>)}
 
                     {/* Feedbacks */}
-                    {feedbacks.length > 0 && (
-                        <>
-                            <Divider />
+                    {feedbacks.length > 0 && (<>
+                            <Divider/>
                             <Box>
                                 <MuiTypography variant="h6" sx={{fontWeight: 600, mb: 2, color: '#1e293b'}}>
                                     Customer Feedbacks ({feedbacks.length})
@@ -306,9 +295,7 @@ const GarmentProfileModal = ({open, onClose, garment}) => {
                                 <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
                                     {feedbacks.slice(0, 3).map((feedback, index) => (
                                         <Paper key={feedback.id} elevation={0} sx={{
-                                            p: 2,
-                                            border: '1px solid #e2e8f0',
-                                            borderRadius: 2
+                                            p: 2, border: '1px solid #e2e8f0', borderRadius: 2
                                         }}>
                                             {/* Feedback Header */}
                                             <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 1}}>
@@ -320,21 +307,29 @@ const GarmentProfileModal = ({open, onClose, garment}) => {
                                                     {feedback.sender.name.charAt(0)}
                                                 </Avatar>
                                                 <Box sx={{flex: 1}}>
-                                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap'}}>
-                                                        <MuiTypography variant="body2" sx={{fontWeight: 600, color: '#1e293b'}}>
+                                                    <Box sx={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 0.5,
+                                                        flexWrap: 'wrap'
+                                                    }}>
+                                                        <MuiTypography variant="body2"
+                                                                       sx={{fontWeight: 600, color: '#1e293b'}}>
                                                             {feedback.sender.name}
                                                         </MuiTypography>
-                                                        <MuiTypography variant="body2" sx={{color: '#64748b', fontWeight: 400}}>
+                                                        <MuiTypography variant="body2"
+                                                                       sx={{color: '#64748b', fontWeight: 400}}>
                                                             from
                                                         </MuiTypography>
-                                                        <MuiTypography variant="body2" sx={{color: '#64748b', fontWeight: 500}}>
+                                                        <MuiTypography variant="body2"
+                                                                       sx={{color: '#64748b', fontWeight: 500}}>
                                                             {feedback.sender.business}
                                                         </MuiTypography>
                                                     </Box>
                                                     <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                                                        <Rating 
-                                                            value={feedback.rating} 
-                                                            readOnly 
+                                                        <Rating
+                                                            value={feedback.rating}
+                                                            readOnly
                                                             size="small"
                                                             icon={<StarIcon fontSize="inherit"/>}
                                                         />
@@ -353,18 +348,15 @@ const GarmentProfileModal = ({open, onClose, garment}) => {
                                             {/* Media (Images and Video) */}
                                             {(feedback.images?.length > 0 || feedback.video) && (
                                                 <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 1}}>
-                                                    {feedback.images?.map((image, imgIndex) => (
-                                                        <DisplayImage
+                                                    {feedback.images?.map((image, imgIndex) => (<DisplayImage
                                                             key={imgIndex}
                                                             imageUrl={image}
                                                             alt={`Feedback image ${imgIndex + 1}`}
                                                             width="80px"
                                                             height="80px"
                                                             style={{objectFit: 'cover', borderRadius: '4px'}}
-                                                        />
-                                                    ))}
-                                                    {feedback.video && (
-                                                        <Box sx={{
+                                                        />))}
+                                                    {feedback.video && (<Box sx={{
                                                             position: 'relative',
                                                             width: '80px',
                                                             height: '80px',
@@ -376,26 +368,20 @@ const GarmentProfileModal = ({open, onClose, garment}) => {
                                                             cursor: 'pointer',
                                                             border: '1px solid #e2e8f0'
                                                         }} onClick={() => window.open(feedback.video, '_blank')}>
-                                                            <PlayArrowIcon sx={{color: '#1976d2', fontSize: 32}} />
-                                                        </Box>
-                                                    )}
-                                                </Box>
-                                            )}
-                                        </Paper>
-                                    ))}
+                                                            <PlayArrowIcon sx={{color: '#1976d2', fontSize: 32}}/>
+                                                        </Box>)}
+                                                </Box>)}
+                                        </Paper>))}
                                     {feedbacks.length > 3 && (
                                         <MuiTypography variant="body2" sx={{textAlign: 'center', color: '#64748b'}}>
-                                            ... and {feedbacks.length - 3} more feedback{feedbacks.length - 3 > 1 ? 's' : ''}
-                                        </MuiTypography>
-                                    )}
+                                            ... and {feedbacks.length - 3} more
+                                            feedback{feedbacks.length - 3 > 1 ? 's' : ''}
+                                        </MuiTypography>)}
                                 </Box>
                             </Box>
-                        </>
-                    )}
-                </Box>
-            )}
-        </Modal>
-    );
+                        </>)}
+                </Box>)}
+        </Modal>);
 };
 
 export default function OrderDetailPopup({open, onClose, order}) {
@@ -496,8 +482,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
 
     const handleToggleSortOrder = (key) => {
         setSortOrder(prev => ({
-            ...prev,
-            [key]: prev[key] === 'asc' ? 'desc' : 'asc'
+            ...prev, [key]: prev[key] === 'asc' ? 'desc' : 'asc'
         }));
     };
 
@@ -565,9 +550,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                 categoryGroups[category][gender] = [];
             }
 
-            let existingGroup = categoryGroups[category][gender].find(group =>
-                group.type === type
-            );
+            let existingGroup = categoryGroups[category][gender].find(group => group.type === type);
 
             if (!existingGroup) {
                 existingGroup = {
@@ -603,9 +586,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
 
         const result = [];
         Object.entries(categoryGroups).forEach(([category, genderGroups]) => {
-            const totalCategoryRows = Object.values(genderGroups).reduce((sum, groups) =>
-                sum + groups.length, 0
-            );
+            const totalCategoryRows = Object.values(genderGroups).reduce((sum, groups) => sum + groups.length, 0);
 
             Object.entries(genderGroups).forEach(([gender, groups]) => {
                 groups.forEach((group, index) => {
@@ -651,52 +632,41 @@ export default function OrderDetailPopup({open, onClose, order}) {
     const totalQuantity = (order.orderDetails || []).reduce((sum, detail) => sum + detail.quantity, 0);
     const totalUniforms = Math.ceil(totalQuantity / 2);
 
-    return (
-        <>
+    return (<>
             <Modal
-                title={
-                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
-                        <InfoCircleOutlined style={{color: '#2e7d32', fontSize: '20px'}}/>
-                        <AntTypography.Title level={4} style={{margin: 0, color: '#1e293b'}}>
-                            Order Applications
-                        </AntTypography.Title>
-                        <Chip
-                            label={parseID(order.id, 'ord')}
-                            size="small"
-                            sx={{
-                                backgroundColor: '#2e7d32',
-                                color: 'white',
-                                fontWeight: 600,
-                                fontSize: '12px',
-                                height: '24px'
-                            }}
-                        />
-                    </Box>
-                }
+                title={<Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                    <InfoCircleOutlined style={{color: '#2e7d32', fontSize: '20px'}}/>
+                    <AntTypography.Title level={4} style={{margin: 0, color: '#1e293b'}}>
+                        Order Applications
+                    </AntTypography.Title>
+                    <Chip
+                        label={parseID(order.id, 'ord')}
+                        size="small"
+                        sx={{
+                            backgroundColor: '#2e7d32',
+                            color: 'white',
+                            fontWeight: 600,
+                            fontSize: '12px',
+                            height: '24px'
+                        }}
+                    />
+                </Box>}
                 open={open}
                 onCancel={onClose}
                 centered
-                width={1280}
+                width={1700}
                 styles={{
                     body: {
-                        maxHeight: '70vh',
-                        overflowY: 'auto',
-                        padding: '24px'
-                    },
-                    header: {
-                        borderBottom: '1px solid #e2e8f0',
-                        padding: '20px 24px'
+                        maxHeight: '70vh', overflowY: 'auto', padding: '24px'
+                    }, header: {
+                        borderBottom: '1px solid #e2e8f0', padding: '20px 24px'
                     }
                 }}
                 footer={null}
             >
 
                 <Box sx={{
-                    mb: 3,
-                    p: 3,
-                    backgroundColor: '#f8fafc',
-                    borderRadius: 2,
-                    border: '1px solid #e2e8f0'
+                    mb: 3, p: 3, backgroundColor: '#f8fafc', borderRadius: 2, border: '1px solid #e2e8f0'
                 }}>
                     <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2}}>
                         <Typography variant="h6" sx={{margin: 0, color: '#1e293b', fontWeight: 600}}>
@@ -737,8 +707,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                 </Box>
 
 
-                {showAppliedGarment && (
-                    <Box sx={{
+                {showAppliedGarment && (<Box sx={{
                         mb: 3,
                         p: 3,
                         backgroundColor: 'white',
@@ -760,16 +729,13 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                 style={{minWidth: 360}}
                                 value={sortCriteria}
                                 onChange={handleSortChange}
-                                options={[
-                                    {label: 'Price', value: 'price'},
-                                    {label: 'Valid until', value: 'validUntil'},
-                                    {label: 'Rating', value: 'rating'},
-                                    {label: 'Est. Delivery', value: 'estDelivery'}
-                                ]}
+                                options={[{label: 'Price', value: 'price'}, {
+                                    label: 'Valid until',
+                                    value: 'validUntil'
+                                }, {label: 'Rating', value: 'rating'}, {label: 'Est. Delivery', value: 'estDelivery'}]}
                             />
                             <Box sx={{display: 'flex', gap: 1, flexWrap: 'wrap'}}>
-                                {sortCriteria.map(key => (
-                                    <Chip
+                                {sortCriteria.map(key => (<Chip
                                         key={key}
                                         label={`${{
                                             price: 'Price',
@@ -787,19 +753,15 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                             borderColor: sortOrder[key] === 'asc' ? '#0ea5e9' : '#f59e0b',
                                             color: sortOrder[key] === 'asc' ? '#0369a1' : '#92400e'
                                         }}
-                                    />
-                                ))}
+                                    />))}
                             </Box>
-                            {sortCriteria.length > 0 && (
-                                <Button onClick={handleResetSort} type="default" size="small">
+                            {sortCriteria.length > 0 && (<Button onClick={handleResetSort} type="default" size="small">
                                     Reset sort
-                                </Button>
-                            )}
+                                </Button>)}
                         </Box>
 
 
-                        {loadingQuotations && (
-                            <Box sx={{
+                        {loadingQuotations && (<Box sx={{
                                 p: 6,
                                 backgroundColor: '#f8fafc',
                                 borderRadius: 2,
@@ -813,12 +775,10 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                 <Typography variant="body1" sx={{color: '#64748b', maxWidth: '400px', mx: 'auto'}}>
                                     Please wait while we fetch the latest quotations from garment factories.
                                 </Typography>
-                            </Box>
-                        )}
+                            </Box>)}
 
 
-                        {quotationsError && !loadingQuotations && (
-                            <Box sx={{
+                        {quotationsError && !loadingQuotations && (<Box sx={{
                                 p: 6,
                                 backgroundColor: '#fef2f2',
                                 borderRadius: 2,
@@ -833,12 +793,10 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                 <Typography variant="body1" sx={{color: '#dc2626', maxWidth: '400px', mx: 'auto'}}>
                                     {quotationsError}
                                 </Typography>
-                            </Box>
-                        )}
+                            </Box>)}
 
 
-                        {!loadingQuotations && !quotationsError && quotations.length === 0 && (
-                            <Box sx={{
+                        {!loadingQuotations && !quotationsError && quotations.length === 0 && (<Box sx={{
                                 p: 6,
                                 backgroundColor: '#f8fafc',
                                 borderRadius: 2,
@@ -853,18 +811,13 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                     No garment factories have applied to this order yet. Check back later for updates or
                                     consider adjusting your order requirements.
                                 </Typography>
-                            </Box>
-                        )}
+                            </Box>)}
 
 
-                        {!loadingQuotations && !quotationsError && sortedQuotations.length > 0 && (
-                            <Box sx={{
-                                display: 'grid',
-                                gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-                                gap: 3
+                        {!loadingQuotations && !quotationsError && sortedQuotations.length > 0 && (<Box sx={{
+                                display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 3
                             }}>
-                                {sortedQuotations.map((quotation, index) => (
-                                    <Box key={quotation.id} sx={{
+                                {sortedQuotations.map((quotation, index) => (<Box key={quotation.id} sx={{
                                         p: 2.5,
                                         border: '1px solid #e2e8f0',
                                         borderRadius: 3,
@@ -899,7 +852,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                             transform: 'skewX(-20deg) translateX(420%)'
                                         }
                                     }}
-                                         onClick={() => handleQuotationClick(quotation)}
+                                                                                  onClick={() => handleQuotationClick(quotation)}
                                     >
                                         {/* Profile View Button - Positioned absolutely */}
                                         <Tooltip title="View Profile">
@@ -918,9 +871,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                     bgcolor: '#f8fafc',
                                                     border: '1px solid #e2e8f0',
                                                     '&:hover': {
-                                                        bgcolor: '#1976d2',
-                                                        color: 'white',
-                                                        borderColor: '#1976d2'
+                                                        bgcolor: '#1976d2', color: 'white', borderColor: '#1976d2'
                                                     }
                                                 }}
                                             >
@@ -929,8 +880,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                         </Tooltip>
 
                                         {/* Selected Badge - Positioned below profile button */}
-                                        {selectedQuotation && selectedQuotation.id === quotation.id && (
-                                            <Chip
+                                        {selectedQuotation && selectedQuotation.id === quotation.id && (<Chip
                                                 label="Selected"
                                                 color="success"
                                                 size="small"
@@ -948,8 +898,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                     color: '#2e7d32',
                                                     border: '1px solid #2e7d32'
                                                 }}
-                                            />
-                                        )}
+                                            />)}
 
                                         <Box sx={{display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5}}>
                                             <Avatar
@@ -967,10 +916,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                             </Avatar>
                                             <Box sx={{minWidth: 0}}>
                                                 <Typography variant="h6" sx={{
-                                                    margin: 0,
-                                                    color: '#1e293b',
-                                                    fontWeight: 600,
-                                                    fontSize: '16px'
+                                                    margin: 0, color: '#1e293b', fontWeight: 600, fontSize: '16px'
                                                 }}>
                                                     {quotation.garment?.customer?.business || 'Unknown Factory'}
                                                 </Typography>
@@ -1009,20 +955,20 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                   icon={<CalendarIcon style={{fontSize: 14}}/>}
                                                   label={`Est. Delivery: ${formatDate(quotation.earlyDeliveryDate)}`}
                                                   sx={{height: 26}}/>
-                                            {quotation.depositRate && (
-                                                <Chip size="medium" variant="outlined"
-                                                      icon={<MoneyIcon style={{fontSize: 14}}/>}
-                                                      label={`Deposit: ${quotation.depositRate}%`}
-                                                      sx={{height: 26, bgcolor: '#fff3cd', borderColor: '#ffc107', color: '#856404'}}/>
-                                            )}
+                                            {quotation.depositRate && (<Chip size="medium" variant="outlined"
+                                                                             icon={<MoneyIcon style={{fontSize: 14}}/>}
+                                                                             label={`Deposit: ${quotation.depositRate}%`}
+                                                                             sx={{
+                                                                                 height: 26,
+                                                                                 bgcolor: '#fff3cd',
+                                                                                 borderColor: '#ffc107',
+                                                                                 color: '#856404'
+                                                                             }}/>)}
                                         </Box>
 
 
                                         <Box sx={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            gap: 1,
-                                            mb: 1
+                                            display: 'flex', flexDirection: 'column', gap: 1, mb: 1
                                         }}>
 
                                             <Box sx={{
@@ -1037,9 +983,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                             }}>
                                                 <UserOutlined style={{color: '#64748b'}}/>
                                                 <Typography variant="body2" sx={{
-                                                    fontSize: '12px',
-                                                    color: '#475569',
-                                                    fontWeight: 500
+                                                    fontSize: '12px', color: '#475569', fontWeight: 500
                                                 }}>
                                                     Contact: {quotation.garment?.customer?.name || 'N/A'}
                                                 </Typography>
@@ -1059,8 +1003,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                     cursor: 'pointer',
                                                     transition: 'all 0.2s ease',
                                                     '&:hover': {
-                                                        backgroundColor: '#e2e8f0',
-                                                        borderColor: '#cbd5e1'
+                                                        backgroundColor: '#e2e8f0', borderColor: '#cbd5e1'
                                                     }
                                                 }}
                                                 onClick={() => {
@@ -1081,8 +1024,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                             </Box>
 
 
-                                            {quotation.garment?.customer?.address && (
-                                                <Box sx={{
+                                            {quotation.garment?.customer?.address && (<Box sx={{
                                                     display: 'flex',
                                                     alignItems: 'flex-start',
                                                     gap: 1,
@@ -1093,10 +1035,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                     color: '#475569'
                                                 }}>
                                                     <LocationIcon sx={{
-                                                        color: '#64748b',
-                                                        fontSize: '16px',
-                                                        flexShrink: 0,
-                                                        mt: '2px'
+                                                        color: '#64748b', fontSize: '16px', flexShrink: 0, mt: '2px'
                                                     }}/>
                                                     <Typography variant="body2" sx={{
                                                         fontSize: '12px',
@@ -1110,12 +1049,10 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                     }}>
                                                         {quotation.garment?.customer?.address}
                                                     </Typography>
-                                                </Box>
-                                            )}
+                                                </Box>)}
 
 
-                                            {quotation.garment?.customer?.account?.email && (
-                                                <Box sx={{
+                                            {quotation.garment?.customer?.account?.email && (<Box sx={{
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     gap: 1,
@@ -1135,13 +1072,11 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                     }}>
                                                         {quotation.garment?.customer?.account?.email}
                                                     </Typography>
-                                                </Box>
-                                            )}
+                                                </Box>)}
                                         </Box>
 
 
-                                        {quotation.note && (
-                                            <Box sx={{
+                                        {quotation.note && (<Box sx={{
                                                 mt: 1,
                                                 p: 1.5,
                                                 backgroundColor: '#f8fafc',
@@ -1154,9 +1089,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                 <NoteIcon style={{color: '#64748b', fontSize: 16, marginTop: 2}}/>
                                                 <Box>
                                                     <Typography variant="body2" sx={{
-                                                        fontSize: 12,
-                                                        color: '#1f2937',
-                                                        fontWeight: 600
+                                                        fontSize: 12, color: '#1f2937', fontWeight: 600
                                                     }}>Note</Typography>
                                                     <Typography variant="body2" sx={{
                                                         margin: 0,
@@ -1171,37 +1104,24 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                         {quotation.note}
                                                     </Typography>
                                                 </Box>
-                                            </Box>
-                                        )}
-                                    </Box>
-                                ))}
-                            </Box>
-                        )}
+                                            </Box>)}
+                                    </Box>))}
+                            </Box>)}
 
 
-                        {selectedQuotation && (
-                            <Box sx={{
-                                mt: 3,
-                                p: 3,
-                                backgroundColor: '#e8f5e8',
-                                borderRadius: 2,
-                                border: '1px solid #2e7d32'
+                        {selectedQuotation && (<Box sx={{
+                                mt: 3, p: 3, backgroundColor: '#e8f5e8', borderRadius: 2, border: '1px solid #2e7d32'
                             }}>
                                 <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
                                     <MoneyIcon sx={{color: '#2e7d32', fontSize: '20px'}}/>
                                     <Typography variant="h6" sx={{
-                                        margin: 0,
-                                        color: '#2e7d32',
-                                        fontWeight: 600,
-                                        fontSize: '16px'
+                                        margin: 0, color: '#2e7d32', fontWeight: 600, fontSize: '16px'
                                     }}>
                                         Selected Quotation Summary
                                     </Typography>
                                 </Box>
                                 <Typography variant="body2" sx={{
-                                    color: '#1e293b',
-                                    mb: 3,
-                                    fontSize: '14px'
+                                    color: '#1e293b', mb: 3, fontSize: '14px'
                                 }}>
                                     You have selected a quotation from{' '}
                                     <span style={{fontWeight: 700, color: '#2e7d32'}}>
@@ -1210,22 +1130,15 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                     {order.status === 'pending' && selectedQuotation.depositRate && (
                                         <span style={{color: '#d97706', fontWeight: 600}}>
                                                 {' '}A deposit of {selectedQuotation.depositRate}% is required to proceed with this order.
-                                            </span>
-                                    )}
+                                            </span>)}
                                 </Typography>
 
 
                                 <Box sx={{
-                                    p: 2.5,
-                                    backgroundColor: '#ffffff',
-                                    borderRadius: 2,
-                                    border: '1px solid #e2e8f0'
+                                    p: 2.5, backgroundColor: '#ffffff', borderRadius: 2, border: '1px solid #e2e8f0'
                                 }}>
                                     <Typography variant="h6" sx={{
-                                        color: '#1e293b',
-                                        fontWeight: 700,
-                                        fontSize: '14px',
-                                        mb: 2
+                                        color: '#1e293b', fontWeight: 700, fontSize: '14px', mb: 2
                                     }}>
                                         Payment Summary
                                     </Typography>
@@ -1233,20 +1146,15 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 1}}>
 
                                         <Box sx={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center'
+                                            display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                                         }}>
                                             <Typography variant="body2" sx={{
-                                                color: '#475569',
-                                                fontSize: '12px'
+                                                color: '#475569', fontSize: '12px'
                                             }}>
                                                 Base price
                                             </Typography>
                                             <Typography variant="body2" sx={{
-                                                color: '#1e293b',
-                                                fontWeight: 600,
-                                                fontSize: '12px'
+                                                color: '#1e293b', fontWeight: 600, fontSize: '12px'
                                             }}>
                                                 {selectedQuotation.price.toLocaleString('vi-VN')} VND
                                             </Typography>
@@ -1254,20 +1162,16 @@ export default function OrderDetailPopup({open, onClose, order}) {
 
 
                                         <Box sx={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center'
+                                            display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                                         }}>
                                             <Typography variant="body2" sx={{
-                                                color: '#475569',
-                                                fontSize: '12px'
+                                                color: '#475569', fontSize: '12px'
                                             }}>
-                                                Service fee {businessConfig?.serviceRate ? `(${(businessConfig.serviceRate * 100).toFixed(0)}% total)` : selectedQuotation.price <= 10000000 ? '(2% total)' : ''}
+                                                Service
+                                                fee {businessConfig?.serviceRate ? `(${(businessConfig.serviceRate * 100).toFixed(0)}% total)` : selectedQuotation.price <= 10000000 ? '(2% total)' : ''}
                                             </Typography>
                                             <Typography variant="body2" sx={{
-                                                color: '#1e293b',
-                                                fontWeight: 600,
-                                                fontSize: '12px'
+                                                color: '#1e293b', fontWeight: 600, fontSize: '12px'
                                             }}>
                                                 {calculateServiceFee(selectedQuotation.price).toLocaleString('vi-VN')} VND
                                             </Typography>
@@ -1284,24 +1188,19 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                             border: '1px solid #0ea5e9'
                                         }}>
                                             <Typography variant="body2" sx={{
-                                                color: '#0369a1',
-                                                fontWeight: 700,
-                                                fontSize: '12px'
+                                                color: '#0369a1', fontWeight: 700, fontSize: '12px'
                                             }}>
                                                 Total Amount
                                             </Typography>
                                             <Typography variant="body2" sx={{
-                                                color: '#0369a1',
-                                                fontWeight: 700,
-                                                fontSize: '12px'
+                                                color: '#0369a1', fontWeight: 700, fontSize: '12px'
                                             }}>
                                                 {(selectedQuotation.price + calculateServiceFee(selectedQuotation.price)).toLocaleString('vi-VN')} VND
                                             </Typography>
                                         </Box>
 
 
-                                        {order.status === 'pending' && (
-                                            <Box sx={{
+                                        {order.status === 'pending' && (<Box sx={{
                                                 display: 'flex',
                                                 justifyContent: 'space-between',
                                                 alignItems: 'center',
@@ -1312,55 +1211,39 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                             }}>
                                                 <Box>
                                                     <Typography variant="body2" sx={{
-                                                        color: '#92400e',
-                                                        fontWeight: 700,
-                                                        fontSize: '12px'
+                                                        color: '#92400e', fontWeight: 700, fontSize: '12px'
                                                     }}>
                                                         Deposit Required
                                                     </Typography>
                                                     <Typography variant="caption" sx={{
-                                                        color: '#d97706',
-                                                        fontSize: '10px'
+                                                        color: '#d97706', fontSize: '10px'
                                                     }}>
                                                         {selectedQuotation.depositRate || 50}% of total amount
                                                     </Typography>
                                                 </Box>
                                                 <Typography variant="body2" sx={{
-                                                    color: '#d97706',
-                                                    fontWeight: 700,
-                                                    fontSize: '12px'
+                                                    color: '#d97706', fontWeight: 700, fontSize: '12px'
                                                 }}>
                                                     {Math.round((selectedQuotation.price + calculateServiceFee(selectedQuotation.price)) * ((selectedQuotation.depositRate || 50) / 100)).toLocaleString('vi-VN')} VND
                                                 </Typography>
-                                            </Box>
-                                        )}
+                                            </Box>)}
 
 
                                         <Divider sx={{my: 1}}/>
 
 
                                         <Box sx={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center'
+                                            display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                                         }}>
                                             <Typography variant="body2" sx={{
-                                                color: '#1e293b',
-                                                fontWeight: 700,
-                                                fontSize: '12px'
+                                                color: '#1e293b', fontWeight: 700, fontSize: '12px'
                                             }}>
                                                 {order.status === 'pending' ? 'Final Payment' : 'Total'}
                                             </Typography>
                                             <Typography variant="h6" sx={{
-                                                color: '#16a34a',
-                                                fontWeight: 700,
-                                                fontSize: '16px',
-                                                margin: 0
+                                                color: '#16a34a', fontWeight: 700, fontSize: '16px', margin: 0
                                             }}>
-                                                {order.status === 'pending'
-                                                    ? Math.round((selectedQuotation.price + calculateServiceFee(selectedQuotation.price)) * ((selectedQuotation.depositRate || 50) / 100)).toLocaleString('vi-VN') + ' VND'
-                                                    : (selectedQuotation.price + calculateServiceFee(selectedQuotation.price)).toLocaleString('vi-VN') + ' VND'
-                                                }
+                                                {order.status === 'pending' ? Math.round((selectedQuotation.price + calculateServiceFee(selectedQuotation.price)) * ((selectedQuotation.depositRate || 50) / 100)).toLocaleString('vi-VN') + ' VND' : (selectedQuotation.price + calculateServiceFee(selectedQuotation.price)).toLocaleString('vi-VN') + ' VND'}
                                             </Typography>
                                         </Box>
 
@@ -1389,9 +1272,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
 
 
                                 <Box sx={{
-                                    mt: 3,
-                                    display: 'flex',
-                                    justifyContent: 'flex-end'
+                                    mt: 3, display: 'flex', justifyContent: 'flex-end'
                                 }}>
                                     <Button
                                         type="primary"
@@ -1415,14 +1296,11 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                         Confirm Selection
                                     </Button>
                                 </Box>
-                            </Box>
-                        )}
-                    </Box>
-                )}
+                            </Box>)}
+                    </Box>)}
 
 
-                {showOrderDetail && (
-                    <Box sx={{
+                {showOrderDetail && (<Box sx={{
                         mb: 3,
                         p: 3,
                         backgroundColor: 'white',
@@ -1433,11 +1311,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
 
                         <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2}}>
                             <Typography variant="h6" sx={{
-                                fontWeight: 700,
-                                color: '#1e293b',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 1
+                                fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 1
                             }}>
                                 <InfoIcon style={{color: '#2e7d32', fontSize: '20px'}}/>
                                 Order Information
@@ -1485,11 +1359,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
 
 
                         <Box sx={{
-                            display: 'flex',
-                            flexDirection: 'row',
-                            gap: 2,
-                            marginTop: '16px',
-                            alignItems: 'stretch'
+                            display: 'flex', flexDirection: 'row', gap: 2, marginTop: '16px', alignItems: 'stretch'
                         }}>
 
                             <Box sx={{flex: 1}}>
@@ -1507,15 +1377,11 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                 <Card
                                     size="small"
                                     style={{
-                                        border: '1px solid #e2e8f0',
-                                        borderRadius: 8,
-                                        height: '100%'
+                                        border: '1px solid #e2e8f0', borderRadius: 8, height: '100%'
                                     }}
                                 >
                                     <Box sx={{
-                                        p: 2,
-                                        borderBottom: '1px solid #e2e8f0',
-                                        backgroundColor: '#f8fafc'
+                                        p: 2, borderBottom: '1px solid #e2e8f0', backgroundColor: '#f8fafc'
                                     }}>
                                         <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
                                             <MoneyIcon style={{color: '#2e7d32', fontSize: '16px'}}/>
@@ -1623,8 +1489,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                         </Box>
 
 
-                                        {order.note && (
-                                            <Box sx={{
+                                        {order.note && (<Box sx={{
                                                 mt: 3,
                                                 p: 2,
                                                 backgroundColor: 'rgba(245, 158, 11, 0.05)',
@@ -1643,23 +1508,17 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                         <NoteIcon sx={{color: '#d97706', fontSize: 16}}/>
                                                     </Box>
                                                     <Typography variant="subtitle2" sx={{
-                                                        fontWeight: 600,
-                                                        color: '#92400e',
-                                                        fontSize: '0.9rem'
+                                                        fontWeight: 600, color: '#92400e', fontSize: '0.9rem'
                                                     }}>
                                                         Order Notes
                                                     </Typography>
                                                 </Box>
                                                 <Typography variant="body2" sx={{
-                                                    color: '#451a03',
-                                                    lineHeight: 1.6,
-                                                    fontSize: '0.85rem',
-                                                    ml: 5
+                                                    color: '#451a03', lineHeight: 1.6, fontSize: '0.85rem', ml: 5
                                                 }}>
                                                     {order.note}
                                                 </Typography>
-                                            </Box>
-                                        )}
+                                            </Box>)}
                                     </CardContent>
                                 </Card>
                             </Box>
@@ -1669,11 +1528,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                         <Box sx={{mt: 10}}>
                             <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2}}>
                                 <Typography variant="h6" sx={{
-                                    fontWeight: 700,
-                                    color: '#1e293b',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 1
+                                    fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 1
                                 }}>
                                     <DesignServicesIcon style={{color: '#2e7d32', fontSize: '20px'}}/>
                                     Product Details
@@ -1683,512 +1538,42 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                 Comprehensive breakdown of all items in your order with specifications, quantities, and
                                 design details.
                             </Typography>
-                            <Card
-                                size="small"
-                                style={{
-                                    border: '1px solid #e2e8f0',
-                                    borderRadius: 8
-                                }}
-                            >
-                                <Box sx={{p: 3}}>
-                                    {items.length === 0 ? (
-                                        <Box sx={{
-                                            textAlign: 'center',
-                                            py: 6,
-                                            color: '#64748b'
-                                        }}>
-                                            <DesignServicesIcon sx={{fontSize: 48, mb: 2, opacity: 0.5}}/>
-                                            <Typography variant="h6" sx={{mb: 1}}>
-                                                No Items Found
-                                            </Typography>
-                                            <Typography variant="body2">
-                                                This order doesn't contain any items yet.
-                                            </Typography>
-                                        </Box>
-                                    ) : (
-                                        <Box sx={{
-                                            borderRadius: 3,
-                                            overflow: 'hidden',
-                                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
-                                        }}>
 
-                                            <Box sx={{
-                                                display: 'grid',
-                                                gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr',
-                                                backgroundColor: '#ffffff',
-                                                borderRadius: '8px',
-                                                overflow: 'hidden',
-                                                width: '100%'
-                                            }}>
-
-                                                <Box sx={{
-                                                    p: 2,
-                                                    borderRight: '1px solid #000000',
-                                                    borderBottom: '1px solid #000000',
-                                                    backgroundColor: '#e3f2fd',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center'
-                                                }}>
-                                                    <Typography variant="subtitle1" sx={{
-                                                        fontWeight: 700,
-                                                        color: '#1976d2',
-                                                        fontSize: '14px'
-                                                    }}>
-                                                        Category
-                                                    </Typography>
-                                                </Box>
-
-                                                <Box sx={{
-                                                    p: 2,
-                                                    borderRight: '1px solid #000000',
-                                                    borderBottom: '1px solid #000000',
-                                                    backgroundColor: '#e3f2fd',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center'
-                                                }}>
-                                                    <Typography variant="subtitle1" sx={{
-                                                        fontWeight: 700,
-                                                        color: '#1976d2',
-                                                        fontSize: '14px'
-                                                    }}>
-                                                        Gender
-                                                    </Typography>
-                                                </Box>
-
-                                                <Box sx={{
-                                                    p: 2,
-                                                    borderRight: '1px solid #000000',
-                                                    borderBottom: '1px solid #000000',
-                                                    backgroundColor: '#e3f2fd',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center'
-                                                }}>
-                                                    <Typography variant="subtitle1" sx={{
-                                                        fontWeight: 700,
-                                                        color: '#1976d2',
-                                                        fontSize: '14px'
-                                                    }}>
-                                                        Type
-                                                    </Typography>
-                                                </Box>
-
-                                                <Box sx={{
-                                                    p: 2,
-                                                    borderRight: '1px solid #000000',
-                                                    borderBottom: '1px solid #000000',
-                                                    backgroundColor: '#e3f2fd',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center'
-                                                }}>
-                                                    <Typography variant="subtitle1" sx={{
-                                                        fontWeight: 700,
-                                                        color: '#1976d2',
-                                                        fontSize: '14px'
-                                                    }}>
-                                                        Size
-                                                    </Typography>
-                                                </Box>
-
-                                                <Box sx={{
-                                                    p: 2,
-                                                    borderRight: '1px solid #000000',
-                                                    borderBottom: '1px solid #000000',
-                                                    backgroundColor: '#e3f2fd',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center'
-                                                }}>
-                                                    <Typography variant="subtitle1" sx={{
-                                                        fontWeight: 700,
-                                                        color: '#1976d2',
-                                                        fontSize: '14px'
-                                                    }}>
-                                                        Quantity
-                                                    </Typography>
-                                                </Box>
-
-                                                <Box sx={{
-                                                    p: 2,
-                                                    borderRight: '1px solid #000000',
-                                                    borderBottom: '1px solid #000000',
-                                                    backgroundColor: '#e3f2fd',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center'
-                                                }}>
-                                                    <Typography variant="subtitle1" sx={{
-                                                        fontWeight: 700,
-                                                        color: '#1976d2',
-                                                        fontSize: '14px'
-                                                    }}>
-                                                        Color
-                                                    </Typography>
-                                                </Box>
-
-                                                <Box sx={{
-                                                    p: 2,
-                                                    borderRight: '1px solid #000000',
-                                                    borderBottom: '1px solid #000000',
-                                                    backgroundColor: '#e3f2fd',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center'
-                                                }}>
-                                                    <Typography variant="subtitle1" sx={{
-                                                        fontWeight: 700,
-                                                        color: '#1976d2',
-                                                        fontSize: '14px'
-                                                    }}>
-                                                        Logo Position
-                                                    </Typography>
-                                                </Box>
-
-                                                <Box sx={{
-                                                    p: 2,
-                                                    borderRight: '1px solid #000000',
-                                                    borderBottom: '1px solid #000000',
-                                                    backgroundColor: '#e3f2fd',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    flexDirection: 'column'
-                                                }}>
-                                                    <Typography variant="subtitle1" sx={{
-                                                        fontWeight: 700,
-                                                        color: '#1976d2',
-                                                        fontSize: '14px'
-                                                    }}>
-                                                        Logo Size
-                                                    </Typography>
-                                                    <Typography variant="caption" sx={{
-                                                        color: '#1976d2',
-                                                        fontSize: '11px',
-                                                        fontWeight: 500
-                                                    }}>
-                                                        (height × width)
-                                                    </Typography>
-                                                </Box>
-
-                                                <Box sx={{
-                                                    p: 2,
-                                                    borderBottom: '1px solid #000000',
-                                                    backgroundColor: '#e3f2fd',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center'
-                                                }}>
-                                                    <Typography variant="subtitle1" sx={{
-                                                        fontWeight: 700,
-                                                        color: '#1976d2',
-                                                        fontSize: '14px'
-                                                    }}>
-                                                        Images
-                                                    </Typography>
-                                                </Box>
-
-
-                                                {(() => {
-                                                    const groupedItems = groupItemsByCategory(order.orderDetails || []);
-                                                    const rows = [];
-
-                                                    groupedItems.forEach((groupedItem, index) => {
-                                                        rows.push(
-                                                            <React.Fragment
-                                                                key={`${groupedItem.category}-${groupedItem.gender}-${groupedItem.type}-${index}`}>
-
-                                                                {groupedItem.isFirstInCategory && (
-                                                                    <Box sx={{
-                                                                        p: 2,
-                                                                        borderRight: '1px solid #000000',
-                                                                        borderBottom: '1px solid #000000',
-                                                                        backgroundColor: '#f8fafc',
-                                                                        display: 'flex',
-                                                                        alignItems: 'center',
-                                                                        justifyContent: 'center',
-                                                                        gridRow: `span ${groupedItem.categoryRowSpan}`,
-                                                                        minHeight: `${60 * groupedItem.categoryRowSpan}px`
-                                                                    }}>
-                                                                        <Chip
-                                                                            label={groupedItem.category === 'pe' ? 'PE' : 'Regular'}
-                                                                            size="small"
-                                                                            sx={{
-                                                                                backgroundColor: groupedItem.category === 'pe' ? '#dcfce7' : '#dbeafe',
-                                                                                color: groupedItem.category === 'pe' ? '#065f46' : '#1e40af',
-                                                                                fontWeight: 600,
-                                                                                fontSize: '11px',
-                                                                                height: 20
-                                                                            }}
-                                                                        />
-                                                                    </Box>
-                                                                )}
-
-
-                                                                {groupedItem.isFirstInGender && (
-                                                                    <Box sx={{
-                                                                        p: 2,
-                                                                        borderRight: '1px solid #000000',
-                                                                        borderBottom: '1px solid #000000',
-                                                                        backgroundColor: '#f8fafc',
-                                                                        display: 'flex',
-                                                                        alignItems: 'center',
-                                                                        justifyContent: 'center',
-                                                                        gridRow: `span ${groupedItem.genderRowSpan}`,
-                                                                        minHeight: `${60 * groupedItem.genderRowSpan}px`
-                                                                    }}>
-                                                                        <Typography variant="body2" sx={{
-                                                                            fontWeight: 600,
-                                                                            color: '#374151',
-                                                                            fontSize: '13px',
-                                                                            textTransform: 'capitalize'
-                                                                        }}>
-                                                                            {groupedItem.gender === 'boy' ? 'Boy' :
-                                                                                groupedItem.gender === 'girl' ? 'Girl' :
-                                                                                    groupedItem.gender || 'Unknown'}
-                                                                        </Typography>
-                                                                    </Box>
-                                                                )}
-
-
-                                                                <Box sx={{
-                                                                    p: 2,
-                                                                    borderRight: '1px solid #000000',
-                                                                    borderBottom: '1px solid #000000',
-                                                                    backgroundColor: '#f8fafc',
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'center'
-                                                                }}>
-                                                                    <Typography variant="body2" sx={{
-                                                                        fontWeight: 600,
-                                                                        color: '#374151',
-                                                                        fontSize: '13px',
-                                                                        textTransform: 'capitalize'
-                                                                    }}>
-                                                                        {groupedItem.type || 'Item'}
-                                                                    </Typography>
-                                                                </Box>
-
-
-                                                                <Box sx={{
-                                                                    p: 2,
-                                                                    borderRight: '1px solid #000000',
-                                                                    borderBottom: '1px solid #000000',
-                                                                    backgroundColor: '#f8fafc',
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'center'
-                                                                }}>
-                                                                    <Typography variant="body2" sx={{
-                                                                        fontWeight: 600,
-                                                                        color: '#3f51b5',
-                                                                        fontSize: '13px'
-                                                                    }}>
-                                                                        {sortSizes([...groupedItem.sizes]).join(', ')}
-                                                                    </Typography>
-                                                                </Box>
-
-
-                                                                <Box sx={{
-                                                                    p: 2,
-                                                                    borderRight: '1px solid #000000',
-                                                                    borderBottom: '1px solid #000000',
-                                                                    backgroundColor: '#f8fafc',
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'center'
-                                                                }}>
-                                                                    <Button
-                                                                        type="default"
-                                                                        size="small"
-                                                                        onClick={() => handleOpenQuantityDetails(groupedItem)}
-                                                                        icon={<InfoCircleOutlined/>}
-                                                                        style={{
-                                                                            fontSize: '11px',
-                                                                            height: '28px',
-                                                                            padding: '4px 12px',
-                                                                            borderColor: '#1976d2',
-                                                                            color: '#1976d2',
-                                                                            backgroundColor: 'transparent'
-                                                                        }}
-                                                                    >
-                                                                        View
-                                                                    </Button>
-                                                                </Box>
-
-
-                                                                <Box sx={{
-                                                                    p: 2,
-                                                                    borderRight: '1px solid #000000',
-                                                                    borderBottom: '1px solid #000000',
-                                                                    backgroundColor: '#f8fafc',
-                                                                    display: 'flex',
-                                                                    flexDirection: 'column',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'center',
-                                                                    gap: 1
-                                                                }}>
-                                                                    <Box sx={{
-                                                                        width: 26,
-                                                                        height: 16,
-                                                                        backgroundColor: groupedItem.color || '#000',
-                                                                        borderRadius: 0.5,
-                                                                        border: '1px solid #e5e7eb'
-                                                                    }}/>
-                                                                    <Typography variant="caption" sx={{
-                                                                        color: '#64748b',
-                                                                        fontSize: '12px'
-                                                                    }}>
-                                                                        {groupedItem.color || '#000'}
-                                                                    </Typography>
-                                                                </Box>
-
-
-                                                                <Box sx={{
-                                                                    p: 2,
-                                                                    borderRight: '1px solid #000000',
-                                                                    borderBottom: '1px solid #000000',
-                                                                    backgroundColor: '#f8fafc',
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'center'
-                                                                }}>
-                                                                    {(() => {
-                                                                        const logoPosition = groupedItem.logoPosition;
-                                                                        const logoHeight = groupedItem.baseLogoHeight || 0;
-                                                                        const logoWidth = groupedItem.baseLogoWidth || 0;
-
-                                                                        if (logoPosition && logoHeight > 0 && logoWidth > 0) {
-                                                                            return (
-                                                                                <Typography variant="body2" sx={{
-                                                                                    fontWeight: 500,
-                                                                                    color: '#1e293b',
-                                                                                    fontSize: '12px'
-                                                                                }}>
-                                                                                    {logoPosition}
-                                                                                </Typography>
-                                                                            );
-                                                                        } else {
-                                                                            return (
-                                                                                <Typography variant="caption" sx={{
-                                                                                    color: '#9ca3af',
-                                                                                    fontSize: '11px',
-                                                                                    fontStyle: 'italic'
-                                                                                }}>
-                                                                                    No Logo
-                                                                                </Typography>
-                                                                            );
-                                                                        }
-                                                                    })()}
-                                                                </Box>
-
-
-                                                                <Box sx={{
-                                                                    p: 2,
-                                                                    borderRight: '1px solid #000000',
-                                                                    borderBottom: '1px solid #000000',
-                                                                    backgroundColor: '#f8fafc',
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'center'
-                                                                }}>
-                                                                    {(() => {
-                                                                        const logoHeight = groupedItem.baseLogoHeight || 0;
-                                                                        const logoWidth = groupedItem.baseLogoWidth || 0;
-
-                                                                        if (logoHeight > 0 && logoWidth > 0) {
-                                                                            return (
-                                                                                <Typography variant="body2" sx={{
-                                                                                    fontWeight: 600,
-                                                                                    color: '#1976d2',
-                                                                                    fontSize: '11px',
-                                                                                    backgroundColor: 'rgba(25, 118, 210, 0.1)',
-                                                                                    padding: '4px 8px',
-                                                                                    borderRadius: '4px',
-                                                                                    border: '1px solid rgba(25, 118, 210, 0.2)'
-                                                                                }}>
-                                                                                    {logoHeight} × {logoWidth} cm
-                                                                                </Typography>
-                                                                            );
-                                                                        } else {
-                                                                            return (
-                                                                                <Typography variant="caption" sx={{
-                                                                                    color: '#9ca3af',
-                                                                                    fontSize: '11px',
-                                                                                    fontStyle: 'italic'
-                                                                                }}>
-                                                                                    No Logo
-                                                                                </Typography>
-                                                                            );
-                                                                        }
-                                                                    })()}
-                                                                </Box>
-
-
-                                                                <Box sx={{
-                                                                    p: 2,
-                                                                    borderBottom: '1px solid #000000',
-                                                                    backgroundColor: '#f8fafc',
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'center'
-                                                                }}>
-                                                                    <Button
-                                                                        type="default"
-                                                                        size="small"
-                                                                        onClick={() => handleViewImages(groupedItem)}
-                                                                        icon={<InfoCircleOutlined/>}
-                                                                        style={{
-                                                                            fontSize: '11px',
-                                                                            height: '28px',
-                                                                            padding: '4px 12px',
-                                                                            borderColor: '#3f51b5',
-                                                                            color: '#3f51b5',
-                                                                            backgroundColor: 'transparent'
-                                                                        }}
-                                                                    >
-                                                                        View Images
-                                                                    </Button>
-                                                                </Box>
-                                                            </React.Fragment>
-                                                        );
-                                                    });
-
-                                                    return rows;
-                                                })()}
-                                            </Box>
-                                        </Box>
-                                    )}
-                                </Box>
-                            </Card>
+                            <Box sx={{mb: 4}}>
+                                <Typography variant="h6" sx={{
+                                    fontWeight: 700,
+                                    color: '#1976d2',
+                                    mb: 2,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1
+                                }}>
+                                    <TableChartIcon style={{color: '#1976d2', fontSize: '20px'}}/>
+                                    Order Detail Table
+                                </Typography>
+                                <OrderDetailTable detail={order.orderDetails}/>
+                            </Box>
                         </Box>
-                    </Box>
-                )
-                }
+                    </Box>)}
             </Modal>
 
 
             <Modal
-                title={
-                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
-                        <Box sx={{
-                            p: 1,
-                            borderRadius: 2,
-                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}>
-                            <InfoIcon style={{color: 'white', fontSize: 18}}/>
-                        </Box>
-                        <AntTypography.Title level={5} style={{margin: 0, color: 'white', fontWeight: 700}}>
-                            Item Images
-                        </AntTypography.Title>
+                title={<Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                    <Box sx={{
+                        p: 1,
+                        borderRadius: 2,
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <InfoIcon style={{color: 'white', fontSize: 18}}/>
                     </Box>
-                }
+                    <AntTypography.Title level={5} style={{margin: 0, color: 'white', fontWeight: 700}}>
+                        Item Images
+                    </AntTypography.Title>
+                </Box>}
                 open={imagesDialogOpen}
                 onCancel={handleCloseImagesDialog}
                 centered
@@ -2198,21 +1583,16 @@ export default function OrderDetailPopup({open, onClose, order}) {
                         background: 'linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)',
                         borderRadius: '12px 12px 0 0',
                         padding: '16px 20px'
-                    },
-                    body: {
-                        padding: '20px',
-                        maxHeight: '500px',
-                        overflowY: 'auto'
+                    }, body: {
+                        padding: '20px', maxHeight: '500px', overflowY: 'auto'
                     }
                 }}
                 footer={null}
             >
-                {selectedItemImages && (
-                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                {selectedItemImages && (<Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
 
 
-                        {selectedItemImages.type === 'shirt' && (
-                            <Box sx={{
+                        {selectedItemImages.type === 'shirt' && (<Box sx={{
                                 p: 2.5,
                                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
                                 borderRadius: 2,
@@ -2222,8 +1602,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                             sx={{fontWeight: 600, mb: 1.5, color: '#3f51b5', fontSize: '16px'}}>
                                     Logo Image
                                 </Typography>
-                                {selectedItemImages.logoImageUrl ? (
-                                    <Box sx={{
+                                {selectedItemImages.logoImageUrl ? (<Box sx={{
                                         display: 'flex',
                                         justifyContent: 'center',
                                         alignItems: 'center',
@@ -2238,9 +1617,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                             width="100%"
                                             height={200}
                                         />
-                                    </Box>
-                                ) : (
-                                    <Box sx={{
+                                    </Box>) : (<Box sx={{
                                         display: 'flex',
                                         justifyContent: 'center',
                                         alignItems: 'center',
@@ -2253,10 +1630,8 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                     sx={{color: '#9ca3af', fontStyle: 'italic', fontSize: '14px'}}>
                                             No Logo Image Available
                                         </Typography>
-                                    </Box>
-                                )}
-                            </Box>
-                        )}
+                                    </Box>)}
+                            </Box>)}
 
 
                         <Box sx={{
@@ -2276,8 +1651,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                 sx={{fontWeight: 600, mb: 1, color: '#10b981', fontSize: '13px'}}>
                                         Front Design
                                     </Typography>
-                                    {selectedItemImages.frontImageUrl ? (
-                                        <Box sx={{
+                                    {selectedItemImages.frontImageUrl ? (<Box sx={{
                                             border: '2px dashed rgba(16, 185, 129, 0.3)',
                                             borderRadius: 2,
                                             backgroundColor: 'rgba(16, 185, 129, 0.05)',
@@ -2293,9 +1667,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                 width={200}
                                                 height={150}
                                             />
-                                        </Box>
-                                    ) : (
-                                        <Box sx={{
+                                        </Box>) : (<Box sx={{
                                             border: '2px dashed #d1d5db',
                                             borderRadius: 2,
                                             backgroundColor: '#f9fafb',
@@ -2309,8 +1681,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                         sx={{color: '#9ca3af', fontStyle: 'italic', fontSize: '12px'}}>
                                                 No Front Design
                                             </Typography>
-                                        </Box>
-                                    )}
+                                        </Box>)}
                                 </Box>
 
 
@@ -2319,8 +1690,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                 sx={{fontWeight: 600, mb: 1, color: '#8b5cf6', fontSize: '13px'}}>
                                         Back Design
                                     </Typography>
-                                    {selectedItemImages.backImageUrl ? (
-                                        <Box sx={{
+                                    {selectedItemImages.backImageUrl ? (<Box sx={{
                                             border: '2px dashed rgba(139, 92, 246, 0.3)',
                                             borderRadius: 2,
                                             backgroundColor: 'rgba(139, 92, 246, 0.05)',
@@ -2336,9 +1706,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                 width={200}
                                                 height={150}
                                             />
-                                        </Box>
-                                    ) : (
-                                        <Box sx={{
+                                        </Box>) : (<Box sx={{
                                             border: '2px dashed #d1d5db',
                                             borderRadius: 2,
                                             backgroundColor: '#f9fafb',
@@ -2352,53 +1720,44 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                         sx={{color: '#9ca3af', fontStyle: 'italic', fontSize: '12px'}}>
                                                 No Back Design
                                             </Typography>
-                                        </Box>
-                                    )}
+                                        </Box>)}
                                 </Box>
                             </Box>
                         </Box>
-                    </Box>
-                )}
+                    </Box>)}
             </Modal>
 
 
             <Modal
-                title={
-                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
-                        <Box sx={{
-                            p: 1,
-                            borderRadius: 2,
-                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}>
-                            <InfoIcon style={{color: 'white', fontSize: 20}}/>
-                        </Box>
-                        <AntTypography.Title level={5} style={{margin: 0, color: 'white', fontWeight: 700}}>
-                            Quantity Details
-                        </AntTypography.Title>
+                title={<Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                    <Box sx={{
+                        p: 1,
+                        borderRadius: 2,
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <InfoIcon style={{color: 'white', fontSize: 20}}/>
                     </Box>
-                }
+                    <AntTypography.Title level={5} style={{margin: 0, color: 'white', fontWeight: 700}}>
+                        Quantity Details
+                    </AntTypography.Title>
+                </Box>}
                 open={showQuantityDetailsDialog}
                 onCancel={handleCloseQuantityDetails}
                 centered
                 width={500}
                 styles={{
                     header: {
-                        background: 'linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)',
-                        borderRadius: '12px 12px 0 0'
-                    },
-                    body: {
-                        padding: '20px',
-                        maxHeight: '400px',
-                        overflowY: 'auto'
+                        background: 'linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)', borderRadius: '12px 12px 0 0'
+                    }, body: {
+                        padding: '20px', maxHeight: '400px', overflowY: 'auto'
                     }
                 }}
                 footer={null}
             >
-                {selectedQuantityDetails && (
-                    <Box>
+                {selectedQuantityDetails && (<Box>
 
                         <Box sx={{
                             background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
@@ -2422,10 +1781,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                     label={selectedQuantityDetails.gender === 'boy' ? 'Boy' : 'Girl'}
                                     size="small"
                                     sx={{
-                                        backgroundColor: '#fef3c7',
-                                        color: '#92400e',
-                                        fontWeight: 600,
-                                        height: '24px'
+                                        backgroundColor: '#fef3c7', color: '#92400e', fontWeight: 600, height: '24px'
                                     }}
                                 />
                                 <Chip
@@ -2448,9 +1804,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
 
 
                         <Box sx={{
-                            border: '1px solid #e2e8f0',
-                            borderRadius: 2,
-                            overflow: 'hidden'
+                            border: '1px solid #e2e8f0', borderRadius: 2, overflow: 'hidden'
                         }}>
                             <Box sx={{
                                 background: 'linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)',
@@ -2467,9 +1821,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
 
                             <Box sx={{p: 0}}>
                                 <Box sx={{
-                                    display: 'grid',
-                                    gridTemplateColumns: '1fr 1fr',
-                                    borderBottom: '2px solid #e2e8f0'
+                                    display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: '2px solid #e2e8f0'
                                 }}>
                                     <Box sx={{
                                         p: 1.5,
@@ -2498,8 +1850,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                     </Box>
                                 </Box>
 
-                                {sortSizes([...selectedQuantityDetails.sizes]).map((size) => (
-                                    <Box key={size} sx={{
+                                {sortSizes([...selectedQuantityDetails.sizes]).map((size) => (<Box key={size} sx={{
                                         display: 'grid',
                                         gridTemplateColumns: '1fr 1fr',
                                         borderBottom: '1px solid #e2e8f0',
@@ -2516,9 +1867,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                             backgroundColor: '#ffffff'
                                         }}>
                                             <Typography variant="body1" sx={{
-                                                fontWeight: 600,
-                                                color: '#3f51b5',
-                                                fontSize: '14px'
+                                                fontWeight: 600, color: '#3f51b5', fontSize: '14px'
                                             }}>
                                                 {size}
                                             </Typography>
@@ -2531,19 +1880,15 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                             backgroundColor: '#ffffff'
                                         }}>
                                             <Typography variant="h6" sx={{
-                                                fontWeight: 700,
-                                                color: '#1976d2',
-                                                fontSize: '16px'
+                                                fontWeight: 700, color: '#1976d2', fontSize: '16px'
                                             }}>
                                                 {selectedQuantityDetails.quantities[size]}
                                             </Typography>
                                         </Box>
-                                    </Box>
-                                ))}
+                                    </Box>))}
                             </Box>
                         </Box>
-                    </Box>
-                )}
+                    </Box>)}
             </Modal>
 
 
@@ -2551,8 +1896,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                 visible={showPaymentModal}
                 onCancel={() => setShowPaymentModal(false)}
                 selectedQuotationDetails={{
-                    quotation: selectedQuotation,
-                    order: order
+                    quotation: selectedQuotation, order: order
                 }}
             />
 
@@ -2562,6 +1906,5 @@ export default function OrderDetailPopup({open, onClose, order}) {
                 onClose={() => setProfileModalOpen(false)}
                 garment={profileGarment}
             />
-        </>
-    );
+        </>);
 }

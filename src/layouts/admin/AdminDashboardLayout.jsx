@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useState} from "react";
 import {Outlet, useLocation, useNavigate} from "react-router-dom";
 import {AppBar, Avatar, Badge, Box, CssBaseline, Divider, Popover, Toolbar, Typography} from "@mui/material";
-import {AccountCircle, AdminPanelSettings, Assessment, Logout, People, Receipt, Settings} from "@mui/icons-material";
+import {AccountCircle, AdminPanelSettings, Assessment, Logout, People, Receipt, Settings, DesignServices, ShoppingCart} from "@mui/icons-material";
 import {Tag} from "antd";
 import {signout} from "../../services/AccountService.jsx";
 import {enqueueSnackbar} from "notistack";
@@ -77,6 +77,58 @@ function Navbar({activeMenu, navigate}) {
                             <Assessment sx={{color: "inherit", fontSize: 20}}/>
                             <Typography variant="body2" sx={{fontWeight: 500}}>
                                 Statistics Report
+                            </Typography>
+                        </Box>
+                    </Box>
+
+                    <Box
+                        sx={{
+                            borderRadius: 2,
+                            mx: 1,
+                            my: 0.5,
+                            color: activeMenu === 'designs' ? "#FFFFFF" : "#495057",
+                            p: 2,
+                            cursor: "pointer",
+                            transition: "all 0.3s ease",
+                            background: activeMenu === 'designs' ? "linear-gradient(135deg, #dc3545 0%, #c82333 100%)" : "transparent",
+                            "&:hover": {
+                                background: "linear-gradient(135deg, #dc3545 0%, #c82333 100%)",
+                                color: "#FFFFFF",
+                                transform: "translateY(-1px)",
+                            },
+                        }}
+                        onClick={() => navigate("/admin/designs")}
+                    >
+                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
+                            <DesignServices sx={{color: "inherit", fontSize: 20}}/>
+                            <Typography variant="body2" sx={{fontWeight: 500}}>
+                                Design Requests
+                            </Typography>
+                        </Box>
+                    </Box>
+
+                    <Box
+                        sx={{
+                            borderRadius: 2,
+                            mx: 1,
+                            my: 0.5,
+                            color: activeMenu === 'orders' ? "#FFFFFF" : "#495057",
+                            p: 2,
+                            cursor: "pointer",
+                            transition: "all 0.3s ease",
+                            background: activeMenu === 'orders' ? "linear-gradient(135deg, #dc3545 0%, #c82333 100%)" : "transparent",
+                            "&:hover": {
+                                background: "linear-gradient(135deg, #dc3545 0%, #c82333 100%)",
+                                color: "#FFFFFF",
+                                transform: "translateY(-1px)",
+                            },
+                        }}
+                        onClick={() => navigate("/admin/orders")}
+                    >
+                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
+                            <ShoppingCart sx={{color: "inherit", fontSize: 20}}/>
+                            <Typography variant="body2" sx={{fontWeight: 500}}>
+                                Orders
                             </Typography>
                         </Box>
                     </Box>
@@ -259,6 +311,10 @@ export default function AdminDashboardLayout() {
         const pathname = location.pathname;
         if (pathname.includes('/admin/dashboard')) {
             setActiveMenu('statistics');
+        } else if (pathname.includes('/admin/designs')) {
+            setActiveMenu('designs');
+        } else if (pathname.includes('/admin/orders')) {
+            setActiveMenu('orders');
         } else if (pathname.includes('/admin/transactions')) {
             setActiveMenu('transactions');
         } else if (pathname.includes('/admin/reports')) {

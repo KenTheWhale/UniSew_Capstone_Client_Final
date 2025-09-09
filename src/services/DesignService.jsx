@@ -109,3 +109,8 @@ export const importDesign = async (data) => {
     const response = await axiosClient.post("/design/import", data)
     return response || null
 }
+
+export const getAllDesignRequests = async () => {
+    const response = await axiosClient.get("/design/requests")
+    return response || null
+}
