@@ -8,6 +8,8 @@ import {
     CircularProgress,
     IconButton,
     Paper,
+    Tab,
+    Tabs,
     Tooltip,
     Typography
 } from "@mui/material";
@@ -181,22 +183,37 @@ export default function SchoolDesign() {
     const [cancellingRequestId, setCancellingRequestId] = useState(null);
     const [menuAnchorEl, setMenuAnchorEl] = useState(null);
     const [menuRowId, setMenuRowId] = useState(null);
+    const [currentTab, setCurrentTab] = useState(0);
 
-    const filteredDesignRequests = useMemo(() =>
-            designRequests,
-        [designRequests]
-    );
+    const filteredDesignRequests = useMemo(() => {
+        if (currentTab === 0) {
+            // Design Requests tab - exclude imported status
+            return designRequests.filter(req => req.status !== 'imported');
+        } else {
+            // Imported Design tab - only imported status
+            return designRequests.filter(req => req.status === 'imported');
+        }
+    }, [designRequests, currentTab]);
 
     const stats = useMemo(() => {
-        const total = filteredDesignRequests.length;
-        const pending = filteredDesignRequests.filter(req => req.status === 'pending').length;
-        const completed = filteredDesignRequests.filter(req => req.status === 'completed').length;
-        const processing = filteredDesignRequests.filter(req => req.status === 'processing').length;
-        const canceled = filteredDesignRequests.filter(req => req.status === 'canceled').length;
-        const imported = filteredDesignRequests.filter(req => req.status === 'imported').length;
+        if (currentTab === 0) {
+            // Design Requests tab - exclude imported
+            const nonImportedRequests = designRequests.filter(req => req.status !== 'imported');
+            const total = nonImportedRequests.length;
+            const pending = nonImportedRequests.filter(req => req.status === 'pending').length;
+            const completed = nonImportedRequests.filter(req => req.status === 'completed').length;
+            const processing = nonImportedRequests.filter(req => req.status === 'processing').length;
+            const canceled = nonImportedRequests.filter(req => req.status === 'canceled').length;
 
-        return {total, pending, completed, processing, canceled, imported};
-    }, [filteredDesignRequests]);
+            return {total, pending, completed, processing, canceled, imported: 0};
+        } else {
+            // Imported Design tab - only imported
+            const importedRequests = designRequests.filter(req => req.status === 'imported');
+            const total = importedRequests.length;
+
+            return {total, pending: 0, completed: 0, processing: 0, canceled: 0, imported: total};
+        }
+    }, [designRequests, currentTab]);
 
     const handleViewDetail = useCallback((id) => {
         const request = designRequests.find(req => req.id === id);
@@ -333,7 +350,11 @@ export default function SchoolDesign() {
         setMenuRowId(null);
     };
 
-    const columns = useMemo(() => [
+    const handleTabChange = (event, newValue) => {
+        setCurrentTab(newValue);
+    };
+
+    const designRequestsColumns = useMemo(() => [
         {
             title: 'Request ID',
             dataIndex: 'id',
@@ -508,6 +529,95 @@ export default function SchoolDesign() {
         },
     ], [filteredDesignRequests, handleViewDetail, handleOpenFeedback, handleOpenReport, handleCancelRequest, cancellingRequestId, menuAnchorEl, menuRowId]);
 
+    const importedDesignColumns = useMemo(() => [
+        {
+            title: 'Design ID',
+            dataIndex: 'id',
+            key: 'id',
+            align: 'center',
+            sorter: (a, b) => a.id - b.id,
+            defaultSortOrder: 'descend',
+            width: 120,
+            render: (text) => (
+                <Typography variant="body2" sx={{fontWeight: 600, color: '#1976d2'}}>
+                    {parseID(text, 'dr')}
+                </Typography>
+            ),
+        },
+        {
+            title: 'Import Date',
+            dataIndex: 'creationDate',
+            key: 'creationDate',
+            align: 'left',
+            width: 160,
+            sorter: (a, b) => new Date(a.creationDate) - new Date(b.creationDate),
+            render: (text) => {
+                const date = new Date(text);
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                const daysDiff = Math.floor((new Date() - date) / (1000 * 60 * 60 * 24));
+                return (
+                    <Box>
+                        <Typography variant="body2" sx={{color: '#475569', fontSize: '0.875rem'}}>
+                            {`${day}/${month}/${year}`}
+                        </Typography>
+                        <Typography variant="caption"
+                                    sx={{color: daysDiff > 30 ? '#dc2626' : '#64748b', fontSize: '0.75rem'}}>
+                            {daysDiff < 1 ? 'Today' : `${daysDiff} days ago`}
+                        </Typography>
+                    </Box>
+                );
+            },
+        },
+        {
+            title: 'Name',
+            dataIndex: 'name',
+            key: 'name',
+            align: 'left',
+            width: 160,
+            ellipsis: true,
+            render: (text) => (
+                <Typography
+                    variant="body2"
+                    sx={{
+                        color: '#1e293b',
+                        fontWeight: 500,
+                        fontSize: '0.875rem'
+                    }}
+                >
+                    {text}
+                </Typography>
+            ),
+        },
+        {
+            title: 'Detail',
+            key: 'details',
+            align: 'center',
+            width: 80,
+            render: (_, record) => (
+                <Tooltip title="View Details">
+                    <IconButton
+                        onClick={() => handleViewDetail(record.id)}
+                        sx={{
+                            color: '#1976d2',
+                            '&:hover': {
+                                backgroundColor: '#e3f2fd',
+                                transform: 'scale(1.1)'
+                            },
+                            transition: 'all 0.2s ease'
+                        }}
+                        size="small"
+                    >
+                        <InfoIcon/>
+                    </IconButton>
+                </Tooltip>
+            ),
+        },
+    ], [handleViewDetail]);
+
+    const columns = currentTab === 0 ? designRequestsColumns : importedDesignColumns;
+
     if (loading) {
         // Không hiển thị loading UI ở đây nữa, sẽ dùng GlobalLoadingOverlay
         return null;
@@ -650,50 +760,77 @@ export default function SchoolDesign() {
                     overflow: "hidden"
                 }}
             >
-                <Box sx={{p: 3, backgroundColor: "white"}}>
-                    <Box sx={{display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3}}>
-                        <Typography
-                            variant="h6"
-                            sx={{
-                                fontWeight: 700,
-                                color: "#1e293b"
-                            }}
-                        >
-                            All Design Requests
-                        </Typography>
-                        <Chip
-                            label={`${stats.total} Total`}
-                            sx={{
-                                backgroundColor: "#e8f5e8",
-                                color: "#2e7d32",
-                                fontWeight: 600
-                            }}
-                        />
-                    </Box>
+                <Box sx={{backgroundColor: "white"}}>
+                    <Tabs
+                        value={currentTab}
+                        onChange={handleTabChange}
+                        sx={{
+                            borderBottom: 1,
+                            borderColor: 'divider',
+                            px: 3,
+                            '& .MuiTab-root': {
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                fontSize: '1rem',
+                                color: '#64748b',
+                                '&.Mui-selected': {
+                                    color: '#2e7d32',
+                                }
+                            },
+                            '& .MuiTabs-indicator': {
+                                backgroundColor: '#2e7d32',
+                            }
+                        }}
+                    >
+                        <Tab label="Design Requests" />
+                        <Tab label="Imported Design" />
+                    </Tabs>
 
-                    {filteredDesignRequests.length === 0 ? (
-                        <EmptyStateComponent/>
-                    ) : (
-                        <Table
-                            columns={columns}
-                            dataSource={filteredDesignRequests}
-                            rowKey="id"
-                            loading={loading}
-                            pagination={{
-                                defaultPageSize: 5,
-                                pageSizeOptions: TABLE_PAGE_SIZE_OPTIONS,
-                                showSizeChanger: true,
-                                showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total} design requests`,
-                                style: {marginTop: 16}
-                            }}
-                            scroll={{x: 'max-content'}}
-                            style={{
-                                backgroundColor: 'white',
-                                borderRadius: '8px'
-                            }}
-                            rowHoverColor="#f8fafc"
-                        />
-                    )}
+                    <Box sx={{p: 3}}>
+                        <Box sx={{display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3}}>
+                            <Typography
+                                variant="h6"
+                                sx={{
+                                    fontWeight: 700,
+                                    color: "#1e293b"
+                                }}
+                            >
+                                {currentTab === 0 ? 'Design Requests' : 'Imported Design'}
+                            </Typography>
+                            <Chip
+                                label={`${stats.total} Total`}
+                                sx={{
+                                    backgroundColor: "#e8f5e8",
+                                    color: "#2e7d32",
+                                    fontWeight: 600
+                                }}
+                            />
+                        </Box>
+
+                        {filteredDesignRequests.length === 0 ? (
+                            <EmptyStateComponent/>
+                        ) : (
+                            <Table
+                                columns={columns}
+                                dataSource={filteredDesignRequests}
+                                rowKey="id"
+                                loading={loading}
+                                pagination={{
+                                    defaultPageSize: 5,
+                                    pageSizeOptions: TABLE_PAGE_SIZE_OPTIONS,
+                                    showSizeChanger: true,
+                                    showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total} ${currentTab === 0 ? 'design requests' : 'imported designs'}`,
+                                    style: {marginTop: 16}
+                                }}
+                                scroll={{x: 'max-content'}}
+                                style={{
+                                    backgroundColor: 'white',
+                                    borderRadius: '8px'
+                                }}
+                                rowHoverColor="#f8fafc"
+                            />
+                        )}
+                    </Box>
                 </Box>
             </Paper>
 

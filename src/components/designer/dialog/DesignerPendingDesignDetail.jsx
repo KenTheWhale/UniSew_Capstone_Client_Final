@@ -36,10 +36,10 @@ import {
 } from '@mui/icons-material';
 import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
 import {GiSkirt} from "react-icons/gi";
-import {parseID} from "../../utils/ParseIDUtil.jsx";
-import {createDesignQuotation} from "../../services/DesignService.jsx";
+import {parseID} from "../../../utils/ParseIDUtil.jsx";
+import {createDesignQuotation} from "../../../services/DesignService.jsx";
 import {enqueueSnackbar} from "notistack";
-import DisplayImage from "../ui/DisplayImage.jsx";
+import DisplayImage from "../../ui/DisplayImage.jsx";
 
 const StatusChip = ({status}) => {
     const getStatusConfig = (status) => {

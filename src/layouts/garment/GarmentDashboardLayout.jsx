@@ -60,23 +60,23 @@ function Navbar({activeMenu, navigate}) {
                             borderRadius: 2,
                             mx: 1,
                             my: 0.5,
-                            color: activeMenu === 'pending' ? "#FFFFFF" : "#495057",
+                            color: activeMenu === 'orders' ? "#FFFFFF" : "#495057",
                             p: 2,
                             cursor: "pointer",
                             transition: "all 0.3s ease",
-                            background: activeMenu === 'pending' ? "linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)" : "transparent",
+                            background: activeMenu === 'orders' ? "linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)" : "transparent",
                             "&:hover": {
                                 background: "linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)",
                                 color: "#FFFFFF",
                                 transform: "translateY(-1px)",
                             },
                         }}
-                        onClick={() => navigate('/garment/pending/order')}
+                        onClick={() => navigate('/garment/orders')}
                     >
                         <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
                             <Assignment sx={{color: "inherit", fontSize: 20}}/>
                             <Typography variant="body2" sx={{fontWeight: 500}}>
-                                Pending Orders
+                                Order Management
                             </Typography>
                         </Box>
                     </Box>
@@ -246,12 +246,8 @@ export default function GarmentDashboardLayout() {
 
     useEffect(() => {
         const pathname = location.pathname;
-        if (pathname.includes('/garment/pending/order')) {
-            setActiveMenu('pending');
-        } else if (pathname.includes('/garment/orders')) {
+        if (pathname.includes('/garment/orders')) {
             setActiveMenu('orders');
-        } else if (pathname.includes('/garment/production')) {
-            setActiveMenu('production');
         } else if (pathname.includes('/garment/milestone')) {
             setActiveMenu('milestone');
         } else if (pathname.includes('/garment/feedbacks')) {

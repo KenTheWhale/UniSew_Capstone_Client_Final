@@ -35,7 +35,7 @@ export default function Login() {
                                 window.location.href = '/designer/quotations';
                                 break;
                             case 'garment':
-                                window.location.href = '/garment/pending/order';
+                                window.location.href = '/garment/orders';
                                 break;
                             default:
                                 window.location.href = '/home';

@@ -15,10 +15,10 @@ import {
     ShopOutlined,
     SyncOutlined
 } from '@ant-design/icons';
-import {parseID} from "../../utils/ParseIDUtil.jsx";
+import {parseID} from "../../../utils/ParseIDUtil.jsx";
 import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
 import {GiSkirt} from "react-icons/gi";
-import DisplayImage from '../ui/DisplayImage.jsx';
+import DisplayImage from '../../ui/DisplayImage.jsx';
 
 export function statusTag(status) {
     let color;
