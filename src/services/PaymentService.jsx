@@ -11,6 +11,11 @@ export const getPaymentUrl = async (amount, description, orderType, returnURL) =
     return response || null
 }
 
+export const getPaymentUrlUsingWallet = (amount) => {
+    const url = import.meta.env.VITE_SERVER_FE
+    return `${url}/school/payment/result?vnp_Amount=${amount * 100}&vnp_ResponseCode=00&vnp_TxnRef=12345`
+}
+
 export const createDesignTransaction = async (receiverId, designRequestId, totalPrice, gatewayCode, serviceFee, payFromWallet) => {
     const response = await axiosClient.post("/payment/transaction", {
         "type": "design",
@@ -53,7 +58,7 @@ export const createDepositTransaction = async (receiverId, orderId, totalPrice, 
     return response || null
 }
 
-export const createDepositWalletTransaction = async (receiverId, totalPrice, gatewayCode) => {
+export const createDepositWalletTransaction = async (receiverId, totalPrice, gatewayCode, payFromWallet) => {
     const response = await axiosClient.post("/payment/transaction", {
         "type": "wallet",
         "receiverId": receiverId,
@@ -61,7 +66,7 @@ export const createDepositWalletTransaction = async (receiverId, totalPrice, gat
         "totalPrice": totalPrice,
         "gatewayCode": gatewayCode,
         "serviceFee": 0,
-        "payFromWallet": false
+        "payFromWallet": payFromWallet
     })
 
     return response || null
@@ -79,5 +84,10 @@ export const getTransactionsForOne = async () => {
 
 export const refundTransaction = async (data) => {
     const response = await axiosClient.post("/payment/transaction/refund", data)
+    return response || null;
+}
+
+export const getWalletBalance = async () => {
+    const response = await axiosClient.post("/payment/wallet")
     return response || null;
 }
