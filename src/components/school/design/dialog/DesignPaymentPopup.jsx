@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {Button, Modal, Spin, Typography} from 'antd';
+import {Button, Modal, Spin, Typography, Radio} from 'antd';
 import {
     CalendarOutlined,
     CheckCircleOutlined,
@@ -7,12 +7,13 @@ import {
     DollarOutlined,
     EditOutlined,
     InfoCircleOutlined,
-    SafetyCertificateOutlined
+    SafetyCertificateOutlined,
+    WalletOutlined
 } from '@ant-design/icons';
 import {Box, Chip, Paper} from '@mui/material';
 import {parseID} from "../../../../utils/ParseIDUtil.jsx";
 import {getPhoneLink} from "../../../../utils/PhoneUtil.jsx";
-import {getPaymentUrl} from "../../../../services/PaymentService.jsx";
+import {getPaymentUrl, getPaymentUrlUsingWallet, getWalletBalance} from "../../../../services/PaymentService.jsx";
 import {enqueueSnackbar} from "notistack";
 import {serviceFee} from "../../../../configs/FixedVariables.jsx";
 import {getConfigByKey, configKey} from "../../../../services/SystemService.jsx";
@@ -21,8 +22,11 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [businessConfig, setBusinessConfig] = useState(null);
+    const [paymentMethod, setPaymentMethod] = useState('gateway');
+    const [walletBalance, setWalletBalance] = useState(0);
+    const [loadingWallet, setLoadingWallet] = useState(false);
 
-    // Fetch business configuration on component mount
+    // Fetch business configuration and wallet balance on component mount
     useEffect(() => {
         const fetchBusinessConfig = async () => {
             try {
@@ -35,8 +39,25 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
             }
         };
 
-        fetchBusinessConfig();
-    }, []);
+        const fetchWalletBalance = async () => {
+            try {
+                setLoadingWallet(true);
+                const response = await getWalletBalance();
+                if (response?.status === 200 && response.data?.body?.balance !== undefined) {
+                    setWalletBalance(response.data.body.balance);
+                }
+            } catch (error) {
+                console.error('Error fetching wallet balance:', error);
+            } finally {
+                setLoadingWallet(false);
+            }
+        };
+
+        if (visible) {
+            fetchBusinessConfig();
+            fetchWalletBalance();
+        }
+    }, [visible]);
 
     // Service fee calculation using API config
     const calculateServiceFee = useCallback((amount) => {
@@ -46,6 +67,23 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
         // Fallback to hardcoded serviceFee function if API config is not available
         return serviceFee(amount);
     }, [businessConfig]);
+
+    // Calculate total amount for payment
+    const calculateTotalAmount = useCallback(() => {
+        if (!selectedQuotationDetails) return 0;
+        const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
+        const rawSubtotal = selectedQuotationDetails.quotation.price + (extraRevision * (selectedQuotationDetails.quotation.extraRevisionPrice || 0));
+        const subtotal = Math.round(rawSubtotal);
+        const fee = Math.round(calculateServiceFee(subtotal));
+        return Math.round(subtotal + fee);
+    }, [selectedQuotationDetails, calculateServiceFee]);
+
+    // Check if wallet has sufficient balance
+    const hasInsufficientBalance = useCallback(() => {
+        if (paymentMethod !== 'wallet') return false;
+        const totalAmount = calculateTotalAmount();
+        return walletBalance < totalAmount;
+    }, [paymentMethod, walletBalance, calculateTotalAmount]);
 
     if (!selectedQuotationDetails) {
         return (
@@ -90,25 +128,39 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
             sessionStorage.setItem('paymentQuotationDetails', JSON.stringify(quotationDetailsToStore));
             sessionStorage.setItem('currentPaymentType', 'design');
 
-            setLoadingMessage('Connecting to payment gateway...');
-            
-            const response = await getPaymentUrl(
-                totalAmount,
-                `Payment for design quotation - Design Request ${parseID(request.id, 'dr')}`,
-                'design',
-                '/school/payment/result'
-            );
-
-            if (response && response.status === 200) {
-                setLoadingMessage('Redirecting to secure payment...');
-                // Add a small delay to show the message before redirecting
+            if (paymentMethod === 'wallet') {
+                // Wallet payment flow
+                setLoadingMessage('Processing wallet payment...');
+                localStorage.setItem('paymentMethod', 'wallet');
+                
+                const walletPaymentUrl = getPaymentUrlUsingWallet(totalAmount);
+                setLoadingMessage('Redirecting to payment result...');
+                
                 setTimeout(() => {
-                    window.location.href = response.data.body.url;
+                    window.location.href = walletPaymentUrl;
                 }, 500);
             } else {
-                enqueueSnackbar('Failed to generate payment URL. Please try again.', {variant: 'error'});
-                setIsLoading(false);
-                setLoadingMessage('');
+                // Gateway payment flow (existing logic)
+                setLoadingMessage('Connecting to payment gateway...');
+                localStorage.setItem('paymentMethod', 'gateway');
+                
+                const response = await getPaymentUrl(
+                    totalAmount,
+                    `Payment for design quotation - Design Request ${parseID(request.id, 'dr')}`,
+                    'design',
+                    '/school/payment/result'
+                );
+
+                if (response && response.status === 200) {
+                    setLoadingMessage('Redirecting to secure payment...');
+                    setTimeout(() => {
+                        window.location.href = response.data.body.url;
+                    }, 500);
+                } else {
+                    enqueueSnackbar('Failed to generate payment URL. Please try again.', {variant: 'error'});
+                    setIsLoading(false);
+                    setLoadingMessage('');
+                }
             }
         } catch (error) {
             console.error('Payment URL generation error:', error);
@@ -151,13 +203,16 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
                     type="primary"
                     onClick={handleProceedToPayment}
                     loading={isLoading}
-                    icon={!isLoading ? <CreditCardOutlined/> : null}
+                    disabled={hasInsufficientBalance()}
+                    icon={!isLoading ? (paymentMethod === 'wallet' ? <WalletOutlined/> : <CreditCardOutlined/>) : null}
                     style={{
-                        backgroundColor: '#2e7d32',
-                        borderColor: '#2e7d32'
+                        backgroundColor: hasInsufficientBalance() ? '#d1d5db' : '#2e7d32',
+                        borderColor: hasInsufficientBalance() ? '#d1d5db' : '#2e7d32'
                     }}
                 >
-                    {isLoading ? (loadingMessage || 'Processing...') : 'Proceed to Payment'}
+                    {isLoading ? (loadingMessage || 'Processing...') : 
+                     hasInsufficientBalance() ? 'Insufficient Wallet Balance' : 
+                     `Proceed to Payment${paymentMethod === 'wallet' ? ' (Wallet)' : ' (Gateway)'}`}
                 </Button>,
             ]}
             width={800}
@@ -210,7 +265,7 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
                     </Box>
                 )}
                 
-                {}
+                {/* Payment Summary */}
                 <Box sx={{
                     mb: 4,
                     p: 3,
@@ -225,11 +280,174 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
                         </Typography.Title>
                     </Box>
                     <Typography.Text type="secondary" style={{fontSize: '14px'}}>
-                        Please review the payment details below before proceeding to the secure payment gateway.
+                        Please select your payment method and review the payment details below.
                     </Typography.Text>
                 </Box>
 
-                {}
+                {/* Payment Method Selection */}
+                <Paper
+                    elevation={0}
+                    sx={{
+                        p: 3,
+                        mb: 3,
+                        border: '1px solid #e2e8f0',
+                        borderRadius: 3,
+                        backgroundColor: 'white',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                            borderColor: '#2e7d32',
+                            boxShadow: '0 4px 15px rgba(46, 125, 50, 0.1)'
+                        }
+                    }}
+                >
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
+                        <Box sx={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: '50%',
+                            background: "linear-gradient(135deg, #2196f3 0%, #1976d2 100%)",
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white'
+                        }}>
+                            <CreditCardOutlined style={{fontSize: '18px'}}/>
+                        </Box>
+                        <Box>
+                            <Typography.Title level={5} style={{margin: 0, color: '#1e293b'}}>
+                                Payment Method
+                            </Typography.Title>
+                            <Typography.Text type="secondary" style={{fontSize: '14px'}}>
+                                Choose how you want to pay
+                            </Typography.Text>
+                        </Box>
+                    </Box>
+
+                    <Radio.Group 
+                        value={paymentMethod} 
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        style={{width: '100%'}}
+                    >
+                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 2, width: '100%'}}>
+                            {/* Gateway Payment Option */}
+                            <Box sx={{
+                                p: 2,
+                                border: paymentMethod === 'gateway' ? '2px solid #2e7d32' : '1px solid #e2e8f0',
+                                borderRadius: 2,
+                                backgroundColor: paymentMethod === 'gateway' ? 'rgba(46, 125, 50, 0.05)' : 'white',
+                                transition: 'all 0.3s ease',
+                                cursor: 'pointer',
+                                width: '100%'
+                            }}>
+                                <Radio value="gateway" style={{width: '100%', display: 'flex'}}>
+                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2, width: '100%'}}>
+                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2, flex: 1}}>
+                                            <CreditCardOutlined style={{color: '#2e7d32', fontSize: '18px'}}/>
+                                            <Box sx={{flex: 1}}>
+                                                <Typography.Text style={{color: '#1e293b', fontWeight: 600, fontSize: '16px'}}>
+                                                    Payment Gateway
+                                                </Typography.Text>
+                                                <Typography.Text style={{color: '#64748b', fontSize: '14px', display: 'block'}}>
+                                                    Pay securely with VNPay, credit/debit cards, or bank transfer
+                                                </Typography.Text>
+                                            </Box>
+                                        </Box>
+                                        <Box sx={{
+                                            minWidth: '120px',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'flex-end',
+                                            justifyContent: 'center',
+                                            marginLeft: 'auto'
+                                        }}>
+                                            <Typography.Text style={{
+                                                color: '#64748b',
+                                                fontSize: '14px',
+                                                fontWeight: 500,
+                                                lineHeight: '1.2'
+                                            }}>
+                                                Secure payment
+                                            </Typography.Text>
+                                            <Box sx={{height: '16px'}} /> {/* Placeholder to maintain height consistency */}
+                                        </Box>
+                                    </Box>
+                                </Radio>
+                            </Box>
+
+                            {/* Wallet Payment Option */}
+                            <Box sx={{
+                                p: 2,
+                                border: paymentMethod === 'wallet' ? '2px solid #2e7d32' : '1px solid #e2e8f0',
+                                borderRadius: 2,
+                                backgroundColor: paymentMethod === 'wallet' ? 'rgba(46, 125, 50, 0.05)' : 'white',
+                                transition: 'all 0.3s ease',
+                                cursor: 'pointer',
+                                width: '100%'
+                            }}>
+                                <Radio value="wallet" style={{width: '100%', display: 'flex'}}>
+                                    <Box sx={{
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        width: '100%',
+                                        gap: 2
+                                    }}>
+                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2, flex: 1}}>
+                                            <WalletOutlined style={{color: '#2e7d32', fontSize: '18px'}}/>
+                                            <Box sx={{flex: 1}}>
+                                                <Typography.Text style={{color: '#1e293b', fontWeight: 600, fontSize: '16px'}}>
+                                                    UniSew Wallet
+                                                </Typography.Text>
+                                                <Typography.Text style={{color: '#64748b', fontSize: '14px', display: 'block'}}>
+                                                    Pay instantly from your wallet balance
+                                                </Typography.Text>
+                                            </Box>
+                                        </Box>
+                                        <Box sx={{
+                                            textAlign: 'right', 
+                                            flexShrink: 0,
+                                            minWidth: '120px',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'flex-end',
+                                            justifyContent: 'center',
+                                            marginLeft: '8vw'
+                                        }}>
+                                            {loadingWallet ? (
+                                                <Spin size="small"/>
+                                            ) : (
+                                                <>
+                                                    <Typography.Text style={{
+                                                        color: hasInsufficientBalance() ? '#ef4444' : '#2e7d32',
+                                                        fontWeight: 600,
+                                                        fontSize: '16px',
+                                                        display: 'block',
+                                                        lineHeight: '1.2'
+                                                    }}>
+                                                        {walletBalance.toLocaleString('vi-VN')} VND
+                                                    </Typography.Text>
+                                                    {hasInsufficientBalance() ? (
+                                                        <Typography.Text style={{
+                                                            color: '#ef4444',
+                                                            fontSize: '12px',
+                                                            fontWeight: 500,
+                                                            lineHeight: '1.2'
+                                                        }}>
+                                                            Insufficient balance
+                                                        </Typography.Text>
+                                                    ) : (
+                                                        <Box sx={{height: '16px'}} />
+                                                    )}
+                                                </>
+                                            )}
+                                        </Box>
+                                    </Box>
+                                </Radio>
+                            </Box>
+                        </Box>
+                    </Radio.Group>
+                </Paper>
+
+                {/* Designer Information */}
                 <Paper
                     elevation={0}
                     sx={{

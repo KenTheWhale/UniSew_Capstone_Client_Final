@@ -17,7 +17,7 @@ import {
 import {parseID} from "../../utils/ParseIDUtil.jsx";
 import {buyExtraRevision, pickQuotation} from "../../services/DesignService.jsx";
 import {approveQuotation, confirmDeliveryOrder} from "../../services/OrderService.jsx";
-import {createDesignTransaction, createDepositTransaction, createDepositWalletTransaction} from "../../services/PaymentService.jsx";
+import {createDesignTransaction, createDepositTransaction, createDepositWalletTransaction, createOrderTransaction} from "../../services/PaymentService.jsx";
 import {emailType, sendEmail} from "../../services/EmailService.jsx";
 import {createShipping} from "../../services/ShippingService.jsx";
 import {useEffect, useState} from 'react';
@@ -28,18 +28,20 @@ export default function PaymentResult() {
 
     const [isProcessing, setIsProcessing] = useState(false);
     const [hasProcessed, setHasProcessed] = useState(() => {
-        const processedKey = `payment_processed_${urlParams.get('vnp_TxnRef')}`;
+        const processedKey = `payment_processed_${urlParams.get('vnp_TxnRef') || 'wallet'}`;
         return localStorage.getItem(processedKey) === 'true';
     });
     const [isInitialRender, setIsInitialRender] = useState(true);
 
     const vnpResponseCode = urlParams.get('vnp_ResponseCode');
     const vnpAmount = urlParams.get('vnp_Amount');
-    const vnpOrderInfo = urlParams.get('vnp_OrderInfo');
     const vnpTxnRef = urlParams.get('vnp_TxnRef');
     const paymentType = sessionStorage.getItem('currentPaymentType') || 'design';
     const quotationId = urlParams.get('quotationId');
 
+    // Check if payment is from wallet
+    const isPaymentFromWallet = localStorage.getItem('paymentMethod') === 'wallet';
+    
     let success = false;
     let quotationDetails = null;
     let orderDetails = null;
@@ -49,6 +51,13 @@ export default function PaymentResult() {
     let isRevisionPurchase = paymentType === 'revision';
     let isDepositPayment = paymentType === 'deposit';
     let isWalletPayment = paymentType === 'wallet';
+
+    // Determine success based on payment source
+    if (isPaymentFromWallet) {
+        success = true; // Wallet payments are always successful
+    } else {
+        success = vnpResponseCode === '00';
+    }
 
     const hasDesignPayment = !isOrderPayment && !isRevisionPurchase && !isDepositPayment && !isWalletPayment && !!sessionStorage.getItem('paymentQuotationDetails');
     const hasOrderPayment = (isOrderPayment || isDepositPayment) && !!sessionStorage.getItem('paymentQuotationDetails');
@@ -61,6 +70,7 @@ export default function PaymentResult() {
         isRevisionPurchase,
         isDepositPayment,
         isWalletPayment,
+        isPaymentFromWallet,
         hasDesignPayment: !!hasDesignPayment,
         hasOrderPayment: !!hasOrderPayment,
         hasRevisionPurchase: !!hasRevisionPurchase,
@@ -69,17 +79,15 @@ export default function PaymentResult() {
         walletDetails: sessionStorage.getItem('walletDetails'),
         currentPaymentType: sessionStorage.getItem('currentPaymentType'),
         vnpResponseCode,
-        success: vnpResponseCode === '00'
+        success
     });
 
-    if (!hasDesignPayment && !hasOrderPayment && !hasRevisionPurchase && !hasWalletPayment && vnpResponseCode === null && isInitialRender) {
+    if (!hasDesignPayment && !hasOrderPayment && !hasRevisionPurchase && !hasWalletPayment && vnpResponseCode === null && !isPaymentFromWallet && isInitialRender) {
         console.log('No valid payment data found and no VNPay response on initial render, redirecting to /school/design');
         window.location.href = '/school/design';
     }
 
-    if (vnpResponseCode !== null) {
-        success = vnpResponseCode === '00';
-
+    if (vnpResponseCode !== null || isPaymentFromWallet) {
         try {
             if (isOrderPayment || isDepositPayment) {
                 const storedOrderDetails = sessionStorage.getItem('paymentQuotationDetails');
@@ -134,6 +142,16 @@ export default function PaymentResult() {
 
     const {quotation, request, serviceFee: designServiceFee, subtotal, totalAmount} = quotationDetails || {};
     const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
+
+    // Get payment amount - for wallet payments, use wallet details, otherwise use VNPay amount
+    const getPaymentAmount = () => {
+        if (isPaymentFromWallet && walletDetails) {
+            return walletDetails.totalPrice || 0;
+        }
+        return vnpAmount ? parseInt(vnpAmount) / 100 : 0;
+    };
+
+    const paymentAmount = getPaymentAmount();
 
     // Helper function to build email data
     const buildEmailData = (isSuccess, paymentType, amount) => {
@@ -218,13 +236,7 @@ export default function PaymentResult() {
         console.log('Processing successful payment');
 
         try {
-            // For wallet payments, skip email and proceed directly with payment logic
-            if (isWalletPayment && walletDetails) {
-                await handleSuccessfulWallet();
-                return;
-            }
-
-            const emailData = buildEmailData(true, paymentType, parseInt(vnpAmount) / 100);
+            const emailData = buildEmailData(true, paymentType, paymentAmount);
             console.log('Sending success email with data:', emailData);
             const emailResponse = await sendEmail(emailType.payment, emailData);
 
@@ -254,15 +266,9 @@ export default function PaymentResult() {
     const handleFailedPayment = async () => {
         console.log('Processing failed payment');
 
-        // For wallet payments, skip email and proceed directly with payment logic
-        if (isWalletPayment) {
-            await handleFailedWallet();
-            return;
-        }
-
         // Send failure email FIRST and continue with payment logic only if successful
         try {
-            const emailData = buildEmailData(false, paymentType, parseInt(vnpAmount) / 100);
+            const emailData = buildEmailData(false, paymentType, paymentAmount);
             console.log('Sending failure email with data:', emailData);
             const emailResponse = await sendEmail(emailType.payment, emailData);
 
@@ -295,10 +301,10 @@ export default function PaymentResult() {
                 type: "deposit",
                 receiverId: orderDetails.quotation.garmentId,
                 itemId: orderDetails.order.id,
-                totalPrice: parseInt(vnpAmount) / 100,
-                gatewayCode: vnpResponseCode,
+                totalPrice: paymentAmount,
+                gatewayCode: isPaymentFromWallet ? "00" : vnpResponseCode,
                 serviceFee: orderDetails.serviceFee,
-                payFromWallet: false
+                payFromWallet: isPaymentFromWallet
             }
         };
 
@@ -353,8 +359,8 @@ export default function PaymentResult() {
             const response = await confirmDeliveryOrder(
                 orderDetails.order.id,
                 orderDetails.quotation.garmentId,
-                parseInt(vnpAmount) / 100,
-                vnpResponseCode,
+                paymentAmount,
+                isPaymentFromWallet ? "00" : vnpResponseCode,
                 shippingOrderCode, // shippingCode from createShipping response
                 orderDetails.shippingFee // shippingFee
             );
@@ -376,8 +382,8 @@ export default function PaymentResult() {
             revisionPurchaseDetails.requestId,
             revisionPurchaseDetails.revisionQuantity,
             revisionPurchaseDetails.designerId,
-            parseInt(vnpAmount) / 100,
-            vnpResponseCode
+            paymentAmount,
+            isPaymentFromWallet ? "00" : vnpResponseCode
         );
 
         if (response && response.status === 200) {
@@ -399,12 +405,14 @@ export default function PaymentResult() {
                 type: "design",
                 receiverId: quotation.designer.id,
                 itemId: request.id,
-                totalPrice: parseInt(vnpAmount) / 100,
-                gatewayCode: vnpResponseCode,
+                totalPrice: paymentAmount,
+                gatewayCode: isPaymentFromWallet ? "00" : vnpResponseCode,
                 serviceFee: designServiceFee || 0,
-                payFromWallet: false
+                payFromWallet: isPaymentFromWallet
             }
         };
+
+        console.log('Design data: ', data);
 
         const response = await pickQuotation(data);
         if (response && response.status === 200) {
@@ -430,8 +438,9 @@ export default function PaymentResult() {
             // Call createDepositWalletTransaction API
             const response = await createDepositWalletTransaction(
                 user.customer.id, // receiverId (user's own ID)
-                parseInt(vnpAmount) / 100, // totalPrice
-                vnpResponseCode // gatewayCode
+                paymentAmount, // totalPrice
+                isPaymentFromWallet ? "00" : vnpResponseCode,
+                isPaymentFromWallet
             );
 
             if (response && response.status === 201) {
@@ -452,10 +461,10 @@ export default function PaymentResult() {
         const response = await createDepositTransaction(
             orderDetails.quotation.garmentId,
             orderDetails.order.id,
-            parseInt(vnpAmount) / 100,
-            vnpResponseCode,
+            paymentAmount,
+            isPaymentFromWallet ? "00" : vnpResponseCode,
             orderDetails.serviceFee,
-            false
+            isPaymentFromWallet
         );
         if (response && response.status === 201) {
             console.log('Failed deposit payment transaction recorded successfully');
@@ -471,10 +480,10 @@ export default function PaymentResult() {
         const response = await createOrderTransaction(
             orderDetails.quotation.garmentId,
             orderDetails.order.id,
-            parseInt(vnpAmount) / 100,
-            vnpResponseCode,
+            paymentAmount,
+            isPaymentFromWallet ? "00" : vnpResponseCode,
             isDepositPayment ? orderDetails.serviceFee : 0,
-            false
+            isPaymentFromWallet
         );
         if (response && response.status === 201) {
             console.log('Failed order/deposit payment transaction recorded successfully');
@@ -493,10 +502,10 @@ export default function PaymentResult() {
         const response = await createDesignTransaction(
             quotation.designer?.id,
             request.id,
-            parseInt(vnpAmount) / 100,
-            vnpResponseCode,
+            paymentAmount,
+            isPaymentFromWallet ? "00" : vnpResponseCode,
             designServiceFee || 0,
-            false
+            isPaymentFromWallet
         );
         if (response && response.status === 201) {
             console.log('Failed design payment transaction recorded successfully');
@@ -521,8 +530,9 @@ export default function PaymentResult() {
             // Call createDepositWalletTransaction API for failed payment
             const response = await createDepositWalletTransaction(
                 user.customer.id, // receiverId (user's own ID)
-                parseInt(vnpAmount) / 100, // totalPrice
-                vnpResponseCode // gatewayCode
+                paymentAmount, // totalPrice
+                isPaymentFromWallet ? "00" : vnpResponseCode,
+                isPaymentFromWallet
             );
 
             if (response && response.status === 201) {
@@ -542,7 +552,7 @@ export default function PaymentResult() {
 
     useEffect(() => {
         const processPayment = async () => {
-            if (hasProcessed || isProcessing || vnpResponseCode === null) {
+            if (hasProcessed || isProcessing || (vnpResponseCode === null && !isPaymentFromWallet)) {
                 return;
             }
 
@@ -550,7 +560,8 @@ export default function PaymentResult() {
                 success,
                 paymentType,
                 vnpResponseCode,
-                vnpAmount
+                paymentAmount,
+                isPaymentFromWallet
             });
 
             setIsProcessing(true);
@@ -567,13 +578,13 @@ export default function PaymentResult() {
                 setIsProcessing(false);
                 setHasProcessed(true);
 
-                const processedKey = `payment_processed_${vnpTxnRef}`;
+                const processedKey = `payment_processed_${vnpTxnRef || 'wallet'}`;
                 localStorage.setItem(processedKey, 'true');
             }
         };
 
         processPayment();
-    }, [success, quotationDetails, hasProcessed, isProcessing, quotation, request, isOrderPayment, quotationId, isRevisionPurchase, revisionPurchaseDetails, walletDetails]);
+    }, [success, quotationDetails, hasProcessed, isProcessing, quotation, request, isOrderPayment, quotationId, isRevisionPurchase, revisionPurchaseDetails, walletDetails, isPaymentFromWallet]);
 
     return (
         <Box sx={{
@@ -632,7 +643,7 @@ export default function PaymentResult() {
                                 </Typography.Paragraph>
 
 
-                                {vnpTxnRef && (
+                                {(vnpTxnRef || isPaymentFromWallet) && (
                                     <Box sx={{
                                         mt: 3,
                                         backgroundColor: 'white',
@@ -701,7 +712,7 @@ export default function PaymentResult() {
                                             }}>
 
 
-                                                {vnpAmount && (
+                                                {paymentAmount > 0 && (
                                                     <Box sx={{
                                                         p: 3,
                                                         backgroundColor: '#f0fdf4',
@@ -729,7 +740,7 @@ export default function PaymentResult() {
                                                                     fontSize: '12px',
                                                                     fontWeight: 'bold'
                                                                 }}>
-                                                                    �?
+                                                                    ₫
                                                                 </Typography.Text>
                                                             </Box>
                                                             <Typography.Text style={{
@@ -746,7 +757,7 @@ export default function PaymentResult() {
                                                             fontWeight: 700,
                                                             textAlign: 'center'
                                                         }}>
-                                                            {(parseInt(vnpAmount) / 100).toLocaleString('vi-VN')} VND
+                                                            {paymentAmount.toLocaleString('vi-VN')} VND
                                                         </Typography.Title>
                                                     </Box>
                                                 )}
@@ -760,7 +771,7 @@ export default function PaymentResult() {
                                                     transition: 'all 0.3s ease',
                                                     '&:hover': {
                                                         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                                                        transform: 'translateY(-2px)'
+                                                            transform: 'translateY(-2px)'
                                                     }
                                                 }}>
                                                     <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
@@ -818,8 +829,7 @@ export default function PaymentResult() {
                                                     fontSize: '16px',
                                                     fontWeight: 500
                                                 }}>
-                                                    Your payment has been processed successfully, you will receive a
-                                                    confirmation email shortly.
+                                                    'Your payment has been processed successfully, you will receive a confirmation email shortly.'
                                                 </Typography.Text>
                                             </Box>
                                         </Box>
@@ -864,7 +874,7 @@ export default function PaymentResult() {
                                     again.
                                 </Typography.Paragraph>
 
-                                {vnpResponseCode && vnpResponseCode !== '00' && (
+                                {vnpResponseCode && vnpResponseCode !== '00' && !isPaymentFromWallet && (
                                     <Box sx={{
                                         mt: 2,
                                         p: 2,
@@ -875,10 +885,10 @@ export default function PaymentResult() {
                                         <Typography.Text style={{fontSize: '14px', color: '#f5222d', fontWeight: 600}}>
                                             Response Code: {vnpResponseCode}
                                         </Typography.Text>
-                                        {vnpTxnRef && (
+                                        {(vnpTxnRef || isPaymentFromWallet) && (
                                             <Typography.Text
                                                 style={{fontSize: '14px', color: '#f5222d', display: 'block', mt: 1}}>
-                                                Transaction ID: {vnpTxnRef}
+                                                Transaction ID: {vnpTxnRef || 'Wallet Payment'}
                                             </Typography.Text>
                                         )}
                                     </Box>
@@ -1158,7 +1168,7 @@ export default function PaymentResult() {
                                             <Typography.Title level={4}
                                                               style={{margin: 0, color: '#fa8c16', fontWeight: 700}}>
                                                 {
-                                                    (parseInt(vnpAmount) / 100).toLocaleString('vi-VN') + ' VND'
+                                                    paymentAmount.toLocaleString('vi-VN') + ' VND'
                                                 }
                                             </Typography.Title>
                                         </Box>
@@ -1339,26 +1349,30 @@ export default function PaymentResult() {
                                 if (isOrderPayment || isDepositPayment) {
                                     sessionStorage.removeItem('paymentQuotationDetails');
                                     sessionStorage.removeItem('currentPaymentType');
-                                    const processedKey = `payment_processed_${vnpTxnRef}`;
+                                    sessionStorage.removeItem('payFromWallet');
+                                    const processedKey = `payment_processed_${vnpTxnRef || 'wallet'}`;
                                     localStorage.removeItem(processedKey);
                                     window.location.href = '/school/order';
                                 } else if (isRevisionPurchase) {
                                     sessionStorage.removeItem('revisionPurchaseDetails');
                                     sessionStorage.removeItem('currentPaymentType');
-                                    const processedKey = `payment_processed_${vnpTxnRef}`;
+                                    sessionStorage.removeItem('payFromWallet');
+                                    const processedKey = `payment_processed_${vnpTxnRef || 'wallet'}`;
                                     localStorage.removeItem(processedKey);
                                     window.location.href = '/school/chat';
                                 } else if (isWalletPayment) {
                                     sessionStorage.removeItem('walletDetails');
                                     sessionStorage.removeItem('currentPaymentType');
-                                    const processedKey = `payment_processed_${vnpTxnRef}`;
+                                    sessionStorage.removeItem('payFromWallet');
+                                    const processedKey = `payment_processed_${vnpTxnRef || 'wallet'}`;
                                     localStorage.removeItem(processedKey);
                                     window.location.href = '/school/profile';
                                 } else {
                                     sessionStorage.removeItem('paymentQuotationDetails');
                                     sessionStorage.removeItem('extraRevision');
                                     sessionStorage.removeItem('currentPaymentType');
-                                    const processedKey = `payment_processed_${vnpTxnRef}`;
+                                    sessionStorage.removeItem('payFromWallet');
+                                    const processedKey = `payment_processed_${vnpTxnRef || 'wallet'}`;
                                     localStorage.removeItem(processedKey);
                                     window.location.href = '/school/design';
                                 }
@@ -1378,9 +1392,10 @@ export default function PaymentResult() {
                                     color: '#475569'
                                 }}
                                 onClick={() => {
-                                    const processedKey = `payment_processed_${vnpTxnRef}`;
+                                    const processedKey = `payment_processed_${vnpTxnRef || 'wallet'}`;
                                     localStorage.removeItem(processedKey);
                                     sessionStorage.removeItem('currentPaymentType');
+                                    sessionStorage.removeItem('payFromWallet');
 
                                     if (isOrderPayment || isDepositPayment) {
                                         window.location.href = '/school/order';
