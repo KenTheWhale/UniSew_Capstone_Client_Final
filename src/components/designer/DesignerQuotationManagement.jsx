@@ -19,8 +19,8 @@ import {DataLoadingState, EmptyState, ErrorState} from '../ui/LoadingSpinner.jsx
 import {parseID} from "../../utils/ParseIDUtil.jsx";
 import {getDesignRequests, getAppliedDesignerDesignRequests, getRejectedDesignerDesignRequests} from "../../services/DesignService.jsx";
 import {statusTag} from '../school/design/dialog/RequestDetailPopup.jsx';
-import DesignerPendingDesignDetail from './DesignerPendingDesignDetail.jsx';
-import AppliedRequestDetail from './AppliedRequestDetail.jsx';
+import DesignerPendingDesignDetail from './dialog/DesignerPendingDesignDetail.jsx';
+import AppliedRequestDetail from './dialog/AppliedRequestDetail.jsx';
 import {useLocation, useNavigate} from 'react-router-dom';
 
 // Utility functions

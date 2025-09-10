@@ -57,7 +57,7 @@ import {
     getUndoneRevisionRequests
 } from "../../services/DesignService.jsx";
 import {uploadCloudinary} from "../../services/UploadImageService.jsx";
-import AppliedRequestDetail from './AppliedRequestDetail.jsx';
+import AppliedRequestDetail from './dialog/AppliedRequestDetail.jsx';
 import {getAccessCookie} from "../../utils/CookieUtil.jsx";
 
 const {TextArea} = Input;

@@ -788,6 +788,24 @@ export default function AdminReport() {
                                                             />
                                                         </Box>
                                                     )}
+                                                    {report.partnerVideo && (
+                                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                                            <Typography variant="body2" sx={{color: '#64748b'}}>
+                                                                Partner Video:
+                                                            </Typography>
+                                                            <Chip
+                                                                icon={<VideocamIcon sx={{fontSize: '12px'}}/>}
+                                                                label="Partner Video"
+                                                                size="small"
+                                                                sx={{
+                                                                    backgroundColor: '#ddd6fe',
+                                                                    color: '#5b21b6',
+                                                                    fontWeight: 'bold',
+                                                                    fontSize: '0.7rem'
+                                                                }}
+                                                            />
+                                                        </Box>
+                                                    )}
                                                     <Typography variant="body2" sx={{color: '#64748b'}}>
                                                         {formatDate(report.creationDate)}
                                                     </Typography>
@@ -879,7 +897,7 @@ export default function AdminReport() {
                                     {selectedReport.images && selectedReport.images.length > 0 && (
                                         <Box sx={{flex: 1}}>
                                             <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                {selectedReport.report ? 'Evidence Images' : 'Attached Images'}
+                                                {selectedReport.report ? 'School Evidence Images' : 'Attached Images'}
                                             </Typography>
                                             <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                                 {selectedReport.images.length} image{selectedReport.images.length > 1 ? 's' : ''}
@@ -895,6 +913,19 @@ export default function AdminReport() {
                                                 <VideocamIcon sx={{fontSize: 16, color: '#8b5cf6'}}/>
                                                 <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
                                                     Video Available
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+                                    )}
+                                    {selectedReport.partnerVideo && (
+                                        <Box sx={{flex: 1}}>
+                                            <Typography variant="body2" sx={{color: '#64748b'}}>
+                                                Partner Evidence Video
+                                            </Typography>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                                <VideocamIcon sx={{fontSize: 16, color: '#8b5cf6'}}/>
+                                                <Typography variant="body1" sx={{fontWeight: 'bold', color: '#1e293b'}}>
+                                                    Partner Video Available
                                                 </Typography>
                                             </Box>
                                         </Box>
@@ -1110,151 +1141,436 @@ export default function AdminReport() {
                                 </Paper>
                             )}
 
-                            {}
+                            {/* SCHOOL SECTION */}
                             <Paper elevation={0} sx={{
-                                p: 3,
-                                backgroundColor: '#f8fafc',
-                                borderRadius: 2,
-                                border: '1px solid #e2e8f0'
+                                p: 4,
+                                backgroundColor: 'rgba(16, 185, 129, 0.02)',
+                                borderRadius: 3,
+                                border: '2px solid rgba(16, 185, 129, 0.2)',
+                                mb: 4
                             }}>
-                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
-                                    Content
-                                </Typography>
-                                <Typography variant="body1" sx={{color: '#1e293b', lineHeight: 1.6}}>
-                                    {selectedReport.content}
-                                </Typography>
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    mb: 3,
+                                    p: 2,
+                                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                    borderRadius: 2,
+                                    border: '1px solid rgba(16, 185, 129, 0.3)'
+                                }}>
+                                    <Box sx={{fontSize: '28px'}}>🏫</Box>
+                                    <Typography variant="h5" sx={{
+                                        fontWeight: 'bold',
+                                        color: '#10b981',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '1px'
+                                    }}>
+                                        School Evidence & Feedback
+                                    </Typography>
+                                </Box>
+
+                                <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
+                                    {/* School Rating */}
+                                    {selectedReport.rating && (
+                                        <Box sx={{
+                                            p: 3,
+                                            backgroundColor: 'white',
+                                            borderRadius: 2,
+                                            border: '1px solid rgba(16, 185, 129, 0.2)'
+                                        }}>
+                                            <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#10b981'}}>
+                                                Rating
+                                            </Typography>
+                                            <Rating value={selectedReport.rating} readOnly size="large"/>
+                                            <Typography variant="body2" sx={{color: '#64748b', mt: 1}}>
+                                                {selectedReport.report
+                                                    ? 'Severity rating of the reported issue'
+                                                    : 'User experience rating'
+                                                }
+                                            </Typography>
+                                        </Box>
+                                    )}
+
+                                    {/* School Content */}
+                                    <Box sx={{
+                                        p: 3,
+                                        backgroundColor: 'white',
+                                        borderRadius: 2,
+                                        border: '1px solid rgba(16, 185, 129, 0.2)'
+                                    }}>
+                                        <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#10b981'}}>
+                                            School Content
+                                        </Typography>
+                                        <Typography variant="body1" sx={{color: '#1e293b', lineHeight: 1.6}}>
+                                            {selectedReport.schoolContent}
+                                        </Typography>
+                                    </Box>
+
+                                    {/* School Images */}
+                                    {(() => {
+                                        const schoolImages = selectedReport.images?.filter(img => img.owner === 'school') || [];
+                                        return schoolImages.length > 0 && (
+                                            <Box sx={{
+                                                p: 3,
+                                                backgroundColor: 'white',
+                                                borderRadius: 2,
+                                                border: '1px solid rgba(16, 185, 129, 0.2)'
+                                            }}>
+                                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#10b981'}}>
+                                                    School Evidence Images ({schoolImages.length})
+                                                </Typography>
+                                                <Grid container spacing={2}>
+                                                    {schoolImages.map((image, index) => (
+                                                        <Grid item xs={12} sm={6} md={4} key={image.id}>
+                                                            <Box sx={{
+                                                                width: '100%',
+                                                                height: 200,
+                                                                borderRadius: 2,
+                                                                overflow: 'hidden',
+                                                                border: '2px solid rgba(16, 185, 129, 0.3)',
+                                                                position: 'relative',
+                                                                transition: 'all 0.3s ease',
+                                                                '&:hover': {
+                                                                    borderColor: '#10b981',
+                                                                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)'
+                                                                }
+                                                            }}>
+                                                                <DisplayImage
+                                                                    imageUrl={image.url}
+                                                                    alt={`School evidence ${index + 1}`}
+                                                                    width="100%"
+                                                                    height="200px"
+                                                                />
+                                                                <Box sx={{
+                                                                    position: 'absolute',
+                                                                    top: 8,
+                                                                    right: 8,
+                                                                    backgroundColor: '#10b981',
+                                                                    color: 'white',
+                                                                    borderRadius: '50%',
+                                                                    width: 24,
+                                                                    height: 24,
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    fontSize: '12px',
+                                                                    fontWeight: 'bold',
+                                                                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                                                                }}>
+                                                                    {index + 1}
+                                                                </Box>
+                                                                <Box sx={{
+                                                                    position: 'absolute',
+                                                                    bottom: 8,
+                                                                    left: 8,
+                                                                    backgroundColor: 'rgba(16, 185, 129, 0.9)',
+                                                                    color: 'white',
+                                                                    borderRadius: 1,
+                                                                    px: 1,
+                                                                    py: 0.5,
+                                                                    fontSize: '10px',
+                                                                    fontWeight: 'bold',
+                                                                    textTransform: 'uppercase'
+                                                                }}>
+                                                                    SCHOOL
+                                                                </Box>
+                                                            </Box>
+                                                        </Grid>
+                                                    ))}
+                                                </Grid>
+                                            </Box>
+                                        );
+                                    })()}
+
+                                    {/* School Video */}
+                                    {selectedReport.schoolVideo && (
+                                        <Box sx={{
+                                            p: 3,
+                                            backgroundColor: 'white',
+                                            borderRadius: 2,
+                                            border: '1px solid rgba(16, 185, 129, 0.2)'
+                                        }}>
+                                            <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#10b981'}}>
+                                                School Evidence Video
+                                            </Typography>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                borderRadius: 2,
+                                                overflow: 'hidden',
+                                                border: '2px solid rgba(16, 185, 129, 0.3)',
+                                                backgroundColor: '#000',
+                                                minHeight: '300px'
+                                            }}>
+                                                <video
+                                                    src={selectedReport.schoolVideo}
+                                                    controls
+                                                    preload="metadata"
+                                                    style={{
+                                                        width: '100%',
+                                                        maxWidth: '600px',
+                                                        height: 'auto',
+                                                        maxHeight: '400px',
+                                                        objectFit: 'contain'
+                                                    }}
+                                                    onError={(e) => {
+                                                        console.error('School video failed to load:', selectedReport.schoolVideo, e);
+                                                    }}
+                                                >
+                                                    Your browser does not support the video tag.
+                                                    <a href={selectedReport.schoolVideo} target="_blank" rel="noopener noreferrer">
+                                                        Download video
+                                                    </a>
+                                                </video>
+                                            </Box>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: 1,
+                                                mt: 2,
+                                                p: 2,
+                                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                                borderRadius: 2,
+                                                border: '1px solid rgba(16, 185, 129, 0.2)'
+                                            }}>
+                                                <VideocamIcon sx={{color: '#10b981', fontSize: 20}}/>
+                                                <Typography variant="body2" sx={{color: '#047857', fontWeight: 500}}>
+                                                    School evidence video for this report
+                                                </Typography>
+                                                <Button
+                                                    size="small"
+                                                    variant="outlined"
+                                                    startIcon={<VideocamIcon/>}
+                                                    onClick={() => window.open(selectedReport.schoolVideo, '_blank')}
+                                                    sx={{
+                                                        ml: 2,
+                                                        borderColor: '#10b981',
+                                                        color: '#10b981',
+                                                        fontSize: '0.75rem',
+                                                        py: 0.5,
+                                                        px: 1,
+                                                        '&:hover': {
+                                                            borderColor: '#047857',
+                                                            backgroundColor: 'rgba(16, 185, 129, 0.1)'
+                                                        }
+                                                    }}
+                                                >
+                                                    Open in New Tab
+                                                </Button>
+                                            </Box>
+                                        </Box>
+                                    )}
+                                </Box>
                             </Paper>
 
-                            {}
-                            {selectedReport.rating && (
-                                <Paper elevation={0} sx={{
-                                    p: 3,
-                                    backgroundColor: '#f8fafc',
+                            {/* PARTNER SECTION */}
+                            <Paper elevation={0} sx={{
+                                p: 4,
+                                backgroundColor: 'rgba(139, 92, 246, 0.02)',
+                                borderRadius: 3,
+                                border: '2px solid rgba(139, 92, 246, 0.2)',
+                                mb: 4
+                            }}>
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    mb: 3,
+                                    p: 2,
+                                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
                                     borderRadius: 2,
-                                    border: '1px solid #e2e8f0'
+                                    border: '1px solid rgba(139, 92, 246, 0.3)'
                                 }}>
-                                    <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
-                                        Rating
-                                    </Typography>
-                                    <Rating value={selectedReport.rating} readOnly size="large"/>
-                                    <Typography variant="body2" sx={{color: '#64748b', mt: 1}}>
-                                        {selectedReport.report
-                                            ? 'Severity rating of the reported issue'
-                                            : 'User experience rating'
-                                        }
-                                    </Typography>
-                                </Paper>
-                            )}
-
-                            {}
-                            {selectedReport.images && selectedReport.images.length > 0 && (
-                                <Paper elevation={0} sx={{
-                                    p: 3,
-                                    backgroundColor: '#f8fafc',
-                                    borderRadius: 2,
-                                    border: '1px solid #e2e8f0'
-                                }}>
-                                    <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
-                                        {selectedReport.report ? 'Evidence Images' : 'Attached Images'} ({selectedReport.images.length})
-                                    </Typography>
-                                    <Grid container spacing={2}>
-                                        {selectedReport.images.map((image, index) => (
-                                            <Grid item xs={12} sm={6} md={4} key={image.id}>
-                                                <Box sx={{
-                                                    width: '100%',
-                                                    height: 200,
-                                                    borderRadius: 2,
-                                                    overflow: 'hidden',
-                                                    border: '2px solid #e2e8f0',
-                                                    position: 'relative'
-                                                }}>
-                                                    <DisplayImage
-                                                        imageUrl={image.url}
-                                                        alt={`Evidence ${index + 1}`}
-                                                        width="100%"
-                                                        height="200px"
-                                                    />
-                                                    <Box sx={{
-                                                        position: 'absolute',
-                                                        top: 8,
-                                                        right: 8,
-                                                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                                                        color: 'white',
-                                                        borderRadius: '50%',
-                                                        width: 24,
-                                                        height: 24,
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        fontSize: '12px',
-                                                        fontWeight: 'bold'
-                                                    }}>
-                                                        {index + 1}
-                                                    </Box>
-                                                </Box>
-                                            </Grid>
-                                        ))}
-                                    </Grid>
-                                </Paper>
-                            )}
-
-                            {/* Video Display */}
-                            {(selectedReport.video || selectedReport.designRequest?.feedback?.video) && (
-                                <Paper elevation={0} sx={{
-                                    p: 3,
-                                    backgroundColor: '#f8fafc',
-                                    borderRadius: 2,
-                                    border: '1px solid #e2e8f0'
-                                }}>
-                                    <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
-                                        {selectedReport.report ? 'Evidence Video' : 'Attached Video'}
-                                    </Typography>
-                                    <Box sx={{
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        borderRadius: 2,
-                                        overflow: 'hidden',
-                                        border: '2px solid #e2e8f0',
-                                        backgroundColor: '#000'
+                                    <Box sx={{fontSize: '28px'}}>🤝</Box>
+                                    <Typography variant="h5" sx={{
+                                        fontWeight: 'bold',
+                                        color: '#8b5cf6',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '1px'
                                     }}>
-                                        <video
-                                            src={selectedReport.video || selectedReport.designRequest?.feedback?.video}
-                                            controls
-                                            style={{
-                                                width: '100%',
-                                                maxWidth: '600px',
-                                                height: 'auto',
-                                                maxHeight: '400px',
-                                                objectFit: 'contain'
-                                            }}
-                                            onError={(e) => {
-                                                console.error('Video failed to load:', e);
-                                                e.target.style.display = 'none';
-                                                e.target.parentNode.innerHTML = '<div style="color: #ef4444; padding: 20px; text-align: center;">Video failed to load</div>';
-                                            }}
-                                        />
-                                    </Box>
+                                        Partner Evidence & Response
+                                    </Typography>
+                                </Box>
+
+                                <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
+                                    {/* Partner Content */}
                                     <Box sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: 1,
-                                        mt: 2,
-                                        p: 2,
-                                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                                        p: 3,
+                                        backgroundColor: 'white',
                                         borderRadius: 2,
                                         border: '1px solid rgba(139, 92, 246, 0.2)'
                                     }}>
-                                        <VideocamIcon sx={{color: '#8b5cf6', fontSize: 20}}/>
-                                        <Typography variant="body2" sx={{color: '#5b21b6', fontWeight: 500}}>
-                                            {selectedReport.report ? 'Evidence video for this report' : 'Video attachment for feedback'}
+                                        <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#8b5cf6'}}>
+                                            Partner Response
+                                        </Typography>
+                                        <Typography variant="body1" sx={{color: '#1e293b', lineHeight: 1.6}}>
+                                            {selectedReport.partnerContent}
                                         </Typography>
                                     </Box>
-                                </Paper>
-                            )}
 
-                            {}
+                                    {/* Partner Images */}
+                                    {(() => {
+                                        const partnerImages = selectedReport.images?.filter(img => 
+                                            img.owner === 'designer' || img.owner === 'garment'
+                                        ) || [];
+                                        return partnerImages.length > 0 && (
+                                            <Box sx={{
+                                                p: 3,
+                                                backgroundColor: 'white',
+                                                borderRadius: 2,
+                                                border: '1px solid rgba(139, 92, 246, 0.2)'
+                                            }}>
+                                                <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#8b5cf6'}}>
+                                                    Partner Evidence Images ({partnerImages.length})
+                                                </Typography>
+                                                <Grid container spacing={2}>
+                                                    {partnerImages.map((image, index) => (
+                                                        <Grid item xs={12} sm={6} md={4} key={image.id}>
+                                                            <Box sx={{
+                                                                width: '100%',
+                                                                height: 200,
+                                                                borderRadius: 2,
+                                                                overflow: 'hidden',
+                                                                border: '2px solid rgba(139, 92, 246, 0.3)',
+                                                                position: 'relative',
+                                                                transition: 'all 0.3s ease',
+                                                                '&:hover': {
+                                                                    borderColor: '#8b5cf6',
+                                                                    boxShadow: '0 4px 12px rgba(139, 92, 246, 0.2)'
+                                                                }
+                                                            }}>
+                                                                <DisplayImage
+                                                                    imageUrl={image.url}
+                                                                    alt={`Partner evidence ${index + 1}`}
+                                                                    width="100%"
+                                                                    height="200px"
+                                                                />
+                                                                <Box sx={{
+                                                                    position: 'absolute',
+                                                                    top: 8,
+                                                                    right: 8,
+                                                                    backgroundColor: '#8b5cf6',
+                                                                    color: 'white',
+                                                                    borderRadius: '50%',
+                                                                    width: 24,
+                                                                    height: 24,
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    fontSize: '12px',
+                                                                    fontWeight: 'bold',
+                                                                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                                                                }}>
+                                                                    {index + 1}
+                                                                </Box>
+                                                                <Box sx={{
+                                                                    position: 'absolute',
+                                                                    bottom: 8,
+                                                                    left: 8,
+                                                                    backgroundColor: image.owner === 'designer' ? 'rgba(139, 92, 246, 0.9)' : 'rgba(245, 158, 11, 0.9)',
+                                                                    color: 'white',
+                                                                    borderRadius: 1,
+                                                                    px: 1,
+                                                                    py: 0.5,
+                                                                    fontSize: '10px',
+                                                                    fontWeight: 'bold',
+                                                                    textTransform: 'uppercase'
+                                                                }}>
+                                                                    {image.owner === 'designer' ? 'DESIGNER' : 'GARMENT'}
+                                                                </Box>
+                                                            </Box>
+                                                        </Grid>
+                                                    ))}
+                                                </Grid>
+                                            </Box>
+                                        );
+                                    })()}
+
+                                    {/* Partner Video */}
+                                    {selectedReport.partnerVideo && (
+                                        <Box sx={{
+                                            p: 3,
+                                            backgroundColor: 'white',
+                                            borderRadius: 2,
+                                            border: '1px solid rgba(139, 92, 246, 0.2)'
+                                        }}>
+                                            <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#8b5cf6'}}>
+                                                Partner Evidence Video
+                                            </Typography>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                borderRadius: 2,
+                                                overflow: 'hidden',
+                                                border: '2px solid rgba(139, 92, 246, 0.3)',
+                                                backgroundColor: '#000',
+                                                minHeight: '300px'
+                                            }}>
+                                                <video
+                                                    src={selectedReport.partnerVideo}
+                                                    controls
+                                                    preload="metadata"
+                                                    style={{
+                                                        width: '100%',
+                                                        maxWidth: '600px',
+                                                        height: 'auto',
+                                                        maxHeight: '400px',
+                                                        objectFit: 'contain'
+                                                    }}
+                                                    onError={(e) => {
+                                                        console.error('Partner video failed to load:', selectedReport.partnerVideo, e);
+                                                    }}
+                                                >
+                                                    Your browser does not support the video tag.
+                                                    <a href={selectedReport.partnerVideo} target="_blank" rel="noopener noreferrer">
+                                                        Download video
+                                                    </a>
+                                                </video>
+                                            </Box>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: 1,
+                                                mt: 2,
+                                                p: 2,
+                                                backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                                                borderRadius: 2,
+                                                border: '1px solid rgba(139, 92, 246, 0.2)'
+                                            }}>
+                                                <VideocamIcon sx={{color: '#8b5cf6', fontSize: 20}}/>
+                                                <Typography variant="body2" sx={{color: '#5b21b6', fontWeight: 500}}>
+                                                    Partner evidence video for this report
+                                                </Typography>
+                                                <Button
+                                                    size="small"
+                                                    variant="outlined"
+                                                    startIcon={<VideocamIcon/>}
+                                                    onClick={() => window.open(selectedReport.partnerVideo, '_blank')}
+                                                    sx={{
+                                                        ml: 2,
+                                                        borderColor: '#8b5cf6',
+                                                        color: '#8b5cf6',
+                                                        fontSize: '0.75rem',
+                                                        py: 0.5,
+                                                        px: 1,
+                                                        '&:hover': {
+                                                            borderColor: '#7c3aed',
+                                                            backgroundColor: 'rgba(139, 92, 246, 0.1)'
+                                                        }
+                                                    }}
+                                                >
+                                                    Open in New Tab
+                                                </Button>
+                                            </Box>
+                                        </Box>
+                                    )}
+                                </Box>
+                            </Paper>
                             {selectedReport.report && !selectedReport.images && selectedReport.imageUrl && (
                                 <Paper elevation={0} sx={{
                                     p: 3,
@@ -1263,7 +1579,7 @@ export default function AdminReport() {
                                     border: '1px solid #e2e8f0'
                                 }}>
                                     <Typography variant="h6" sx={{fontWeight: 'bold', mb: 2, color: '#1e293b'}}>
-                                        Evidence Image
+                                        School Evidence
                                     </Typography>
                                     <Box sx={{
                                         width: '100%',
@@ -1409,7 +1725,7 @@ export default function AdminReport() {
                                         Content
                                     </Typography>
                                     <Typography variant="body1" sx={{color: '#1e293b', fontStyle: 'italic'}}>
-                                        "{selectedReport?.content}"
+                                        "{selectedReport?.schoolContent}"
                                     </Typography>
                                 </Grid>
                             </Grid>
@@ -1446,7 +1762,7 @@ export default function AdminReport() {
                                                         Low
                                                     </Typography>
                                                     <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                        - Minor issues, minimal impact
+                                                        - Minor issues, minimal impact (25%)
                                                     </Typography>
                                                 </Box>
                                             }
@@ -1462,7 +1778,7 @@ export default function AdminReport() {
                                                         Medium
                                                     </Typography>
                                                     <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                        - Moderate issues, some impact
+                                                        - Moderate issues, some impact (50%)
                                                     </Typography>
                                                 </Box>
                                             }
@@ -1478,7 +1794,7 @@ export default function AdminReport() {
                                                         High
                                                     </Typography>
                                                     <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                        - Significant issues, major impact
+                                                        - Significant issues, major impact (75%)
                                                     </Typography>
                                                 </Box>
                                             }
@@ -1494,7 +1810,7 @@ export default function AdminReport() {
                                                         Serious
                                                     </Typography>
                                                     <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                        - Critical issues, severe impact
+                                                        - Critical issues, severe impact (100%)
                                                     </Typography>
                                                 </Box>
                                             }
