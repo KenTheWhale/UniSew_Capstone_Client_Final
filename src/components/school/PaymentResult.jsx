@@ -362,10 +362,11 @@ export default function PaymentResult() {
                 paymentAmount,
                 isPaymentFromWallet ? "00" : vnpResponseCode,
                 shippingOrderCode, // shippingCode from createShipping response
-                orderDetails.shippingFee // shippingFee
+                orderDetails.shippingFee, // shippingFee
+                isPaymentFromWallet
             );
 
-            if (response && response.status === 200) {
+            if (response && response.status === 201) {
                 console.log('Order delivery confirmed successfully with shipping code:', shippingOrderCode);
             } else {
                 console.error('Failed to confirm order delivery:', response);
