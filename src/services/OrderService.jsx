@@ -80,7 +80,7 @@ export const deletePhase = async (phaseId) => {
     return response || null
 }
 
-export const confirmDeliveryOrder = async (orderId, receiverId, totalPrice, gatewayCode, shippingCode, shippingFee) => {
+export const confirmDeliveryOrder = async (orderId, receiverId, totalPrice, gatewayCode, shippingCode, shippingFee, payFromWallet) => {
     const response = await axiosClient.put("/order/status/delivery", {
         orderId: orderId,
         shippingCode: shippingCode,
@@ -92,7 +92,8 @@ export const confirmDeliveryOrder = async (orderId, receiverId, totalPrice, gate
             totalPrice: totalPrice,
             gatewayCode: gatewayCode,
             serviceFee: 0,
-            payFromWallet: false
+            payFromWallet: payFromWallet
+
         }
     })
     return response || null

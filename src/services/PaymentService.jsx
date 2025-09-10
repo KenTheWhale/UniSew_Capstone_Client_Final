@@ -16,6 +16,11 @@ export const getPaymentUrlUsingWallet = (amount) => {
     return `${url}/school/payment/result?vnp_Amount=${amount * 100}&vnp_ResponseCode=00&vnp_TxnRef=12345`
 }
 
+export const getPaymentUrlUsingWalletForOrder = (amount, quotationId) => {
+    const url = import.meta.env.VITE_SERVER_FE
+    return `${url}/school/payment/result?quotationId=${quotationId}&vnp_Amount=${amount * 100}&vnp_ResponseCode=00&vnp_TxnRef=12345`
+}
+
 export const createDesignTransaction = async (receiverId, designRequestId, totalPrice, gatewayCode, serviceFee, payFromWallet) => {
     const response = await axiosClient.post("/payment/transaction", {
         "type": "design",

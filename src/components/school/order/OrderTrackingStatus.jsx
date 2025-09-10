@@ -15,12 +15,16 @@ import {
     Popover,
     Typography
 } from '@mui/material';
+import {Radio, Spin} from 'antd';
 import {
     ArrowBack as ArrowBackIcon,
     AttachMoney as MoneyIcon,
     CalendarToday as CalendarIcon,
     CheckCircle as CheckCircleIcon,
     Close as CloseIcon,
+    CloudUpload as CloudUploadIcon,
+    CreditCard as CreditCardIcon,
+    Delete as DeleteIcon,
     DesignServices as DesignServicesIcon,
     Email as EmailIcon,
     Groups as GroupsIcon,
@@ -35,11 +39,17 @@ import {
     School as SchoolIcon,
     TableChart as TableChartIcon,
     TrendingUp as TrendingUpIcon,
-    Videocam as VideocamIcon
+    Videocam as VideocamIcon,
+    Wallet as WalletIcon
 } from '@mui/icons-material';
 import {useNavigate} from 'react-router-dom';
 import {getOrderDetailBySchool, confirmOrder} from '../../../services/OrderService';
-import {getPaymentUrl} from '../../../services/PaymentService';
+import {
+    getPaymentUrl,
+    getPaymentUrlUsingWallet,
+    getPaymentUrlUsingWalletForOrder,
+    getWalletBalance
+} from '../../../services/PaymentService';
 import {calculateFee, getShippingInfo} from '../../../services/ShippingService';
 import {getConfigByKey, configKey} from '../../../services/SystemService';
 import {parseID} from '../../../utils/ParseIDUtil';
@@ -48,6 +58,7 @@ import DisplayImage from '../../ui/DisplayImage';
 import OrderDetailTable from '../../ui/OrderDetailTable';
 import {serviceFee} from '../../../configs/FixedVariables';
 import {getPhoneLink} from '../../../utils/PhoneUtil';
+import {uploadCloudinary} from '../../../services/UploadImageService';
 
 const pulseKeyframes = `
   @keyframes pulse {
@@ -169,6 +180,9 @@ export default function OrderTrackingStatus() {
     // Payment dialog states
     const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
     const [processingPayment, setProcessingPayment] = useState(false);
+    const [paymentMethod, setPaymentMethod] = useState('gateway');
+    const [walletBalance, setWalletBalance] = useState(0);
+    const [loadingWallet, setLoadingWallet] = useState(false);
 
     // Shipping fee states
     const [shippingFee, setShippingFee] = useState(0);
@@ -183,6 +197,10 @@ export default function OrderTrackingStatus() {
     // Confirm order states
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const [confirmingOrder, setConfirmingOrder] = useState(false);
+    const [deliveryImage, setDeliveryImage] = useState(null);
+    const [deliveryImageUrl, setDeliveryImageUrl] = useState('');
+    const [uploadingImage, setUploadingImage] = useState(false);
+    const [imageUploadError, setImageUploadError] = useState('');
 
     // Video dialog states
     const [videoDialogOpen, setVideoDialogOpen] = useState(false);
@@ -465,15 +483,39 @@ export default function OrderTrackingStatus() {
         return (basePrice + fee) - depositAmount;
     };
 
+    // Fetch wallet balance
+    const fetchWalletBalance = async () => {
+        try {
+            setLoadingWallet(true);
+            const response = await getWalletBalance();
+            if (response?.status === 200 && response.data?.body?.balance !== undefined) {
+                setWalletBalance(response.data.body.balance);
+            }
+        } catch (error) {
+            console.error('Error fetching wallet balance:', error);
+        } finally {
+            setLoadingWallet(false);
+        }
+    };
+
     // Handle payment dialog
     const handleOpenPaymentDialog = () => {
         setPaymentDialogOpen(true);
         // Calculate shipping fee when opening payment dialog
         calculateShippingFee();
+        // Fetch wallet balance
+        fetchWalletBalance();
     };
 
     const handleClosePaymentDialog = () => {
         setPaymentDialogOpen(false);
+    };
+
+    // Check if wallet has sufficient balance
+    const hasInsufficientBalance = () => {
+        if (paymentMethod !== 'wallet') return false;
+        const totalAmount = getRemainingPaymentAmount() + shippingFee;
+        return walletBalance < totalAmount;
     };
 
     // Handle confirm order dialog
@@ -483,15 +525,66 @@ export default function OrderTrackingStatus() {
 
     const handleCloseConfirmDialog = () => {
         setConfirmDialogOpen(false);
+        // Reset image states when closing dialog
+        setDeliveryImage(null);
+        setDeliveryImageUrl('');
+        setImageUploadError('');
+    };
+
+    // Handle image upload
+    const handleImageUpload = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            setImageUploadError('Please select a valid image file');
+            return;
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            setImageUploadError('Image size must be less than 5MB');
+            return;
+        }
+
+        try {
+            setUploadingImage(true);
+            setImageUploadError('');
+            
+            const imageUrl = await uploadCloudinary(file);
+            setDeliveryImageUrl(imageUrl);
+            setDeliveryImage(file);
+            
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            setImageUploadError('Failed to upload image. Please try again.');
+        } finally {
+            setUploadingImage(false);
+        }
+    };
+
+    // Remove uploaded image
+    const handleRemoveImage = () => {
+        setDeliveryImage(null);
+        setDeliveryImageUrl('');
+        setImageUploadError('');
     };
 
     // Handle confirm order process
     const handleConfirmOrder = async () => {
+        // Validate delivery image is required
+        if (!deliveryImageUrl) {
+            setImageUploadError('Please upload a delivery image before confirming');
+            return;
+        }
+
         try {
             setConfirmingOrder(true);
 
             const data = {
-                orderId: orderDetail.id
+                orderId: orderDetail.id,
+                deliveryImage: deliveryImageUrl
             };
 
             const response = await confirmOrder(data);
@@ -530,7 +623,7 @@ export default function OrderTrackingStatus() {
             const amount = getRemainingPaymentAmount() + shippingFee;
             const description = `Remaining payment for Order ${parseID(orderDetail.id, 'ord')}`;
             const orderType = 'order';
-            const quotationId = orderDetail.quotationId || orderDetail.quotation?.id;
+            const quotationId = orderDetail.quotationId || orderDetail.quotation?.id || orderDetail?.garmentQuotationId;
             const returnUrl = `/school/payment/result?quotationId=${quotationId}`;
 
             // Prepare payment details for PaymentResult component
@@ -552,25 +645,42 @@ export default function OrderTrackingStatus() {
                 },
                 serviceFee: getServiceFee(),
                 shippingFee: shippingFee,
-                description: description
+                description: description,
+                totalAmount: amount
             };
 
             // Set payment type and details in sessionStorage
             sessionStorage.setItem('currentPaymentType', 'order');
             sessionStorage.setItem('paymentQuotationDetails', JSON.stringify(paymentQuotationDetails));
 
-            const response = await getPaymentUrl(amount, description, orderType, returnUrl);
-
-            if (response && response.status === 200) {
-                // Redirect to payment URL
-                window.location.href = response.data.body.url;
+            if (paymentMethod === 'wallet') {
+                // Wallet payment flow
+                localStorage.setItem('paymentMethod', 'wallet');
+                
+                const walletPaymentUrl = getPaymentUrlUsingWalletForOrder(amount, quotationId);
+                
+                setTimeout(() => {
+                    window.location.href = walletPaymentUrl;
+                }, 500);
             } else {
-                enqueueSnackbar('Failed to get payment URL', {variant: 'error'});
+                // Gateway payment flow
+                localStorage.setItem('paymentMethod', 'gateway');
+                
+                const response = await getPaymentUrl(amount, description, orderType, returnUrl);
+
+                if (response && response.status === 200) {
+                    // Redirect to payment URL
+                    setTimeout(() => {
+                        window.location.href = response.data.body.url;
+                    }, 500);
+                } else {
+                    enqueueSnackbar('Failed to get payment URL', {variant: 'error'});
+                    setProcessingPayment(false);
+                }
             }
         } catch (error) {
             console.error('Error processing payment:', error);
             enqueueSnackbar('Error processing payment. Please try again.', {variant: 'error'});
-        } finally {
             setProcessingPayment(false);
         }
     };
@@ -2285,6 +2395,70 @@ export default function OrderTrackingStatus() {
                                     </Box>
                                 </Box>
                             </Box>
+
+                            <Box sx={{
+                                flex: 1,
+                                p: 3,
+                                borderRadius: 3,
+                                background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%)',
+                                border: '1px solid rgba(168, 85, 247, 0.1)',
+                                position: 'relative',
+                                overflow: 'hidden',
+                                transition: 'all 0.3s ease',
+                                '&:hover': {
+                                    transform: 'translateY(-2px)',
+                                    boxShadow: '0 8px 25px rgba(168, 85, 247, 0.15)'
+                                }
+                            }}>
+                                <Box sx={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    right: 0,
+                                    width: '50px',
+                                    height: '50px',
+                                    background: 'rgba(168, 85, 247, 0.1)',
+                                    borderRadius: '50%',
+                                    transform: 'translate(15px, -15px)'
+                                }}/>
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    position: 'relative',
+                                    zIndex: 1
+                                }}>
+                                    <Box sx={{
+                                        width: 36,
+                                        height: 36,
+                                        borderRadius: '50%',
+                                        background: 'linear-gradient(135deg, #a855f7 0%, #9333ea 100%)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        boxShadow: '0 4px 12px rgba(168, 85, 247, 0.3)'
+                                    }}>
+                                        <MoneyIcon sx={{color: 'white', fontSize: 18}}/>
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="caption" sx={{
+                                            color: '#64748b',
+                                            fontWeight: 500,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.5px',
+                                            display: 'block'
+                                        }}>
+                                            Remaining Payment
+                                        </Typography>
+                                        <Typography variant="h6" sx={{
+                                            fontWeight: 700,
+                                            color: '#a855f7',
+                                            fontSize: '1rem'
+                                        }}>
+                                            {formatCurrency(getRemainingPaymentAmount())}
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                            </Box>
                         </Box>
                     ) : (orderDetail.status === 'delivering' || orderDetail.status === 'completed') ? (
                         <Box sx={{
@@ -2539,7 +2713,7 @@ export default function OrderTrackingStatus() {
                                             display: 'block',
                                             fontSize: '0.7rem'
                                         }}>
-                                            Total Price
+                                            Total Price (Paid)
                                         </Typography>
                                         <Typography variant="h6" sx={{
                                             fontWeight: 700,
@@ -3536,6 +3710,88 @@ export default function OrderTrackingStatus() {
                             </Box>
                         )}
 
+                        {/* Delivery Image for completed orders */}
+                        {hoveredMilestone.title === 'Completed' && orderDetail.status === 'completed' && orderDetail.deliveryImage && (
+                            <Box sx={{
+                                mt: 3,
+                                p: 2,
+                                borderRadius: 3,
+                                background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(22, 163, 74, 0.05) 100%)',
+                                border: '1px solid rgba(34, 197, 94, 0.2)',
+                                position: 'relative',
+                                overflow: 'hidden'
+                            }}>
+                                <Box sx={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    right: 0,
+                                    width: '40px',
+                                    height: '40px',
+                                    background: 'rgba(34, 197, 94, 0.1)',
+                                    borderRadius: '50%',
+                                    transform: 'translate(10px, -10px)'
+                                }}/>
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    mb: 2,
+                                    position: 'relative',
+                                    zIndex: 1
+                                }}>
+                                    <Box sx={{
+                                        width: 28,
+                                        height: 28,
+                                        borderRadius: '50%',
+                                        background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)'
+                                    }}>
+                                        <CloudUploadIcon sx={{color: 'white', fontSize: 16}}/>
+                                    </Box>
+                                    <Typography variant="subtitle2" sx={{
+                                        fontWeight: 600,
+                                        color: '#16a34a',
+                                        fontSize: '0.875rem'
+                                    }}>
+                                        Delivery Confirmation
+                                    </Typography>
+                                </Box>
+                                <Box sx={{
+                                    borderRadius: 2,
+                                    overflow: 'hidden',
+                                    backgroundColor: '#000',
+                                    border: '2px solid #16a34a'
+                                }}>
+                                    <img
+                                        src={orderDetail.deliveryImage}
+                                        alt="Delivery confirmation"
+                                        style={{
+                                            width: '100%',
+                                            height: 'auto',
+                                            maxHeight: 200,
+                                            objectFit: 'cover',
+                                            display: 'block'
+                                        }}
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                        }}
+                                    />
+                                </Box>
+                                <Typography variant="caption" sx={{
+                                    color: '#64748b',
+                                    fontSize: '0.75rem',
+                                    mt: 1,
+                                    display: 'block',
+                                    textAlign: 'center'
+                                }}>
+                                    Order delivery confirmed by customer
+                                </Typography>
+                            </Box>
+                        )}
+
                         {/* Video Preview for completed milestones with video */}
                         {hoveredMilestone.videoUrl && hoveredMilestone.isCompleted && (
                             <Box sx={{
@@ -3693,8 +3949,8 @@ export default function OrderTrackingStatus() {
             {/* Payment Dialog */}
             <Dialog
                 open={paymentDialogOpen}
-                onClose={handleClosePaymentDialog}
-                maxWidth="sm"
+                onClose={handleClosePaymentDialog}f
+                maxWidth="md"
                 fullWidth
                 PaperProps={{
                     sx: {
@@ -3733,6 +3989,166 @@ export default function OrderTrackingStatus() {
                         <Typography variant="body2" sx={{color: '#64748b', lineHeight: 1.6}}>
                             Please complete the remaining payment to proceed with delivery
                         </Typography>
+                    </Box>
+
+                    {/* Payment Method Selection */}
+                    <Box sx={{
+                        p: 3,
+                        mb: 4,
+                        border: '1px solid #e2e8f0',
+                        borderRadius: 3,
+                        backgroundColor: 'white',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                            borderColor: '#2e7d32',
+                            boxShadow: '0 4px 15px rgba(46, 125, 50, 0.1)'
+                        }
+                    }}>
+                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
+                            <Box sx={{
+                                width: 40,
+                                height: 40,
+                                borderRadius: '50%',
+                                background: "linear-gradient(135deg, #2196f3 0%, #1976d2 100%)",
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white'
+                            }}>
+                                <CreditCardIcon style={{fontSize: '18px'}}/>
+                            </Box>
+                            <Box>
+                                <Typography variant="h6" sx={{margin: 0, color: '#1e293b', fontWeight: 600}}>
+                                    Payment Method
+                                </Typography>
+                                <Typography variant="body2" sx={{fontSize: '14px', color: '#64748b'}}>
+                                    Choose how you want to pay
+                                </Typography>
+                            </Box>
+                        </Box>
+
+                        <Radio.Group 
+                            value={paymentMethod} 
+                            onChange={(e) => setPaymentMethod(e.target.value)}
+                            style={{width: '100%'}}
+                        >
+                            <Box sx={{display: 'flex', flexDirection: 'column', gap: 2, width: '100%'}}>
+                                {/* Gateway Payment Option */}
+                                <Box sx={{
+                                    p: 2,
+                                    border: paymentMethod === 'gateway' ? '2px solid #2e7d32' : '1px solid #e2e8f0',
+                                    borderRadius: 2,
+                                    backgroundColor: paymentMethod === 'gateway' ? 'rgba(46, 125, 50, 0.05)' : 'white',
+                                    transition: 'all 0.3s ease',
+                                    cursor: 'pointer',
+                                    width: '100%'
+                                }}>
+                                    <Radio value="gateway" style={{width: '100%', display: 'flex'}}>
+                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2, width: '100%'}}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2, flex: 1}}>
+                                                <CreditCardIcon style={{color: '#2e7d32', fontSize: '18px'}}/>
+                                                <Box sx={{flex: 1}}>
+                                                    <Typography variant="body1" sx={{color: '#1e293b', fontWeight: 600, fontSize: '16px'}}>
+                                                        Payment Gateway
+                                                    </Typography>
+                                                    <Typography variant="body2" sx={{color: '#64748b', fontSize: '14px', display: 'block'}}>
+                                                        Pay securely with VNPay, credit/debit cards, or bank transfer
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+                                            <Box sx={{
+                                                minWidth: '120px',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'flex-end',
+                                                justifyContent: 'center',
+                                                marginLeft: 'auto'
+                                            }}>
+                                                <Typography variant="body2" sx={{
+                                                    color: '#64748b',
+                                                    fontSize: '14px',
+                                                    fontWeight: 500,
+                                                    lineHeight: '1.2'
+                                                }}>
+                                                    Secure payment
+                                                </Typography>
+                                                <Box sx={{height: '16px'}} />
+                                            </Box>
+                                        </Box>
+                                    </Radio>
+                                </Box>
+
+                                {/* Wallet Payment Option */}
+                                <Box sx={{
+                                    p: 2,
+                                    border: paymentMethod === 'wallet' ? '2px solid #2e7d32' : '1px solid #e2e8f0',
+                                    borderRadius: 2,
+                                    backgroundColor: paymentMethod === 'wallet' ? 'rgba(46, 125, 50, 0.05)' : 'white',
+                                    transition: 'all 0.3s ease',
+                                    cursor: 'pointer',
+                                    width: '100%'
+                                }}>
+                                    <Radio value="wallet" style={{width: '100%', display: 'flex'}}>
+                                        <Box sx={{
+                                            display: 'flex', 
+                                            alignItems: 'center', 
+                                            width: '100%',
+                                            gap: 2
+                                        }}>
+                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2, flex: 1}}>
+                                                <WalletIcon style={{color: '#2e7d32', fontSize: '18px'}}/>
+                                                <Box sx={{flex: 1}}>
+                                                    <Typography variant="body1" sx={{color: '#1e293b', fontWeight: 600, fontSize: '16px'}}>
+                                                        UniSew Wallet
+                                                    </Typography>
+                                                    <Typography variant="body2" sx={{color: '#64748b', fontSize: '14px', display: 'block'}}>
+                                                        Pay instantly from your wallet balance
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+                                            <Box sx={{
+                                                textAlign: 'right', 
+                                                flexShrink: 0,
+                                                minWidth: '120px',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'flex-end',
+                                                justifyContent: 'center',
+                                                marginLeft: '8vw'
+                                            }}>
+                                                {loadingWallet ? (
+                                                    <Spin size="small"/>
+                                                ) : (
+                                                    <>
+                                                        <Typography variant="body1" sx={{
+                                                            color: hasInsufficientBalance() ? '#ef4444' : '#2e7d32',
+                                                            fontWeight: 600,
+                                                            fontSize: '16px',
+                                                            display: 'block',
+                                                            lineHeight: '1.2'
+                                                        }}>
+                                                            {walletBalance.toLocaleString('vi-VN')} VND
+                                                        </Typography>
+                                                        {hasInsufficientBalance() ? (
+                                                            <Typography variant="caption" sx={{
+                                                                color: '#ef4444',
+                                                                fontSize: '12px',
+                                                                fontWeight: 500,
+                                                                lineHeight: '1.2'
+                                                            }}>
+                                                                Insufficient balance
+                                                            </Typography>
+                                                        ) : (
+                                                            <Box sx={{height: '16px'}} />
+                                                        )}
+                                                    </>
+                                                )}
+                                            </Box>
+                                        </Box>
+                                    </Radio>
+                                </Box>
+                            </Box>
+                        </Radio.Group>
                     </Box>
 
                     {/* Payment Breakdown */}
@@ -4135,13 +4551,14 @@ export default function OrderTrackingStatus() {
                     <Button
                         variant="contained"
                         onClick={handleProcessPayment}
-                        disabled={processingPayment}
+                        disabled={processingPayment || hasInsufficientBalance()}
+                        startIcon={!processingPayment ? (paymentMethod === 'wallet' ? <WalletIcon/> : <CreditCardIcon/>) : null}
                         sx={{
-                            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                            background: hasInsufficientBalance() ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)' : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
                             color: 'white',
                             fontWeight: 600,
                             '&:hover': {
-                                background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)'
+                                background: hasInsufficientBalance() ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)' : 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)'
                             },
                             '&:disabled': {
                                 background: 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)'
@@ -4153,8 +4570,10 @@ export default function OrderTrackingStatus() {
                                 <CircularProgress size={16} sx={{color: 'white', mr: 1}}/>
                                 Processing...
                             </>
+                        ) : hasInsufficientBalance() ? (
+                            'Insufficient Wallet Balance'
                         ) : (
-                            'Proceed to Payment'
+                            `Proceed to Payment${paymentMethod === 'wallet' ? ' (Wallet)' : ' (Gateway)'}`
                         )}
                     </Button>
                 </DialogActions>
@@ -4225,6 +4644,130 @@ export default function OrderTrackingStatus() {
                             )}
                         </Box>
 
+                        {/* Delivery Image Upload Section */}
+                        <Box sx={{
+                            p: 3,
+                            borderRadius: 3,
+                            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(37, 99, 235, 0.05) 100%)',
+                            border: deliveryImageUrl ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid rgba(59, 130, 246, 0.15)',
+                            mb: 3
+                        }}>
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 2,
+                                mb: 2
+                            }}>
+                                <CloudUploadIcon sx={{color: deliveryImageUrl ? '#16a34a' : '#3b82f6', fontSize: 20}}/>
+                                <Typography variant="subtitle1" sx={{
+                                    fontWeight: 600,
+                                    color: deliveryImageUrl ? '#16a34a' : '#3b82f6',
+                                    textAlign: 'left'
+                                }}>
+                                    Upload Delivery Image *
+                                </Typography>
+                            </Box>
+                            <Typography variant="body2" sx={{
+                                color: '#64748b',
+                                lineHeight: 1.6,
+                                mb: 3,
+                                textAlign: 'left'
+                            }}>
+                                Please upload a photo of the received order to confirm delivery
+                            </Typography>
+
+                            {!deliveryImageUrl ? (
+                                <Box sx={{textAlign: 'center'}}>
+                                    <input
+                                        accept="image/*"
+                                        style={{ display: 'none' }}
+                                        id="delivery-image-upload"
+                                        type="file"
+                                        onChange={handleImageUpload}
+                                        disabled={uploadingImage}
+                                    />
+                                    <label htmlFor="delivery-image-upload">
+                                        <Button
+                                            variant="outlined"
+                                            component="span"
+                                            disabled={uploadingImage}
+                                            startIcon={uploadingImage ? <CircularProgress size={16}/> : <CloudUploadIcon/>}
+                                            sx={{
+                                                borderColor: '#3b82f6',
+                                                color: '#3b82f6',
+                                                '&:hover': {
+                                                    borderColor: '#2563eb',
+                                                    backgroundColor: 'rgba(59, 130, 246, 0.1)'
+                                                }
+                                            }}
+                                        >
+                                            {uploadingImage ? 'Uploading...' : 'Choose Image'}
+                                        </Button>
+                                    </label>
+                                </Box>
+                            ) : (
+                                <Box sx={{
+                                    position: 'relative',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: 2
+                                }}>
+                                    <Box sx={{
+                                        position: 'relative',
+                                        borderRadius: 2,
+                                        overflow: 'hidden',
+                                        maxWidth: 300,
+                                        border: '2px solid #16a34a'
+                                    }}>
+                                        <img
+                                            src={deliveryImageUrl}
+                                            alt="Delivery confirmation"
+                                            style={{
+                                                width: '100%',
+                                                height: 'auto',
+                                                maxHeight: 200,
+                                                objectFit: 'cover'
+                                            }}
+                                        />
+                                        <IconButton
+                                            onClick={handleRemoveImage}
+                                            sx={{
+                                                position: 'absolute',
+                                                top: 8,
+                                                right: 8,
+                                                backgroundColor: 'rgba(239, 68, 68, 0.9)',
+                                                color: 'white',
+                                                '&:hover': {
+                                                    backgroundColor: 'rgba(220, 38, 38, 0.9)'
+                                                }
+                                            }}
+                                        >
+                                            <DeleteIcon sx={{fontSize: 16}}/>
+                                        </IconButton>
+                                    </Box>
+                                    <Typography variant="caption" sx={{
+                                        color: '#16a34a',
+                                        fontWeight: 600
+                                    }}>
+                                        Image uploaded successfully
+                                    </Typography>
+                                </Box>
+                            )}
+
+                            {imageUploadError && (
+                                <Box sx={{mt: 2}}>
+                                    <Typography variant="body2" sx={{
+                                        color: '#dc2626',
+                                        fontWeight: 500,
+                                        textAlign: 'center'
+                                    }}>
+                                        {imageUploadError}
+                                    </Typography>
+                                </Box>
+                            )}
+                        </Box>
+
                         <Box sx={{
                             p: 3,
                             borderRadius: 3,
@@ -4277,13 +4820,17 @@ export default function OrderTrackingStatus() {
                     <Button
                         variant="contained"
                         onClick={handleConfirmOrder}
-                        disabled={confirmingOrder}
+                        disabled={confirmingOrder || !deliveryImageUrl || uploadingImage}
                         sx={{
-                            background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                            background: (!deliveryImageUrl || uploadingImage) 
+                                ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)'
+                                : 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
                             color: 'white',
                             fontWeight: 600,
                             '&:hover': {
-                                background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)'
+                                background: (!deliveryImageUrl || uploadingImage)
+                                    ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)'
+                                    : 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)'
                             },
                             '&:disabled': {
                                 background: 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)'
@@ -4295,6 +4842,10 @@ export default function OrderTrackingStatus() {
                                 <CircularProgress size={16} sx={{color: 'white', mr: 1}}/>
                                 Confirming...
                             </>
+                        ) : uploadingImage ? (
+                            'Uploading Image...'
+                        ) : !deliveryImageUrl ? (
+                            'Upload Image Required'
                         ) : (
                             'Yes, I Received My Order'
                         )}
