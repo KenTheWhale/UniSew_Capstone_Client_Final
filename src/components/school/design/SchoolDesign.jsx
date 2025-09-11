@@ -6,10 +6,15 @@ import {
     CardContent,
     Chip,
     CircularProgress,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
     IconButton,
     Paper,
     Tab,
     Tabs,
+    TextField,
     Tooltip,
     Typography
 } from "@mui/material";
@@ -184,6 +189,9 @@ export default function SchoolDesign() {
     const [menuAnchorEl, setMenuAnchorEl] = useState(null);
     const [menuRowId, setMenuRowId] = useState(null);
     const [currentTab, setCurrentTab] = useState(0);
+    const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+    const [cancelReason, setCancelReason] = useState('');
+    const [requestToCancel, setRequestToCancel] = useState(null);
 
     const filteredDesignRequests = useMemo(() => {
         if (currentTab === 0) {
@@ -295,27 +303,41 @@ export default function SchoolDesign() {
         FetchSchoolDesign();
     }, [FetchSchoolDesign]);
 
-    const handleCancelRequest = useCallback(async (requestId) => {
+    const handleOpenCancelDialog = useCallback((request) => {
+        if (request.status === 'imported') {
+            enqueueSnackbar('Cannot cancel imported requests', {variant: 'warning'});
+            return;
+        }
+
+        if (request.status !== 'pending' && request.status !== 'processing') {
+            enqueueSnackbar('Can only cancel pending or processing requests', {variant: 'warning'});
+            return;
+        }
+
+        setRequestToCancel(request);
+        setCancelDialogOpen(true);
+        setCancelReason('');
+    }, [enqueueSnackbar]);
+
+    const handleCloseCancelDialog = useCallback(() => {
+        setCancelDialogOpen(false);
+        setRequestToCancel(null);
+        setCancelReason('');
+    }, []);
+
+    const handleCancelRequest = useCallback(async () => {
+        if (!requestToCancel || !cancelReason.trim()) {
+            enqueueSnackbar('Please provide a cancellation reason', {variant: 'warning'});
+            return;
+        }
+
         try {
-            setCancellingRequestId(requestId);
+            setCancellingRequestId(requestToCancel.id);
 
-            const request = designRequests.find(req => req.id === requestId);
-            if (!request) {
-                enqueueSnackbar('Request not found', {variant: 'error'});
-                return;
-            }
-
-            if (request.status === 'imported') {
-                enqueueSnackbar('Cannot cancel imported requests', {variant: 'warning'});
-                return;
-            }
-
-            if (request.status !== 'pending' && request.status !== 'processing') {
-                enqueueSnackbar('Can only cancel pending or processing requests', {variant: 'warning'});
-                return;
-            }
-
-            const response = await cancelDesignRequest({requestId: requestId});
+            const response = await cancelDesignRequest({
+                requestId: requestToCancel.id,
+                reason: cancelReason.trim()
+            });
 
             if (response && response.status === 200) {
                 enqueueSnackbar('Design request cancelled successfully!', {
@@ -324,6 +346,7 @@ export default function SchoolDesign() {
                 });
 
                 await FetchSchoolDesign(false);
+                handleCloseCancelDialog();
             } else {
                 enqueueSnackbar('Failed to cancel design request. Please try again.', {
                     variant: 'error',
@@ -339,7 +362,7 @@ export default function SchoolDesign() {
         } finally {
             setCancellingRequestId(null);
         }
-    }, [designRequests, FetchSchoolDesign]);
+    }, [requestToCancel, cancelReason, FetchSchoolDesign, handleCloseCancelDialog, enqueueSnackbar]);
 
     const handleOpenMenu = (event, rowId) => {
         setMenuAnchorEl(event.currentTarget);
@@ -394,11 +417,17 @@ export default function SchoolDesign() {
                 const day = String(date.getDate()).padStart(2, '0');
                 const month = String(date.getMonth() + 1).padStart(2, '0');
                 const year = date.getFullYear();
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                const seconds = String(date.getSeconds()).padStart(2, '0');
                 const daysDiff = Math.floor((new Date() - date) / (1000 * 60 * 60 * 24));
                 return (
                     <Box>
                         <Typography variant="body2" sx={{color: '#475569', fontSize: '0.875rem'}}>
                             {`${day}/${month}/${year}`}
+                        </Typography>
+                        <Typography variant="body2" sx={{color: '#64748b', fontSize: '0.75rem'}}>
+                            {`${hours}:${minutes}:${seconds}`}
                         </Typography>
                         <Typography variant="caption"
                                     sx={{color: daysDiff > 30 ? '#dc2626' : '#64748b', fontSize: '0.75rem'}}>
@@ -509,8 +538,8 @@ export default function SchoolDesign() {
                             </MenuItem>
                             {(record.status === 'pending' || record.status === 'processing') && record.status !== 'imported' && (
                                 <MenuItem
-                                    onClick={async () => {
-                                        await handleCancelRequest(record.id);
+                                    onClick={() => {
+                                        handleOpenCancelDialog(record);
                                         handleCloseMenu();
                                     }}
                                     disabled={cancellingRequestId === record.id}
@@ -556,11 +585,17 @@ export default function SchoolDesign() {
                 const day = String(date.getDate()).padStart(2, '0');
                 const month = String(date.getMonth() + 1).padStart(2, '0');
                 const year = date.getFullYear();
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                const seconds = String(date.getSeconds()).padStart(2, '0');
                 const daysDiff = Math.floor((new Date() - date) / (1000 * 60 * 60 * 24));
                 return (
                     <Box>
                         <Typography variant="body2" sx={{color: '#475569', fontSize: '0.875rem'}}>
                             {`${day}/${month}/${year}`}
+                        </Typography>
+                        <Typography variant="body2" sx={{color: '#64748b', fontSize: '0.75rem'}}>
+                            {`${hours}:${minutes}:${seconds}`}
                         </Typography>
                         <Typography variant="caption"
                                     sx={{color: daysDiff > 30 ? '#dc2626' : '#64748b', fontSize: '0.75rem'}}>
@@ -885,6 +920,149 @@ export default function SchoolDesign() {
                     onSuccess={handleFeedbackSuccess}
                 />
             )}
+
+            {/* Cancel Design Request Dialog */}
+            <Dialog
+                open={cancelDialogOpen}
+                onClose={handleCloseCancelDialog}
+                maxWidth="sm"
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        borderRadius: 3,
+                        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
+                        overflow: 'hidden'
+                    }
+                }}
+            >
+                <DialogTitle sx={{
+                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    p: 3
+                }}>
+                    <Box sx={{
+                        p: 1,
+                        borderRadius: 2,
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <CancelIcon sx={{fontSize: 20}}/>
+                    </Box>
+                    Cancel Design Request
+                </DialogTitle>
+
+                <DialogContent sx={{p: 4}}>
+                    <Box sx={{textAlign: 'center', mb: 3}}>
+                        <Typography variant="h6" sx={{fontWeight: 700, color: '#1e293b', mb: 2}}>
+                            Cancel Design Request {requestToCancel ? parseID(requestToCancel.id, 'dr') : ''}
+                        </Typography>
+                        <Typography variant="body2" sx={{color: '#64748b', lineHeight: 1.6, mb: 3}}>
+                            Please provide a reason for cancelling this design request. This action cannot be undone.
+                        </Typography>
+                    </Box>
+
+                    <TextField
+                        fullWidth
+                        multiline
+                        rows={4}
+                        label="Cancellation Reason *"
+                        value={cancelReason}
+                        onChange={(e) => setCancelReason(e.target.value)}
+                        placeholder="Please explain why you want to cancel this design request..."
+                        variant="outlined"
+                        sx={{
+                            '& .MuiOutlinedInput-root': {
+                                borderRadius: 2,
+                                '&:hover fieldset': {
+                                    borderColor: '#f59e0b'
+                                },
+                                '&.Mui-focused fieldset': {
+                                    borderColor: '#f59e0b'
+                                }
+                            },
+                            '& .MuiInputLabel-root.Mui-focused': {
+                                color: '#f59e0b'
+                            }
+                        }}
+                    />
+
+                    <Box sx={{
+                        mt: 3,
+                        p: 3,
+                        borderRadius: 3,
+                        background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(220, 38, 38, 0.05) 100%)',
+                        border: '1px solid rgba(239, 68, 68, 0.15)',
+                        borderLeft: '4px solid #ef4444'
+                    }}>
+                        <Typography variant="subtitle2" sx={{
+                            fontWeight: 600,
+                            color: '#dc2626',
+                            mb: 1
+                        }}>
+                            Important Notice
+                        </Typography>
+                        <Typography variant="body2" sx={{
+                            color: '#7f1d1d',
+                            lineHeight: 1.6,
+                            fontSize: '0.9rem'
+                        }}>
+                            Once you cancel this design request, it cannot be restored. Make sure you really want to proceed with this action.
+                        </Typography>
+                    </Box>
+                </DialogContent>
+
+                <DialogActions sx={{p: 3, pt: 0}}>
+                    <Button
+                        onClick={handleCloseCancelDialog}
+                        sx={{
+                            color: '#64748b',
+                            borderColor: '#d1d5db',
+                            '&:hover': {
+                                borderColor: '#9ca3af',
+                                backgroundColor: '#f9fafb'
+                            }
+                        }}
+                    >
+                        Keep Request
+                    </Button>
+                    <Button
+                        variant="contained"
+                        onClick={handleCancelRequest}
+                        disabled={!cancelReason.trim() || cancellingRequestId === requestToCancel?.id}
+                        sx={{
+                            background: (!cancelReason.trim() || cancellingRequestId === requestToCancel?.id) 
+                                ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)'
+                                : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                            color: 'white',
+                            fontWeight: 600,
+                            '&:hover': {
+                                background: (!cancelReason.trim() || cancellingRequestId === requestToCancel?.id)
+                                    ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)'
+                                    : 'linear-gradient(135deg, #d97706 0%, #b45309 100%)'
+                            },
+                            '&:disabled': {
+                                background: 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)'
+                            }
+                        }}
+                    >
+                        {cancellingRequestId === requestToCancel?.id ? (
+                            <>
+                                <CircularProgress size={16} sx={{color: 'white', mr: 1}}/>
+                                Cancelling...
+                            </>
+                        ) : !cancelReason.trim() ? (
+                            'Reason Required'
+                        ) : (
+                            'Cancel Request'
+                        )}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 }

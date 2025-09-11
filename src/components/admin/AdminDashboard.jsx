@@ -210,8 +210,8 @@ export default function AdminDashboard() {
 
         try {
             const requestData = {
-                from: dateRange[0].format('YYYY-MM-DD'),
-                to: dateRange[1].format('YYYY-MM-DD')
+                from: dateRange[0].format('YYYY-MM-DD') + 'T00:00:00',
+                to: dateRange[1].format('YYYY-MM-DD') + 'T00:00:00'
             };
 
             console.log('Fetching transaction stats with request:', requestData);
