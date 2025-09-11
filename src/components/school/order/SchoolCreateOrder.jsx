@@ -862,6 +862,43 @@ export default function SchoolCreateOrder() {
                                         </Typography>
                                     </Box>
 
+                                    {/* View Design Info Button */}
+                                    <Box sx={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        mb: 3
+                                    }}>
+                                        <Button
+                                            variant="contained"
+                                            startIcon={<InfoOutlinedIcon/>}
+                                            onClick={() => {
+                                                const uniforms = groupItemsByUniform(selectedDesign.delivery?.deliveryItems || []);
+                                                const firstUniform = Object.values(uniforms)[0];
+                                                if (firstUniform) {
+                                                    handleItemClick(firstUniform);
+                                                }
+                                            }}
+                                            sx={{
+                                                px: 4,
+                                                py: 1.5,
+                                                borderRadius: 3,
+                                                background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
+                                                color: 'white',
+                                                fontWeight: 600,
+                                                fontSize: '14px',
+                                                textTransform: 'none',
+                                                boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+                                                '&:hover': {
+                                                    background: 'linear-gradient(135deg, #1565c0 0%, #1976d2 100%)',
+                                                    boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)',
+                                                    transform: 'translateY(-2px)'
+                                                }
+                                            }}
+                                        >
+                                            View Design Info
+                                        </Button>
+                                    </Box>
+
                                     {(() => {
                                         const uniforms = groupItemsByUniform(selectedDesign.delivery?.deliveryItems || []);
                                         if (Object.keys(uniforms).length === 0) {
@@ -1023,7 +1060,6 @@ export default function SchoolCreateOrder() {
                                                                     display: 'flex',
                                                                     alignItems: 'center',
                                                                     justifyContent: 'center',
-                                                                    gap: 1,
                                                                     minHeight: '60px'
                                                                 }}>
                                                                     <Typography variant="body2" sx={{
@@ -1035,24 +1071,6 @@ export default function SchoolCreateOrder() {
                                                                     }}>
                                                                         {uniform.gender}
                                                                     </Typography>
-                                                                    <IconButton
-                                                                        onClick={() => handleItemClick(uniform)}
-                                                                        size="small"
-                                                                        sx={{
-                                                                            color: '#6b7280',
-                                                                            backgroundColor: 'rgba(107, 114, 128, 0.05)',
-                                                                            border: '1px solid rgba(107, 114, 128, 0.1)',
-                                                                            width: '20px',
-                                                                            height: '20px',
-                                                                            '&:hover': {
-                                                                                color: '#1976d2',
-                                                                                backgroundColor: 'rgba(25, 118, 210, 0.08)',
-                                                                                borderColor: 'rgba(25, 118, 210, 0.2)'
-                                                                            }
-                                                                        }}
-                                                                    >
-                                                                        <InfoOutlinedIcon sx={{fontSize: '14px'}}/>
-                                                                    </IconButton>
                                                                 </Box>
 
                                                                 {}
