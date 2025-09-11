@@ -104,3 +104,8 @@ export const confirmOrder = async (data) => {
     return response || null
 }
 
+export const getAllOrdersForAdmin = async (params) => {
+    const response = await axiosClient.get("/order/list", { params })
+    return response || null
+}
+
