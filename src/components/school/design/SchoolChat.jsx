@@ -2787,11 +2787,16 @@ export default function SchoolChat() {
                                                                     </Typography.Title>
                                                                     <Typography.Text type="secondary"
                                                                                      style={{fontSize: '12px'}}>
-                                                                        {new Date(item.submitDate).toLocaleDateString('vi-VN', {
-                                                                            day: '2-digit',
-                                                                            month: '2-digit',
-                                                                            year: 'numeric'
-                                                                        })}
+                                                                        {(() => {
+                                                                            const date = new Date(item.submitDate);
+                                                                            const day = String(date.getDate()).padStart(2, '0');
+                                                                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                                                                            const year = date.getFullYear();
+                                                                            const hours = String(date.getHours()).padStart(2, '0');
+                                                                            const minutes = String(date.getMinutes()).padStart(2, '0');
+                                                                            const seconds = String(date.getSeconds()).padStart(2, '0');
+                                                                            return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+                                                                        })()}
                                                                     </Typography.Text>
                                                                 </Box>
                                                                 <Tag color="blue" style={{margin: 0}}>
@@ -3040,11 +3045,16 @@ export default function SchoolChat() {
                                                                     </Typography.Title>
                                                                     <Typography.Text type="secondary"
                                                                                      style={{fontSize: '12px'}}>
-                                                                        {new Date(revision.requestDate).toLocaleDateString('vi-VN', {
-                                                                            day: '2-digit',
-                                                                            month: '2-digit',
-                                                                            year: 'numeric'
-                                                                        })}
+                                                                        {(() => {
+                                                                            const date = new Date(revision.requestDate);
+                                                                            const day = String(date.getDate()).padStart(2, '0');
+                                                                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                                                                            const year = date.getFullYear();
+                                                                            const hours = String(date.getHours()).padStart(2, '0');
+                                                                            const minutes = String(date.getMinutes()).padStart(2, '0');
+                                                                            const seconds = String(date.getSeconds()).padStart(2, '0');
+                                                                            return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+                                                                        })()}
                                                                     </Typography.Text>
                                                                 </Box>
                                                                 <Tag color="orange" style={{margin: 0}}>
