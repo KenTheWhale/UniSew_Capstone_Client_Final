@@ -6,10 +6,15 @@ import {
     CardContent,
     Chip,
     CircularProgress,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
     IconButton,
     Menu,
     MenuItem,
     Paper,
+    TextField,
     Tooltip,
     Typography
 } from '@mui/material';
@@ -59,6 +64,7 @@ const statusTag = (status) => {
             icon = <CheckCircleOutlined/>;
             break;
         case 'cancelled':
+        case 'canceled':
             color = 'red';
             icon = <CloseCircleOutlined/>;
             break;
@@ -111,6 +117,9 @@ export default function SchoolOrderList() {
     const [selectedOrderForFeedback, setSelectedOrderForFeedback] = useState(null);
     const [menuAnchorEl, setMenuAnchorEl] = useState(null);
     const [menuRowId, setMenuRowId] = useState(null);
+    const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+    const [cancelReason, setCancelReason] = useState('');
+    const [orderToCancel, setOrderToCancel] = useState(null);
 
     const fetchOrders = useCallback(async (showLoading = true) => {
         try {
@@ -161,7 +170,7 @@ export default function SchoolOrderList() {
     }, [fetchOrders]);
 
     const handleViewDetail = (order) => {
-        if (order.status === 'processing' || order.status === 'delivering' || order.status === 'completed') {
+        if (order.status === 'processing' || order.status === 'delivering' || order.status === 'completed' || order.status === 'canceled' || order.status === 'cancelled') {
             sessionStorage.setItem('trackingOrderId', order.id);
             navigate('/school/order/status');
         } else {
@@ -171,12 +180,30 @@ export default function SchoolOrderList() {
     };
 
 
-    const handleCancelOrder = async (orderId) => {
+    const handleOpenCancelDialog = (order) => {
+        setOrderToCancel(order);
+        setCancelDialogOpen(true);
+        setCancelReason('');
+    };
+
+    const handleCloseCancelDialog = () => {
+        setCancelDialogOpen(false);
+        setOrderToCancel(null);
+        setCancelReason('');
+    };
+
+    const handleCancelOrder = async () => {
+        if (!orderToCancel || !cancelReason.trim()) {
+            enqueueSnackbar('Please provide a cancellation reason', {variant: 'warning'});
+            return;
+        }
+
         try {
-            setCancellingOrderId(orderId);
+            setCancellingOrderId(orderToCancel.id);
 
             const data = {
-                orderId: orderId
+                orderId: orderToCancel.id,
+                reason: cancelReason.trim()
             };
 
             const response = await cancelOrder(data);
@@ -188,6 +215,7 @@ export default function SchoolOrderList() {
                 });
 
                 await fetchOrders(false);
+                handleCloseCancelDialog();
             } else {
                 enqueueSnackbar('Failed to cancel order. Please try again.', {
                     variant: 'error',
@@ -282,7 +310,7 @@ export default function SchoolOrderList() {
         processing: orders.filter(order => order.status === 'processing').length,
         delivering: orders.filter(order => order.status === 'delivering').length,
         completed: orders.filter(order => order.status === 'completed').length,
-        cancelled: orders.filter(order => order.status === 'cancelled').length
+        cancelled: orders.filter(order => order.status === 'cancelled' || order.status === 'canceled').length
     };
 
     const formatDate = (dateString) => {
@@ -290,7 +318,10 @@ export default function SchoolOrderList() {
         const day = String(date.getDate()).padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
     };
 
     const formatCurrency = (amount) => {
@@ -311,6 +342,7 @@ export default function SchoolOrderList() {
             case 'completed':
                 return {color: '#2e7d32', bgColor: 'rgba(46, 125, 50, 0.1)'};
             case 'cancelled':
+            case 'canceled':
                 return {color: '#d32f2f', bgColor: '#ffebee'};
             default:
                 return {color: '#64748b', bgColor: '#f1f5f9'};
@@ -328,6 +360,7 @@ export default function SchoolOrderList() {
             case 'completed':
                 return <CheckCircleIcon/>;
             case 'cancelled':
+            case 'canceled':
                 return <CancelIcon/>;
             default:
                 return <PendingIcon/>;
@@ -490,8 +523,8 @@ export default function SchoolOrderList() {
                             </MenuItem>
                             {record.status === 'pending' && (
                                 <MenuItem
-                                    onClick={async () => {
-                                        await handleCancelOrder(record.id);
+                                    onClick={() => {
+                                        handleOpenCancelDialog(record);
                                         handleCloseMenu();
                                     }}
                                     disabled={cancellingOrderId === record.id}
@@ -789,6 +822,45 @@ export default function SchoolOrderList() {
                             </Typography>
                         </CardContent>
                     </Card>
+
+                    <Card
+                        elevation={0}
+                        sx={{
+                            flex: '1 1 200px',
+                            border: "1px solid #e2e8f0",
+                            borderRadius: 2,
+                            transition: "all 0.3s ease",
+                            "&:hover": {
+                                borderColor: "#d32f2f",
+                                transform: "translateY(-2px)",
+                                boxShadow: "0 4px 15px rgba(211, 47, 47, 0.2)"
+                            }
+                        }}
+                    >
+                        <CardContent sx={{textAlign: "center", p: 2}}>
+                            <Box
+                                sx={{
+                                    width: 50,
+                                    height: 50,
+                                    borderRadius: "50%",
+                                    backgroundColor: "#ffebee",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    mx: "auto",
+                                    mb: 1.5
+                                }}
+                            >
+                                <CancelIcon sx={{color: "#d32f2f", fontSize: 24}}/>
+                            </Box>
+                            <Typography variant="h5" sx={{fontWeight: 700, color: "#d32f2f", mb: 0.5}}>
+                                {stats.cancelled}
+                            </Typography>
+                            <Typography variant="body2" sx={{color: "#64748b", fontWeight: 500}}>
+                                Cancelled
+                            </Typography>
+                        </CardContent>
+                    </Card>
                 </Box>
             </Box>
 
@@ -877,6 +949,148 @@ export default function SchoolOrderList() {
                 />
             )}
 
+            {/* Cancel Order Dialog */}
+            <Dialog
+                open={cancelDialogOpen}
+                onClose={handleCloseCancelDialog}
+                maxWidth="sm"
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        borderRadius: 3,
+                        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
+                        overflow: 'hidden'
+                    }
+                }}
+            >
+                <DialogTitle sx={{
+                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    p: 3
+                }}>
+                    <Box sx={{
+                        p: 1,
+                        borderRadius: 2,
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <CancelIcon sx={{fontSize: 20}}/>
+                    </Box>
+                    Cancel Order
+                </DialogTitle>
+
+                <DialogContent sx={{p: 4}}>
+                    <Box sx={{textAlign: 'center', mb: 3}}>
+                        <Typography variant="h6" sx={{fontWeight: 700, color: '#1e293b', mb: 2}}>
+                            Cancel Order {orderToCancel ? parseID(orderToCancel.id, 'ord') : ''}
+                        </Typography>
+                        <Typography variant="body2" sx={{color: '#64748b', lineHeight: 1.6, mb: 3}}>
+                            Please provide a reason for cancelling this order. This action cannot be undone.
+                        </Typography>
+                    </Box>
+
+                    <TextField
+                        fullWidth
+                        multiline
+                        rows={4}
+                        label="Cancellation Reason *"
+                        value={cancelReason}
+                        onChange={(e) => setCancelReason(e.target.value)}
+                        placeholder="Please explain why you want to cancel this order..."
+                        variant="outlined"
+                        sx={{
+                            '& .MuiOutlinedInput-root': {
+                                borderRadius: 2,
+                                '&:hover fieldset': {
+                                    borderColor: '#f59e0b'
+                                },
+                                '&.Mui-focused fieldset': {
+                                    borderColor: '#f59e0b'
+                                }
+                            },
+                            '& .MuiInputLabel-root.Mui-focused': {
+                                color: '#f59e0b'
+                            }
+                        }}
+                    />
+
+                    <Box sx={{
+                        mt: 3,
+                        p: 3,
+                        borderRadius: 3,
+                        background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(220, 38, 38, 0.05) 100%)',
+                        border: '1px solid rgba(239, 68, 68, 0.15)',
+                        borderLeft: '4px solid #ef4444'
+                    }}>
+                        <Typography variant="subtitle2" sx={{
+                            fontWeight: 600,
+                            color: '#dc2626',
+                            mb: 1
+                        }}>
+                            Important Notice
+                        </Typography>
+                        <Typography variant="body2" sx={{
+                            color: '#7f1d1d',
+                            lineHeight: 1.6,
+                            fontSize: '0.9rem'
+                        }}>
+                            Once you cancel this order, it cannot be restored. Make sure you really want to proceed with this action.
+                        </Typography>
+                    </Box>
+                </DialogContent>
+
+                <DialogActions sx={{p: 3, pt: 0}}>
+                    <Button
+                        onClick={handleCloseCancelDialog}
+                        sx={{
+                            color: '#64748b',
+                            borderColor: '#d1d5db',
+                            '&:hover': {
+                                borderColor: '#9ca3af',
+                                backgroundColor: '#f9fafb'
+                            }
+                        }}
+                    >
+                        Keep Order
+                    </Button>
+                    <Button
+                        variant="contained"
+                        onClick={handleCancelOrder}
+                        disabled={!cancelReason.trim() || cancellingOrderId === orderToCancel?.id}
+                        sx={{
+                            background: (!cancelReason.trim() || cancellingOrderId === orderToCancel?.id) 
+                                ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)'
+                                : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                            color: 'white',
+                            fontWeight: 600,
+                            '&:hover': {
+                                background: (!cancelReason.trim() || cancellingOrderId === orderToCancel?.id)
+                                    ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)'
+                                    : 'linear-gradient(135deg, #d97706 0%, #b45309 100%)'
+                            },
+                            '&:disabled': {
+                                background: 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)'
+                            }
+                        }}
+                    >
+                        {cancellingOrderId === orderToCancel?.id ? (
+                            <>
+                                <CircularProgress size={16} sx={{color: 'white', mr: 1}}/>
+                                Cancelling...
+                            </>
+                        ) : !cancelReason.trim() ? (
+                            'Reason Required'
+                        ) : (
+                            'Cancel Order'
+                        )}
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
         </Box>
     );

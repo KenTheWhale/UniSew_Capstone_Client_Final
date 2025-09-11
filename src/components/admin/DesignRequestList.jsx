@@ -1,7 +1,26 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {getAllDesignRequests} from '../../services/DesignService.jsx';
-import {Box, Card, CardContent, Chip, CircularProgress, IconButton, Paper, Tooltip, Typography, Dialog, DialogActions, DialogContent, DialogTitle} from '@mui/material';
-import {Avatar, Badge, Button, Descriptions, Empty, Input, Modal, Select, Space, Table, Tag} from 'antd';
+import {
+    Box, 
+    Card, 
+    CardContent, 
+    Chip, 
+    CircularProgress, 
+    IconButton, 
+    Paper, 
+    Tooltip, 
+    Typography,
+    Button,
+    TextField,
+    MenuItem,
+    FormControl,
+    InputLabel,
+    Select,
+    Avatar,
+    Alert,
+    Stack
+} from '@mui/material';
+import {Table, Space, Badge} from 'antd';
 import {
     CheckCircleOutlined,
     DesignServicesOutlined,
@@ -12,18 +31,31 @@ import {
     ClockCircleOutlined, 
     EyeOutlined, 
     ReloadOutlined,
-    InfoCircleOutlined,
-    CloseCircleOutlined,
-    FileTextOutlined,
-    PictureOutlined,
-    DollarOutlined
+    InfoCircleOutlined
 } from "@ant-design/icons";
 import {enqueueSnackbar} from "notistack";
 import {parseID} from "../../utils/ParseIDUtil.jsx";
+import {formatDateTime, formatDate} from '../../utils/TimestampUtil';
+import DisplayImage from '../ui/DisplayImage.jsx';
+import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
+import {GiSkirt} from "react-icons/gi";
+import DesignDetailPopup from './dialog/DesignDetailPopup.jsx';
 
-const {Search} = Input;
-const {Option} = Select;
-const {Text} = Typography;
+// Using MUI components only, Ant icons only
+
+const getItemIcon = (itemType) => {
+    const type = itemType?.toLowerCase() || '';
+
+    if (type.includes('shirt') || type.includes('áo')) {
+        return <PiShirtFoldedFill style={{fontSize: '20px'}}/>;
+    } else if (type.includes('pant') || type.includes('quần')) {
+        return <PiPantsFill style={{fontSize: '20px'}}/>;
+    } else if (type.includes('skirt') || type.includes('váy')) {
+        return <GiSkirt style={{fontSize: '20px'}}/>;
+    } else {
+        return <FileTextOutlined/>;
+    }
+};
 
 const StatCard = React.memo(({icon, value, label, color, bgColor}) => (
     <Card
@@ -85,14 +117,11 @@ const EmptyState = () => (
         justifyContent: 'center',
         py: 8
     }}>
-        <Empty
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={
-                <Typography variant="body1" sx={{color: '#64748b', mt: 2}}>
+        <Alert severity="info" sx={{ border: 'none', backgroundColor: 'transparent' }}>
+            <Typography variant="body1" sx={{color: '#64748b'}}>
                     No design requests found
                 </Typography>
-            }
-        />
+        </Alert>
     </Box>
 );
 
@@ -395,31 +424,44 @@ export default function DesignRequestList() {
 
                 <Box sx={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
                     <Box sx={{display: "flex", gap: 2}}>
-                        <Search
+                        <TextField
                             placeholder="Search by name, school, ID..."
-                            allowClear
-                            style={{width: 300}}
-                            onSearch={handleSearch}
-                            onChange={(e) => setSearchText(e.target.value)}
+                            value={searchText}
+                            onChange={(e) => {
+                                setSearchText(e.target.value);
+                                handleSearch(e.target.value);
+                            }}
+                            size="small"
+                            sx={{width: 300}}
+                            InputProps={{
+                                startAdornment: <InfoCircleOutlined style={{marginRight: 8, color: '#64748b'}} />
+                            }}
                         />
+                        <FormControl size="small" sx={{width: 150}}>
+                            <InputLabel>Filter by status</InputLabel>
                         <Select
-                            placeholder="Filter by status"
-                            style={{width: 150}}
                             value={statusFilter}
-                            onChange={handleStatusFilter}
-                            loading={loading}
-                        >
-                            <Option value="all">All Status
-                                ({loading ? '...' : Array.isArray(designRequests) ? designRequests.length : 0})</Option>
-                            <Option value="pending">Pending
-                                ({loading ? '...' : Array.isArray(designRequests) ? designRequests.filter(r => r.status === 'pending').length : 0})</Option>
-                            <Option value="imported">Imported
-                                ({loading ? '...' : Array.isArray(designRequests) ? designRequests.filter(r => r.status === 'imported').length : 0})</Option>
-                            <Option value="completed">Completed
-                                ({loading ? '...' : Array.isArray(designRequests) ? designRequests.filter(r => r.status === 'completed').length : 0})</Option>
-                            <Option value="cancelled">Cancelled
-                                ({loading ? '...' : Array.isArray(designRequests) ? designRequests.filter(r => r.status === 'cancelled').length : 0})</Option>
+                                onChange={(e) => handleStatusFilter(e.target.value)}
+                                disabled={loading}
+                                label="Filter by status"
+                            >
+                                <MenuItem value="all">
+                                    All Status ({loading ? '...' : Array.isArray(designRequests) ? designRequests.length : 0})
+                                </MenuItem>
+                                <MenuItem value="pending">
+                                    Pending ({loading ? '...' : Array.isArray(designRequests) ? designRequests.filter(r => r.status === 'pending').length : 0})
+                                </MenuItem>
+                                <MenuItem value="imported">
+                                    Imported ({loading ? '...' : Array.isArray(designRequests) ? designRequests.filter(r => r.status === 'imported').length : 0})
+                                </MenuItem>
+                                <MenuItem value="completed">
+                                    Completed ({loading ? '...' : Array.isArray(designRequests) ? designRequests.filter(r => r.status === 'completed').length : 0})
+                                </MenuItem>
+                                <MenuItem value="cancelled">
+                                    Cancelled ({loading ? '...' : Array.isArray(designRequests) ? designRequests.filter(r => r.status === 'cancelled').length : 0})
+                                </MenuItem>
                         </Select>
+                        </FormControl>
                         <Button
                             onClick={() => {
                                 setSearchText('');
@@ -637,540 +679,12 @@ export default function DesignRequestList() {
                 </Box>
             </Paper>
 
-            {/* Detail Modal - Based on RequestDetailPopup Layout */}
-            <Dialog
+            {/* Detail Modal - Using DesignDetailPopup component */}
+            <DesignDetailPopup
                 open={detailModalVisible}
                 onClose={() => setDetailModalVisible(false)}
-                maxWidth="lg"
-                fullWidth
-                slotProps={{
-                    paper: {
-                        sx: {
-                            borderRadius: 3,
-                            boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
-                            maxHeight: '85vh'
-                        }
-                    }
-                }}
-            >
-                <DialogTitle sx={{
-                    borderBottom: '1px solid #e5e7eb',
-                    padding: '0',
-                    background: '#ffffff',
-                    color: '#1f2937',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-                }}>
-                    {/* Top accent bar */}
-                    <Box sx={{
-                        height: '4px',
-                        background: 'linear-gradient(90deg, #10b981 0%, #059669 50%, #047857 100%)',
-                        width: '100%'
-                    }} />
-                    
-                    <Box sx={{
-                        padding: '20px 24px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between'
-                    }}>
-                        <Box sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 3
-                        }}>
-                            <Box sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                width: 52,
-                                height: 52,
-                                borderRadius: '16px',
-                                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
-                                position: 'relative'
-                            }}>
-                                <InfoCircleOutlined style={{
-                                    color: 'white',
-                                    fontSize: '24px'
-                                }}/>
-                                <Box sx={{
-                                    position: 'absolute',
-                                    top: -2,
-                                    right: -2,
-                                    width: 16,
-                                    height: 16,
-                                    borderRadius: '50%',
-                                    background: '#ffffff',
-                                    border: '2px solid #10b981',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}>
-                                    <Box sx={{
-                                        width: 6,
-                                        height: 6,
-                                        borderRadius: '50%',
-                                        background: '#10b981'
-                                    }} />
-                                </Box>
-                            </Box>
-                            
-                            <Box sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 1
-                            }}>
-                                <Text style={{
-                                    fontWeight: 700,
-                                    fontSize: '20px',
-                                    color: '#111827',
-                                    letterSpacing: '-0.025em'
-                                }}>
-                                    Design Request Details
-                                </Text>
-                                <Box sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 2
-                                }}>
-                                    <Text style={{
-                                        fontSize: '14px',
-                                        color: '#6b7280',
-                                        fontWeight: 500,
-                                        background: '#f3f4f6',
-                                        padding: '4px 12px',
-                                        borderRadius: '20px',
-                                        border: '1px solid #e5e7eb'
-                                    }}>
-                                        ID: {selectedRequest ? parseID(selectedRequest.id, 'dr') : ''}
-                                    </Text>
-                                </Box>
-                            </Box>
-                        </Box>
-                        
-                        <Box sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 3
-                        }}>
-                            <Box sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                width: 44,
-                                height: 44,
-                                borderRadius: '12px',
-                                background: '#f9fafb',
-                                border: '1px solid #e5e7eb',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease',
-                                '&:hover': {
-                                    background: '#f3f4f6',
-                                    borderColor: '#d1d5db',
-                                    transform: 'scale(1.05)'
-                                }
-                            }} onClick={() => setDetailModalVisible(false)}>
-                                <CloseCircleOutlined style={{
-                                    color: '#6b7280',
-                                    fontSize: '20px'
-                                }}/>
-                            </Box>
-                        </Box>
-                    </Box>
-                </DialogTitle>
-                <DialogContent sx={{padding: '20px', overflowY: 'auto'}}>
-                    {selectedRequest && (
-                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
-                            {/* Request Information Section */}
-                            <Box sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 3,
-                                p: 3,
-                                mt: 4,
-                                background: '#ffffff',
-                                borderRadius: '16px',
-                                border: '1px solid #e5e7eb',
-                                boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                                position: 'relative',
-                                overflow: 'hidden'
-                            }}>
-                                {/* Background Pattern */}
-                                <Box sx={{
-                                    position: 'absolute',
-                                    top: 0,
-                                    right: 0,
-                                    width: '120px',
-                                    height: '120px',
-                                    background: 'radial-gradient(circle at 70% 30%, rgba(16, 185, 129, 0.03) 0%, transparent 70%)',
-                                    pointerEvents: 'none'
-                                }} />
-                                
-                                <Box sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    position: 'relative',
-                                    zIndex: 1
-                                }}>
-                                    {/* Left Side - Request Details */}
-                                    <Box sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 3
-                                    }}>
-                                        <Box sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            width: 56,
-                                            height: 56,
-                                            borderRadius: '16px',
-                                            background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
-                                            border: '2px solid #e2e8f0',
-                                            position: 'relative'
-                                        }}>
-                                            <FileTextOutlined style={{
-                                                color: '#10b981',
-                                                fontSize: '24px'
-                                            }}/>
-                                        </Box>
-                                        
-                                        <Box sx={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            gap: 1
-                                        }}>
-                                            <Text style={{
-                                                fontWeight: 700,
-                                                fontSize: '18px',
-                                                color: '#111827',
-                                                letterSpacing: '-0.025em'
-                                            }}>
-                                                {selectedRequest.name}
-                                            </Text>
-                                            <Box sx={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: 2
-                                            }}>
-                                                <Text style={{
-                                                    fontSize: '13px',
-                                                    color: '#6b7280',
-                                                    fontWeight: 500,
-                                                    background: '#f9fafb',
-                                                    padding: '4px 10px',
-                                                    borderRadius: '12px',
-                                                    border: '1px solid #e5e7eb'
-                                                }}>
-                                                    {parseID(selectedRequest.id, 'dr')}
-                                                </Text> 
-                                            </Box>
-                                        </Box>
-                                    </Box>
-                                    
-                                    {/* Right Side - Status */}
-                                    <Box sx={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'flex-end',
-                                        gap: 1
-                                    }}>
-                                        <Text style={{
-                                            fontSize: '11px',
-                                            color: '#6b7280',
-                                            fontWeight: 600,
-                                            textTransform: 'uppercase',
-                                            letterSpacing: '0.5px'
-                                        }}>
-                                            Current Status
-                                        </Text>
-                                        <Box sx={{
-                                            transform: 'scale(1.2)',
-                                            filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.1))'
-                                        }}>
-                                            <Badge
-                                                status={getStatusColor(selectedRequest.status)}
-                                                text={getStatusText(selectedRequest.status)}
-                                            />
-                                        </Box>
-                                    </Box>
-                                </Box>
-                                
-                                {/* Bottom Info Bar */}
-                                <Box sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    pt: 2,
-                                    mt: 2,
-                                    borderTop: '1px solid #f3f4f6',
-                                    position: 'relative',
-                                    zIndex: 1
-                                }}>
-                                    <Box sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 2
-                                    }}>
-                                        <Box sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 1,
-                                            px: 2,
-                                            py: 1,
-                                            background: 'rgba(16, 185, 129, 0.05)',
-                                            borderRadius: '8px',
-                                            border: '1px solid rgba(16, 185, 129, 0.1)'
-                                        }}>
-                                            <Box sx={{
-                                                width: 8,
-                                                height: 8,
-                                                borderRadius: '50%',
-                                                background: '#10b981'
-                                            }} />
-                                            <Text style={{
-                                                fontSize: '12px',
-                                                color: '#10b981',
-                                                fontWeight: 600
-                                            }}>
-                                                {selectedRequest.status === 'imported' ? 'Imported Design' : 'Design Request'}
-                                            </Text>
-                                        </Box>
-                                    </Box>
-                                    
-                                    <Box sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 1
-                                    }}>
-                                        <ClockCircleOutlined style={{
-                                            color: '#6b7280',
-                                            fontSize: '14px'
-                                        }} />
-                                        <Text style={{
-                                            fontSize: '12px',
-                                            color: '#6b7280',
-                                            fontWeight: 500
-                                        }}>
-                                            Created: {formatDate(selectedRequest.creationDate)}
-                                        </Text>
-                                    </Box>
-                                </Box>
-                            </Box>
-
-                            {/* School Information Section */}
-                            <Card
-                                title={
-                                    <Space>
-                                        <SchoolOutlined style={{color: '#2e7d32'}}/>
-                                        <span style={{fontWeight: 600, fontSize: '14px'}}>School Information</span>
-                                    </Space>
-                                }
-                                size="small"
-                                style={{
-                                    border: '1px solid #e2e8f0',
-                                    borderRadius: 8,
-                                    marginTop: '16px'
-                                }}
-                            >
-                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
-                                    <Avatar
-                                        size={48}
-                                        src={selectedRequest.school.avatar || selectedRequest.school.name.charAt(0)}
-                                        style={{
-                                            border: '2px solid #2e7d32',
-                                            backgroundColor: '#2e7d32'
-                                        }}
-                                    >
-                                        {selectedRequest.school.name.charAt(0)}
-                                    </Avatar>
-                                    <Box sx={{flex: 1}}>
-                                        <Text style={{fontWeight: 600, fontSize: '14px', color: '#1e293b'}}>
-                                            {selectedRequest.school.name}
-                                        </Text>
-                                        <Text style={{fontSize: '12px', color: '#64748b', display: 'block'}}>
-                                            {selectedRequest.school.business}
-                                        </Text>
-                                        <Text style={{fontSize: '12px', color: '#64748b', display: 'block'}}>
-                                            {selectedRequest.school.account.email}
-                                        </Text>
-                                    </Box>
-                                </Box>
-                            </Card>
-
-                            {/* Logo Image Section */}
-                            {selectedRequest.logoImage && (
-                                <Card
-                                    title={
-                                        <Space>
-                                            <PictureOutlined style={{color: '#2e7d32'}}/>
-                                            <span style={{fontWeight: 600, fontSize: '14px'}}>Logo Image</span>
-                                        </Space>
-                                    }
-                                    size="small"
-                                    style={{
-                                        border: '1px solid #e2e8f0',
-                                        borderRadius: 8,
-                                        marginTop: '16px'
-                                    }}
-                                >
-                                    <Box sx={{display: 'flex', justifyContent: 'center', p: 1}}>
-                                        <img
-                                            src={selectedRequest.logoImage}
-                                            alt="Logo Design"
-                                            style={{
-                                                width: '150px',
-                                                height: '150px',
-                                                objectFit: 'contain',
-                                                border: '1px solid #e2e8f0',
-                                                borderRadius: '8px'
-                                            }}
-                                        />
-                                    </Box>
-                                </Card>
-                            )}
-
-                            {/* Design Items Section */}
-                            <Card
-                                title={
-                                    <Space>
-                                        <FileTextOutlined style={{color: '#2e7d32'}}/>
-                                        <span style={{fontWeight: 600, fontSize: '14px'}}>
-                                            Design Items ({selectedRequest.items?.length || 0})
-                                        </span>
-                                    </Space>
-                                }
-                                size="small"
-                                style={{
-                                    border: '1px solid #e2e8f0',
-                                    borderRadius: 8,
-                                    marginTop: '16px'
-                                }}
-                            >
-                                <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
-                                    {selectedRequest.items?.map((item, index) => (
-                                        <Box
-                                            key={item.id || index}
-                                            sx={{
-                                                p: 2,
-                                                border: '1px solid #e2e8f0',
-                                                borderRadius: '8px',
-                                                background: '#f9fafb'
-                                            }}
-                                        >
-                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 1}}>
-                                                <Text style={{fontWeight: 600, fontSize: '14px'}}>
-                                                    {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {item.category}
-                                                </Text>
-                                                <Tag color={item.gender === 'boy' ? 'blue' : 'pink'}>
-                                                    {item.gender === 'boy' ? 'Boy' : 'Girl'}
-                                                </Tag>
-                                                <Tag>#{index + 1}</Tag>
-                                            </Box>
-                                            <Box sx={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1}}>
-                                                <Text style={{fontSize: '12px', color: '#64748b'}}>
-                                                    <strong>Fabric:</strong> {item.fabricName}
-                                                </Text>
-                                                <Text style={{fontSize: '12px', color: '#64748b'}}>
-                                                    <strong>Color:</strong> {item.color}
-                                                </Text>
-                                                {item.logoPosition && (
-                                                    <Text style={{fontSize: '12px', color: '#64748b'}}>
-                                                        <strong>Logo Position:</strong> {item.logoPosition}
-                                                    </Text>
-                                                )}
-                                                {item.note && (
-                                                    <Text style={{fontSize: '12px', color: '#64748b', gridColumn: 'span 2'}}>
-                                                        <strong>Note:</strong> {item.note}
-                                                    </Text>
-                                                )}
-                                            </Box>
-                                        </Box>
-                                    ))}
-                                </Box>
-                            </Card>
-
-                            {/* Quotation Section */}
-                            {selectedRequest.quotation && typeof selectedRequest.quotation === 'object' && (
-                                <Card
-                                    title={
-                                        <Space>
-                                            <DollarOutlined style={{color: '#2e7d32'}}/>
-                                            <span style={{fontWeight: 600, fontSize: '14px'}}>Selected Quotation</span>
-                                        </Space>
-                                    }
-                                    size="small"
-                                    style={{
-                                        border: '1px solid #e2e8f0',
-                                        borderRadius: 8,
-                                        marginTop: '16px'
-                                    }}
-                                >
-                                    <Box sx={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3}}>
-                                        <Box>
-                                            <Text style={{fontSize: '12px', color: '#64748b', marginBottom: '4px'}}>
-                                                Designer
-                                            </Text>
-                                            <Text style={{fontWeight: 600, fontSize: '14px'}}>
-                                                {selectedRequest.quotation.designer.customer.name}
-                                            </Text>
-                                        </Box>
-                                        <Box>
-                                            <Text style={{fontSize: '12px', color: '#64748b', marginBottom: '4px'}}>
-                                                Price
-                                            </Text>
-                                            <Text style={{fontWeight: 600, fontSize: '14px', color: '#2e7d32'}}>
-                                                {formatCurrency(selectedRequest.quotation.price)}
-                                            </Text>
-                                        </Box>
-                                        <Box>
-                                            <Text style={{fontSize: '12px', color: '#64748b', marginBottom: '4px'}}>
-                                                Delivery Time
-                                            </Text>
-                                            <Text style={{fontWeight: 600, fontSize: '14px'}}>
-                                                {selectedRequest.quotation.deliveryWithIn} days
-                                            </Text>
-                                        </Box>
-                                        <Box>
-                                            <Text style={{fontSize: '12px', color: '#64748b', marginBottom: '4px'}}>
-                                                Revision Time
-                                            </Text>
-                                            <Text style={{fontWeight: 600, fontSize: '14px'}}>
-                                                {selectedRequest.quotation.revisionTime === 9999 ? 'Unlimited' : selectedRequest.quotation.revisionTime} times
-                                            </Text>
-                                        </Box>
-                                    </Box>
-                                    {selectedRequest.quotation.note && (
-                                        <Box sx={{
-                                            mt: 2,
-                                            p: 2,
-                                            bgcolor: 'rgba(46, 125, 50, 0.05)',
-                                            borderRadius: '6px',
-                                            border: '1px solid rgba(46, 125, 50, 0.1)'
-                                        }}>
-                                            <Text style={{
-                                                fontStyle: 'italic',
-                                                color: '#475569',
-                                                fontSize: '12px'
-                                            }}>
-                                                <strong>Note:</strong> {selectedRequest.quotation.note}
-                                            </Text>
-                                        </Box>
-                                    )}
-                                </Card>
-                            )}
-                        </Box>
-                    )}
-                </DialogContent>
-                <DialogActions sx={{padding: '16px 24px', borderTop: '1px solid #f0f0f0'}}>
-                    <Button onClick={() => setDetailModalVisible(false)}>
-                        Close
-                    </Button>
-                </DialogActions>
-            </Dialog>
+                selectedRequest={selectedRequest}
+            />
         </Box>
     );
 }

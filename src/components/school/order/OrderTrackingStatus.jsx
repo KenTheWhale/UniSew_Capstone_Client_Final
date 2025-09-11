@@ -37,6 +37,7 @@ import {
     PlayArrow as PlayArrowIcon,
     Refresh as RefreshIcon,
     School as SchoolIcon,
+    Stop as StopIcon,
     TableChart as TableChartIcon,
     TrendingUp as TrendingUpIcon,
     Videocam as VideocamIcon,
@@ -96,6 +97,7 @@ const statusTag = (status) => {
             color = 'success';
             break;
         case 'cancelled':
+        case 'canceled':
             color = 'error';
             break;
         default:
@@ -1004,6 +1006,163 @@ export default function OrderTrackingStatus() {
 
                     </CardContent>
                 </Card>
+
+                {/* Cancel Reason Section - Full Width */}
+                {orderDetail.status === 'canceled' && orderDetail.cancelReason && (
+                    <Card sx={{
+                        mb: 4,
+                        background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                        border: 'none',
+                        borderRadius: 4,
+                        boxShadow: '0 12px 40px rgba(0, 0, 0, 0.12)',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                            transform: 'translateY(-2px)',
+                            boxShadow: '0 16px 50px rgba(0, 0, 0, 0.15)'
+                        }
+                    }}>
+                        <Box sx={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: '6px',
+                            background: 'linear-gradient(90deg, #ef4444 0%, #dc2626 30%, #b91c1c 60%, #991b1b 100%)'
+                        }}/>
+
+                        <Box sx={{
+                            position: 'absolute',
+                            top: 0,
+                            right: 0,
+                            width: '150px',
+                            height: '150px',
+                            background: 'radial-gradient(circle, rgba(239, 68, 68, 0.05) 0%, transparent 70%)',
+                            borderRadius: '50%',
+                            transform: 'translate(30px, -30px)'
+                        }}/>
+
+                        <Box sx={{
+                            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                            p: 3,
+                            position: 'relative',
+                            overflow: 'hidden'
+                        }}>
+                            <Box sx={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                width: '100px',
+                                height: '100px',
+                                background: 'rgba(255, 255, 255, 0.1)',
+                                borderRadius: '50%',
+                                transform: 'translate(-30px, -30px)'
+                            }}/>
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 2,
+                                position: 'relative',
+                                zIndex: 1
+                            }}>
+                                <Box sx={{
+                                    width: 48,
+                                    height: 48,
+                                    borderRadius: '50%',
+                                    background: 'rgba(255, 255, 255, 0.2)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+                                }}>
+                                    <StopIcon sx={{color: 'white', fontSize: 24}}/>
+                                </Box>
+                                <Box>
+                                    <Typography variant="h6" sx={{
+                                        fontWeight: 700,
+                                        color: 'white',
+                                        fontSize: '1.25rem'
+                                    }}>
+                                        Order Cancelled
+                                    </Typography>
+                                    <Typography variant="body2" sx={{
+                                        color: 'rgba(255, 255, 255, 0.9)',
+                                        fontWeight: 500
+                                    }}>
+                                        This order has been cancelled
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        </Box>
+
+                        <CardContent sx={{p: 4, position: 'relative', zIndex: 1}}>
+                            <Box sx={{
+                                p: 4,
+                                borderRadius: 3,
+                                background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(220, 38, 38, 0.05) 100%)',
+                                border: '2px solid rgba(239, 68, 68, 0.2)',
+                                borderLeft: '6px solid #ef4444',
+                                boxShadow: '0 4px 15px rgba(239, 68, 68, 0.1)'
+                            }}>
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 3,
+                                    mb: 3
+                                }}>
+                                    <Box sx={{
+                                        p: 2,
+                                        borderRadius: 3,
+                                        backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}>
+                                        <StopIcon sx={{
+                                            color: '#dc2626',
+                                            fontSize: 28
+                                        }} />
+                                    </Box>
+                                    <Box>
+                                        <Typography sx={{
+                                            fontSize: '20px',
+                                            color: '#dc2626',
+                                            fontWeight: 700,
+                                            display: 'block'
+                                        }}>
+                                            Cancellation Reason
+                                        </Typography>
+                                        <Typography sx={{
+                                            fontSize: '14px',
+                                            color: '#7f1d1d',
+                                            opacity: 0.8
+                                        }}>
+                                            This order was cancelled by the school
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                                <Box sx={{
+                                    p: 3,
+                                    borderRadius: 3,
+                                    background: 'rgba(255, 255, 255, 0.8)',
+                                    border: '1px solid rgba(239, 68, 68, 0.1)'
+                                }}>
+                                    <Typography sx={{
+                                        fontSize: '16px',
+                                        color: '#7f1d1d',
+                                        lineHeight: 1.7,
+                                        fontStyle: 'italic',
+                                        display: 'block',
+                                        whiteSpace: 'pre-wrap'
+                                    }}>
+                                        "{orderDetail.cancelReason}"
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        </CardContent>
+                    </Card>
+                )}
 
                 <Card sx={{
                     mb: 4,
