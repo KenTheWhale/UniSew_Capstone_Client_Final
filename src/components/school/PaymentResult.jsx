@@ -460,7 +460,7 @@ export default function PaymentResult() {
         if (!orderDetails) return;
 
         const response = await createDepositTransaction(
-            orderDetails.quotation.garmentId,
+            orderDetails.quotation.garment.id,
             orderDetails.order.id,
             paymentAmount,
             isPaymentFromWallet ? "00" : vnpResponseCode,
@@ -1347,6 +1347,7 @@ export default function PaymentResult() {
                                 borderColor: '#1976d2'
                             }}
                             onClick={() => {
+                                localStorage.removeItem('paymentMethod');
                                 if (isOrderPayment || isDepositPayment) {
                                     sessionStorage.removeItem('paymentQuotationDetails');
                                     sessionStorage.removeItem('currentPaymentType');
@@ -1381,37 +1382,6 @@ export default function PaymentResult() {
                         >
                             {isOrderPayment || isDepositPayment ? 'Go to Order Management' : isRevisionPurchase ? 'Go to Design Chat' : isWalletPayment ? 'Go to Wallet' : 'Go to Design Management'}
                         </Button>
-
-                        {!success && (
-                            <Button
-                                size="large"
-                                style={{
-                                    height: '48px',
-                                    fontSize: '16px',
-                                    fontWeight: 600,
-                                    borderColor: '#d9d9d9',
-                                    color: '#475569'
-                                }}
-                                onClick={() => {
-                                    const processedKey = `payment_processed_${vnpTxnRef || 'wallet'}`;
-                                    localStorage.removeItem(processedKey);
-                                    sessionStorage.removeItem('currentPaymentType');
-                                    sessionStorage.removeItem('payFromWallet');
-
-                                    if (isOrderPayment || isDepositPayment) {
-                                        window.location.href = '/school/order';
-                                    } else if (isRevisionPurchase) {
-                                        window.location.href = '/school/chat';
-                                    } else if (isWalletPayment) {
-                                        window.location.href = '/school/profile';
-                                    } else {
-                                        window.location.href = '/school/design';
-                                    }
-                                }}
-                            >
-                                Try Again
-                            </Button>
-                        )}
                     </Box>
                 </Box>
             </Container>

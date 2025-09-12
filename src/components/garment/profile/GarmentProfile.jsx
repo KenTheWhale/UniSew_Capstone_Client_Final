@@ -1186,7 +1186,7 @@ export default function GarmentProfile() {
                             sx={{
                                 p: 4,
                                 mt: 4,
-                                height: '62vh',
+                                height: '65vh',
                                 borderRadius: 4,
                                 border: '2px solid #e2e8f0',
                                 background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
@@ -1300,11 +1300,12 @@ export default function GarmentProfile() {
                                                     '&:hover': {
                                                         transform: 'translateY(-2px)'
                                                     },
-                                                    transition: 'all 0.3s ease'
+                                                    transition: 'all 0.3s ease',
+                                                    minHeight: 'max-content'
                                                 }}
                                             >
                                                 <CardContent sx={{ p: 4, minHeight: 'max-content' }}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, height: '100%' }}>
                                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                                             <Box sx={{
                                                                 display: 'flex',
@@ -1396,12 +1397,45 @@ export default function GarmentProfile() {
                                                                     <Typography variant="body2" sx={{
                                                                         color: '#f59e0b',
                                                                         fontWeight: 600,
-                                                                        fontSize: '13px'
+                                                                        fontSize: '13px',
+                                                                        mt: '0.5vh'
                                                                     }}>
                                                                         {formatCurrency(transaction.serviceFee)}
                                                                     </Typography>
                                                                 </Box>
                                                             )}
+                                                            <Box>
+                                                                <Typography variant="body2" sx={{
+                                                                    color: '#64748b',
+                                                                    fontSize: '12px'
+                                                                }}>
+                                                                    Paid from
+                                                                </Typography>
+                                                                <Typography variant="body2" sx={{
+                                                                    color: '#8900ff',
+                                                                    fontWeight: 600,
+                                                                    fontSize: '13px',
+                                                                    mt: '0.5vh'
+                                                                }}>
+                                                                    {transaction.paymentGatewayCode.includes('w') ? 'Wallet' : "VNPay"}
+                                                                </Typography>
+                                                            </Box>
+                                                            <Box>
+                                                                <Typography variant="body2" sx={{
+                                                                    color: '#64748b',
+                                                                    fontSize: '12px'
+                                                                }}>
+                                                                    To
+                                                                </Typography>
+                                                                <Typography variant="body2" sx={{
+                                                                    color: '#5096de',
+                                                                    fontWeight: 600,
+                                                                    fontSize: '13px',
+                                                                    mt: '0.5vh'
+                                                                }}>
+                                                                    {transaction.balanceType === 'pending' ? 'Pending balance' : "Balance"}
+                                                                </Typography>
+                                                            </Box>
                                                         </Box>
 
                                                         <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
