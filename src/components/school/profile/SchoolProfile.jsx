@@ -51,6 +51,7 @@ import {enqueueSnackbar} from 'notistack';
 import dayjs from 'dayjs';
 import 'dayjs/locale/vi';
 import {parseID} from '../../../utils/ParseIDUtil.jsx';
+import {formatDateTime} from "../../../utils/TimestampUtil.jsx";
 
 export default function SchoolProfile() {
     const [profileData, setProfileData] = useState(null);
@@ -1126,7 +1127,7 @@ export default function SchoolProfile() {
                             sx={{
                                 p: 4,
                                 mt: 4,
-                                height: '62vh',
+                                height: '55vh',
                                 borderRadius: 4,
                                 border: '2px solid #e2e8f0',
                                 background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
@@ -1242,10 +1243,10 @@ export default function SchoolProfile() {
                                                         transform: 'translateY(-2px)'
                                                     },
                                                     transition: 'all 0.3s ease',
-                                                    minHeight: '120px'
+                                                    minHeight: 'max-content'
                                                 }}
                                             >
-                                                <CardContent sx={{p: 4, minHeight: '140px'}}>
+                                                <CardContent sx={{p: 4, height: 'max-content'}}>
                                                     <Box sx={{
                                                         display: 'flex',
                                                         alignItems: 'center',
@@ -1290,7 +1291,7 @@ export default function SchoolProfile() {
                                                                 {isReceiver ? '+' : '-'}{formatCurrency(transaction.amount)}
                                                             </Typography>
                                                             <Chip
-                                                                label={transaction.status}
+                                                                label={transaction.status  === 'success' ? 'Successful' : 'Failed'}
                                                                 size="small"
                                                                 sx={{
                                                                     backgroundColor: transaction.status === 'success' ? '#dcfce7' : '#fee2e2',
@@ -1343,12 +1344,45 @@ export default function SchoolProfile() {
                                                                     <Typography variant="body2" sx={{
                                                                         color: '#f59e0b',
                                                                         fontWeight: 600,
-                                                                        fontSize: '13px'
+                                                                        fontSize: '13px',
+                                                                        mt: '0.5vh'
                                                                     }}>
                                                                         {formatCurrency(transaction.serviceFee)}
                                                                     </Typography>
                                                                 </Box>
                                                             )}
+                                                            <Box>
+                                                                <Typography variant="body2" sx={{
+                                                                    color: '#64748b',
+                                                                    fontSize: '12px'
+                                                                }}>
+                                                                    Paid from
+                                                                </Typography>
+                                                                <Typography variant="body2" sx={{
+                                                                    color: '#8900ff',
+                                                                    fontWeight: 600,
+                                                                    fontSize: '13px',
+                                                                    mt: '0.5vh'
+                                                                }}>
+                                                                    {transaction.paymentGatewayCode.includes('w') ? 'Wallet' : "VNPay"}
+                                                                </Typography>
+                                                            </Box>
+                                                            <Box>
+                                                                <Typography variant="body2" sx={{
+                                                                    color: '#64748b',
+                                                                    fontSize: '12px'
+                                                                }}>
+                                                                    To receiver
+                                                                </Typography>
+                                                                <Typography variant="body2" sx={{
+                                                                    color: '#5096de',
+                                                                    fontWeight: 600,
+                                                                    fontSize: '13px',
+                                                                    mt: '0.5vh'
+                                                                }}>
+                                                                    {transaction.balanceType === 'pending' ? 'Pending balance' : transaction.balanceType === 'balance' ? 'Balance' : 'N/A'}
+                                                                </Typography>
+                                                            </Box>
                                                         </Box>
 
                                                         <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
@@ -1356,7 +1390,7 @@ export default function SchoolProfile() {
                                                                 style={{color: '#64748b', fontSize: 12}}/>
                                                             <Typography variant="body2"
                                                                         sx={{color: '#64748b', fontSize: '13px'}}>
-                                                                {formatDate(transaction.creationDate)}
+                                                                {formatDateTime(transaction.creationDate)}
                                                             </Typography>
                                                         </Box>
                                                     </Box>

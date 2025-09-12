@@ -57,7 +57,7 @@ import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
 import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import {parseID} from "../../utils/ParseIDUtil.jsx";
-import {getShippingDaysFromTimestamp} from "../../utils/TimestampUtil.jsx";
+import {formatDateTime, getShippingDaysFromTimestamp} from "../../utils/TimestampUtil.jsx";
 
 export default function MilestoneManagement() {
     const getOrderDisplayStatus = (order, orderMilestone) => {
@@ -2550,7 +2550,7 @@ export default function MilestoneManagement() {
                 <Dialog
                     open={viewMilestoneDialogOpen}
                     onClose={() => setViewMilestoneDialogOpen(false)}
-                    maxWidth="md"
+                    maxWidth="lg"
                     fullWidth
                     PaperProps={{
                         sx: {
@@ -2867,7 +2867,7 @@ export default function MilestoneManagement() {
                                                                         />
                                                                         {phase.completedDate && phase.completedDate !== "" && (
                                                                             <Chip
-                                                                                label={`Completed: ${formatDate(phase.completedDate)}`}
+                                                                                label={`Completed: ${formatDateTime(phase.completedDate)}`}
                                                                                 size="small"
                                                                                 sx={{
                                                                                     background: 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)',
@@ -3029,7 +3029,7 @@ export default function MilestoneManagement() {
                                                                     />
                                                                     {phase.completedDate && phase.completedDate !== "" && (
                                                                         <Chip
-                                                                            label={`Completed: ${formatDate(phase.completedDate)}`}
+                                                                            label={`Completed: ${formatDateTime(phase.completedDate)}`}
                                                                             size="small"
                                                                             sx={{
                                                                                 background: 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)',

@@ -49,6 +49,7 @@ import {uploadCloudinary} from '../../../services/UploadImageService.jsx';
 import {enqueueSnackbar} from 'notistack';
 import dayjs from 'dayjs';
 import 'dayjs/locale/vi';
+import {parseID} from "../../../utils/ParseIDUtil.jsx";
 
 export default function DesignerProfile() {
     const [profileData, setProfileData] = useState(null);
@@ -1189,7 +1190,7 @@ export default function DesignerProfile() {
                             sx={{
                                 p: 4,
                                 mt: 4,
-                                height: '62vh',
+                                height: '64vh',
                                 borderRadius: 4,
                                 border: '2px solid #e2e8f0',
                                 background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
@@ -1285,7 +1286,8 @@ export default function DesignerProfile() {
                                                     '&:hover': {
                                                         transform: 'translateY(-2px)'
                                                     },
-                                                    transition: 'all 0.3s ease'
+                                                    transition: 'all 0.3s ease',
+                                                    minHeight: 'max-content',
                                                 }}
                                             >
                                                 <CardContent sx={{ p: 4, minHeight: 'max-content' }}>
@@ -1337,6 +1339,97 @@ export default function DesignerProfile() {
                                                                     fontSize: '11px'
                                                                 }}
                                                             />
+                                                        </Box>
+                                                    </Box>
+                                                    <Box sx={{
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        alignItems: 'center',
+                                                        pt: 3,
+                                                        mt: 2,
+                                                        borderTop: '1px solid #f1f5f9'
+                                                    }}>
+                                                        <Box sx={{display: 'flex', gap: 3}}>
+                                                            {transaction.itemId && transaction.itemId !== 0 && (
+                                                                <Box>
+                                                                    <Typography variant="body2"
+                                                                                sx={{color: '#64748b', fontSize: '12px'}}>
+                                                                        {transaction.paymentType === 'design' ? 'Request ID' : 'Order ID'}
+                                                                    </Typography>
+                                                                    <Chip
+                                                                        label={transaction.paymentType === 'design' ?
+                                                                            parseID(transaction.itemId, 'dr') :
+                                                                            parseID(transaction.itemId, 'ord')}
+                                                                        size="small"
+                                                                        sx={{
+                                                                            backgroundColor: transaction.paymentType === 'design' ? '#f3e8ff' : '#e0f2fe',
+                                                                            color: transaction.paymentType === 'design' ? '#7c3aed' : '#0369a1',
+                                                                            fontWeight: 600,
+                                                                            fontSize: '10px',
+                                                                            height: '20px'
+                                                                        }}
+                                                                    />
+                                                                </Box>
+                                                            )}
+                                                            {transaction.serviceFee > 0 && (
+                                                                <Box>
+                                                                    <Typography variant="body2" sx={{
+                                                                        color: '#64748b',
+                                                                        fontSize: '12px'
+                                                                    }}>
+                                                                        Service Fee
+                                                                    </Typography>
+                                                                    <Typography variant="body2" sx={{
+                                                                        color: '#f59e0b',
+                                                                        fontWeight: 600,
+                                                                        fontSize: '13px',
+                                                                        mt: '0.5vh'
+                                                                    }}>
+                                                                        {formatCurrency(transaction.serviceFee)}
+                                                                    </Typography>
+                                                                </Box>
+                                                            )}
+                                                            <Box>
+                                                                <Typography variant="body2" sx={{
+                                                                    color: '#64748b',
+                                                                    fontSize: '12px'
+                                                                }}>
+                                                                    Paid from
+                                                                </Typography>
+                                                                <Typography variant="body2" sx={{
+                                                                    color: '#8900ff',
+                                                                    fontWeight: 600,
+                                                                    fontSize: '13px',
+                                                                    mt: '0.5vh'
+                                                                }}>
+                                                                    {transaction.paymentGatewayCode.includes('w') ? 'Wallet' : "VNPay"}
+                                                                </Typography>
+                                                            </Box>
+                                                            <Box>
+                                                                <Typography variant="body2" sx={{
+                                                                    color: '#64748b',
+                                                                    fontSize: '12px'
+                                                                }}>
+                                                                    To
+                                                                </Typography>
+                                                                <Typography variant="body2" sx={{
+                                                                    color: '#5096de',
+                                                                    fontWeight: 600,
+                                                                    fontSize: '13px',
+                                                                    mt: '0.5vh'
+                                                                }}>
+                                                                    {transaction.balanceType === 'pending' ? 'Pending balance' : "Balance"}
+                                                                </Typography>
+                                                            </Box>
+                                                        </Box>
+
+                                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                                            <ClockCircleOutlined
+                                                                style={{color: '#64748b', fontSize: 12}}/>
+                                                            <Typography variant="body2"
+                                                                        sx={{color: '#64748b', fontSize: '13px'}}>
+                                                                {formatDate(transaction.creationDate)}
+                                                            </Typography>
                                                         </Box>
                                                     </Box>
                                                 </CardContent>

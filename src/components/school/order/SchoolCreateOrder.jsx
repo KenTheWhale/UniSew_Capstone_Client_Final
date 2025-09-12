@@ -55,8 +55,13 @@ export default function SchoolCreateOrder() {
 
     const [showItemDialog, setShowItemDialog] = useState(false);
     const [showSizeSpecsDialog, setShowSizeSpecsDialog] = useState(false);
+    const [showDetailInfoDialog, setShowDetailInfoDialog] = useState(false);
     const [selectedSizeSpecs, setSelectedSizeSpecs] = useState(null);
     const [selectedUniform, setSelectedUniform] = useState(null);
+    const [detailInfoFilters, setDetailInfoFilters] = useState({
+        gender: 'boy',
+        category: 'regular'
+    });
     const [orderNote, setOrderNote] = useState('');
     const [validationErrors, setValidationErrors] = useState({});
     const [isCreatingOrder, setIsCreatingOrder] = useState(false);
@@ -422,6 +427,27 @@ export default function SchoolCreateOrder() {
     const handleCloseSizeSpecs = () => {
         setShowSizeSpecsDialog(false);
         setSelectedSizeSpecs(null);
+    };
+
+    const handleCloseDetailInfo = () => {
+        setShowDetailInfoDialog(false);
+    };
+
+    const handleDetailInfoFilterChange = (filterType, value) => {
+        setDetailInfoFilters(prev => ({
+            ...prev,
+            [filterType]: value
+        }));
+    };
+
+    const getFilteredUniformDetails = () => {
+        if (!selectedDesign?.delivery?.deliveryItems) return [];
+        
+        return selectedDesign.delivery.deliveryItems.filter(item => {
+            const matchesGender = item.designItem.gender === detailInfoFilters.gender;
+            const matchesCategory = item.designItem.category === detailInfoFilters.category;
+            return matchesGender && matchesCategory;
+        });
     };
 
     const handleOpenSizeSpecsForItem = (designItem) => {
@@ -829,74 +855,66 @@ export default function SchoolCreateOrder() {
                                                     Uniform Selection
                                                 </Typography>
                                             </Box>
-                                            <Button
-                                                variant="outlined"
-                                                startIcon={<TableChartIcon/>}
-                                                onClick={() => handleOpenSizeSpecsForItem(selectedDesign.delivery?.deliveryItems?.[0])}
-                                                sx={{
-                                                    px: 2.5,
-                                                    py: 1.5,
-                                                    borderRadius: 2,
-                                                    borderColor: 'rgba(255, 255, 255, 0.3)',
-                                                    color: 'white',
-                                                    fontWeight: 600,
-                                                    fontSize: '13px',
-                                                    textTransform: 'none',
-                                                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                                    whiteSpace: 'nowrap',
-                                                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                                                    '&:hover': {
-                                                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                            <Box sx={{display: 'flex', gap: 2}}>
+                                                <Button
+                                                    variant="outlined"
+                                                    startIcon={<InfoOutlinedIcon/>}
+                                                    onClick={() => setShowDetailInfoDialog(true)}
+                                                    sx={{
+                                                        px: 2.5,
+                                                        py: 1.5,
+                                                        borderRadius: 2,
+                                                        borderColor: 'rgba(255, 255, 255, 0.3)',
                                                         color: 'white',
-                                                        borderColor: 'rgba(255, 255, 255, 0.5)',
-                                                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-                                                        transform: 'translateY(-1px)'
-                                                    }
-                                                }}
-                                            >
-                                                View Size Specifications
-                                            </Button>
+                                                        fontWeight: 600,
+                                                        fontSize: '13px',
+                                                        textTransform: 'none',
+                                                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                                        whiteSpace: 'nowrap',
+                                                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                                        '&:hover': {
+                                                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                                            color: 'white',
+                                                            borderColor: 'rgba(255, 255, 255, 0.5)',
+                                                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                                                            transform: 'translateY(-1px)'
+                                                        }
+                                                    }}
+                                                >
+                                                    View Detail Info
+                                                </Button>
+                                                <Button
+                                                    variant="outlined"
+                                                    startIcon={<TableChartIcon/>}
+                                                    onClick={() => handleOpenSizeSpecsForItem(selectedDesign.delivery?.deliveryItems?.[0])}
+                                                    sx={{
+                                                        px: 2.5,
+                                                        py: 1.5,
+                                                        borderRadius: 2,
+                                                        borderColor: 'rgba(255, 255, 255, 0.3)',
+                                                        color: 'white',
+                                                        fontWeight: 600,
+                                                        fontSize: '13px',
+                                                        textTransform: 'none',
+                                                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                                        whiteSpace: 'nowrap',
+                                                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                                        '&:hover': {
+                                                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                                            color: 'white',
+                                                            borderColor: 'rgba(255, 255, 255, 0.5)',
+                                                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                                                            transform: 'translateY(-1px)'
+                                                        }
+                                                    }}
+                                                >
+                                                    View Size Specifications
+                                                </Button>
+                                            </Box>
                                         </Box>
                                         <Typography variant="body1" sx={{mt: 1, opacity: 0.9}}>
                                             Select quantities using spreadsheet-like interface
                                         </Typography>
-                                    </Box>
-
-                                    {/* View Design Info Button */}
-                                    <Box sx={{
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        mb: 3
-                                    }}>
-                                        <Button
-                                            variant="contained"
-                                            startIcon={<InfoOutlinedIcon/>}
-                                            onClick={() => {
-                                                const uniforms = groupItemsByUniform(selectedDesign.delivery?.deliveryItems || []);
-                                                const firstUniform = Object.values(uniforms)[0];
-                                                if (firstUniform) {
-                                                    handleItemClick(firstUniform);
-                                                }
-                                            }}
-                                            sx={{
-                                                px: 4,
-                                                py: 1.5,
-                                                borderRadius: 3,
-                                                background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
-                                                color: 'white',
-                                                fontWeight: 600,
-                                                fontSize: '14px',
-                                                textTransform: 'none',
-                                                boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
-                                                '&:hover': {
-                                                    background: 'linear-gradient(135deg, #1565c0 0%, #1976d2 100%)',
-                                                    boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)',
-                                                    transform: 'translateY(-2px)'
-                                                }
-                                            }}
-                                        >
-                                            View Design Info
-                                        </Button>
                                     </Box>
 
                                     {(() => {
@@ -2469,6 +2487,413 @@ export default function SchoolCreateOrder() {
 
                 <DialogActions sx={{p: 2, borderTop: '1px solid #e0e0e0'}}>
                     <Button onClick={handleCloseSizeSpecs}>
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Detail Info Dialog */}
+            <Dialog
+                open={showDetailInfoDialog}
+                onClose={handleCloseDetailInfo}
+                maxWidth="lg"
+                fullWidth
+                slotProps={{
+                    paper: {
+                        sx: {
+                            borderRadius: 3,
+                            boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                            maxHeight: '90vh'
+                        }
+                    }
+                }}
+            >
+                <DialogTitle sx={{
+                    borderBottom: '1px solid #f0f0f0',
+                    padding: '20px 24px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    background: 'linear-gradient(135deg, #2e7d32 0%, #4caf50 100%)',
+                    color: 'white'
+                }}>
+                    <InfoOutlinedIcon style={{color: 'white', fontSize: '24px'}}/>
+                    <span style={{fontWeight: 700, fontSize: '20px'}}>
+                        Uniform Detail Information
+                    </span>
+                </DialogTitle>
+
+                <DialogContent sx={{padding: '24px', overflowY: 'auto', background: '#f8fafc'}}>
+                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 4}}>
+                        {/* Filter Section */}
+                        <Box sx={{
+                            p: 3,
+                            borderRadius: 3,
+                            background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.1) 0%, rgba(76, 175, 80, 0.15) 100%)',
+                            border: '1px solid #2e7d32'
+                        }}>
+                            <Typography variant="h6" sx={{
+                                fontWeight: 600,
+                                color: '#2e7d32',
+                                mb: 3,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1
+                            }}>
+                                <InfoOutlinedIcon sx={{fontSize: 20}}/>
+                                Filter Options
+                            </Typography>
+
+                            <Box sx={{display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'flex-end'}}>
+                                {/* Gender Filter */}
+                                <Box sx={{minWidth: 200}}>
+                                    <Typography variant="body2" sx={{
+                                        fontWeight: 600,
+                                        color: '#374151',
+                                        mb: 1
+                                    }}>
+                                        Gender:
+                                    </Typography>
+                                    <FormControl fullWidth size="small">
+                                        <Select
+                                            value={detailInfoFilters.gender}
+                                            onChange={(e) => handleDetailInfoFilterChange('gender', e.target.value)}
+                                            sx={{
+                                                '& .MuiOutlinedInput-root': {
+                                                    borderRadius: 2,
+                                                    backgroundColor: 'rgba(255, 255, 255, 0.9)'
+                                                }
+                                            }}
+                                        >
+                                            <MenuItem value="boy">Boy</MenuItem>
+                                            <MenuItem value="girl">Girl</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                </Box>
+
+                                {/* Category Filter */}
+                                <Box sx={{minWidth: 200}}>
+                                    <Typography variant="body2" sx={{
+                                        fontWeight: 600,
+                                        color: '#374151',
+                                        mb: 1
+                                    }}>
+                                        Uniform Type:
+                                    </Typography>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        gap: 1,
+                                        minHeight: '40px',
+                                        alignItems: 'center'
+                                    }}>
+                                        <Button
+                                            variant={detailInfoFilters.category === 'regular' ? 'contained' : 'outlined'}
+                                            size="small"
+                                            onClick={() => handleDetailInfoFilterChange('category', 'regular')}
+                                            sx={{
+                                                minWidth: '120px',
+                                                height: '36px',
+                                                borderRadius: 2,
+                                                textTransform: 'none',
+                                                fontWeight: 600,
+                                                fontSize: '13px',
+                                                backgroundColor: detailInfoFilters.category === 'regular' ? '#2e7d32' : 'transparent',
+                                                color: detailInfoFilters.category === 'regular' ? '#ffffff' : '#2e7d32',
+                                                borderColor: '#2e7d32',
+                                                borderWidth: '2px',
+                                                '&:hover': {
+                                                    backgroundColor: detailInfoFilters.category === 'regular' ? '#1b5e20' : 'rgba(46, 125, 50, 0.08)',
+                                                    borderColor: '#2e7d32',
+                                                    borderWidth: '2px'
+                                                }
+                                            }}
+                                        >
+                                            Regular
+                                        </Button>
+                                        <Button
+                                            variant={detailInfoFilters.category === 'pe' ? 'contained' : 'outlined'}
+                                            size="small"
+                                            onClick={() => handleDetailInfoFilterChange('category', 'pe')}
+                                            sx={{
+                                                minWidth: '140px',
+                                                height: '36px',
+                                                borderRadius: 2,
+                                                textTransform: 'none',
+                                                fontWeight: 600,
+                                                fontSize: '13px',
+                                                backgroundColor: detailInfoFilters.category === 'pe' ? '#2e7d32' : 'transparent',
+                                                color: detailInfoFilters.category === 'pe' ? '#ffffff' : '#2e7d32',
+                                                borderColor: '#2e7d32',
+                                                borderWidth: '2px',
+                                                '&:hover': {
+                                                    backgroundColor: detailInfoFilters.category === 'pe' ? '#1b5e20' : 'rgba(46, 125, 50, 0.08)',
+                                                    borderColor: '#2e7d32',
+                                                    borderWidth: '2px'
+                                                }
+                                            }}
+                                        >
+                                            Physical Education
+                                        </Button>
+                                    </Box>
+                                </Box>
+                            </Box>
+                        </Box>
+
+                        {/* Filtered Results */}
+                        {(() => {
+                            const filteredItems = getFilteredUniformDetails();
+                            
+                            if (filteredItems.length === 0) {
+                                return (
+                                    <Box sx={{
+                                        p: 4,
+                                        borderRadius: 3,
+                                        background: '#ffffff',
+                                        border: '1px solid #e2e8f0',
+                                        textAlign: 'center'
+                                    }}>
+                                        <InfoOutlinedIcon sx={{ fontSize: 48, color: '#94a3b8', mb: 2 }} />
+                                        <Typography variant="h6" sx={{ color: '#64748b', mb: 1 }}>
+                                            No Uniforms Found
+                                        </Typography>
+                                        <Typography variant="body2" sx={{ color: '#94a3b8' }}>
+                                            No {detailInfoFilters.gender === 'boy' ? 'boys' : 'girls'} {detailInfoFilters.category === 'regular' ? 'regular' : 'physical education'} uniforms found in this design.
+                                        </Typography>
+                                    </Box>
+                                );
+                            }
+
+                            return (
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                                    {filteredItems.map((item, index) => (
+                                        <Card
+                                            key={`${item.id}-${index}`}
+                                            title={
+                                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                    <Box sx={{
+                                                        p: 1,
+                                                        borderRadius: 2,
+                                                        background: item.designItem.type === 'shirt' 
+                                                            ? 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)'
+                                                            : item.designItem.type === 'pants'
+                                                            ? 'linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%)'
+                                                            : 'linear-gradient(135deg, #fff3e0 0%, #ffcc02 100%)',
+                                                        color: item.designItem.type === 'shirt' 
+                                                            ? '#1976d2'
+                                                            : item.designItem.type === 'pants'
+                                                            ? '#7b1fa2'
+                                                            : '#f57c00'
+                                                    }}>
+                                                        {item.designItem.type === 'shirt' && <PiShirtFoldedFill style={{fontSize: '20px'}}/>}
+                                                        {item.designItem.type === 'pants' && <PiPantsFill style={{fontSize: '20px'}}/>}
+                                                        {item.designItem.type === 'skirt' && <GiSkirt style={{fontSize: '20px'}}/>}
+                                                    </Box>
+                                                    <span style={{
+                                                        fontWeight: 700,
+                                                        fontSize: '18px',
+                                                        color: item.designItem.type === 'shirt' 
+                                                            ? '#1976d2'
+                                                            : item.designItem.type === 'pants'
+                                                            ? '#7b1fa2'
+                                                            : '#f57c00',
+                                                        textTransform: 'capitalize'
+                                                    }}>
+                                                        {item.designItem.type} Details
+                                                    </span>
+                                                </Box>
+                                            }
+                                            style={{
+                                                border: 'none',
+                                                borderRadius: 16,
+                                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+                                                overflow: 'hidden'
+                                            }}
+                                        >
+                                            <Box sx={{p: 0}}>
+                                                {/* Specifications */}
+                                                <Box sx={{
+                                                    p: 3,
+                                                    borderRadius: 3,
+                                                    background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+                                                    border: '1px solid #e2e8f0',
+                                                    mb: 3
+                                                }}>
+                                                    <Typography variant="h6" sx={{
+                                                        fontWeight: 600,
+                                                        color: '#1e293b',
+                                                        mb: 3,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 1
+                                                    }}>
+                                                        <InfoIcon sx={{fontSize: 20, color: '#64748b'}}/>
+                                                        Specifications
+                                                    </Typography>
+                                                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 2.5}}>
+                                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                            <Typography variant="body2" sx={{
+                                                                fontSize: '14px',
+                                                                color: '#64748b',
+                                                                fontWeight: 600,
+                                                                minWidth: '100px'
+                                                            }}>
+                                                                Color:
+                                                            </Typography>
+                                                            <Box sx={{
+                                                                backgroundColor: item.designItem.color,
+                                                                padding: '8px 16px',
+                                                                borderRadius: '20px',
+                                                                color: item.designItem.color === '#FFFFFF' ? '#000' : '#fff',
+                                                                fontSize: '13px',
+                                                                fontWeight: 600,
+                                                                border: item.designItem.color === '#FFFFFF' ? '1px solid #e2e8f0' : 'none',
+                                                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                                                            }}>
+                                                                {item.designItem.color}
+                                                            </Box>
+                                                        </Box>
+                                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                            <Typography variant="body2" sx={{
+                                                                fontSize: '14px',
+                                                                color: '#64748b',
+                                                                fontWeight: 600,
+                                                                minWidth: '100px'
+                                                            }}>
+                                                                Fabric:
+                                                            </Typography>
+                                                            <Typography variant="body2" sx={{
+                                                                fontSize: '14px',
+                                                                color: '#1e293b',
+                                                                fontWeight: 500
+                                                            }}>
+                                                                {item.designItem.fabricName}
+                                                            </Typography>
+                                                        </Box>
+                                                        {item.designItem.logoPosition && (
+                                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                                <Typography variant="body2" sx={{
+                                                                    fontSize: '14px',
+                                                                    color: '#64748b',
+                                                                    fontWeight: 600,
+                                                                    minWidth: '100px'
+                                                                }}>
+                                                                    Logo Position:
+                                                                </Typography>
+                                                                <Typography variant="body2" sx={{
+                                                                    fontSize: '14px',
+                                                                    color: '#1e293b',
+                                                                    fontWeight: 500
+                                                                }}>
+                                                                    {item.designItem.logoPosition}
+                                                                </Typography>
+                                                            </Box>
+                                                        )}
+                                                        {item.designItem.note && (
+                                                            <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 2}}>
+                                                                <Typography variant="body2" sx={{
+                                                                    fontSize: '14px',
+                                                                    color: '#64748b',
+                                                                    fontWeight: 600,
+                                                                    minWidth: '100px',
+                                                                    mt: 0.5
+                                                                }}>
+                                                                    Note:
+                                                                </Typography>
+                                                                <Typography variant="body2" sx={{
+                                                                    fontSize: '14px',
+                                                                    color: '#1e293b',
+                                                                    fontWeight: 500,
+                                                                    fontStyle: 'italic'
+                                                                }}>
+                                                                    {item.designItem.note}
+                                                                </Typography>
+                                                            </Box>
+                                                        )}
+                                                    </Box>
+                                                </Box>
+
+                                                {/* Images */}
+                                                <Row gutter={[24, 0]}>
+                                                    <Col span={12}>
+                                                        <Box sx={{
+                                                            p: 3,
+                                                            borderRadius: 3,
+                                                            background: '#ffffff',
+                                                            border: '1px solid #e2e8f0',
+                                                            height: '100%'
+                                                        }}>
+                                                            <Typography variant="h6" sx={{
+                                                                fontWeight: 600,
+                                                                color: '#1e293b',
+                                                                mb: 2,
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: 1
+                                                            }}>
+                                                                <PaletteIcon sx={{fontSize: 20, color: '#64748b'}}/>
+                                                                Front Design
+                                                            </Typography>
+                                                            <Box sx={{
+                                                                borderRadius: 3,
+                                                                overflow: 'hidden',
+                                                                boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                                                                border: '1px solid #e2e8f0'
+                                                            }}>
+                                                                <DisplayImage
+                                                                    imageUrl={item.frontImageUrl}
+                                                                    alt={`${item.designItem.type} Front Design`}
+                                                                    width="100%"
+                                                                    height="250px"
+                                                                />
+                                                            </Box>
+                                                        </Box>
+                                                    </Col>
+                                                    <Col span={12}>
+                                                        <Box sx={{
+                                                            p: 3,
+                                                            borderRadius: 3,
+                                                            background: '#ffffff',
+                                                            border: '1px solid #e2e8f0',
+                                                            height: '100%'
+                                                        }}>
+                                                            <Typography variant="h6" sx={{
+                                                                fontWeight: 600,
+                                                                color: '#1e293b',
+                                                                mb: 2,
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: 1
+                                                            }}>
+                                                                <PaletteIcon sx={{fontSize: 20, color: '#64748b'}}/>
+                                                                Back Design
+                                                            </Typography>
+                                                            <Box sx={{
+                                                                borderRadius: 3,
+                                                                overflow: 'hidden',
+                                                                boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                                                                border: '1px solid #e2e8f0'
+                                                            }}>
+                                                                <DisplayImage
+                                                                    imageUrl={item.backImageUrl}
+                                                                    alt={`${item.designItem.type} Back Design`}
+                                                                    width="100%"
+                                                                    height="250px"
+                                                                />
+                                                            </Box>
+                                                        </Box>
+                                                    </Col>
+                                                </Row>
+                                            </Box>
+                                        </Card>
+                                    ))}
+                                </Box>
+                            );
+                        })()}
+                    </Box>
+                </DialogContent>
+
+                <DialogActions sx={{p: 2, borderTop: '1px solid #e0e0e0'}}>
+                    <Button onClick={handleCloseDetailInfo}>
                         Close
                     </Button>
                 </DialogActions>

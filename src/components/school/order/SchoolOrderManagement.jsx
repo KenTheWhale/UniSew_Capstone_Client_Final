@@ -42,6 +42,7 @@ import {parseID} from '../../../utils/ParseIDUtil';
 import OrderDetailPopup from './dialog/OrderDetailPopup.jsx';
 import {useSnackbar} from 'notistack';
 import FeedbackReportPopup from '../design/dialog/FeedbackReportPopup.jsx';
+import {formatDate, formatDateTime} from "../../../utils/TimestampUtil.jsx";
 
 const statusTag = (status) => {
     let color;
@@ -163,10 +164,6 @@ export default function SchoolOrderList() {
     const handleRetry = useCallback(() => {
         setIsRetrying(true);
         fetchOrders();
-    }, [fetchOrders]);
-
-    const handleRefresh = useCallback(() => {
-        fetchOrders(false);
     }, [fetchOrders]);
 
     const handleViewDetail = (order) => {
@@ -313,60 +310,6 @@ export default function SchoolOrderList() {
         cancelled: orders.filter(order => order.status === 'cancelled' || order.status === 'canceled').length
     };
 
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        const seconds = String(date.getSeconds()).padStart(2, '0');
-        return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
-    };
-
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('vi-VN', {
-            style: 'currency',
-            currency: 'VND'
-        }).format(amount);
-    };
-
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'pending':
-                return {color: '#ff9800', bgColor: 'rgba(255, 152, 0, 0.1)'};
-            case 'processing':
-                return {color: '#1976d2', bgColor: '#e3f2fd'};
-            case 'delivering':
-                return {color: '#9c27b0', bgColor: 'rgba(156, 39, 176, 0.1)'};
-            case 'completed':
-                return {color: '#2e7d32', bgColor: 'rgba(46, 125, 50, 0.1)'};
-            case 'cancelled':
-            case 'canceled':
-                return {color: '#d32f2f', bgColor: '#ffebee'};
-            default:
-                return {color: '#64748b', bgColor: '#f1f5f9'};
-        }
-    };
-
-    const getStatusIcon = (status) => {
-        switch (status) {
-            case 'pending':
-                return <PendingIcon/>;
-            case 'processing':
-                return <TrendingUpIcon/>;
-            case 'delivering':
-                return <LocalShippingIcon/>;
-            case 'completed':
-                return <CheckCircleIcon/>;
-            case 'cancelled':
-            case 'canceled':
-                return <CancelIcon/>;
-            default:
-                return <PendingIcon/>;
-        }
-    };
-
     const columns = useMemo(() => [
         {
             title: 'Order ID',
@@ -403,7 +346,7 @@ export default function SchoolOrderList() {
             sorter: (a, b) => new Date(a.orderDate) - new Date(b.orderDate),
             render: (text) => (
                 <Typography variant="body2" sx={{color: '#64748b'}}>
-                    {formatDate(text)}
+                    {formatDateTime(text)}
                 </Typography>
             ),
         },

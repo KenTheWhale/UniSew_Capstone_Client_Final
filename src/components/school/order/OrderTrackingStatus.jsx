@@ -47,7 +47,6 @@ import {useNavigate} from 'react-router-dom';
 import {getOrderDetailBySchool, confirmOrder} from '../../../services/OrderService';
 import {
     getPaymentUrl,
-    getPaymentUrlUsingWallet,
     getPaymentUrlUsingWalletForOrder,
     getWalletBalance
 } from '../../../services/PaymentService';
@@ -60,6 +59,7 @@ import OrderDetailTable from '../../ui/OrderDetailTable';
 import {serviceFee} from '../../../configs/FixedVariables';
 import {getPhoneLink} from '../../../utils/PhoneUtil';
 import {uploadCloudinary} from '../../../services/UploadImageService';
+import {formatDate, formatDateTime} from "../../../utils/TimestampUtil.jsx";
 
 const pulseKeyframes = `
   @keyframes pulse {
@@ -291,19 +291,9 @@ export default function OrderTrackingStatus() {
         navigate('/school/order');
     };
 
-    const handleOpenQuantityDetails = (groupedItem) => {
-        setSelectedQuantityDetails(groupedItem);
-        setShowQuantityDetailsDialog(true);
-    };
-
     const handleCloseQuantityDetails = () => {
         setShowQuantityDetailsDialog(false);
         setSelectedQuantityDetails(null);
-    };
-
-    const handleViewImages = (groupedItem) => {
-        setSelectedItemImages(groupedItem);
-        setShowImagesDialog(true);
     };
 
     const handleCloseImagesDialog = () => {
@@ -687,16 +677,6 @@ export default function OrderTrackingStatus() {
         }
     };
 
-    const formatDate = (dateString) => {
-        if (!dateString) return 'N/A';
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) return 'Invalid Date';
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
-    };
-
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('vi-VN', {
             style: 'currency',
@@ -740,21 +720,6 @@ export default function OrderTrackingStatus() {
         if (!orderDetail?.orderDetails) return 0;
         const totalItems = orderDetail.orderDetails.reduce((sum, detail) => sum + detail.quantity, 0);
         return Math.ceil(totalItems / 2);
-    };
-
-    const getSizeBreakdown = () => {
-        if (!orderDetail?.orderDetails) return {};
-
-        const sizeBreakdown = {};
-        orderDetail.orderDetails.forEach(detail => {
-            const size = detail.size;
-            if (!sizeBreakdown[size]) {
-                sizeBreakdown[size] = 0;
-            }
-            sizeBreakdown[size] += detail.quantity;
-        });
-
-        return sizeBreakdown;
     };
 
     const getMilestones = () => {
@@ -3800,7 +3765,7 @@ export default function OrderTrackingStatus() {
                                                     const completedDate = hoveredMilestone.completedDate || 
                                                         (hoveredMilestone.title === 'Completed' ? orderDetail.completedDate : null) ||
                                                         shippingInfo?.leadtime;
-                                                    return formatDate(completedDate);
+                                                    return formatDateTime(completedDate);
                                                 })()}
                                             </Typography>
                                         </Box>
