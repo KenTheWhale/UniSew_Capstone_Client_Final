@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {Outlet, useLocation, useNavigate} from 'react-router-dom';
 import {AppBar, Avatar, Badge, Box, CssBaseline, Divider, Popover, Toolbar, Typography} from '@mui/material';
-import {AccountBox, AccountCircle, Assessment, Assignment, Factory, Feedback, Flag, Logout} from '@mui/icons-material';
+import {AccountBox, AccountCircle, Assessment, Assignment, Factory, Feedback, Flag, Logout, Inventory} from '@mui/icons-material';
 import {Tag} from 'antd';
 import {signout} from "../../services/AccountService.jsx";
 import {enqueueSnackbar} from "notistack";
@@ -118,6 +118,47 @@ function Navbar({activeMenu, navigate}) {
                             <Flag sx={{color: "inherit", fontSize: 20}}/>
                             <Typography variant="body2" sx={{fontWeight: 500}}>
                                 Milestone Management
+                            </Typography>
+                        </Box>
+                    </Box>
+                </Box>
+
+                <Divider sx={{my: 3, borderColor: "#e9ecef"}}/>
+
+                {}
+                <Typography variant="overline" sx={{
+                    px: 2,
+                    pb: 1,
+                    color: "#6c757d",
+                    fontWeight: 700,
+                    fontSize: "0.75rem",
+                    letterSpacing: "1px"
+                }}>
+                    INVENTORY MANAGEMENT
+                </Typography>
+                <Box sx={{mb: 3}}>
+                    <Box
+                        sx={{
+                            borderRadius: 2,
+                            mx: 1,
+                            my: 0.5,
+                            color: activeMenu === 'fabric' ? "#FFFFFF" : "#495057",
+                            p: 2,
+                            cursor: "pointer",
+                            transition: "all 0.3s ease",
+                            background: activeMenu === 'fabric' ? "linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)" : "transparent",
+                            "&:hover": {
+                                background: "linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)",
+                                color: "#FFFFFF",
+                                transform: "translateY(-1px)",
+                            },
+                        }}
+                        onClick={() => navigate('/garment/fabric')}
+                    >
+                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
+                            <Inventory sx={{color: "inherit", fontSize: 20}}/>
+                            <Typography variant="body2" sx={{fontWeight: 500}}>
+                                Fabric Management
                             </Typography>
                         </Box>
                     </Box>
@@ -256,6 +297,8 @@ export default function GarmentDashboardLayout() {
             setActiveMenu('reports');
         } else if (pathname.includes('/garment/profile')) {
             setActiveMenu('profile');
+        } else if (pathname.includes('/garment/fabric')) {
+            setActiveMenu('fabric');
         } else {
             setActiveMenu('');
         }

@@ -23,3 +23,18 @@ export const updateConfig = async (data) => {
     const response = await axiosClient.put("/system/config", data)
     return response || null
 }
+
+export const getGarmentFabric = async () => {
+    const response = await axiosClient.post("/system/garment/fabric")
+    return response || null
+}
+
+export const updateGarmentFabric = async (data) => {
+    const response = await axiosClient.put("/system/garment/fabric", data)
+    return response || null
+}
+
+export const deleteGarmentFabric = async (fabricId) => {
+    const response = await axiosClient.put(`/system/garment/fabric/remove?fabricId=${fabricId}`)
+    return response || null
+}
