@@ -2,6 +2,7 @@ import axiosClient from "../configs/APIConfig.jsx";
 
 export const getFabrics = async () => {
     const response = await axiosClient.get("/design/fabrics")
+    console.log('getFabrics response:', response);
     return response || null
 }
 
