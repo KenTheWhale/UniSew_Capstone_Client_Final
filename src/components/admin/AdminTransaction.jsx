@@ -615,12 +615,12 @@ export default function AdminTransaction() {
                     position: "relative",
                     p: 4,
                     borderRadius: 3,
-                    background: "linear-gradient(135deg, rgba(220, 53, 69, 0.05) 0%, rgba(220, 53, 69, 0.08) 100%)",
-                    border: "1px solid rgba(220, 53, 69, 0.1)",
+                    background: "linear-gradient(135deg, rgba(6, 182, 212, 0.05) 0%, rgba(6, 182, 212, 0.08) 100%)",
+                    border: "1px solid rgba(6, 182, 212, 0.1)",
                 }}
             >
                 <Box sx={{display: "flex", alignItems: "center", mb: 2}}>
-                    <AccountBalance style={{fontSize: 32, color: '#dc3545', marginRight: 16}}/>
+                    <AccountBalance style={{fontSize: 32, color: '#06b6d4', marginRight: 16}}/>
                     <Box>
                         <Typography
                             variant="h4"
@@ -702,10 +702,10 @@ export default function AdminTransaction() {
                             <IconButton
                                 onClick={handleRefresh}
                                 sx={{
-                                    backgroundColor: '#dc3545',
+                                    backgroundColor: '#06b6d4',
                                     color: 'white',
                                     '&:hover': {
-                                        backgroundColor: '#c82333',
+                                        backgroundColor: '#0e7490',
                                         transform: 'scale(1.05)'
                                     },
                                     transition: 'all 0.2s ease'
@@ -801,10 +801,10 @@ export default function AdminTransaction() {
                 ) : (
                     <>
                         <StatCard
-                            icon={<Typography variant="h5" sx={{fontWeight: 'bold', color: '#dc3545'}}>₫</Typography>}
+                            icon={<Typography variant="h5" sx={{fontWeight: 'bold', color: '#06b6d4'}}>₫</Typography>}
                             value={stats.total}
                             label="Total Transactions"
-                            color="#dc3545"
+                            color="#06b6d4"
                         />
                         <StatCard
                             icon={<CheckOutlined style={{fontSize: 24}}/>}
@@ -863,8 +863,8 @@ export default function AdminTransaction() {
                         <Chip
                             label={`${filteredTransactions.length} of ${stats.total} transactions`}
                             sx={{
-                                backgroundColor: "#fef2f2",
-                                color: "#dc3545",
+                                backgroundColor: "#06b6d410",
+                                color: "#06b6d4",
                                 fontWeight: 600
                             }}
                         />
@@ -878,7 +878,7 @@ export default function AdminTransaction() {
                             justifyContent: 'center',
                             py: 8
                         }}>
-                            <CircularProgress size={40} sx={{color: '#dc3545', mb: 2}}/>
+                            <CircularProgress size={40} sx={{color: '#06b6d4', mb: 2}}/>
                             <Typography variant="body1" sx={{color: '#64748b'}}>
                                 Loading transactions...
                             </Typography>

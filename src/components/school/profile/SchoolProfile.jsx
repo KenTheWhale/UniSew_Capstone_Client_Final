@@ -51,7 +51,7 @@ import {enqueueSnackbar} from 'notistack';
 import dayjs from 'dayjs';
 import 'dayjs/locale/vi';
 import {parseID} from '../../../utils/ParseIDUtil.jsx';
-import {formatDateTime} from "../../../utils/TimestampUtil.jsx";
+import {formatDateTimeSecond} from "../../../utils/TimestampUtil.jsx";
 
 export default function SchoolProfile() {
     const [profileData, setProfileData] = useState(null);
@@ -153,6 +153,7 @@ export default function SchoolProfile() {
         try {
             return dayjs(dateString).locale('vi').format('DD/MM/YYYY');
         } catch (error) {
+            console.error('Error formatting date:', error);
             return dateString;
         }
     };
@@ -173,20 +174,10 @@ export default function SchoolProfile() {
             'deposit': 'Order Deposit',
             'order': 'Order Payment',
             'order_return': 'Order Refund',
+            'design_return': 'Design Refund',
             'wallet': 'Wallet Top-up'
         };
         return typeMap[type] || type;
-    };
-
-    const getPaymentTypeColor = (type) => {
-        const colorMap = {
-            'design': '#9333ea',
-            'deposit': '#0ea5e9',
-            'order': '#10b981',
-            'order_return': '#f59e0b',
-            'wallet': '#64748b'
-        };
-        return colorMap[type] || '#64748b';
     };
 
     const getTransactionIcon = (type, isReceiver) => {
@@ -1300,6 +1291,27 @@ export default function SchoolProfile() {
                                                                     fontSize: '11px'
                                                                 }}
                                                             />
+                                                            {(() => {
+                                                                const newBalance = isReceiver ? transaction?.remain?.receiver : transaction?.remain?.sender;
+                                                                if (newBalance === undefined || newBalance === null || newBalance === -1) return null;
+                                                                const isPending = transaction.balanceType === 'pending';
+                                                                return (
+                                                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 0.5 }}>
+                                                                        <Chip
+                                                                            size="small"
+                                                                            label={`${isPending ? 'Pending' : 'Balance'}: ${formatCurrency(newBalance)}`}
+                                                                            sx={{
+                                                                                height: 22,
+                                                                                fontSize: '11px',
+                                                                                fontWeight: 600,
+                                                                                color: '#111827',
+                                                                                backgroundColor: '#f3f4f6',
+                                                                                border: '1px solid #e5e7eb'
+                                                                            }}
+                                                                        />
+                                                                    </Box>
+                                                                );
+                                                            })()}
                                                         </Box>
                                                     </Box>
 
@@ -1316,15 +1328,15 @@ export default function SchoolProfile() {
                                                                 <Box>
                                                                     <Typography variant="body2"
                                                                                 sx={{color: '#64748b', fontSize: '12px'}}>
-                                                                        {transaction.paymentType === 'design' ? 'Request ID' : 'Order ID'}
+                                                                        {transaction.paymentType === 'design' || transaction.paymentType === 'design_return' ? 'Request ID' : 'Order ID'}
                                                                     </Typography>
                                                                     <Chip
-                                                                        label={transaction.paymentType === 'design' ? 
+                                                                        label={transaction.paymentType === 'design' || transaction.paymentType === 'design_return' ?
                                                                             parseID(transaction.itemId, 'dr') : 
                                                                             parseID(transaction.itemId, 'ord')}
                                                                         size="small"
                                                                         sx={{
-                                                                            backgroundColor: transaction.paymentType === 'design' ? '#f3e8ff' : '#e0f2fe',
+                                                                            backgroundColor: transaction.paymentType === 'design' || transaction.paymentType === 'design_return' ? '#f3e8ff' : '#e0f2fe',
                                                                             color: transaction.paymentType === 'design' ? '#7c3aed' : '#0369a1',
                                                                             fontWeight: 600,
                                                                             fontSize: '10px',
@@ -1351,7 +1363,7 @@ export default function SchoolProfile() {
                                                                     </Typography>
                                                                 </Box>
                                                             )}
-                                                            <Box>
+                                                            {transaction.paymentType !== 'design_return' && transaction.paymentType !== 'order_return' && <Box>
                                                                 <Typography variant="body2" sx={{
                                                                     color: '#64748b',
                                                                     fontSize: '12px'
@@ -1366,7 +1378,7 @@ export default function SchoolProfile() {
                                                                 }}>
                                                                     {transaction.paymentGatewayCode.includes('w') ? 'Wallet' : "VNPay"}
                                                                 </Typography>
-                                                            </Box>
+                                                            </Box>}
                                                             <Box>
                                                                 <Typography variant="body2" sx={{
                                                                     color: '#64748b',
@@ -1390,7 +1402,7 @@ export default function SchoolProfile() {
                                                                 style={{color: '#64748b', fontSize: 12}}/>
                                                             <Typography variant="body2"
                                                                         sx={{color: '#64748b', fontSize: '13px'}}>
-                                                                {formatDateTime(transaction.creationDate)}
+                                                                {formatDateTimeSecond(transaction.creationDate)}
                                                             </Typography>
                                                         </Box>
                                                     </Box>
