@@ -381,7 +381,7 @@ export default function AdminDashboard() {
         }
 
         const roleColors = {
-            ADMIN: '#dc3545',
+            ADMIN: '#06b6d4',
             SCHOOL: '#28a745',
             DESIGNER: '#6f42c1',
             GARMENT: '#fd7e14'
@@ -586,7 +586,7 @@ export default function AdminDashboard() {
                 justifyContent: 'center',
                 flexDirection: 'column'
             }}>
-                <CircularProgress size={50} sx={{color: '#dc3545', mb: 2}}/>
+                <CircularProgress size={50} sx={{color: '#06b6d4', mb: 2}}/>
                 <Typography variant="h6" sx={{color: '#64748b'}}>
                     Loading dashboard...
                 </Typography>
@@ -601,8 +601,8 @@ export default function AdminDashboard() {
                     mb: 4,
                     p: 4,
                     borderRadius: 3,
-                    background: "linear-gradient(135deg, rgba(220, 53, 69, 0.05) 0%, rgba(220, 53, 69, 0.08) 100%)",
-                    border: "1px solid rgba(220, 53, 69, 0.1)",
+                    background: "linear-gradient(135deg, rgba(6, 182, 212, 0.05) 0%, rgba(6, 182, 212, 0.08) 100%)",
+                    border: "1px solid rgba(6, 182, 212, 0.1)",
                     width: '100%'
                 }}
             >
@@ -638,7 +638,7 @@ export default function AdminDashboard() {
                     onChange={handleTabChange}
                     sx={{
                         '& .MuiTabs-indicator': {
-                            backgroundColor: '#dc3545',
+                            backgroundColor: '#06b6d4',
                         },
                         '& .MuiTab-root': {
                             color: '#64748b',
@@ -646,7 +646,7 @@ export default function AdminDashboard() {
                             textTransform: 'none',
                             fontSize: '1rem',
                             '&.Mui-selected': {
-                                color: '#dc3545',
+                                color: '#06b6d4',
                             },
                         },
                     }}
@@ -669,7 +669,7 @@ export default function AdminDashboard() {
                                     icon={<PeopleOutlined style={{fontSize: 28}}/>}
                                     value={(statsData?.data?.overview || statsData?.body?.overview || statsData?.overview)?.total || 0}
                                     label="Total Accounts (All Time)"
-                                    color="#dc3545"
+                                    color="#06b6d4"
                                 />
                             )}
                         </Box>
@@ -693,7 +693,7 @@ export default function AdminDashboard() {
                                     icon={<BlockOutlined style={{fontSize: 28}}/>}
                                     value={(statsData?.data?.overview || statsData?.body?.overview || statsData?.overview)?.inactiveCount || 0}
                                     label="Inactive Accounts (All Time)"
-                                    color="#dc3545"
+                                    color="#06b6d4"
                                 />
                             )}
                         </Box>
@@ -773,17 +773,17 @@ export default function AdminDashboard() {
                                                         borderColor: '#e2e8f0',
                                                     },
                                                     '&:hover fieldset': {
-                                                        borderColor: '#dc3545',
+                                                        borderColor: '#06b6d4',
                                                     },
                                                     '&.Mui-focused fieldset': {
-                                                        borderColor: '#dc3545',
+                                                        borderColor: '#06b6d4',
                                                     }
                                                 },
                                                 '& .MuiInputLabel-root': {
                                                     color: '#64748b',
                                                     fontSize: '0.875rem',
                                                     '&.Mui-focused': {
-                                                        color: '#dc3545',
+                                                        color: '#06b6d4',
                                                     }
                                                 }
                                             }}
@@ -806,11 +806,11 @@ export default function AdminDashboard() {
                                                 border: '1px solid #e2e8f0',
                                                 backgroundColor: 'white',
                                                 '&:hover': {
-                                                    borderColor: '#dc3545',
+                                                    borderColor: '#06b6d4',
                                                 },
                                                 '&.ant-picker-focused': {
-                                                    borderColor: '#dc3545',
-                                                    boxShadow: '0 0 0 2px rgba(220, 53, 69, 0.1)',
+                                                    borderColor: '#06b6d4',
+                                                    boxShadow: '0 0 0 2px rgba(6, 182, 212, 0.1)',
                                                 }
                                             },
                                             '& .ant-picker-input > input': {
@@ -837,11 +837,11 @@ export default function AdminDashboard() {
                                             onClick={() => fetchAccountStats()}
                                             disabled={loading}
                                             sx={{
-                                                borderColor: '#dc3545',
-                                                color: '#dc3545',
+                                                borderColor: '#06b6d4',
+                                                color: '#06b6d4',
                                                 '&:hover': {
-                                                    borderColor: '#c82333',
-                                                    backgroundColor: '#dc354508'
+                                                    borderColor: '#0e7490',
+                                                    backgroundColor: '#06b6d408'
                                                 }
                                             }}
                                         >
@@ -864,7 +864,7 @@ export default function AdminDashboard() {
                                             }]}
                                             series={[{
                                                 data: timeSeriesData.seriesData,
-                                                color: '#dc3545',
+                                                color: '#06b6d4',
                                                 curve: 'linear'
                                             }]}
                                             width={chartWidth}
@@ -1125,7 +1125,7 @@ export default function AdminDashboard() {
                                     icon={<AccountBalanceWalletOutlined style={{fontSize: 28}}/>}
                                     value={formatVND((transactionData?.data?.overview || transactionData?.body?.overview || transactionData?.overview)?.totalServiceFee || 0)}
                                     label="Platform Revenue (Service Fee)"
-                                    color="#dc3545"
+                                    color="#06b6d4"
                                 />
                             )}
                         </Box>
@@ -1202,11 +1202,11 @@ export default function AdminDashboard() {
                                                     border: '1px solid #e2e8f0',
                                                     backgroundColor: 'white',
                                                     '&:hover': {
-                                                        borderColor: '#dc3545',
+                                                        borderColor: '#06b6d4',
                                                     },
                                                     '&.ant-picker-focused': {
-                                                        borderColor: '#dc3545',
-                                                        boxShadow: '0 0 0 2px rgba(220, 53, 69, 0.1)',
+                                                        borderColor: '#06b6d4',
+                                                        boxShadow: '0 0 0 2px rgba(6, 182, 212, 0.1)',
                                                     }
                                                 },
                                                 '& .ant-picker-input > input': {
@@ -1523,8 +1523,8 @@ export default function AdminDashboard() {
                                             <Box sx={{
                                                 p: 3,
                                                 borderRadius: 2,
-                                                background: 'linear-gradient(135deg, #dc354508 0%, #dc354512 100%)',
-                                                border: '1px solid #dc354520',
+                                                background: 'linear-gradient(135deg, #06b6d408 0%, #06b6d412 100%)',
+                                                border: '1px solid #06b6d420',
                                                 textAlign: 'center',
                                                 height: '140px',
                                                 display: 'flex',
@@ -1533,11 +1533,11 @@ export default function AdminDashboard() {
                                                 transition: 'all 0.3s ease',
                                                 '&:hover': {
                                                     transform: 'translateY(-2px)',
-                                                    boxShadow: '0 8px 24px rgba(220, 53, 69, 0.15)'
+                                                    boxShadow: '0 8px 24px rgba(6, 182, 212, 0.15)'
                                                 }
                                             }}>
                                                 <Typography variant="h3"
-                                                            sx={{fontWeight: 800, color: '#dc3545', mb: 1}}>
+                                                            sx={{fontWeight: 800, color: '#06b6d4', mb: 1}}>
                                                     {(transactionData?.data?.overview || transactionData?.body?.overview || transactionData?.overview)?.byStatus?.TRANSACTION_FAIL || 0}
                                                 </Typography>
                                                 <Typography variant="body1" sx={{

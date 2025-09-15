@@ -29,7 +29,7 @@ function Navbar({activeMenu, navigate}) {
             {}
             <Box sx={{
                 p: 3,
-                background: "linear-gradient(135deg, #dc3545 0%, #c82333 100%)",
+                background: "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)",
                 color: "white",
                 textAlign: "center"
             }}>
@@ -64,9 +64,9 @@ function Navbar({activeMenu, navigate}) {
                             p: 2,
                             cursor: "pointer",
                             transition: "all 0.3s ease",
-                            background: activeMenu === 'statistics' ? "linear-gradient(135deg, #dc3545 0%, #c82333 100%)" : "transparent",
+                            background: activeMenu === 'statistics' ? "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)" : "transparent",
                             "&:hover": {
-                                background: "linear-gradient(135deg, #dc3545 0%, #c82333 100%)",
+                                background: "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)",
                                 color: "#FFFFFF",
                                 transform: "translateY(-1px)",
                             },
@@ -90,9 +90,9 @@ function Navbar({activeMenu, navigate}) {
                             p: 2,
                             cursor: "pointer",
                             transition: "all 0.3s ease",
-                            background: activeMenu === 'designs' ? "linear-gradient(135deg, #dc3545 0%, #c82333 100%)" : "transparent",
+                            background: activeMenu === 'designs' ? "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)" : "transparent",
                             "&:hover": {
-                                background: "linear-gradient(135deg, #dc3545 0%, #c82333 100%)",
+                                background: "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)",
                                 color: "#FFFFFF",
                                 transform: "translateY(-1px)",
                             },
@@ -116,9 +116,9 @@ function Navbar({activeMenu, navigate}) {
                             p: 2,
                             cursor: "pointer",
                             transition: "all 0.3s ease",
-                            background: activeMenu === 'orders' ? "linear-gradient(135deg, #dc3545 0%, #c82333 100%)" : "transparent",
+                            background: activeMenu === 'orders' ? "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)" : "transparent",
                             "&:hover": {
-                                background: "linear-gradient(135deg, #dc3545 0%, #c82333 100%)",
+                                background: "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)",
                                 color: "#FFFFFF",
                                 transform: "translateY(-1px)",
                             },
@@ -142,9 +142,9 @@ function Navbar({activeMenu, navigate}) {
                             p: 2,
                             cursor: "pointer",
                             transition: "all 0.3s ease",
-                            background: activeMenu === 'transactions' ? "linear-gradient(135deg, #dc3545 0%, #c82333 100%)" : "transparent",
+                            background: activeMenu === 'transactions' ? "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)" : "transparent",
                             "&:hover": {
-                                background: "linear-gradient(135deg, #dc3545 0%, #c82333 100%)",
+                                background: "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)",
                                 color: "#FFFFFF",
                                 transform: "translateY(-1px)",
                             },
@@ -168,9 +168,9 @@ function Navbar({activeMenu, navigate}) {
                             p: 2,
                             cursor: "pointer",
                             transition: "all 0.3s ease",
-                            background: activeMenu === 'reports' ? "linear-gradient(135deg, #dc3545 0%, #c82333 100%)" : "transparent",
+                            background: activeMenu === 'reports' ? "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)" : "transparent",
                             "&:hover": {
-                                background: "linear-gradient(135deg, #dc3545 0%, #c82333 100%)",
+                                background: "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)",
                                 color: "#FFFFFF",
                                 transform: "translateY(-1px)",
                             },
@@ -209,9 +209,9 @@ function Navbar({activeMenu, navigate}) {
                             p: 2,
                             cursor: "pointer",
                             transition: "all 0.3s ease",
-                            background: activeMenu === 'accounts' ? "linear-gradient(135deg, #dc3545 0%, #c82333 100%)" : "transparent",
+                            background: activeMenu === 'accounts' ? "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)" : "transparent",
                             "&:hover": {
-                                background: "linear-gradient(135deg, #dc3545 0%, #c82333 100%)",
+                                background: "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)",
                                 color: "#FFFFFF",
                                 transform: "translateY(-1px)",
                             },
@@ -250,9 +250,9 @@ function Navbar({activeMenu, navigate}) {
                             p: 2,
                             cursor: "pointer",
                             transition: "all 0.3s ease",
-                            background: activeMenu === 'platform-settings' ? "linear-gradient(135deg, #dc3545 0%, #c82333 100%)" : "transparent",
+                            background: activeMenu === 'platform-settings' ? "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)" : "transparent",
                             "&:hover": {
-                                background: "linear-gradient(135deg, #dc3545 0%, #c82333 100%)",
+                                background: "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)",
                                 color: "#FFFFFF",
                                 transform: "translateY(-1px)",
                             },
@@ -368,9 +368,9 @@ export default function AdminDashboardLayout() {
             <AppBar
                 position="static"
                 sx={{
-                    background: "linear-gradient(135deg, #dc3545 0%, #c82333 100%)",
+                    background: "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)",
                     color: "#FFFFFF",
-                    boxShadow: "0 4px 20px rgba(220, 53, 69, 0.3)",
+                    boxShadow: "0 4px 20px rgba(6, 182, 212, 0.3)",
                 }}
             >
                 <Toolbar sx={{justifyContent: "space-between", py: 1}}>
@@ -432,7 +432,7 @@ export default function AdminDashboardLayout() {
                                 overlap="circular"
                                 anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
                                 badgeContent={
-                                    <AdminPanelSettings sx={{fontSize: 16, color: '#dc3545'}}/>
+                                    <AdminPanelSettings sx={{fontSize: 16, color: '#06b6d4'}}/>
                                 }
                             >
                                 <Avatar
@@ -482,9 +482,9 @@ export default function AdminDashboardLayout() {
                                     p: 1.5,
                                     borderRadius: 1,
                                     mb: 1,
-                                    background: 'rgba(220, 53, 69, 0.05)'
+                                    background: 'rgba(6, 182, 212, 0.05)'
                                 }}>
-                                    <Avatar sx={{width: 40, height: 40, bgcolor: "rgba(220, 53, 69, 0.2)"}}
+                                    <Avatar sx={{width: 40, height: 40, bgcolor: "rgba(6, 182, 212, 0.2)"}}
                                             src={userObj?.customer?.avatar}
                                             slotProps={{
                                                 img: {
@@ -514,10 +514,10 @@ export default function AdminDashboardLayout() {
                                         p: 1.5,
                                         borderRadius: 1,
                                         cursor: 'pointer',
-                                        color: '#dc3545',
+                                        color: '#0e7490',
                                         transition: 'all 0.2s ease',
                                         '&:hover': {
-                                            background: 'rgba(220, 53, 69, 0.1)',
+                                            background: 'rgba(6, 182, 212, 0.1)',
                                         }
                                     }}
                                     onClick={() => {
@@ -525,7 +525,7 @@ export default function AdminDashboardLayout() {
                                         handleLogout();
                                     }}
                                 >
-                                    <Logout sx={{fontSize: 20, color: '#dc3545'}}/>
+                                    <Logout sx={{fontSize: 20, color: '#0e7490'}}/>
                                     <Typography variant="body2" sx={{fontWeight: 500}}>
                                         Logout
                                     </Typography>

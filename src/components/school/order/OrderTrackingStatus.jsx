@@ -1777,6 +1777,70 @@ export default function OrderTrackingStatus() {
                                 <Box sx={{
                                     p: 2.5,
                                     borderRadius: 3,
+                                    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%)',
+                                    border: '1px solid rgba(16, 185, 129, 0.1)',
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        transform: 'translateY(-2px)',
+                                        boxShadow: '0 8px 25px rgba(16, 185, 129, 0.15)'
+                                    }
+                                }}>
+                                    <Box sx={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        right: 0,
+                                        width: '40px',
+                                        height: '40px',
+                                        background: 'rgba(16, 185, 129, 0.1)',
+                                        borderRadius: '50%',
+                                        transform: 'translate(10px, -10px)'
+                                    }}/>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1.5,
+                                        position: 'relative',
+                                        zIndex: 1
+                                    }}>
+                                        <Box sx={{
+                                            width: 32,
+                                            height: 32,
+                                            borderRadius: '50%',
+                                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                                        }}>
+                                            <LocationIcon sx={{color: 'white', fontSize: 16}}/>
+                                        </Box>
+                                        <Box>
+                                            <Typography variant="caption" sx={{
+                                                color: '#64748b',
+                                                fontWeight: 500,
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.5px',
+                                                display: 'block',
+                                                fontSize: '0.7rem'
+                                            }}>
+                                                Delivery Address
+                                            </Typography>
+                                            <Typography variant="body2" sx={{
+                                                fontWeight: 700,
+                                                color: '#1e293b',
+                                                fontSize: '0.9rem'
+                                            }}>
+                                                {orderDetail?.deliveryAddress || 'N/A'}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                </Box>
+
+                                <Box sx={{
+                                    p: 2.5,
+                                    borderRadius: 3,
                                     background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%)',
                                     border: '1px solid rgba(168, 85, 247, 0.1)',
                                     position: 'relative',
@@ -3831,6 +3895,88 @@ export default function OrderTrackingStatus() {
                                         </Box>
                                     </Box>
                                 )}
+                            </Box>
+                        )}
+
+                        {/* Pre-delivery Image for Delivering phase */}
+                        {hoveredMilestone.title === 'Delivering' && orderDetail.preDeliveryImageUrl && (
+                            <Box sx={{
+                                mt: 3,
+                                p: 2,
+                                borderRadius: 3,
+                                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%)',
+                                border: '1px solid rgba(16, 185, 129, 0.2)',
+                                position: 'relative',
+                                overflow: 'hidden'
+                            }}>
+                                <Box sx={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    right: 0,
+                                    width: '40px',
+                                    height: '40px',
+                                    background: 'rgba(16, 185, 129, 0.1)',
+                                    borderRadius: '50%',
+                                    transform: 'translate(10px, -10px)'
+                                }}/>
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    mb: 2,
+                                    position: 'relative',
+                                    zIndex: 1
+                                }}>
+                                    <Box sx={{
+                                        width: 28,
+                                        height: 28,
+                                        borderRadius: '50%',
+                                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                                    }}>
+                                        <CloudUploadIcon sx={{color: 'white', fontSize: 16}}/>
+                                    </Box>
+                                    <Typography variant="subtitle2" sx={{
+                                        fontWeight: 600,
+                                        color: '#059669',
+                                        fontSize: '0.875rem'
+                                    }}>
+                                        Pre-delivery Image
+                                    </Typography>
+                                </Box>
+                                <Box sx={{
+                                    borderRadius: 2,
+                                    overflow: 'hidden',
+                                    backgroundColor: '#000',
+                                    border: '2px solid rgba(16, 185, 129, 0.4)'
+                                }}>
+                                    <img
+                                        src={orderDetail.preDeliveryImageUrl}
+                                        alt="Pre-delivery"
+                                        style={{
+                                            width: '100%',
+                                            height: 'auto',
+                                            maxHeight: 200,
+                                            objectFit: 'cover',
+                                            display: 'block'
+                                        }}
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                        }}
+                                    />
+                                </Box>
+                                <Typography variant="caption" sx={{
+                                    color: '#64748b',
+                                    fontSize: '0.75rem',
+                                    mt: 1,
+                                    display: 'block',
+                                    textAlign: 'center'
+                                }}>
+                                    Image provided by garment before delivery
+                                </Typography>
                             </Box>
                         )}
 

@@ -131,6 +131,9 @@ export default function MilestoneManagement() {
     const [phaseStatuses, setPhaseStatuses] = useState({});
     const [uploadImageDialogOpen, setUploadImageDialogOpen] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
+    const [selectedProductImage, setSelectedProductImage] = useState(null);
+    const [productUploading, setProductUploading] = useState(false);
+    const [productUploadProgress, setProductUploadProgress] = useState(0);
     const [uploadingImage, setUploadingImage] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [updatingData, setUpdatingData] = useState(false);
@@ -515,19 +518,6 @@ export default function MilestoneManagement() {
             setSelectedPhases(updatedPhases);
         }
         setDraggedSelectedPhase(null);
-    };
-
-    const handlePhaseReorder = (fromIndex, toIndex) => {
-        const reorderedPhases = [...selectedPhases];
-        const [movedPhase] = reorderedPhases.splice(fromIndex, 1);
-        reorderedPhases.splice(toIndex, 0, movedPhase);
-
-        const updatedPhases = reorderedPhases.map((phase, index) => ({
-            ...phase,
-            stage: index + 1
-        }));
-
-        setSelectedPhases(updatedPhases);
     };
 
     const handleSetDuration = () => {
@@ -1082,8 +1072,6 @@ export default function MilestoneManagement() {
                                 return hasMilestone;
                             }).map((order) => {
                                 const orderMilestone = order.milestone || [];
-                                const hasMilestone = orderMilestone.length > 0;
-
                                 return (
                                     <Box key={order.id} sx={{
                                         flex: '0 0 calc(50% - 12px)',
@@ -2357,11 +2345,10 @@ export default function MilestoneManagement() {
                                     const maxDeliveryTime = getMaxDeliveryTime();
                                     const maxStartTime = getMaxStartDate();
                                     const maxDeliveryDate = maxDeliveryTime ? dayjs(maxDeliveryTime) : dayjs(selectedOrder.deadline).subtract(1, 'day');
-                                    const maxStartDate = maxStartTime ? dayjs(maxStartTime) : dayjs(selectedOrder.deadline).subtract(8, 'day');
-
+                                    maxStartTime ? dayjs(maxStartTime) : dayjs(selectedOrder.deadline).subtract(8, 'day');
                                     return (
                                         <>
-                                            <Typography variant="body2" sx={{color: '#d32f2f'}}>
+                                        <Typography variant="body2" sx={{color: '#d32f2f'}}>
                                                 • End date maximum: {maxDeliveryDate.format('DD/MM/YYYY')}
                                             </Typography>
                                         </>
@@ -2783,7 +2770,7 @@ export default function MilestoneManagement() {
                                     <Box sx={{mt: 2}}>
                                         <Stepper orientation="vertical"
                                                  sx={{'& .MuiStepConnector-line': {minHeight: '40px'}}}>
-                                            {viewingOrder.milestone?.sort((a, b) => a.stage - b.stage).map((phase, index) => (
+                                            {viewingOrder.milestone?.sort((a, b) => a.stage - b.stage).map((phase) => (
                                                 <Step key={phase.id} active={true} completed={false}>
                                                     <StepLabel
                                                         StepIconComponent={() => (
@@ -3298,6 +3285,7 @@ export default function MilestoneManagement() {
                             </Box>
                         </Box>
 
+                        {/* Upload video evidence (always) */}
                         {!uploadingImage && (
                             <Box sx={{
                                 border: '2px dashed rgba(63, 81, 181, 0.3)',
@@ -3367,7 +3355,81 @@ export default function MilestoneManagement() {
                             </Box>
                         )}
 
-                        {/* Upload Progress Bar */}
+                        {/* Upload Pre-delivery image (only when current phase is the last phase) */}
+                        {(() => {
+                            const totalMilestones = viewingOrder?.milestone?.length || 0;
+                            const isLastPhase = totalMilestones > 0 && currentPhase === totalMilestones;
+                            if (!isLastPhase || uploadingImage) return null;
+                            return (
+                                <Box sx={{
+                                    mt: 3,
+                                    border: '2px dashed rgba(16, 185, 129, 0.35)',
+                                    borderRadius: 2,
+                                    p: 3,
+                                    textAlign: 'center',
+                                    backgroundColor: 'rgba(16, 185, 129, 0.04)',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        borderColor: 'rgba(5, 150, 105, 0.6)',
+                                        backgroundColor: 'rgba(16, 185, 129, 0.08)'
+                                    }
+                                }}
+                                     onClick={() => document.getElementById('product-image-upload').click()}
+                                >
+                                    {selectedProductImage ? (
+                                        <Box>
+                                            <img
+                                                src={URL.createObjectURL(selectedProductImage)}
+                                                alt="Pre-delivery"
+                                                style={{
+                                                    maxWidth: '100%',
+                                                    maxHeight: '240px',
+                                                    borderRadius: '8px',
+                                                    marginBottom: '12px',
+                                                    objectFit: 'contain'
+                                                }}
+                                            />
+                                            <Typography variant="body2" sx={{color: '#059669'}}>
+                                                Click to change pre-delivery image
+                                            </Typography>
+                                        </Box>
+                                    ) : (
+                                        <Box>
+                                            <Avatar sx={{
+                                                width: 72,
+                                                height: 72,
+                                                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.25) 100%)',
+                                                border: '2px solid rgba(16, 185, 129, 0.25)',
+                                                mb: 1.5
+                                            }}>
+                                                <CheckCircleIcon sx={{fontSize: 36, color: '#059669'}}/>
+                                            </Avatar>
+                                            <Typography variant="subtitle1" sx={{color: '#065f46', fontWeight: 700, mb: 0.5}}>
+                                                Upload Pre-delivery Image
+                                            </Typography>
+                                            <Typography variant="caption" sx={{color: '#065f46'}}>
+                                                JPG, PNG (required)
+                                            </Typography>
+                                        </Box>
+                                    )}
+                                    <input
+                                        id="product-image-upload"
+                                        type="file"
+                                        accept="image/*"
+                                        style={{display: 'none'}}
+                                        onChange={(e) => {
+                                            const file = e.target.files[0];
+                                            if (file) {
+                                                setSelectedProductImage(file);
+                                            }
+                                        }}
+                                    />
+                                </Box>
+                            );
+                        })()}
+
+                        {/* Upload Progress Bar - Video */}
                         {uploadingImage && (
                             <Box sx={{
                                 mt: 3,
@@ -3425,6 +3487,51 @@ export default function MilestoneManagement() {
                                 </Box>
                             </Box>
                         )}
+
+                        {/* Upload Progress Bar - Product Image */}
+                        {productUploading && (
+                            <Box sx={{
+                                mt: 2,
+                                p: 2.5,
+                                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.12) 100%)',
+                                borderRadius: 2,
+                                border: '1px solid rgba(16, 185, 129, 0.2)'
+                            }}>
+                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 1.5}}>
+                                    <Avatar sx={{
+                                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                        width: 28,
+                                        height: 28
+                                    }}>
+                                        <CheckCircleIcon sx={{fontSize: 16}}/>
+                                    </Avatar>
+                                    <Typography variant="subtitle2" sx={{fontWeight: 700, color: '#064e3b'}}>
+                                        Uploading Pre-delivery Image...
+                                    </Typography>
+                                    <Typography variant="body2" sx={{
+                                        color: '#047857',
+                                        fontWeight: 600,
+                                        ml: 'auto'
+                                    }}>
+                                        {productUploadProgress}%
+                                    </Typography>
+                                </Box>
+
+                                <LinearProgress
+                                    variant="determinate"
+                                    value={productUploadProgress}
+                                    sx={{
+                                        height: 6,
+                                        borderRadius: 4,
+                                        backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                                        '& .MuiLinearProgress-bar': {
+                                            borderRadius: 4,
+                                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                                        }
+                                    }}
+                                />
+                            </Box>
+                        )}
                     </DialogContent>
 
                     <DialogActions sx={{p: 3, pt: 0}}>
@@ -3432,9 +3539,10 @@ export default function MilestoneManagement() {
                             onClick={() => {
                                 setUploadImageDialogOpen(false);
                                 setSelectedImage(null);
+                                setSelectedProductImage(null);
                                 setUploadProgress(0);
                             }}
-                            disabled={uploadingImage}
+                            disabled={uploadingImage || productUploading}
                             sx={{
                                 color: '#64748b',
                                 borderColor: '#d1d5db',
@@ -3452,11 +3560,22 @@ export default function MilestoneManagement() {
                         </Button>
                         <Button
                             variant="contained"
-                            disabled={!selectedImage || uploadingImage}
+                            disabled={(() => {
+                                const total = viewingOrder?.milestone?.length || 0;
+                                const isLast = total > 0 && currentPhase === total;
+                                return !selectedImage || uploadingImage || productUploading || (isLast && !selectedProductImage);
+                            })()}
                             onClick={async () => {
                                 const maxSize = getMaxVideoSize() * 1024 * 1024;
                                 if (selectedImage && selectedImage.size > maxSize) {
                                     enqueueSnackbar(`Please select a video file under ${getMaxVideoSize()}MB`, {variant: 'warning'});
+                                    return;
+                                }
+
+                                const totalCheck = viewingOrder?.milestone?.length || 0;
+                                const isLastCheck = totalCheck > 0 && currentPhase === totalCheck;
+                                if (isLastCheck && !selectedProductImage) {
+                                    enqueueSnackbar('Please upload a pre-delivery image.', {variant: 'warning'});
                                     return;
                                 }
 
@@ -3465,6 +3584,7 @@ export default function MilestoneManagement() {
                                     setUploadProgress(0);
 
                                     let videoUrl = '';
+                                    let productImageUrl = '';
                                     if (selectedImage) {
                                         const uploadResponse = await uploadCloudinaryVideo(selectedImage, (progress) => {
                                             // Throttle progress updates to prevent excessive re-renders
@@ -3477,9 +3597,34 @@ export default function MilestoneManagement() {
                                         }
                                     }
 
+                                    // If last phase and image selected -> upload product image
+                                    const totalMilestones = viewingOrder?.milestone?.length || 0;
+                                    const isLastPhase = totalMilestones > 0 && currentPhase === totalMilestones;
+                                    if (isLastPhase && selectedProductImage) {
+                                        try {
+                                            setProductUploading(true);
+                                            setProductUploadProgress(0);
+                                            const imgResponse = await uploadCloudinary(selectedProductImage, (progress) => {
+                                                // If your uploadCloudinary supports progress callback
+                                                if (typeof progress === 'number') {
+                                                    setProductUploadProgress(progress);
+                                                }
+                                            });
+                                            if (imgResponse) {
+                                                productImageUrl = imgResponse;
+                                            }
+                                        } catch (imgErr) {
+                                            console.error('Error uploading product image:', imgErr);
+                                        } finally {
+                                            setProductUploading(false);
+                                            setProductUploadProgress(100);
+                                        }
+                                    }
+
                                     const updateData = {
                                         orderId: viewingOrder.id,
-                                        videoUrl: videoUrl
+                                        videoUrl: videoUrl,
+                                        productImageUrl: productImageUrl || undefined
                                     };
 
                                     const response = await updateMilestoneStatus(updateData);
@@ -3519,6 +3664,7 @@ export default function MilestoneManagement() {
 
                                         setUploadImageDialogOpen(false);
                                         setSelectedImage(null);
+                                        setSelectedProductImage(null);
                                         setUploadProgress(0);
 
                                         setUpdatingData(true);

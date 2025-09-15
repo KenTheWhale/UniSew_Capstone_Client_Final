@@ -50,6 +50,7 @@ import {enqueueSnackbar} from 'notistack';
 import dayjs from 'dayjs';
 import 'dayjs/locale/vi';
 import {parseID} from "../../../utils/ParseIDUtil.jsx";
+import {formatDateTimeSecond} from "../../../utils/TimestampUtil.jsx";
 
 export default function DesignerProfile() {
     const [profileData, setProfileData] = useState(null);
@@ -1339,6 +1340,27 @@ export default function DesignerProfile() {
                                                                     fontSize: '11px'
                                                                 }}
                                                             />
+                                                            {(() => {
+                                                                const newBalance = isReceiver ? transaction?.remain?.receiver : transaction?.remain?.sender;
+                                                                if (newBalance === undefined || newBalance === null || newBalance === -1) return null;
+                                                                const isPending = transaction.balanceType === 'pending';
+                                                                return (
+                                                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 0.5 }}>
+                                                                        <Chip
+                                                                            size="small"
+                                                                            label={`${isPending ? 'Pending' : 'Balance'}: ${formatCurrency(newBalance)}`}
+                                                                            sx={{
+                                                                                height: 22,
+                                                                                fontSize: '11px',
+                                                                                fontWeight: 600,
+                                                                                color: '#111827',
+                                                                                backgroundColor: '#f3f4f6',
+                                                                                border: '1px solid #e5e7eb'
+                                                                            }}
+                                                                        />
+                                                                    </Box>
+                                                                );
+                                                            })()}
                                                         </Box>
                                                     </Box>
                                                     <Box sx={{
@@ -1428,7 +1450,7 @@ export default function DesignerProfile() {
                                                                 style={{color: '#64748b', fontSize: 12}}/>
                                                             <Typography variant="body2"
                                                                         sx={{color: '#64748b', fontSize: '13px'}}>
-                                                                {formatDate(transaction.creationDate)}
+                                                                {formatDateTimeSecond(transaction.creationDate)}
                                                             </Typography>
                                                         </Box>
                                                     </Box>
