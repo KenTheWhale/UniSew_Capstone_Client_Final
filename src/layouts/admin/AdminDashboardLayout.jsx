@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useState} from "react";
 import {Outlet, useLocation, useNavigate} from "react-router-dom";
 import {AppBar, Avatar, Badge, Box, CssBaseline, Divider, Popover, Toolbar, Typography} from "@mui/material";
-import {AccountCircle, AdminPanelSettings, Assessment, Logout, People, Receipt, Settings, DesignServices, ShoppingCart} from "@mui/icons-material";
+import {AccountCircle, AdminPanelSettings, Assessment, Logout, People, Receipt, Settings, DesignServices, ShoppingCart, Inventory} from "@mui/icons-material";
 import {Tag} from "antd";
 import {signout} from "../../services/AccountService.jsx";
 import {enqueueSnackbar} from "notistack";
@@ -205,6 +205,32 @@ function Navbar({activeMenu, navigate}) {
                             borderRadius: 2,
                             mx: 1,
                             my: 0.5,
+                            color: activeMenu === 'fabrics' ? "#FFFFFF" : "#495057",
+                            p: 2,
+                            cursor: "pointer",
+                            transition: "all 0.3s ease",
+                            background: activeMenu === 'fabrics' ? "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)" : "transparent",
+                            "&:hover": {
+                                background: "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)",
+                                color: "#FFFFFF",
+                                transform: "translateY(-1px)",
+                            },
+                        }}
+                        onClick={() => navigate("/admin/fabrics")}
+                    >
+                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
+                            <Inventory sx={{color: "inherit", fontSize: 20}}/>
+                            <Typography variant="body2" sx={{fontWeight: 500}}>
+                                Fabrics
+                            </Typography>
+                        </Box>
+                    </Box>
+
+                    <Box
+                        sx={{
+                            borderRadius: 2,
+                            mx: 1,
+                            my: 0.5,
                             color: activeMenu === 'accounts' ? "#FFFFFF" : "#495057",
                             p: 2,
                             cursor: "pointer",
@@ -319,6 +345,8 @@ export default function AdminDashboardLayout() {
             setActiveMenu('transactions');
         } else if (pathname.includes('/admin/reports')) {
             setActiveMenu('reports');
+        } else if (pathname.includes('/admin/fabrics')) {
+            setActiveMenu('fabrics');
         } else if (pathname.includes('/admin/accounts')) {
             setActiveMenu('accounts');
         } else if (pathname.includes('/admin/platform/setting')) {

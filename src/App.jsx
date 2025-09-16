@@ -10,6 +10,7 @@ import MyOrderDetail from "./components/garment/MyOrderDetail.jsx";
 import DesignRequestList from "./components/admin/DesignRequestList.jsx";
 import OrderList from "./components/admin/OrderList.jsx";
 import FabricManagement from "./components/garment/FabricManagement.jsx";
+import AdminFabric from "./components/admin/AdminFabric.jsx";
 
 const DesignerFeedback = lazy(() => import("./components/designer/DesignerFeedback.jsx"));
 const GarmentFeedback = lazy(() => import("./components/garment/GarmentFeedback.jsx"));
@@ -342,6 +343,14 @@ const router = createBrowserRouter([
                 element: (
                     <Suspense fallback={<LoadingFallback />}>
                         <OrderList/>
+                    </Suspense>
+                )
+            },
+            {
+                path: 'fabric',
+                element: (
+                    <Suspense fallback={<LoadingFallback />}>
+                        <AdminFabric/>
                     </Suspense>
                 )
             }

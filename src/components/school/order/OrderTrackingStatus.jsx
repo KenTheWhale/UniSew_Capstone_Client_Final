@@ -59,7 +59,7 @@ import OrderDetailTable from '../../ui/OrderDetailTable';
 import {serviceFee} from '../../../configs/FixedVariables';
 import {getPhoneLink} from '../../../utils/PhoneUtil';
 import {uploadCloudinary} from '../../../services/UploadImageService';
-import {formatDate, formatDateTime} from "../../../utils/TimestampUtil.jsx";
+import {formatDate, formatDateTime, formatDateTimeSecond} from "../../../utils/TimestampUtil.jsx";
 
 const pulseKeyframes = `
   @keyframes pulse {
@@ -2321,6 +2321,236 @@ export default function OrderTrackingStatus() {
                 </Box>
 
                 <CardContent sx={{p: 4}}>
+                    {/* Transactions Section */}
+                    {Array.isArray(orderDetail.transactions) && orderDetail.transactions.length > 0 && (
+                        <Box sx={{mb: 4}}>
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                mb: 2
+                            }}>
+                                <Typography variant="h6" sx={{
+                                    fontWeight: 700,
+                                    color: '#1e293b'
+                                }}>
+                                    Transactions
+                                </Typography>
+                                <Chip
+                                    label={`${orderDetail.transactions.length} transactions`}
+                                    size="small"
+                                    sx={{
+                                        backgroundColor: '#06b6d410',
+                                        color: '#06b6d4',
+                                        fontWeight: 600
+                                    }}
+                                />
+                            </Box>
+
+                            <Box sx={{
+                                display: 'grid',
+                                gridTemplateColumns: {
+                                    xs: '1fr',
+                                    md: '1fr 1fr'
+                                },
+                                gap: 2
+                            }}>
+                                {[...orderDetail.transactions]
+                                    .sort((a, b) => {
+                                        const aPriority = a?.paymentType === 'deposit' ? 0 : 1;
+                                        const bPriority = b?.paymentType === 'deposit' ? 0 : 1;
+                                        if (aPriority !== bPriority) return aPriority - bPriority;
+                                        return new Date(b.creationDate) - new Date(a.creationDate);
+                                    })
+                                    .map((transaction) => {
+                                        const isReceiver = transaction?.receiver?.id === orderDetail?.school?.id;
+                                        const otherParty = isReceiver ? transaction?.sender : transaction?.receiver;
+                                        const isSuccess = transaction?.status === 'success';
+                                        const paymentTypeLabel =
+                                            transaction?.paymentType === 'design' ? 'Design Payment' :
+                                            transaction?.paymentType === 'design_return' ? 'Design Refund' :
+                                            transaction?.paymentType === 'order' ? 'Order Payment' :
+                                            transaction?.paymentType === 'order_return' ? 'Order Refund' :
+                                            transaction?.paymentType === 'deposit' ? 'Deposit' : (transaction?.paymentType || 'Payment');
+
+                                        return (
+                                            <Card
+                                                key={transaction.id}
+                                                elevation={0}
+                                                sx={{
+                                                    border: '1px solid #e2e8f0',
+                                                    borderRadius: 2,
+                                                    boxShadow: 'none',
+                                                    '&:hover': {
+                                                        boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                                                        transform: 'translateY(-2px)'
+                                                    },
+                                                    transition: 'all 0.3s ease'
+                                                }}
+                                            >
+                                                <CardContent sx={{p: 3}}>
+                                                    <Box sx={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'space-between',
+                                                        mb: 2
+                                                    }}>
+                                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                            <Box sx={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                width: 44,
+                                                                height: 44,
+                                                                borderRadius: '50%',
+                                                                backgroundColor: isReceiver ? '#dcfce7' : '#fef3c7'
+                                                            }}>
+                                                                <MoneyIcon sx={{color: isReceiver ? '#16a34a' : '#d97706'}}/>
+                                                            </Box>
+                                                            <Box>
+                                                                <Typography variant="subtitle1" sx={{
+                                                                    fontWeight: 600,
+                                                                    color: '#1e293b'
+                                                                }}>
+                                                                    {paymentTypeLabel}
+                                                                </Typography>
+                                                                <Typography variant="body2" sx={{
+                                                                    color: '#64748b'
+                                                                }}>
+                                                                    {isReceiver ? 'Received from' : 'Sent to'} {otherParty?.business || 'Unknown'}
+                                                                </Typography>
+                                                            </Box>
+                                                        </Box>
+
+                                                        <Box sx={{textAlign: 'right'}}>
+                                                            <Typography variant="h6" sx={{
+                                                                fontWeight: 700,
+                                                                color: isReceiver ? '#10b981' : '#ef4444'
+                                                            }}>
+                                                                {isReceiver ? '+' : '-'}{formatCurrency(transaction.amount)}
+                                                            </Typography>
+                                                            <Chip
+                                                                label={isSuccess ? 'Successful' : 'Failed'}
+                                                                size="small"
+                                                                sx={{
+                                                                    backgroundColor: isSuccess ? '#dcfce7' : '#fee2e2',
+                                                                    color: isSuccess ? '#166534' : '#dc2626',
+                                                                    fontWeight: 600,
+                                                                    fontSize: '11px',
+                                                                    mt: 0.5
+                                                                }}
+                                                            />
+                                                            {(() => {
+                                                                const newBalance = isReceiver ? transaction?.remain?.receiver : transaction?.remain?.sender;
+                                                                if (newBalance === undefined || newBalance === null || newBalance === -1) return null;
+                                                                const isPending = transaction.balanceType === 'pending';
+                                                                return (
+                                                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 0.5 }}>
+                                                                        <Chip
+                                                                            size="small"
+                                                                            label={`${isPending ? 'Pending' : 'Balance'}: ${formatCurrency(newBalance)}`}
+                                                                            sx={{
+                                                                                height: 22,
+                                                                                fontSize: '11px',
+                                                                                fontWeight: 600,
+                                                                                color: '#111827',
+                                                                                backgroundColor: '#f3f4f6',
+                                                                                border: '1px solid #e5e7eb'
+                                                                            }}
+                                                                        />
+                                                                    </Box>
+                                                                );
+                                                            })()}
+                                                        </Box>
+                                                    </Box>
+
+                                                    <Box sx={{
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        alignItems: 'center',
+                                                        pt: 2,
+                                                        mt: 1,
+                                                        borderTop: '1px solid #f1f5f9'
+                                                    }}>
+                                                        <Box sx={{display: 'flex', gap: 2, flexWrap: 'wrap'}}>
+                                                            {transaction.itemId && transaction.itemId !== 0 && (
+                                                                <Box>
+                                                                    <Typography variant="body2" sx={{color: '#64748b', fontSize: '12px'}}>
+                                                                        {transaction.paymentType === 'design' || transaction.paymentType === 'design_return' ? 'Request ID' : 'Order ID'}
+                                                                    </Typography>
+                                                                    <Chip
+                                                                        label={transaction.paymentType === 'design' || transaction.paymentType === 'design_return' ?
+                                                                            parseID(transaction.itemId, 'dr') : 
+                                                                            parseID(transaction.itemId, 'ord')}
+                                                                        size="small"
+                                                                        sx={{
+                                                                            backgroundColor: transaction.paymentType === 'design' || transaction.paymentType === 'design_return' ? '#f3e8ff' : '#e0f2fe',
+                                                                            color: transaction.paymentType === 'design' ? '#7c3aed' : '#0369a1',
+                                                                            fontWeight: 600,
+                                                                            fontSize: '10px',
+                                                                            height: '20px'
+                                                                        }}
+                                                                    />
+                                                                </Box>
+                                                            )}
+                                                            {transaction.serviceFee > 0 && (
+                                                                <Box>
+                                                                    <Typography variant="body2" sx={{color: '#64748b', fontSize: '12px'}}>
+                                                                        Service Fee
+                                                                    </Typography>
+                                                                    <Typography variant="body2" sx={{
+                                                                        color: '#f59e0b',
+                                                                        fontWeight: 600,
+                                                                        fontSize: '13px',
+                                                                        mt: '0.5vh'
+                                                                    }}>
+                                                                        {formatCurrency(transaction.serviceFee)}
+                                                                    </Typography>
+                                                                </Box>
+                                                            )}
+                                                            <Box>
+                                                                <Typography variant="body2" sx={{color: '#64748b', fontSize: '12px'}}>
+                                                                    Paid from
+                                                                </Typography>
+                                                                <Typography variant="body2" sx={{
+                                                                    color: '#0ea5b8',
+                                                                    fontWeight: 600,
+                                                                    fontSize: '13px',
+                                                                    mt: '0.5vh'
+                                                                }}>
+                                                                    {transaction.paymentGatewayCode?.includes('w') ? 'Wallet' : 'VNPay'}
+                                                                </Typography>
+                                                            </Box>
+                                                            <Box>
+                                                                <Typography variant="body2" sx={{color: '#64748b', fontSize: '12px'}}>
+                                                                    To receiver
+                                                                </Typography>
+                                                                <Typography variant="body2" sx={{
+                                                                    color: '#5096de',
+                                                                    fontWeight: 600,
+                                                                    fontSize: '13px',
+                                                                    mt: '0.5vh'
+                                                                }}>
+                                                                    {transaction.balanceType === 'pending' ? 'Pending balance' : transaction.balanceType === 'balance' ? 'Balance' : 'N/A'}
+                                                                </Typography>
+                                                            </Box>
+                                                        </Box>
+
+                                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                                            <CalendarIcon sx={{color: '#64748b', fontSize: 16}}/>
+                                                            <Typography variant="body2" sx={{color: '#64748b', fontSize: '13px'}}>
+                                                                {formatDateTimeSecond(transaction.creationDate)}
+                                                            </Typography>
+                                                        </Box>
+                                                    </Box>
+                                                </CardContent>
+                                            </Card>
+                                        );
+                                    })}
+                            </Box>
+                        </Box>
+                    )}
+
                     {orderDetail.status === 'processing' ? (
                         <Box sx={{
                             display: 'flex',
