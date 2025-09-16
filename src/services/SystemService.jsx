@@ -38,3 +38,8 @@ export const deleteGarmentFabric = async (fabricId) => {
     const response = await axiosClient.put(`/system/garment/fabric/remove?fabricId=${fabricId}`)
     return response || null
 }
+
+export const getGarmentFabricForQuotation = async (orderId) => {
+    const response = await axiosClient.post(`/system/garment/fabric/quotation?orderId=${orderId}`)
+    return response || null
+}
