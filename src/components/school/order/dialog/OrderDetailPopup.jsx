@@ -1135,7 +1135,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                         </span>.
                                     {order.status === 'pending' && selectedQuotation.depositRate && (
                                         <span style={{color: '#d97706', fontWeight: 600}}>
-                                                {' '}A deposit of {selectedQuotation.depositRate}% is required to proceed with this order.
+                                                {' '}A deposit of {selectedQuotation.depositRate || 50}% of base price plus service fee is required.
                                             </span>)}
                                 </Typography>
 
@@ -1183,6 +1183,22 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                             </Typography>
                                         </Box>
 
+                                        {/* Deposit Rate */}
+                                        <Box sx={{
+                                            display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                                        }}>
+                                            <Typography variant="body2" sx={{
+                                                color: '#475569', fontSize: '12px'
+                                            }}>
+                                                Deposit rate
+                                            </Typography>
+                                            <Typography variant="body2" sx={{
+                                                color: '#1e293b', fontWeight: 600, fontSize: '12px'
+                                            }}>
+                                                {(selectedQuotation.depositRate || 50)}%
+                                            </Typography>
+                                        </Box>
+
 
                                         <Box sx={{
                                             display: 'flex',
@@ -1224,13 +1240,19 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                     <Typography variant="caption" sx={{
                                                         color: '#d97706', fontSize: '10px'
                                                     }}>
-                                                        {selectedQuotation.depositRate || 50}% of total amount
+                                                        Deposit = Base Price × Deposit Rate + Service Fee
                                                     </Typography>
                                                 </Box>
                                                 <Typography variant="body2" sx={{
                                                     color: '#d97706', fontWeight: 700, fontSize: '12px'
                                                 }}>
-                                                    {Math.round((selectedQuotation.price + calculateServiceFee(selectedQuotation.price)) * ((selectedQuotation.depositRate || 50) / 100)).toLocaleString('vi-VN')} VND
+                                                    {(() => {
+                                                        const subtotal = selectedQuotation.price || 0;
+                                                        const fee = calculateServiceFee(subtotal);
+                                                        const rate = (selectedQuotation.depositRate || 50) / 100;
+                                                        const depositAmount = Math.round(subtotal * rate + fee);
+                                                        return depositAmount.toLocaleString('vi-VN') + ' VND';
+                                                    })()}
                                                 </Typography>
                                             </Box>)}
 
@@ -1249,7 +1271,18 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                             <Typography variant="h6" sx={{
                                                 color: '#16a34a', fontWeight: 700, fontSize: '16px', margin: 0
                                             }}>
-                                                {order.status === 'pending' ? Math.round((selectedQuotation.price + calculateServiceFee(selectedQuotation.price)) * ((selectedQuotation.depositRate || 50) / 100)).toLocaleString('vi-VN') + ' VND' : (selectedQuotation.price + calculateServiceFee(selectedQuotation.price)).toLocaleString('vi-VN') + ' VND'}
+                                                {(() => {
+                                                    const subtotal = selectedQuotation.price || 0;
+                                                    const fee = calculateServiceFee(subtotal);
+                                                    const totalAmount = subtotal + fee;
+                                                    const rate = (selectedQuotation.depositRate || 50) / 100;
+                                                    if (order.status === 'pending') {
+                                                        const depositAmount = Math.round(subtotal * rate + fee);
+                                                        const remaining = Math.max(0, totalAmount - depositAmount);
+                                                        return remaining.toLocaleString('vi-VN') + ' VND';
+                                                    }
+                                                    return totalAmount.toLocaleString('vi-VN') + ' VND';
+                                                })()}
                                             </Typography>
                                         </Box>
 

@@ -81,7 +81,8 @@ export default function OrderPaymentPopup({visible, onCancel, selectedQuotationD
         const totalAmount = Math.round(subtotal + fee);
         const isDeposit = order?.status === 'pending';
         const depositRate = (quotation?.depositRate || 50) / 100;
-        const paymentAmount = isDeposit ? Math.round(totalAmount * depositRate) : totalAmount;
+        // New formula for deposit: subtotal * depositRate + fee
+        const paymentAmount = isDeposit ? Math.round(subtotal * depositRate + fee) : totalAmount;
         return walletBalance < paymentAmount;
     };
 
@@ -123,7 +124,8 @@ export default function OrderPaymentPopup({visible, onCancel, selectedQuotationD
             const isDeposit = order?.status === 'pending';
             // Use the actual deposit rate from quotation API, fallback to 50% if not available
             const depositRate = (quotation?.depositRate || 50) / 100;
-            const paymentAmount = isDeposit ? Math.round(totalAmount * depositRate) : totalAmount;
+            // New formula for deposit: subtotal * depositRate + fee
+            const paymentAmount = isDeposit ? Math.round(subtotal * depositRate + fee) : totalAmount;
 
             const quotationDetailsToStore = {
                 quotation: quotation,
@@ -774,7 +776,8 @@ export default function OrderPaymentPopup({visible, onCancel, selectedQuotationD
                             const fee = calculateServiceFee(subtotal);
                             const totalAmount = Math.round(subtotal + fee);
                             const depositRate = (quotation?.depositRate || 50) / 100;
-                            const finalAmount = order?.status === 'pending' ? Math.round(totalAmount * depositRate) : totalAmount;
+                            // New formula for deposit: subtotal * depositRate + fee
+                            const finalAmount = order?.status === 'pending' ? Math.round(subtotal * depositRate + fee) : totalAmount;
                             return finalAmount.toLocaleString('vi-VN') + ' VND';
                         })()}
                     </Typography.Title>

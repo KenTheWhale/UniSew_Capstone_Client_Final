@@ -200,31 +200,31 @@ function Navbar({activeMenu, navigate}) {
                     ACCOUNT MANAGEMENT
                 </Typography>
                 <Box sx={{mb: 3}}>
-                    <Box
-                        sx={{
-                            borderRadius: 2,
-                            mx: 1,
-                            my: 0.5,
-                            color: activeMenu === 'fabrics' ? "#FFFFFF" : "#495057",
-                            p: 2,
-                            cursor: "pointer",
-                            transition: "all 0.3s ease",
-                            background: activeMenu === 'fabrics' ? "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)" : "transparent",
-                            "&:hover": {
-                                background: "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)",
-                                color: "#FFFFFF",
-                                transform: "translateY(-1px)",
-                            },
-                        }}
-                        onClick={() => navigate("/admin/fabrics")}
-                    >
-                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
-                            <Inventory sx={{color: "inherit", fontSize: 20}}/>
-                            <Typography variant="body2" sx={{fontWeight: 500}}>
-                                Fabrics
-                            </Typography>
-                        </Box>
-                    </Box>
+                    {/*<Box*/}
+                    {/*    sx={{*/}
+                    {/*        borderRadius: 2,*/}
+                    {/*        mx: 1,*/}
+                    {/*        my: 0.5,*/}
+                    {/*        color: activeMenu === 'fabrics' ? "#FFFFFF" : "#495057",*/}
+                    {/*        p: 2,*/}
+                    {/*        cursor: "pointer",*/}
+                    {/*        transition: "all 0.3s ease",*/}
+                    {/*        background: activeMenu === 'fabrics' ? "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)" : "transparent",*/}
+                    {/*        "&:hover": {*/}
+                    {/*            background: "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)",*/}
+                    {/*            color: "#FFFFFF",*/}
+                    {/*            transform: "translateY(-1px)",*/}
+                    {/*        },*/}
+                    {/*    }}*/}
+                    {/*    onClick={() => navigate("/admin/fabrics")}*/}
+                    {/*>*/}
+                    {/*    <Box sx={{display: "flex", alignItems: "center", gap: 2}}>*/}
+                    {/*        <Inventory sx={{color: "inherit", fontSize: 20}}/>*/}
+                    {/*        <Typography variant="body2" sx={{fontWeight: 500}}>*/}
+                    {/*            Fabrics*/}
+                    {/*        </Typography>*/}
+                    {/*    </Box>*/}
+                    {/*</Box>*/}
 
                     <Box
                         sx={{

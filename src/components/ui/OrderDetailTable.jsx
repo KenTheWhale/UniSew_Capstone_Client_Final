@@ -274,9 +274,9 @@ export default function OrderDetailTable({detail, garmentQuotation = false, orde
                             <th>Fabric</th>
                             <th>Quantity</th>
                             <th>Size</th>
-                            <th>Unit Cost</th>
+                            {garmentQuotation && orderId !== 0 && <th>Unit Cost</th>}
                             <th>Total Qty</th>
-                            <th>Total Cost</th>
+                            {garmentQuotation && orderId !== 0 && <th>Total Cost</th>}
                         </tr>
                         </thead>
                         <tbody>
@@ -343,9 +343,13 @@ export default function OrderDetailTable({detail, garmentQuotation = false, orde
                                     <td className="text-center">{designItem.fabricName}</td>
                                     <td className="text-center quantity-cell">{item.quantity}</td>
                                     <td className="text-center quantity-cell">{item.size}</td>
-                                    <td className="text-center quantity-cell">{price ? formatVnd(price.unitPrice) : '-'}</td>
+                                    {garmentQuotation && orderId !== 0 &&
+                                        <td className="text-center quantity-cell">{price ? formatVnd(price.unitPrice) : '-'}</td>
+                                    }
                                     <td className="text-center font-bold total-quantity">{item.quantity}</td>
-                                    <td className="text-center">{price ? formatVnd(price.priceWithQty) : '-'}</td>
+                                    {garmentQuotation && orderId !== 0 &&
+                                        <td className="text-center">{price ? formatVnd(price.priceWithQty) : '-'}</td>
+                                    }
                                 </tr>
                             );
                         })}

@@ -1408,24 +1408,6 @@ export default function GarmentProfile() {
                                                                     />
                                                                 </Box>
                                                             )}
-                                                            {transaction.serviceFee > 0 && (
-                                                                <Box>
-                                                                    <Typography variant="body2" sx={{
-                                                                        color: '#64748b',
-                                                                        fontSize: '12px'
-                                                                    }}>
-                                                                        Service Fee
-                                                                    </Typography>
-                                                                    <Typography variant="body2" sx={{
-                                                                        color: '#f59e0b',
-                                                                        fontWeight: 600,
-                                                                        fontSize: '13px',
-                                                                        mt: '0.5vh'
-                                                                    }}>
-                                                                        {formatCurrency(transaction.serviceFee)}
-                                                                    </Typography>
-                                                                </Box>
-                                                            )}
                                                             <Box>
                                                                 <Typography variant="body2" sx={{
                                                                     color: '#64748b',

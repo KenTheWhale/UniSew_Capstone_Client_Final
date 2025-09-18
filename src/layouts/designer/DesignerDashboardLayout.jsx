@@ -477,6 +477,28 @@ export default function DesignerDashboardLayout() {
                                         },
                                         transition: "all 0.3s ease",
                                     }}
+                                    onClick={() => navigate("/designer/transaction")}
+                                >
+                                    <ListItemIcon sx={{color: "inherit"}}>
+                                        <Assessment/>
+                                    </ListItemIcon>
+                                    <ListItemText primary="My Transactions"/>
+                                </ListItemButton>
+                            </ListItem>
+                            <ListItem disablePadding>
+                                <ListItemButton
+                                    sx={{
+                                        borderRadius: 2,
+                                        mx: 1,
+                                        my: 0.5,
+                                        color: "#495057",
+                                        "&:hover": {
+                                            background: "linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)",
+                                            color: "#FFFFFF",
+                                            transform: "translateY(-1px)",
+                                        },
+                                        transition: "all 0.3s ease",
+                                    }}
                                     onClick={() => navigate("/designer/profile")}
                                 >
                                     <ListItemIcon sx={{color: "inherit"}}>
