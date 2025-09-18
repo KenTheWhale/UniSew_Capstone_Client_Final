@@ -1559,11 +1559,11 @@ export default function PlatformSetting() {
                                                             <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                                                                 {fabric.name}
                                                             </Typography>
-                                                            <Chip 
-                                                                label={fabric.isActive ? 'Active' : 'Inactive'} 
-                                                                size="small" 
-                                                                color={fabric.isActive ? 'success' : 'default'}
-                                                            />
+                                                            {/*<Chip */}
+                                                            {/*    label={fabric.isActive ? 'Active' : 'Inactive'} */}
+                                                            {/*    size="small" */}
+                                                            {/*    color={fabric.isActive ? 'success' : 'default'}*/}
+                                                            {/*/>*/}
                                                         </Box>
                                                         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                                                             {fabric.description}

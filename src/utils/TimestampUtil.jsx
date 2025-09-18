@@ -24,7 +24,7 @@ export const formatDateTimeSecond = (dateString) => {
         const minutes = String(date.getMinutes()).padStart(2, '0');
         const seconds = String(date.getSeconds()).padStart(2, '0');
 
-        return `${hours}:${minutes}:${seconds} ${day}/${month}/${year}`;
+        return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
     } catch (error) {
         console.error('Error formatting date:', error);
         return dateString;
@@ -42,7 +42,7 @@ export const formatDateTime = (dateString) => {
         const hours = String(date.getHours()).padStart(2, '0');
         const minutes = String(date.getMinutes()).padStart(2, '0');
         
-        return `${hours}:${minutes} ${day}/${month}/${year}`;
+        return `${day}/${month}/${year} ${hours}:${minutes}`;
     } catch (error) {
         console.error('Error formatting date:', error);
         return dateString;

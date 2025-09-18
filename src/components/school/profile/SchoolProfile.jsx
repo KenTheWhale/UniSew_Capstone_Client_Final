@@ -1279,7 +1279,7 @@ export default function SchoolProfile() {
                                                                 color: isReceiver ? '#10b981' : '#ef4444',
                                                                 fontSize: '17px'
                                                             }}>
-                                                                {isReceiver ? '+' : '-'}{formatCurrency(transaction.amount)}
+                                                                {isReceiver ? '+' : '-'}{transaction.serviceFee > 0 ? formatCurrency(transaction.amount + transaction.serviceFee) : formatCurrency(transaction.amount)}
                                                             </Typography>
                                                             <Chip
                                                                 label={transaction.status  === 'success' ? 'Successful' : 'Failed'}
@@ -1379,22 +1379,6 @@ export default function SchoolProfile() {
                                                                     {transaction.paymentGatewayCode.includes('w') ? 'Wallet' : "VNPay"}
                                                                 </Typography>
                                                             </Box>}
-                                                            <Box>
-                                                                <Typography variant="body2" sx={{
-                                                                    color: '#64748b',
-                                                                    fontSize: '12px'
-                                                                }}>
-                                                                    To receiver
-                                                                </Typography>
-                                                                <Typography variant="body2" sx={{
-                                                                    color: '#5096de',
-                                                                    fontWeight: 600,
-                                                                    fontSize: '13px',
-                                                                    mt: '0.5vh'
-                                                                }}>
-                                                                    {transaction.balanceType === 'pending' ? 'Pending balance' : transaction.balanceType === 'balance' ? 'Balance' : 'N/A'}
-                                                                </Typography>
-                                                            </Box>
                                                         </Box>
 
                                                         <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
