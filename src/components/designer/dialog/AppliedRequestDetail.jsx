@@ -299,6 +299,17 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                 <Space></Space>
                                             </Space>
                                         </Col>
+                                        <Col span={12}>
+                                            <Space direction="vertical" size="small">
+                                                <Space>
+                                                    <EnvironmentOutlined style={{color: '#64748b', fontSize: '12px'}}/>
+                                                    <Text style={{fontSize: '12px', color: '#64748b'}}>
+                                                        Email: {request.school?.account?.email || 'N/A'}
+                                                    </Text>
+                                                </Space>
+                                                <Space></Space>
+                                            </Space>
+                                        </Col>
                                     </Row>
                                 </Card>
                             </Box>

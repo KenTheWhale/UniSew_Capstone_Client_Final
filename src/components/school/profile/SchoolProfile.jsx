@@ -1299,7 +1299,7 @@ export default function SchoolProfile() {
                                                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 0.5 }}>
                                                                         <Chip
                                                                             size="small"
-                                                                            label={`${isPending ? 'Pending' : 'Balance'}: ${formatCurrency(newBalance)}`}
+                                                                            label={`${isPending ? 'Balance' : 'Balance'}: ${formatCurrency(newBalance)}`}
                                                                             sx={{
                                                                                 height: 22,
                                                                                 fontSize: '11px',

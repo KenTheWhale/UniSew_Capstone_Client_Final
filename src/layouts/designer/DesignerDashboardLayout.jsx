@@ -28,7 +28,7 @@ import {
 import {
     AccessTime,
     AccountCircle,
-    ArrowForward,
+    ArrowForward, Assessment,
     Assignment,
     Chat,
     Clear,
