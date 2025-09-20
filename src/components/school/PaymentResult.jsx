@@ -252,6 +252,8 @@ export default function PaymentResult() {
                     await handleSuccessfulRevision();
                 } else if (quotationDetails) {
                     await handleSuccessfulDesign();
+                } else if (hasWalletPayment && isWalletPayment){
+                    await handleSuccessfulWallet();
                 }
             } else {
                 console.error('Email service returned non-200 status:', emailResponse?.status);

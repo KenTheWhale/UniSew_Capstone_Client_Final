@@ -1312,7 +1312,7 @@ export default function SchoolProfile() {
                                                         borderTop: '1px solid #f1f5f9'
                                                     }}>
                                                         <Box sx={{display: 'flex', gap: 3}}>
-                                                            {transaction.itemId && transaction.itemId !== 0 && (
+                                                            {transaction.itemId && transaction.itemId !== 0 ? (
                                                                 <Box>
                                                                     <Typography variant="body2"
                                                                                 sx={{color: '#64748b', fontSize: '12px'}}>
@@ -1326,6 +1326,24 @@ export default function SchoolProfile() {
                                                                         sx={{
                                                                             backgroundColor: transaction.paymentType === 'design' ? '#f3e8ff' : '#e0f2fe',
                                                                             color: transaction.paymentType === 'design' ? '#7c3aed' : '#0369a1',
+                                                                            fontWeight: 600,
+                                                                            fontSize: '10px',
+                                                                            height: '20px'
+                                                                        }}
+                                                                    />
+                                                                </Box>
+                                                            ) : (
+                                                                <Box>
+                                                                    <Typography variant="body2"
+                                                                                sx={{color: '#64748b', fontSize: '12px'}}>
+                                                                        Wallet Topup
+                                                                    </Typography>
+                                                                    <Chip
+                                                                        label={"My Wallet"}
+                                                                        size="small"
+                                                                        sx={{
+                                                                            backgroundColor: '#f3e8ff',
+                                                                            color: '#7c3aed',
                                                                             fontWeight: 600,
                                                                             fontSize: '10px',
                                                                             height: '20px'
@@ -1372,7 +1390,7 @@ export default function SchoolProfile() {
                                                                     color: '#64748b',
                                                                     fontSize: '12px'
                                                                 }}>
-                                                                    To receiver
+                                                                    To {transaction.itemId && transaction.itemId !== 0 ? 'receiver' : 'my'}
                                                                 </Typography>
                                                                 <Typography variant="body2" sx={{
                                                                     color: '#5096de',
