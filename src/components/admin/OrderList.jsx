@@ -39,6 +39,7 @@ import {
     CheckCircleOutlined as CheckCircleIcon,
     PendingActionsOutlined as PendingIcon,
     LocalShippingOutlined as ShippingIcon,
+    HourglassTopOutlined as HourglassTopIcon,
     CancelOutlined as CancelIcon,
     SchoolOutlined
 } from '@mui/icons-material';
@@ -319,7 +320,7 @@ export default function OrderList() {
             render: (design, record) => (
                 <Box>
                         <Typography variant="body2" sx={{color: '#334155', fontWeight: 500}}>
-                            {design?.name || 'No design'}
+                            {design?.designRequest?.name || 'No design'}
                         </Typography>
                         <Typography variant="caption" sx={{color: '#64748b'}}>
                             {getTotalItems(record.orderDetails)} items
@@ -614,7 +615,7 @@ export default function OrderList() {
                             color="#f59e0b"
                         />
                         <StatCard
-                            icon={<ShippingIcon style={{fontSize: 24}}/>}
+                            icon={<HourglassTopIcon style={{fontSize: 24}}/>}
                             value={stats.processing}
                             label="Processing"
                             color="#3b82f6"
