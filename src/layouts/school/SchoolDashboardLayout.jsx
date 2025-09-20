@@ -177,6 +177,30 @@ function Navbar({school, enqueueSnackbar}) {
                                 transform: "translateY(-1px)",
                             },
                         }}
+                        onClick={() => window.location.href = "/school/transaction"}
+                    >
+                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
+                            <History sx={{color: "inherit", fontSize: 20}}/>
+                            <Typography variant="body2" sx={{fontWeight: 500}}>
+                                My Transactions
+                            </Typography>
+                        </Box>
+                    </Box>
+                    <Box
+                        sx={{
+                            borderRadius: 2,
+                            mx: 1,
+                            my: 0.5,
+                            color: "#495057",
+                            p: 2,
+                            cursor: "pointer",
+                            transition: "all 0.3s ease",
+                            "&:hover": {
+                                background: "linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)",
+                                color: "#FFFFFF",
+                                transform: "translateY(-1px)",
+                            },
+                        }}
                         onClick={() => window.location.href = "/school/profile"}
                     >
                         <Box sx={{display: "flex", alignItems: "center", gap: 2}}>

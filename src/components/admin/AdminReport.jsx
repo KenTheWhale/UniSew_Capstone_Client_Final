@@ -630,9 +630,9 @@ export default function AdminReport() {
                             </Typography>
                         </Box>
                     ) : (
-                        <Grid container spacing={2}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                             {reports.map((report) => (
-                                <Grid item xs={12} key={report.id}>
+                                <Box key={report.id}>
                                     <Card elevation={0} sx={{
                                         borderRadius: 2,
                                         border: '1px solid #e2e8f0',
@@ -813,9 +813,9 @@ export default function AdminReport() {
                                             </Box>
                                         </CardContent>
                                     </Card>
-                                </Grid>
+                                </Box>
                             ))}
-                        </Grid>
+                        </Box>
                     )}
                 </Box>
             </Paper>

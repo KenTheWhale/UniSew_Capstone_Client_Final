@@ -298,18 +298,70 @@ export default function AdminTransaction() {
         return {total, success, failed, pending, totalAmount, totalFees};
     }, [transactions]);
 
+    const paymentTypeLabel = (type) => ({
+        design: 'Design',
+        deposit: 'Deposit',
+        order: 'Order',
+        order_return: 'Refund',
+        design_return: 'Refund',
+        wallet: 'Top-up'
+    }[type] || type);
+
     const columns = useMemo(() => [
         {
-            title: 'ID',
-            dataIndex: 'id',
-            key: 'id',
+            title: 'Item ID',
+            dataIndex: 'itemId',
+            key: 'itemId',
+            width: 140,
+            render: (val, record) => {
+                if (record.paymentType === 'wallet') {
+                    return (
+                        <Chip
+                            label="TOPUP"
+                            size="small"
+                            sx={{backgroundColor: '#eef2ff', color: '#3730a3', fontWeight: 600}}
+                        />
+                    );
+                }
+                if (!val || val === 0) return '—';
+                const pref = (record.paymentType === 'design' || record.paymentType === 'design_return') ? 'dr' : 'ord';
+                return (
+                    <Chip
+                        label={parseID(val, pref)}
+                        size="small"
+                        sx={{backgroundColor: '#eef2ff', color: '#3730a3', fontWeight: 600}}
+                    />
+                );
+            }
+        },
+        {
+            title: 'Type',
+            dataIndex: 'paymentType',
+            key: 'paymentType',
+            width: 160,
+            render: (val) => (
+                <Typography variant="body2" sx={{fontWeight: 600, color: '#1e293b'}}>
+                    {paymentTypeLabel(val)}
+                </Typography>
+            ),
+            filters: [
+                {text: 'Design', value: 'design'},
+                {text: 'Deposit', value: 'deposit'},
+                {text: 'Order', value: 'order'},
+                {text: 'Order Refund', value: 'order_return'},
+                {text: 'Design Refund', value: 'design_return'},
+                {text: 'Top-up', value: 'wallet'},
+            ],
+            onFilter: (value, record) => record.paymentType === value,
+        },
+        {
+            title: 'Gateway',
+            dataIndex: 'paymentGatewayCode',
+            key: 'paymentGatewayCode',
             width: 120,
-            align: 'center',
-            sorter: (a, b) => a.id - b.id,
-            defaultSortOrder: 'descend',
-            render: (id) => (
-                <Typography variant="body2" sx={{fontWeight: 600, color: '#1976d2'}}>
-                    {parseID(id, "trs")}
+            render: (val) => (
+                <Typography variant="body2" sx={{fontWeight: 600, color: '#0ea5b8'}}>
+                    {val?.includes('w') ? 'Wallet' : 'VNPay'}
                 </Typography>
             )
         },
@@ -370,64 +422,62 @@ export default function AdminTransaction() {
             )
         },
         {
-            title: 'Amount',
-            dataIndex: 'amount',
-            key: 'amount',
-            width: 120,
-            align: 'right',
-            sorter: (a, b) => a.amount - b.amount,
-            render: (amount) => (
-                <Typography variant="body2" sx={{fontWeight: 600, color: '#52c41a'}}>
-                    {formatCurrency(amount)}
-                </Typography>
-            )
-        },
-        {
             title: 'Service Fee',
             dataIndex: 'serviceFee',
             key: 'serviceFee',
-            width: 100,
             align: 'right',
-            render: (fee) => (
-                <Typography variant="body2" sx={{color: '#64748b'}}>
-                    {formatCurrency(fee)}
+            width: 140,
+            render: (val) => (
+                <Typography variant="body2" sx={{fontWeight: 600, color: '#f59e0b'}}>
+                    {formatCurrency(val || 0)}
                 </Typography>
             )
         },
         {
-            title: 'Payment Type',
-            dataIndex: 'paymentType',
-            key: 'paymentType',
-            width: 130,
-            align: 'left',
-            filters: [
-                {text: 'Order Payment', value: 'order'},
-                {text: 'Design Payment', value: 'design'},
-                {text: 'Wallet Deposit', value: 'wallet'}
-            ],
-            onFilter: (value, record) => record.paymentType === value,
-            render: (type) => (
-                <Tag color={getPaymentTypeColor(type)}>
-                    {getPaymentTypeText(type)}
-                </Tag>
-            )
+            title: (
+                <Box>
+                    <Typography variant="body2" sx={{ fontWeight: 600, display: 'inline' }}>
+                        Paid
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#64748b', fontSize: '12px', fontWeight: 500, display: 'inline', ml: 0.5 }}>
+                        (Service Fee Incl.)
+                    </Typography>
+                </Box>
+            ),
+            key: 'total',
+            align: 'right',
+            width: 180,
+            sorter: (a, b) => ((a.amount || 0) + (a.serviceFee || 0)) - ((b.amount || 0) + (b.serviceFee || 0)),
+            render: (_, record) => {
+                const total = (record?.amount || 0) + (record?.serviceFee || 0);
+                const isFailed = record?.status === 'fail' || record?.status === 'failed';
+                return (
+                    <Typography variant="body2" sx={{fontWeight: 700, color: isFailed ? '#dc2626' : '#16a34a'}}>
+                        {formatCurrency(total)}
+                    </Typography>
+                );
+            }
         },
         {
             title: 'Status',
             dataIndex: 'status',
             key: 'status',
-            width: 100,
-            align: 'center',
+            width: 120,
             filters: [
-                {text: 'Success', value: 'success'},
-                {text: 'Failed', value: 'fail'},
-                {text: 'Pending', value: 'pending'}
+                {text: 'Successful', value: 'success'},
+                {text: 'Failed', value: 'failed'},
             ],
             onFilter: (value, record) => record.status === value,
-            render: (status) => (
-                <Badge
-                    status={getStatusColor(status)}
-                    text={getStatusText(status)}
+            render: (val) => (
+                <Chip
+                    label={val === 'success' ? 'Successful' : 'Failed'}
+                    size="small"
+                    sx={{
+                        backgroundColor: val === 'success' ? '#dcfce7' : '#fee2e2',
+                        color: val === 'success' ? '#166534' : '#dc2626',
+                        fontWeight: 600,
+                        fontSize: '11px'
+                    }}
                 />
             )
         },
@@ -435,37 +485,17 @@ export default function AdminTransaction() {
             title: 'Date',
             dataIndex: 'creationDate',
             key: 'creationDate',
-            width: 120,
-            align: 'center',
+            width: 180,
             sorter: (a, b) => new Date(a.creationDate) - new Date(b.creationDate),
-            render: (date) => {
-                const transactionDate = new Date(date);
+            render: (val) => {
+                const transactionDate = new Date(val);
                 return (
                     <Typography variant="body2" sx={{color: '#64748b'}}>
-                        {transactionDate.toLocaleDateString('vi-VN')}
+                        {transactionDate.toLocaleString('vi-VN')}
                     </Typography>
                 );
             }
         },
-        {
-            title: 'Actions',
-            key: 'actions',
-            width: 80,
-            align: 'center',
-            fixed: 'right',
-            render: (_, record) => (
-                <Tooltip title="View Details">
-                    <Button
-                        type="primary"
-                        size="small"
-                        onClick={() => handleViewDetail(record)}
-                        style={{display: 'flex', alignItems: 'center', padding: '4px 8px'}}
-                    >
-                        <Visibility style={{fontSize: 16}}/>
-                    </Button>
-                </Tooltip>
-            )
-        }
     ], []);
 
     function arrayBufferToBase64(buffer) {
@@ -615,12 +645,12 @@ export default function AdminTransaction() {
                     position: "relative",
                     p: 4,
                     borderRadius: 3,
-                    background: "linear-gradient(135deg, rgba(220, 53, 69, 0.05) 0%, rgba(220, 53, 69, 0.08) 100%)",
-                    border: "1px solid rgba(220, 53, 69, 0.1)",
+                    background: "linear-gradient(135deg, rgba(6, 182, 212, 0.05) 0%, rgba(6, 182, 212, 0.08) 100%)",
+                    border: "1px solid rgba(6, 182, 212, 0.1)",
                 }}
             >
                 <Box sx={{display: "flex", alignItems: "center", mb: 2}}>
-                    <AccountBalance style={{fontSize: 32, color: '#dc3545', marginRight: 16}}/>
+                    <AccountBalance style={{fontSize: 32, color: '#06b6d4', marginRight: 16}}/>
                     <Box>
                         <Typography
                             variant="h4"
@@ -697,50 +727,81 @@ export default function AdminTransaction() {
                         </Button>
                     </Box>
 
-                    <Box sx={{display: "flex", gap: 1}}>
+                    <Box sx={{display: "flex", gap: 2, alignItems: "center"}}>
                         <Tooltip title="Refresh Data">
-                            <IconButton
+                            <Button
+                                variant="contained"
+                                startIcon={<ReloadOutlined style={{fontSize: 16}}/>}
                                 onClick={handleRefresh}
                                 sx={{
-                                    backgroundColor: '#dc3545',
+                                    background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
                                     color: 'white',
+                                    borderRadius: 2,
+                                    px: 3,
+                                    py: 1,
+                                    textTransform: 'none',
+                                    fontWeight: 600,
+                                    fontSize: '14px',
+                                    boxShadow: '0 4px 12px rgba(6, 182, 212, 0.3)',
                                     '&:hover': {
-                                        backgroundColor: '#c82333',
-                                        transform: 'scale(1.05)'
+                                        background: 'linear-gradient(135deg, #0891b2 0%, #0e7490 100%)',
+                                        transform: 'translateY(-2px)',
+                                        boxShadow: '0 6px 16px rgba(6, 182, 212, 0.4)'
                                     },
-                                    transition: 'all 0.2s ease'
+                                    transition: 'all 0.3s ease'
                                 }}
                             >
-                                <ReloadOutlined/>
-                            </IconButton>
+                                Refresh
+                            </Button>
                         </Tooltip>
-                        <Tooltip title="Download PDF">
-                            <IconButton
+                        <Tooltip title="Download PDF Report">
+                            <Button
+                                variant="contained"
+                                startIcon={<PictureAsPdf style={{fontSize: 16}}/>}
                                 onClick={handleDownloadPdf}
                                 sx={{
-                                    backgroundColor: '#FF0000',
+                                    background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
                                     color: 'white',
+                                    borderRadius: 2,
+                                    px: 3,
+                                    py: 1,
+                                    textTransform: 'none',
+                                    fontWeight: 600,
+                                    fontSize: '14px',
+                                    boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)',
                                     '&:hover': {
-                                        backgroundColor: '#FF0000',
-                                        transform: 'scale(1.05)'
+                                        background: 'linear-gradient(135deg, #b91c1c 0%, #991b1b 100%)',
+                                        transform: 'translateY(-2px)',
+                                        boxShadow: '0 6px 16px rgba(220, 38, 38, 0.4)'
                                     },
-                                    transition: 'all 0.2s ease'
+                                    transition: 'all 0.3s ease'
                                 }}
                             >
-                                <PictureAsPdf style={{fontSize: 20}}/>
-                            </IconButton>
+                                PDF
+                            </Button>
                         </Tooltip>
-                        <Tooltip title="Dowload CSV">
-                            <IconButton
+                        <Tooltip title="Download CSV Report">
+                            <Button
+                                variant="contained"
+                                startIcon={<GrDocumentCsv style={{fontSize: 16}}/>}
                                 sx={{
-                                backgroundColor: '#28a745',
-                                color: 'white',
-                                '&:hover': {
-                                    backgroundColor: '#218838',
-                                    transform: 'scale(1.05)'
-                                },
-                                transition: 'all 0.2s ease'
-                            }}>
+                                    background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+                                    color: 'white',
+                                    borderRadius: 2,
+                                    px: 3,
+                                    py: 1,
+                                    textTransform: 'none',
+                                    fontWeight: 600,
+                                    fontSize: '14px',
+                                    boxShadow: '0 4px 12px rgba(22, 163, 74, 0.3)',
+                                    '&:hover': {
+                                        background: 'linear-gradient(135deg, #15803d 0%, #166534 100%)',
+                                        transform: 'translateY(-2px)',
+                                        boxShadow: '0 6px 16px rgba(22, 163, 74, 0.4)'
+                                    },
+                                    transition: 'all 0.3s ease'
+                                }}
+                            >
                                 <CSVLink
                                     data={data}
                                     headers={csvHeaders}
@@ -748,10 +809,17 @@ export default function AdminTransaction() {
                                     separator=","
                                     uFEFF={true}
                                     target="_blank"
+                                    style={{
+                                        color: 'inherit',
+                                        textDecoration: 'none',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px'
+                                    }}
                                 >
-                                    <GrDocumentCsv />
+                                    CSV
                                 </CSVLink>
-                            </IconButton>
+                            </Button>
                         </Tooltip>
                     </Box>
                 </Box>
@@ -801,10 +869,10 @@ export default function AdminTransaction() {
                 ) : (
                     <>
                         <StatCard
-                            icon={<Typography variant="h5" sx={{fontWeight: 'bold', color: '#dc3545'}}>₫</Typography>}
+                            icon={<Typography variant="h5" sx={{fontWeight: 'bold', color: '#06b6d4'}}>₫</Typography>}
                             value={stats.total}
                             label="Total Transactions"
-                            color="#dc3545"
+                            color="#06b6d4"
                         />
                         <StatCard
                             icon={<CheckOutlined style={{fontSize: 24}}/>}
@@ -863,8 +931,8 @@ export default function AdminTransaction() {
                         <Chip
                             label={`${filteredTransactions.length} of ${stats.total} transactions`}
                             sx={{
-                                backgroundColor: "#fef2f2",
-                                color: "#dc3545",
+                                backgroundColor: "#06b6d410",
+                                color: "#06b6d4",
                                 fontWeight: 600
                             }}
                         />
@@ -878,7 +946,7 @@ export default function AdminTransaction() {
                             justifyContent: 'center',
                             py: 8
                         }}>
-                            <CircularProgress size={40} sx={{color: '#dc3545', mb: 2}}/>
+                            <CircularProgress size={40} sx={{color: '#06b6d4', mb: 2}}/>
                             <Typography variant="body1" sx={{color: '#64748b'}}>
                                 Loading transactions...
                             </Typography>

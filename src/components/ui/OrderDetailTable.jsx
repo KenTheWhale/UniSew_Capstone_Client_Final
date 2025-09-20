@@ -1,11 +1,12 @@
-
-import React, { useMemo, useState, useEffect } from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import '../../styles/OrderDetailTable.css';
 import DisplayImage from './DisplayImage.jsx';
-import { getSizes } from '../../services/OrderService.jsx';
+import {getSizes} from '../../services/OrderService.jsx';
+import {getGarmentFabricForQuotation} from '../../services/SystemService.jsx';
 
-export default function OrderDetailTable({ detail }) {
+export default function OrderDetailTable({detail, garmentQuotation = false, orderId = 0, onTotalPriceChange}) {
     const [sizeData, setSizeData] = useState([]);
+    const [quotationData, setQuotationData] = useState({totalPrice: 0, detailMap: {}});
 
     // Get size data from API
     useEffect(() => {
@@ -23,16 +24,54 @@ export default function OrderDetailTable({ detail }) {
         fetchSizeData();
     }, []);
 
+    // Fetch garment quotation fabric prices when needed
+    useEffect(() => {
+        const fetchQuotationPrices = async () => {
+            if (!garmentQuotation || !orderId) return;
+            try {
+                const response = await getGarmentFabricForQuotation(orderId);
+                const data = response?.data?.body || null;
+                if (data && Array.isArray(data.detail)) {
+                    const detailMap = {};
+                    data.detail.forEach(entry => {
+                        const id = entry.orderDetailId;
+                        if (!detailMap[id]) {
+                            detailMap[id] = {unitPrice: entry.unitPrice, priceWithQty: 0};
+                        }
+                        // Keep latest unitPrice (they should be identical), and accumulate priceWithQty
+                        detailMap[id].unitPrice = entry.unitPrice;
+                        detailMap[id].priceWithQty += (entry.priceWithQty || 0);
+                    });
+                    setQuotationData({totalPrice: data.totalPrice || 0, detailMap});
+                } else {
+                    setQuotationData({totalPrice: 0, detailMap: {}});
+                }
+            } catch (e) {
+                setQuotationData({totalPrice: 0, detailMap: {}});
+                console.error('Error fetching garment quotation fabric prices:', e);
+            }
+        };
+        fetchQuotationPrices();
+    }, [garmentQuotation, orderId]);
+
+    // Notify parent about total price for validation/warning
+    useEffect(() => {
+        if (garmentQuotation && orderId && typeof onTotalPriceChange === 'function') {
+            onTotalPriceChange(quotationData.totalPrice || 0);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [quotationData.totalPrice]);
+
     // Group items by design item and then by size
     const groupedData = useMemo(() => {
         if (!detail || !Array.isArray(detail)) return [];
-        
+
         const grouped = {};
-        
+
         detail.forEach(item => {
             const designItem = item.deliveryItem.designItem;
             const key = `${designItem.type}-${designItem.id}`;
-            
+
             if (!grouped[key]) {
                 grouped[key] = {
                     designItem,
@@ -40,10 +79,10 @@ export default function OrderDetailTable({ detail }) {
                     items: []
                 };
             }
-            
+
             grouped[key].items.push(item);
         });
-        
+
         return Object.values(grouped);
     }, [detail]);
 
@@ -51,12 +90,17 @@ export default function OrderDetailTable({ detail }) {
         return items.reduce((total, item) => total + item.quantity, 0);
     };
 
+    const formatVnd = (amount) => {
+        if (amount === undefined || amount === null || isNaN(amount)) return '-';
+        return amount.toLocaleString('vi-VN');
+    };
+
     const formatColor = (color) => {
         return (
             <div className="color-display">
-                <div 
-                    className="color-box" 
-                    style={{ backgroundColor: color }}
+                <div
+                    className="color-box"
+                    style={{backgroundColor: color}}
                 ></div>
                 <span>{color}</span>
             </div>
@@ -77,17 +121,17 @@ export default function OrderDetailTable({ detail }) {
 
         // Get gender mapping for API data
         const gender = designItem.gender === 'boy' ? 'male' : 'female';
-        
+
         // Find base size (S) and target size data
-        const baseSizeData = sizeData.find(s => 
-            s.type === 'shirt' && 
-            s.gender === gender && 
+        const baseSizeData = sizeData.find(s =>
+            s.type === 'shirt' &&
+            s.gender === gender &&
             s.size === 'S'
         );
-        
-        const targetSizeData = sizeData.find(s => 
-            s.type === 'shirt' && 
-            s.gender === gender && 
+
+        const targetSizeData = sizeData.find(s =>
+            s.type === 'shirt' &&
+            s.gender === gender &&
             s.size === targetSize
         );
 
@@ -96,11 +140,11 @@ export default function OrderDetailTable({ detail }) {
         }
 
         // Calculate ratio based on average of height and weight ratio
-        const heightRatio = (targetSizeData.maxHeight + targetSizeData.minHeight) / 
-                           (baseSizeData.maxHeight + baseSizeData.minHeight);
-        const weightRatio = (targetSizeData.maxWeight + targetSizeData.minWeight) / 
-                           (baseSizeData.maxWeight + baseSizeData.minWeight);
-        
+        const heightRatio = (targetSizeData.maxHeight + targetSizeData.minHeight) /
+            (baseSizeData.maxHeight + baseSizeData.minHeight);
+        const weightRatio = (targetSizeData.maxWeight + targetSizeData.minWeight) /
+            (baseSizeData.maxWeight + baseSizeData.minWeight);
+
         // Use average of height and weight ratio
         const ratio = (heightRatio + weightRatio) / 2;
 
@@ -112,15 +156,15 @@ export default function OrderDetailTable({ detail }) {
 
     // Get logo information for shirts (only unique logos)
     const getLogoInfo = () => {
-        const logoItems = groupedData.filter(group => 
-            group.designItem.type === 'shirt' && 
+        const logoItems = groupedData.filter(group =>
+            group.designItem.type === 'shirt' &&
             group.designItem.logoImageUrl
         );
-        
+
         // Get unique logos based on logoImageUrl to avoid duplicates
         const uniqueLogos = [];
         const seenLogoUrls = new Set();
-        
+
         logoItems.forEach(group => {
             if (!seenLogoUrls.has(group.designItem.logoImageUrl)) {
                 seenLogoUrls.add(group.designItem.logoImageUrl);
@@ -134,7 +178,7 @@ export default function OrderDetailTable({ detail }) {
                 });
             }
         });
-        
+
         return uniqueLogos;
     };
 
@@ -149,7 +193,7 @@ export default function OrderDetailTable({ detail }) {
     // LogoInfoSection component
     const LogoInfoSection = () => {
         const logoInfo = getLogoInfo();
-        
+
         if (logoInfo.length === 0) return null;
 
         return (
@@ -208,7 +252,7 @@ export default function OrderDetailTable({ detail }) {
 
     return (
         <div className="order-detail-container">
-            <LogoInfoSection />
+            <LogoInfoSection/>
             <div className="order-detail-table-container">
                 <div className="table-header">
                     <h3 style={{color: '#1976d2'}}>Order Details</h3>
@@ -216,50 +260,34 @@ export default function OrderDetailTable({ detail }) {
                         <span style={{backgroundColor: '#e3f2fd', color: '#1976d2', border: '1px solid #1976d2'}}>Total items: {detail.length}</span>
                     </div>
                 </div>
-            
-            <div className="table-wrapper">
-                <table className="order-detail-table">
-                    <thead>
+
+                <div className="table-wrapper">
+                    <table className="order-detail-table">
+                        <thead>
                         <tr>
-                            <th rowSpan="2">No.</th>
-                            <th rowSpan="2">Images</th>
-                            <th rowSpan="2">Product Type</th>
-                            <th rowSpan="2">Category</th>
-                            <th rowSpan="2">Gender</th>
-                            <th rowSpan="2">Color</th>
-                            <th rowSpan="2">Fabric</th>
-                            <th colSpan="7">Quantity by Size</th>
-                            <th rowSpan="2">Total Qty</th>
+                            <th>No.</th>
+                            <th>Images</th>
+                            <th>Product Type</th>
+                            <th>Category</th>
+                            <th>Gender</th>
+                            <th>Color</th>
+                            <th>Fabric</th>
+                            <th>Quantity</th>
+                            <th>Size</th>
+                            {garmentQuotation && orderId !== 0 && <th>Unit Cost</th>}
+                            <th>Total Qty</th>
+                            {garmentQuotation && orderId !== 0 && <th>Total Cost</th>}
                         </tr>
-                        <tr>
-                            <th>S</th>
-                            <th>M</th>
-                            <th>L</th>
-                            <th>XL</th>
-                            <th>XXL</th>
-                            <th>3XL</th>
-                            <th>4XL</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {groupedData.map((group, groupIndex) => {
-                            const { designItem, deliveryItem, items } = group;
-                            
-                            // Create size quantity mapping
-                            const sizeQuantities = {
-                                'S': 0, 'M': 0, 'L': 0, 'XL': 0, 
-                                'XXL': 0, '3XL': 0, '4XL': 0
-                            };
-                            
-                            items.forEach(item => {
-                                if (sizeQuantities.hasOwnProperty(item.size)) {
-                                    sizeQuantities[item.size] = item.quantity;
-                                }
-                            });
-                            
+                        </thead>
+                        <tbody>
+                        {detail.map((item, index) => {
+                            const designItem = item.deliveryItem.designItem;
+                            const deliveryItem = item.deliveryItem;
+
+                            const price = (garmentQuotation && orderId !== 0) ? quotationData.detailMap[item.id] : null;
                             return (
-                                <tr key={`${designItem.type}-${designItem.id}`} className="data-row">
-                                    <td className="text-center">{groupIndex + 1}</td>
+                                <tr key={`${designItem.type}-${designItem.id}-${index}`} className="data-row">
+                                    <td className="text-center">{item.id}</td>
                                     <td className="image-cell">
                                         <div className="product-images">
                                             <div className="image-item">
@@ -297,70 +325,85 @@ export default function OrderDetailTable({ detail }) {
                                         </div>
                                     </td>
                                     <td className="text-center font-medium">
-                                        {designItem.type === 'shirt' ? 'Shirt' : 
-                                         designItem.type === 'pants' ? 'Pants' : 
-                                         designItem.type}
+                                        {designItem.type === 'shirt' ? 'Shirt' :
+                                            designItem.type === 'pants' ? 'Pants' :
+                                                designItem.type}
                                     </td>
                                     <td className="text-center">
                                         {designItem.category === 'regular' ? 'Regular' : designItem.category}
                                     </td>
                                     <td className="text-center">
-                                        {designItem.gender === 'boy' ? 'Boy' : 
-                                         designItem.gender === 'girl' ? 'Girl' : 
-                                         designItem.gender}
+                                        {designItem.gender === 'boy' ? 'Boy' :
+                                            designItem.gender === 'girl' ? 'Girl' :
+                                                designItem.gender}
                                     </td>
                                     <td className="text-center">
                                         {formatColor(designItem.color)}
                                     </td>
                                     <td className="text-center">{designItem.fabricName}</td>
-                                    <td className="text-center quantity-cell">
-                                        {sizeQuantities.S || '-'}
-                                    </td>
-                                    <td className="text-center quantity-cell">
-                                        {sizeQuantities.M || '-'}
-                                    </td>
-                                    <td className="text-center quantity-cell">
-                                        {sizeQuantities.L || '-'}
-                                    </td>
-                                    <td className="text-center quantity-cell">
-                                        {sizeQuantities.XL || '-'}
-                                    </td>
-                                    <td className="text-center quantity-cell">
-                                        {sizeQuantities.XXL || '-'}
-                                    </td>
-                                    <td className="text-center quantity-cell">
-                                        {sizeQuantities['3XL'] || '-'}
-                                    </td>
-                                    <td className="text-center quantity-cell">
-                                        {sizeQuantities['4XL'] || '-'}
-                                    </td>
-                                    <td className="text-center font-bold total-quantity">
-                                        {getTotalQuantity(items)}
-                                    </td>
+                                    <td className="text-center quantity-cell">{item.quantity}</td>
+                                    <td className="text-center quantity-cell">{item.size}</td>
+                                    {garmentQuotation && orderId !== 0 &&
+                                        <td className="text-center quantity-cell">{price ? formatVnd(price.unitPrice) : '-'}</td>
+                                    }
+                                    <td className="text-center font-bold total-quantity">{item.quantity}</td>
+                                    {garmentQuotation && orderId !== 0 &&
+                                        <td className="text-center">{price ? formatVnd(price.priceWithQty) : '-'}</td>
+                                    }
                                 </tr>
                             );
                         })}
-                    </tbody>
-                    <tfoot>
-                        <tr className="summary-row">
-                            <td colSpan="7" className="text-right font-bold">Total:</td>
-                            {['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'].map(size => {
-                                const total = detail
-                                    .filter(item => item.size === size)
-                                    .reduce((sum, item) => sum + item.quantity, 0);
-                                return (
-                                    <td key={size} className="text-center font-bold summary-quantity">
-                                        {total || '-'}
-                                    </td>
-                                );
-                            })}
-                            <td className="text-center font-bold grand-total">
-                                {detail.reduce((total, item) => total + item.quantity, 0)}
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <td colSpan="12">
+                                <div style={{
+                                    marginTop: 8,
+                                    padding: '12px 16px',
+                                    borderRadius: 8,
+                                    background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+                                    border: '1px solid #e2e8f0',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'flex-end',
+                                    gap: 10
+                                }}>
+                                    <div style={{display: 'flex', alignItems: 'center', gap: 8}}>
+                                        <span style={{
+                                            fontWeight: 700,
+                                            color: '#334155'
+                                        }}>Total Quantity</span>
+                                        <span style={{
+                                            backgroundColor: '#e0f2fe',
+                                            color: '#0369a1',
+                                            border: '1px solid #bae6fd',
+                                            borderRadius: 999,
+                                            padding: '4px 10px',
+                                            fontWeight: 700
+                                        }}>{detail.reduce((total, item) => total + (item.quantity || 0), 0)}</span>
+                                    </div>
+                                    {garmentQuotation && orderId !== 0 && (
+                                        <div style={{display: 'flex', alignItems: 'center', gap: 8}}>
+                                            <span style={{
+                                                fontWeight: 700,
+                                                color: '#334155'
+                                            }}>Total Cost</span>
+                                            <span style={{
+                                                backgroundColor: '#dcfce7',
+                                                color: '#166534',
+                                                border: '1px solid #bbf7d0',
+                                                borderRadius: 999,
+                                                padding: '4px 10px',
+                                                fontWeight: 700
+                                            }}>{formatVnd(quotationData.totalPrice)} VND</span>
+                                        </div>
+                                    )}
+                                </div>
                             </td>
                         </tr>
-                    </tfoot>
-                </table>
-            </div>
+                        </tfoot>
+                    </table>
+                </div>
             </div>
         </div>
     );

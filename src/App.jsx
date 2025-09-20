@@ -10,6 +10,10 @@ import MyOrderDetail from "./components/garment/MyOrderDetail.jsx";
 import DesignRequestList from "./components/admin/DesignRequestList.jsx";
 import OrderList from "./components/admin/OrderList.jsx";
 import FabricManagement from "./components/garment/FabricManagement.jsx";
+import AdminFabric from "./components/admin/AdminFabric.jsx";
+import SchoolTransaction from "./components/school/profile/SchoolTransaction.jsx";
+import DesignerTransaction from "./components/designer/profile/DesignerTransaction.jsx";
+import GarmentTransaction from "./components/garment/profile/GarmentTransaction.jsx";
 
 const DesignerFeedback = lazy(() => import("./components/designer/DesignerFeedback.jsx"));
 const GarmentFeedback = lazy(() => import("./components/garment/GarmentFeedback.jsx"));
@@ -270,6 +274,14 @@ const router = createBrowserRouter([
                         <OrderTrackingStatus/>
                     </Suspense>
                 )
+            },
+            {
+                path: 'transaction',
+                element: (
+                    <Suspense fallback={<LoadingFallback />}>
+                        <SchoolTransaction/>
+                    </Suspense>
+                )
             }
         ]
     },
@@ -344,6 +356,14 @@ const router = createBrowserRouter([
                         <OrderList/>
                     </Suspense>
                 )
+            },
+            {
+                path: 'fabric',
+                element: (
+                    <Suspense fallback={<LoadingFallback />}>
+                        <AdminFabric/>
+                    </Suspense>
+                )
             }
         ]
     },
@@ -400,6 +420,14 @@ const router = createBrowserRouter([
                 element: (
                     <Suspense fallback={<LoadingFallback />}>
                         <DesignerFeedback/>
+                    </Suspense>
+                )
+            },
+            {
+                path: 'transaction',
+                element: (
+                    <Suspense fallback={<LoadingFallback />}>
+                        <DesignerTransaction/>
                     </Suspense>
                 )
             }
@@ -474,6 +502,14 @@ const router = createBrowserRouter([
                 element: (
                     <Suspense fallback={<LoadingFallback />}>
                         <FabricManagement />
+                    </Suspense>
+                )
+            },
+            {
+                path: 'transaction',
+                element: (
+                    <Suspense fallback={<LoadingFallback />}>
+                        <GarmentTransaction />
                     </Suspense>
                 )
             }

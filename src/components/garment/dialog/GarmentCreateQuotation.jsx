@@ -143,6 +143,8 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
         depositRate: ''
     });
     const [submittingQuotation, setSubmittingQuotation] = useState(false);
+    const [computedTotalPrice, setComputedTotalPrice] = useState(0);
+    const [underPriceConfirmOpen, setUnderPriceConfirmOpen] = useState(false);
     const [deliveryTimeError, setDeliveryTimeError] = useState('');
     const [imagesDialogOpen, setImagesDialogOpen] = useState(false);
     const [selectedItemImages, setSelectedItemImages] = useState(null);
@@ -342,7 +344,7 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
         }
     };
 
-    const handleSubmitQuotation = async () => {
+    const handleSubmitQuotation = async (force = false) => {
         try {
             setSubmittingQuotation(true);
 
@@ -440,6 +442,13 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                     setSubmittingQuotation(false);
                     return;
                 }
+            }
+
+            const inputTotal = parseInt(quotationData.totalPrice) || 0;
+            if (!force && computedTotalPrice > 0 && inputTotal < computedTotalPrice) {
+                setUnderPriceConfirmOpen(true);
+                setSubmittingQuotation(false);
+                return;
             }
 
             const quotationPayload = {
@@ -1486,14 +1495,13 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                             </Typography>
                                         </Box>
                                     ) : (
-                                        <OrderDetailTable detail={mergedOrderData.orderDetails} />
+                                        <OrderDetailTable
+                                            detail={mergedOrderData.orderDetails}
+                                            garmentQuotation={true}
+                                            orderId={mergedOrderData.id}
+                                            onTotalPriceChange={(v) => setComputedTotalPrice(v || 0)}
+                                        />
                                     )}
-
-
-
-
-
-
                                 </Box>
                             </Card>
                         </Box>
@@ -1595,6 +1603,31 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                         }
                                                     }}
                                                 />
+                                                {(() => {
+                                                    const inputPrice = parseInt(quotationData.totalPrice || '0');
+                                                    const showWarning = !isNaN(inputPrice) && inputPrice > 0 && inputPrice < (computedTotalPrice || 0);
+                                                    if (!showWarning) return null;
+                                                    return (
+                                                        <Box
+                                                            sx={{
+                                                                mt: 1,
+                                                                p: 1.5,
+                                                                borderRadius: 1,
+                                                                background: 'linear-gradient(135deg, rgba(245,158,11,0.10) 0%, rgba(251,191,36,0.10) 100%)',
+                                                                border: '1px solid rgba(245,158,11,0.35)',
+                                                                color: '#d97706',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: 1
+                                                            }}
+                                                        >
+                                                            <InfoIcon sx={{fontSize: 16}}/>
+                                                            <Typography variant="caption" sx={{fontWeight: 600}}>
+                                                                Quotation Price is lower than calculated Total Cost ({formatCurrency(computedTotalPrice)}).
+                                                            </Typography>
+                                                        </Box>
+                                                    );
+                                                })()}
                                             </Box>
 
                                             <Box>
@@ -2148,7 +2181,7 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                     startIcon={submittingQuotation ?
                                                         <CircularProgress size={16} sx={{color: 'white'}}/> :
                                                         <SendIcon/>}
-                                                    onClick={handleSubmitQuotation}
+                                                    onClick={() => handleSubmitQuotation(false)}
                                                     disabled={!quotationData.totalPrice ||
                                                         !!priceError ||
                                                         !quotationData.depositRate ||
@@ -2247,6 +2280,58 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                         }}
                     >
                         Update Status
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {}
+            {/* Under-price confirmation dialog */}
+            <Dialog
+                open={underPriceConfirmOpen}
+                onClose={() => setUnderPriceConfirmOpen(false)}
+                maxWidth="xs"
+                fullWidth
+            >
+                <DialogTitle sx={{
+                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                    color: 'white'
+                }}>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                        <InfoIcon/>
+                        <Typography variant="h6" sx={{fontWeight: 700}}>Confirm Lower Quotation</Typography>
+                    </Box>
+                </DialogTitle>
+                <DialogContent sx={{p: 3}}>
+                    <Box sx={{
+                        p: 2,
+                        borderRadius: 2,
+                        background: 'linear-gradient(135deg, rgba(245,158,11,0.10) 0%, rgba(251,191,36,0.10) 100%)',
+                        border: '1px solid rgba(245,158,11,0.35)',
+                        mt: 1
+                    }}>
+                        <Typography variant="body2" sx={{color: '#92400e', fontWeight: 600}}>
+                            Your quotation price {formatCurrency(parseInt(quotationData.totalPrice||'0')||0)} is lower than
+                            the calculated total cost {formatCurrency(computedTotalPrice)}.
+                        </Typography>
+                        <Typography variant="body2" sx={{color: '#92400e', mt: 1}}>
+                            Do you want to continue sending this quotation?
+                        </Typography>
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{p: 2}}>
+                    <Button onClick={() => setUnderPriceConfirmOpen(false)}>Cancel</Button>
+                    <Button
+                        variant="contained"
+                        sx={{
+                            background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                            '&:hover': {background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)'}
+                        }}
+                        onClick={async () => {
+                            setUnderPriceConfirmOpen(false);
+                            await handleSubmitQuotation(true);
+                        }}
+                    >
+                        Send Anyway
                     </Button>
                 </DialogActions>
             </Dialog>

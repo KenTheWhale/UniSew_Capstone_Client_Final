@@ -777,7 +777,7 @@ export default function PlatformSetting() {
 
     return (
         <Box sx={{ p: 3 }}>
-            <Paper sx={{ p: 3, mb: 3, background: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)', color: 'white' }}>
+            <Paper sx={{ p: 3, mb: 3, background: 'linear-gradient(135deg, #06b6d4 0%, #0ea5b8 100%)', color: 'white' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Settings sx={{ fontSize: 32 }} />
                     <Box>
@@ -798,15 +798,15 @@ export default function PlatformSetting() {
                         <CardContent>
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                    <Settings sx={{ fontSize: 32, color: '#dc3545', mr: 1 }} />
-                                    <Typography variant="h6" sx={{ fontWeight: 600, color: '#dc3545' }}>
+                                    <Settings sx={{ fontSize: 32, color: '#06b6d4', mr: 1 }} />
+                                    <Typography variant="h6" sx={{ fontWeight: 600, color: '#06b6d4' }}>
                                         Platform Configuration
                                     </Typography>
                                 </Box>
                                 {apiLoading && (
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <CircularProgress size={20} sx={{ color: '#dc3545' }} />
-                                        <Typography variant="body2" sx={{ color: '#dc3545' }}>
+                                        <CircularProgress size={20} sx={{ color: '#06b6d4' }} />
+                                        <Typography variant="body2" sx={{ color: '#06b6d4' }}>
                                             Refreshing...
                                         </Typography>
                                     </Box>
@@ -827,10 +827,10 @@ export default function PlatformSetting() {
                                             fontSize: '1rem'
                                         },
                                         '& .Mui-selected': {
-                                            color: '#dc3545 !important'
+                                            color: '#06b6d4 !important'
                                         },
                                         '& .MuiTabs-indicator': {
-                                            backgroundColor: '#dc3545'
+                                            backgroundColor: '#06b6d4'
                                         }
                                     }}
                                 >
@@ -845,33 +845,11 @@ export default function PlatformSetting() {
                             {/* Business Settings Tab */}
                             {mainTabValue === 0 && (
                                 <Box>
-                                    <Typography variant="h6" sx={{ mb: 2, color: '#dc3545' }}>
+                                    <Typography variant="h6" sx={{ mb: 2, color: '#06b6d4' }}>
                                         Business Configuration
                                     </Typography>
                                     <Grid container spacing={3}>
                                                                     <Grid item xs={12} md={6} sx={{ flex: 1 }}>
-                                <TextField
-                                    fullWidth
-                                    label="Tax Rate (%)"
-                                    type="number"
-                                    value={settings.taxRate}
-                                    onChange={(e) => handleSettingChange('taxRate', parseFloat(e.target.value) || 0.1)}
-                                    variant="outlined"
-                                    size="medium"
-                                    inputProps={{
-                                        step: 0.1,
-                                        min: 0.1,
-                                        max: 100
-                                    }}
-                                    slotProps={{
-                                        input: {
-                                            endAdornment: <InputAdornment position="end"><Chip label="%" size="small" /></InputAdornment>
-                                        }
-                                    }}
-                                    helperText="Enter decimal values (e.g., 0.1 for 0.1%). Must be greater than 0."
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={6} sx={{ flex: 1 }}>
                                 <TextField
                                     fullWidth
                                     label="Service Fee Rate (%)"
@@ -932,7 +910,7 @@ export default function PlatformSetting() {
                             {/* Media Settings Tab */}
                             {mainTabValue === 1 && (
                                 <Box>
-                                    <Typography variant="h6" sx={{ mb: 2, color: '#dc3545' }}>
+                                    <Typography variant="h6" sx={{ mb: 2, color: '#06b6d4' }}>
                                         Media Configuration
                                     </Typography>
                                     
@@ -1143,10 +1121,10 @@ export default function PlatformSetting() {
                                                     fontSize: '0.9rem'
                                                 },
                                                 '& .Mui-selected': {
-                                                    color: '#dc3545 !important'
+                                                    color: '#06b6d4 !important'
                                                 },
                                                 '& .MuiTabs-indicator': {
-                                                    backgroundColor: '#dc3545'
+                                                    backgroundColor: '#06b6d4'
                                                 }
                                             }}
                                         >
@@ -1167,9 +1145,9 @@ export default function PlatformSetting() {
                                                     startIcon={<Add />}
                                                     onClick={() => handleAddFormat('image')}
                                                     sx={{
-                                                        background: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
+                                                        background: 'linear-gradient(135deg, #06b6d4 0%, #0ea5b8 100%)',
                                                         '&:hover': {
-                                                            background: 'linear-gradient(135deg, #c82333 0%, #bd2130 100%)'
+                                                            background: 'linear-gradient(135deg, #0ea5b8 0%, #0e7490 100%)'
                                                         }
                                                     }}
                                                 >
@@ -1232,9 +1210,9 @@ export default function PlatformSetting() {
                                                     startIcon={<Add />}
                                                     onClick={() => handleAddFormat('video')}
                                                     sx={{
-                                                        background: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
+                                                        background: 'linear-gradient(135deg, #06b6d4 0%, #0ea5b8 100%)',
                                                         '&:hover': {
-                                                            background: 'linear-gradient(135deg, #c82333 0%, #bd2130 100%)'
+                                                            background: 'linear-gradient(135deg, #0ea5b8 0%, #0e7490 100%)'
                                                         }
                                                     }}
                                                 >
@@ -1290,7 +1268,7 @@ export default function PlatformSetting() {
                             {/* Design Settings Tab */}
                             {mainTabValue === 2 && (
                                 <Box>
-                                    <Typography variant="h6" sx={{ mb: 2, color: '#dc3545' }}>
+                                    <Typography variant="h6" sx={{ mb: 2, color: '#06b6d4' }}>
                                         Design Configuration
                                     </Typography>
                                     
@@ -1307,10 +1285,10 @@ export default function PlatformSetting() {
                                                     fontSize: '0.9rem'
                                                 },
                                                 '& .Mui-selected': {
-                                                    color: '#dc3545 !important'
+                                                    color: '#06b6d4 !important'
                                                 },
                                                 '& .MuiTabs-indicator': {
-                                                    backgroundColor: '#dc3545'
+                                                    backgroundColor: '#06b6d4'
                                                 }
                                             }}
                                         >
@@ -1446,9 +1424,9 @@ export default function PlatformSetting() {
                                                     startIcon={<Add />}
                                                     onClick={handleAddFabric}
                                                     sx={{
-                                                        background: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
+                                                        background: 'linear-gradient(135deg, #06b6d4 0%, #0ea5b8 100%)',
                                                         '&:hover': {
-                                                            background: 'linear-gradient(135deg, #c82333 0%, #bd2130 100%)'
+                                                            background: 'linear-gradient(135deg, #0ea5b8 0%, #0e7490 100%)'
                                                         }
                                                     }}
                                                 >
@@ -1581,11 +1559,11 @@ export default function PlatformSetting() {
                                                             <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                                                                 {fabric.name}
                                                             </Typography>
-                                                            <Chip 
-                                                                label={fabric.isActive ? 'Active' : 'Inactive'} 
-                                                                size="small" 
-                                                                color={fabric.isActive ? 'success' : 'default'}
-                                                            />
+                                                            {/*<Chip */}
+                                                            {/*    label={fabric.isActive ? 'Active' : 'Inactive'} */}
+                                                            {/*    size="small" */}
+                                                            {/*    color={fabric.isActive ? 'success' : 'default'}*/}
+                                                            {/*/>*/}
                                                         </Box>
                                                         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                                                             {fabric.description}
@@ -1643,7 +1621,7 @@ export default function PlatformSetting() {
                             {/* Order Settings Tab */}
                             {mainTabValue === 3 && (
                                 <Box>
-                                    <Typography variant="h6" sx={{ mb: 2, color: '#dc3545' }}>
+                                    <Typography variant="h6" sx={{ mb: 2, color: '#06b6d4' }}>
                                         Order Configuration
                                     </Typography>
                                     
@@ -1696,7 +1674,7 @@ export default function PlatformSetting() {
                                     
                                     {/* Order Process Description */}
                                     <Box sx={{ mt: 3, p: 2, bgcolor: '#f8f9fa', borderRadius: 2 }}>
-                                        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: '#dc3545' }}>
+                                        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: '#06b6d4' }}>
                                             Order Creation Process
                                         </Typography>
                                         <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
@@ -1742,7 +1720,7 @@ export default function PlatformSetting() {
                             {/* Report Settings Tab */}
                             {mainTabValue === 4 && (
                                 <Box>
-                                    <Typography variant="h6" sx={{ mb: 2, color: '#dc3545' }}>
+                                    <Typography variant="h6" sx={{ mb: 2, color: '#06b6d4' }}>
                                         Report Configuration
                                     </Typography>
                                     
@@ -1759,89 +1737,20 @@ export default function PlatformSetting() {
                                                     fontSize: '0.9rem'
                                                 },
                                                 '& .Mui-selected': {
-                                                    color: '#dc3545 !important'
+                                                    color: '#06b6d4 !important'
                                                 },
                                                 '& .MuiTabs-indicator': {
-                                                    backgroundColor: '#dc3545'
+                                                    backgroundColor: '#06b6d4'
                                                 }
                                             }}
                                         >
-                                            <Tab label="Appeal Timeline" />
                                             <Tab label="Disbursement Timeline" />
                                             <Tab label="Severity Levels" />
                                         </Tabs>
                                     </Box>
 
-                                    {/* Appeal Timeline Sub-tab */}
-                                    {reportTabValue === 0 && (
-                                        <Box>
-                                            <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
-                                                Appeal Timeline Configuration
-                                            </Typography>
-                                            <Grid container spacing={3} sx={{ mb: 3 }}>
-                                                <Grid item xs={12} md={6} sx={{ flex: 1 }}>
-                                                    <TextField
-                                                        fullWidth
-                                                        label="Max Appeal Days"
-                                                        type="number"
-                                                        value={settings.maxAppealDays}
-                                                        onChange={(e) => handleSettingChange('maxAppealDays', parseInt(e.target.value) || 1)}
-                                                        variant="outlined"
-                                                        size="medium"
-                                                        inputProps={{
-                                                            min: 1
-                                                        }}
-                                                        helperText="Maximum days users can appeal admin's report decision"
-                                                        slotProps={{
-                                                            input: {
-                                                                endAdornment: <InputAdornment position="end"><Chip label="days" size="small" /></InputAdornment>
-                                                            }
-                                                        }}
-                                                    />
-                                                </Grid>
-                                            </Grid>
-                                            
-                                            {/* Process Description */}
-                                            <Box sx={{ mt: 3, p: 2, bgcolor: '#f8f9fa', borderRadius: 2 }}>
-                                                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: '#dc3545' }}>
-                                                    Report Appeal Process
-                                                </Typography>
-                                                <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
-                                                    When a user submits a report, admin will review and make a decision. 
-                                                    Users have {settings.maxAppealDays} days to appeal the decision if they disagree with the outcome.
-                                                </Typography>
-                                                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                                                    <Chip 
-                                                        label="Report Submission" 
-                                                        size="small" 
-                                                        variant="outlined"
-                                                        color="primary"
-                                                    />
-                                                    <Chip 
-                                                        label="Admin Review" 
-                                                        size="small" 
-                                                        variant="outlined"
-                                                        color="warning"
-                                                    />
-                                                    <Chip 
-                                                        label="Decision Made" 
-                                                        size="small" 
-                                                        variant="outlined"
-                                                        color="info"
-                                                    />
-                                                    <Chip 
-                                                        label={`${settings.maxAppealDays} Days Appeal Window`} 
-                                                        size="small" 
-                                                        variant="outlined"
-                                                        color="success"
-                                                    />
-                                                </Box>
-                                            </Box>
-                                        </Box>
-                                    )}
-
                                     {/* Disbursement Timeline Sub-tab */}
-                                    {reportTabValue === 1 && (
+                                    {reportTabValue === 0 && (
                                         <Box>
                                             <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
                                                 Disbursement Timeline Configuration
@@ -1871,7 +1780,7 @@ export default function PlatformSetting() {
                                             
                                             {/* Process Description */}
                                             <Box sx={{ mt: 3, p: 2, bgcolor: '#f8f9fa', borderRadius: 2 }}>
-                                                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: '#dc3545' }}>
+                                                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: '#06b6d4' }}>
                                                     Disbursement Process
                                                 </Typography>
                                                 <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
@@ -1909,7 +1818,7 @@ export default function PlatformSetting() {
                                     )}
 
                                     {/* Severity Levels Sub-tab */}
-                                    {reportTabValue === 2 && (
+                                    {reportTabValue === 1 && (
                                         <Box>
                                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                                                 <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
@@ -1920,9 +1829,9 @@ export default function PlatformSetting() {
                                                     startIcon={<Add />}
                                                     onClick={handleAddSeverity}
                                                     sx={{
-                                                        background: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
+                                                        background: 'linear-gradient(135deg, #06b6d4 0%, #0ea5b8 100%)',
                                                         '&:hover': {
-                                                            background: 'linear-gradient(135deg, #c82333 0%, #bd2130 100%)'
+                                                            background: 'linear-gradient(135deg, #0ea5b8 0%, #0e7490 100%)'
                                                         }
                                                     }}
                                                 >

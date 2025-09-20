@@ -2532,17 +2532,17 @@ export default function SchoolChat() {
                                     icon={<InfoCircleOutlined/>}
                                     onClick={() => setIsRequestDetailPopupVisible(true)}
                                     style={{
-                                        background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
+                                        background: 'linear-gradient(135deg, #1976d2, #0d47a1)',
                                         border: 'none',
                                         borderRadius: '8px',
                                         height: '40px',
                                         fontSize: '14px',
                                         fontWeight: 600,
-                                        boxShadow: '0 4px 12px rgba(46, 125, 50, 0.3)',
+                                        boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
                                         transition: 'all 0.3s ease',
                                         '&:hover': {
                                             transform: 'translateY(-1px)',
-                                            boxShadow: '0 6px 16px rgba(46, 125, 50, 0.4)'
+                                            boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)'
                                         }
                                     }}
                                 >
@@ -2819,11 +2819,11 @@ export default function SchoolChat() {
                                                                         borderRadius: '8px',
                                                                         flex: 1,
                                                                         height: '32px',
-                                                                        background: 'linear-gradient(135deg, #2e7d32, #4caf50)',
+                                                                        background: 'linear-gradient(135deg, #1976d2, #0d47a1)',
                                                                         border: 'none',
                                                                         color: 'white',
                                                                         fontWeight: 600,
-                                                                        boxShadow: '0 2px 8px rgba(46, 125, 50, 0.2)'
+                                                                        boxShadow: '0 2px 8px rgba(25, 118, 210, 0.2)'
                                                                     }}
                                                                 >
                                                                     View Details
@@ -3196,8 +3196,8 @@ export default function SchoolChat() {
                                                 onClick={() => handleOpenDeliveryDetailModal(finalDelivery)}
                                                 size="small"
                                                 style={{
-                                                    backgroundColor: '#52c41a',
-                                                    borderColor: '#52c41a',
+                                                    backgroundColor: '#1976d2',
+                                                    borderColor: '#1976d2',
                                                     borderRadius: '6px',
                                                     height: '32px',
                                                     fontSize: '12px',
