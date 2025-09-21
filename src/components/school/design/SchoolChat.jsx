@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Avatar, Badge, Button, Col, Form, Input, Modal, Row, Tag, Typography} from 'antd';
+import {Avatar, Badge, Button, Col, Divider, Form, Input, Modal, Row, Tag, Typography} from 'antd';
 import JSZip from 'jszip';
 import {saveAs} from 'file-saver';
 import {
@@ -21,7 +21,7 @@ import {
     UserOutlined,
     UserSwitchOutlined
 } from '@ant-design/icons';
-import {Box, Chip, Container, Dialog, Paper} from '@mui/material';
+import {Box, Chip, Container, Dialog, IconButton, Paper} from '@mui/material';
 import EmojiPicker from 'emoji-picker-react';
 import {useSnackbar} from 'notistack';
 import {parseID} from '../../../utils/ParseIDUtil.jsx';
@@ -52,6 +52,7 @@ import DisplayImage from '../../ui/DisplayImage.jsx';
 
 import RequestDetailPopup from './dialog/RequestDetailPopup.jsx';
 import {getAccessCookie} from "../../../utils/CookieUtil.jsx";
+import {formatDateTime} from '../../../utils/TimestampUtil.jsx';
 
 
 const {TextArea} = Input;
@@ -96,25 +97,25 @@ const downloadDesignAsZip = async (delivery) => {
         // Helper function to validate image URL
         const validateImageUrl = (imageUrl) => {
             if (!imageUrl || typeof imageUrl !== 'string') {
-                return { valid: false, reason: 'Invalid URL format' };
+                return {valid: false, reason: 'Invalid URL format'};
             }
-            
+
             try {
                 const url = new URL(imageUrl);
-                
+
                 // Fix Mixed Content issue: convert HTTP to HTTPS
                 if (url.protocol === 'http:') {
                     url.protocol = 'https:';
                     console.log('Converted HTTP to HTTPS:', imageUrl, '→', url.toString());
                 }
-                
+
                 if (!url.protocol.startsWith('https')) {
-                    return { valid: false, reason: 'Invalid protocol - only HTTPS allowed' };
+                    return {valid: false, reason: 'Invalid protocol - only HTTPS allowed'};
                 }
-                
-                return { valid: true, url: url.toString() };
+
+                return {valid: true, url: url.toString()};
             } catch (error) {
-                return { valid: false, reason: 'Invalid URL structure' };
+                return {valid: false, reason: 'Invalid URL structure'};
             }
         };
 
@@ -132,8 +133,8 @@ const downloadDesignAsZip = async (delivery) => {
                 console.log('Fetching image from:', validUrl);
 
                 // Add timestamp to prevent caching issues
-                const urlWithTimestamp = validUrl.includes('?') 
-                    ? `${validUrl}&t=${Date.now()}` 
+                const urlWithTimestamp = validUrl.includes('?')
+                    ? `${validUrl}&t=${Date.now()}`
                     : `${validUrl}?t=${Date.now()}`;
 
                 // Try different fetch strategies
@@ -180,7 +181,7 @@ const downloadDesignAsZip = async (delivery) => {
                             method: 'GET',
                             mode: 'no-cors'
                         });
-                        
+
                         if (response.type === 'opaque') {
                             console.warn('No-cors response received, cannot access image content');
                             return null;
@@ -224,7 +225,7 @@ const downloadDesignAsZip = async (delivery) => {
         // Helper function to add image to zip with unique naming
         const addImageToZip = async (folder, imageUrl, fileName, index = 0) => {
             if (!imageUrl) return false;
-            
+
             const blob = await fetchImageAsBlob(imageUrl);
             if (blob) {
                 // Create unique filename to avoid conflicts
@@ -552,15 +553,15 @@ const downloadDesignAsZip = async (delivery) => {
         // Process Other items
         if (otherItems.length > 0) {
             const otherFolder = zip.folder("other");
-            
+
             for (let i = 0; i < otherItems.length; i++) {
                 const item = otherItems[i];
                 const category = item.designItem?.category?.toLowerCase() || 'unknown';
                 const type = item.designItem?.type?.toLowerCase() || 'unknown';
-                
+
                 const categoryFolder = otherFolder.folder(category);
                 const typeFolder = categoryFolder.folder(type);
-                
+
                 totalImagesAttempted += 2; // front + back
                 if (await addImageToZip(typeFolder, item.frontImageUrl, 'front_design', i)) totalImagesAdded++;
                 if (await addImageToZip(typeFolder, item.backImageUrl, 'back_design', i)) totalImagesAdded++;
@@ -674,12 +675,12 @@ export function UseDesignChatMessages(roomId, userInfo) {
 
     const markAsRead = async () => {
         if (!roomId) return;
-        
+
         // Get current user info for comparison
         let cookie = await getAccessCookie();
         if (!cookie) return;
         const currentUserId = cookie.id;
-        
+
         const q = query(
             collection(db, "messages"),
             where("room", "==", roomId),
@@ -714,14 +715,14 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
 
     const handleDownload = async () => {
         if (isDownloading) return;
-        
+
         setIsDownloading(true);
         setDownloadProgress(0);
-        
+
         try {
             console.log('Starting download for delivery:', delivery.name);
             console.log('Delivery items:', delivery.deliveryItems);
-            
+
             // Log image URLs for debugging
             if (delivery.deliveryItems) {
                 delivery.deliveryItems.forEach((item, index) => {
@@ -734,7 +735,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                     });
                 });
             }
-            
+
             // Simulate progress updates
             const progressInterval = setInterval(() => {
                 setDownloadProgress(prev => {
@@ -742,22 +743,22 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                     return prev + Math.random() * 10;
                 });
             }, 200);
-            
+
             await downloadDesignAsZip(delivery);
-            
+
             clearInterval(progressInterval);
             setDownloadProgress(100);
             console.log('Download completed successfully');
-            
+
             // Reset after success
             setTimeout(() => {
                 setIsDownloading(false);
                 setDownloadProgress(0);
             }, 1000);
-            
+
         } catch (error) {
             console.error('Download error:', error);
-            
+
             // Show user-friendly error message
             let errorMessage = 'Download failed. ';
             if (error.message.includes('No images could be downloaded')) {
@@ -769,10 +770,10 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
             } else {
                 errorMessage += error.message || 'Unknown error occurred.';
             }
-            
+
             // You can use your notification system here
             alert(errorMessage);
-            
+
             // Reset on error
             setIsDownloading(false);
             setDownloadProgress(0);
@@ -898,11 +899,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                                     <Typography.Text style={{color: '#64748b', fontSize: '13px'}}>Submit
                                         Date</Typography.Text>
                                     <Typography.Text strong style={{fontSize: '14px'}}>
-                                        {new Date(delivery.submitDate).toLocaleDateString('vi-VN', {
-                                            day: '2-digit',
-                                            month: '2-digit',
-                                            year: 'numeric'
-                                        })}
+                                        {formatDateTime(delivery.submitDate)}
                                     </Typography.Text>
                                 </Box>
                                 <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
@@ -928,8 +925,8 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                                         width: '100%',
                                         height: '36px',
                                         borderRadius: '6px',
-                                        background: isDownloading 
-                                            ? 'linear-gradient(135deg, #64748b, #94a3b8)' 
+                                        background: isDownloading
+                                            ? 'linear-gradient(135deg, #64748b, #94a3b8)'
                                             : 'linear-gradient(135deg, #2e7d32, #4caf50)',
                                         border: 'none',
                                         fontWeight: 600,
@@ -951,7 +948,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                                 >
                                     {isDownloading ? 'Downloading...' : 'Download Design'}
                                 </Button>
-                                
+
                                 {/* Progress Bar */}
                                 {isDownloading && (
                                     <Box sx={{mt: 2}}>
@@ -1041,26 +1038,21 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                                     }}>
                                         <EditOutlined/>
                                     </Box>
-                                    <Typography.Text strong style={{fontSize: '16px', color: '#ff6b35'}}>Revision Request</Typography.Text>
+                                    <Typography.Text strong style={{fontSize: '16px', color: '#ff6b35'}}>Revision
+                                        Request</Typography.Text>
                                 </Box>
                                 <Typography.Text style={{color: '#475569', fontSize: '14px', lineHeight: 1.6}}>
                                     {revision.note}
                                 </Typography.Text>
                                 {revision.requestDate && (
                                     <Typography.Text style={{
-                                        color: '#94a3b8', 
-                                        fontSize: '12px', 
-                                        display: 'block', 
+                                        color: '#94a3b8',
+                                        fontSize: '12px',
+                                        display: 'block',
                                         mt: 1,
                                         fontStyle: 'italic'
                                     }}>
-                                        Requested on: {new Date(revision.requestDate).toLocaleDateString('vi-VN', {
-                                            day: '2-digit',
-                                            month: '2-digit',
-                                            year: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        })}
+                                        Requested on: {formatDateTime(revision.requestDate)}
                                     </Typography.Text>
                                 )}
                             </Box>
@@ -1068,7 +1060,6 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                     </Box>
                 </Box>
 
-                {}
                 <Box sx={{
                     width: '65%',
                     p: 3,
@@ -1079,12 +1070,11 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                             Design Items
                         </Typography.Title>
                         <Tag color="blue" style={{margin: 0}}>
-                            {delivery.deliveryItems?.length || 0} items
+                            {delivery.deliveryItems?.length || 0} items{(delivery.deliveryItems || delivery.items || []).length} items
                         </Tag>
                     </Box>
 
                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
-                        {}
                         {(() => {
                             const boyItems = delivery.deliveryItems?.filter(item =>
                                 item.designItem?.gender?.toLowerCase() === 'boy'
@@ -1099,7 +1089,6 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
 
                             return (
                                 <>
-                                    {}
                                     {boyItems.length > 0 && (
                                         <Box sx={{mb: 3}}>
                                             <Box sx={{
@@ -1138,7 +1127,6 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                                                             transform: 'translateY(-2px)'
                                                         }
                                                     }}>
-                                                        {}
                                                         <Box
                                                             sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
                                                             <Box sx={{
@@ -1159,17 +1147,11 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                                                                                   style={{margin: 0, color: '#1e293b'}}>
                                                                     {item.designItem?.type?.charAt(0).toUpperCase() + item.designItem?.type?.slice(1)} - {formatCategory(item.designItem?.category)}
                                                                 </Typography.Title>
-                                                                <Typography.Text
-                                                                    style={{color: '#64748b', fontSize: '12px'}}>
-                                                                    Item #{index + 1}
-                                                                </Typography.Text>
                                                             </Box>
                                                         </Box>
 
-                                                        {}
                                                         <Row gutter={[24, 16]}>
-                                                            <Col
-                                                                span={item.designItem?.type?.toLowerCase().includes('shirt') ? 8 : 12}>
+                                                            <Col span={item.designItem?.logoPosition ? 8 : 12}>
                                                                 <Box sx={{
                                                                     p: 2,
                                                                     backgroundColor: '#f8fafc',
@@ -1186,7 +1168,6 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                                                                         display: 'flex',
                                                                         alignItems: 'center',
                                                                         gap: 1.5,
-                                                                        mt: 1
                                                                     }}>
                                                                         <Box sx={{
                                                                             width: 20,
@@ -1202,8 +1183,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                                                                     </Box>
                                                                 </Box>
                                                             </Col>
-                                                            <Col
-                                                                span={item.designItem?.type?.toLowerCase().includes('shirt') ? 8 : 12}>
+                                                            <Col span={item.designItem?.logoPosition ? 8 : 12}>
                                                                 <Box sx={{
                                                                     p: 2,
                                                                     backgroundColor: '#f8fafc',
@@ -1225,7 +1205,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                                                                     </Typography.Text>
                                                                 </Box>
                                                             </Col>
-                                                            {item.designItem?.type?.toLowerCase().includes('shirt') && (
+                                                            {item.designItem?.logoPosition && (
                                                                 <Col span={8}>
                                                                     <Box sx={{
                                                                         p: 2,
@@ -1244,7 +1224,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                                                                             display: 'block',
                                                                             mt: 1
                                                                         }}>
-                                                                            {item.designItem?.logoPosition || 'N/A'}
+                                                                            {item.designItem.logoPosition}
                                                                         </Typography.Text>
                                                                     </Box>
                                                                 </Col>
@@ -1252,7 +1232,6 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                                                         </Row>
 
 
-                                                        {}
                                                         <Row gutter={[24, 16]} style={{marginTop: 16}}>
                                                             <Col span={12}>
                                                                 <Box sx={{
@@ -1306,7 +1285,395 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                                                             </Col>
                                                         </Row>
 
-                                                        {}
+                                                        {item.designItem?.type?.toLowerCase().includes('shirt') && (
+                                                            <>
+                                                                <Divider style={{margin: '16px 0'}}>Button
+                                                                    Information</Divider>
+
+                                                                <Row gutter={[24, 16]}>
+                                                                    <Col span={6}>
+                                                                        <Box sx={{
+                                                                            p: 2,
+                                                                            backgroundColor: '#e0f2fe',
+                                                                            borderRadius: 3,
+                                                                            border: '1px solid #81d4fa',
+                                                                            textAlign: 'center'
+                                                                        }}>
+                                                                            <Typography.Text strong style={{
+                                                                                fontSize: '13px',
+                                                                                color: '#0277bd'
+                                                                            }}>
+                                                                                Button Quantity
+                                                                            </Typography.Text>
+                                                                            <Typography.Text style={{
+                                                                                fontSize: '16px',
+                                                                                display: 'block',
+                                                                                mt: 1,
+                                                                                fontWeight: 700,
+                                                                                color: '#0277bd'
+                                                                            }}>
+                                                                                {item.buttonQty || 0}
+                                                                            </Typography.Text>
+                                                                        </Box>
+                                                                    </Col>
+                                                                    <Col span={6}>
+                                                                        <Box sx={{
+                                                                            p: 2,
+                                                                            backgroundColor: '#e8f5e8',
+                                                                            borderRadius: 3,
+                                                                            border: '1px solid #a5d6a7',
+                                                                            textAlign: 'center'
+                                                                        }}>
+                                                                            <Typography.Text strong style={{
+                                                                                fontSize: '13px',
+                                                                                color: '#2e7d32'
+                                                                            }}>
+                                                                                Button Holes
+                                                                            </Typography.Text>
+                                                                            <Typography.Text style={{
+                                                                                fontSize: '16px',
+                                                                                display: 'block',
+                                                                                mt: 1,
+                                                                                fontWeight: 700,
+                                                                                color: '#2e7d32'
+                                                                            }}>
+                                                                                {item.buttonHoleQty || 0}
+                                                                            </Typography.Text>
+                                                                        </Box>
+                                                                    </Col>
+                                                                    <Col span={6}>
+                                                                        <Box sx={{
+                                                                            p: 2,
+                                                                            backgroundColor: '#fff3e0',
+                                                                            borderRadius: 3,
+                                                                            border: '1px solid #ffcc02',
+                                                                            textAlign: 'center'
+                                                                        }}>
+                                                                            <Typography.Text strong style={{
+                                                                                fontSize: '13px',
+                                                                                color: '#ef6c00'
+                                                                            }}>
+                                                                                Size (cm)
+                                                                            </Typography.Text>
+                                                                            <Typography.Text style={{
+                                                                                fontSize: '14px',
+                                                                                display: 'block',
+                                                                                mt: 1,
+                                                                                fontWeight: 600,
+                                                                                color: '#ef6c00'
+                                                                            }}>
+                                                                                {item.buttonHeight || 0} × {item.buttonWidth || 0}
+                                                                            </Typography.Text>
+                                                                        </Box>
+                                                                    </Col>
+                                                                    <Col span={6}>
+                                                                        <Box sx={{
+                                                                            p: 2,
+                                                                            backgroundColor: '#f8fafc',
+                                                                            borderRadius: 4,
+                                                                            border: '2px solid #e2e8f0',
+                                                                            textAlign: 'center',
+                                                                            position: 'relative',
+                                                                            overflow: 'hidden',
+                                                                            transition: 'all 0.3s ease',
+                                                                            '&:hover': {
+                                                                                transform: 'translateY(-2px)',
+                                                                                boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                                                                                borderColor: '#cbd5e1'
+                                                                            }
+                                                                        }}>
+                                                                            <Typography.Text strong style={{
+                                                                                fontSize: '13px',
+                                                                                color: '#64748b',
+                                                                                letterSpacing: '0.5px',
+                                                                                fontWeight: 600,
+                                                                                display: 'block',
+                                                                            }}>
+                                                                                Button Color
+                                                                            </Typography.Text>
+
+                                                                            <Box sx={{
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                            }}>
+                                                                                {/* Color Circle */}
+                                                                                <Box sx={{
+                                                                                    width: 20,
+                                                                                    height: 20,
+                                                                                    borderRadius: '50%',
+                                                                                    backgroundColor: item.buttonColor || '#FFFFFF',
+                                                                                    border: '3px solid #ffffff',
+                                                                                    boxShadow: '0 4px 12px rgba(0,0,0,0.15), inset 0 1px 3px rgba(0,0,0,0.1)',
+                                                                                    position: 'relative',
+                                                                                    transition: 'all 0.3s ease',
+                                                                                    '&::before': {
+                                                                                        content: '""',
+                                                                                        position: 'absolute',
+                                                                                        top: -3,
+                                                                                        left: -3,
+                                                                                        right: -3,
+                                                                                        bottom: -3,
+                                                                                        borderRadius: '50%',
+                                                                                        background: 'linear-gradient(45deg, #f1f5f9, #e2e8f0)',
+                                                                                        zIndex: -1
+                                                                                    }
+                                                                                }}/>
+
+                                                                                {/* Color Code */}
+                                                                                <Box sx={{
+                                                                                    borderRadius: 3,
+                                                                                    px: 2,
+                                                                                    minWidth: '80px'
+                                                                                }}>
+                                                                                    <Typography.Text style={{
+                                                                                        fontSize: '11px',
+                                                                                        fontWeight: 700,
+                                                                                        color: '#475569',
+                                                                                    }}>
+                                                                                        {item.buttonColor.toUpperCase() || '#FFFFFF'}
+                                                                                    </Typography.Text>
+                                                                                </Box>
+                                                                            </Box>
+                                                                        </Box>
+                                                                    </Col>
+                                                                </Row>
+
+                                                                {item.buttonNote && (
+                                                                    <Box sx={{
+                                                                        mt: 2,
+                                                                        p: 2,
+                                                                        backgroundColor: '#f8f9fa',
+                                                                        borderRadius: 3,
+                                                                        border: '1px solid #dee2e6'
+                                                                    }}>
+                                                                        <Typography.Text strong style={{
+                                                                            fontSize: '13px',
+                                                                            color: '#495057',
+                                                                            display: 'block',
+                                                                            mb: 1
+                                                                        }}>
+                                                                            Button Note:
+                                                                        </Typography.Text>
+                                                                        <Typography.Text style={{
+                                                                            fontSize: '12px',
+                                                                            color: '#6c757d',
+                                                                            fontStyle: 'italic'
+                                                                        }}>
+                                                                            {item.buttonNote}
+                                                                        </Typography.Text>
+                                                                    </Box>
+                                                                )}
+
+                                                                <Divider style={{margin: '16px 0'}}>Logo & Attaching
+                                                                    Technique</Divider>
+
+                                                                <Box sx={{
+                                                                    mt: 2,
+                                                                    display: 'flex',
+                                                                    flexDirection: 'column',
+                                                                    gap: 2
+                                                                }}>
+
+                                                                    <Row gutter={[16, 16]}>
+                                                                        <Col span={12}>
+                                                                            <Box sx={{
+                                                                                p: 2,
+                                                                                backgroundColor: '#fef3c7',
+                                                                                borderRadius: 3,
+                                                                                border: '1px solid #fde68a'
+                                                                            }}>
+                                                                                <Typography.Text strong style={{
+                                                                                    fontSize: '13px',
+                                                                                    color: '#92400e'
+                                                                                }}>
+                                                                                    Logo Height
+                                                                                </Typography.Text>
+                                                                                <Typography.Text style={{
+                                                                                    fontSize: '14px',
+                                                                                    display: 'block',
+                                                                                    mt: 1,
+                                                                                    fontWeight: 600,
+                                                                                    color: '#92400e'
+                                                                                }}>
+                                                                                    {item.baseLogoHeight || item.logoHeight || 0} cm
+                                                                                </Typography.Text>
+                                                                            </Box>
+                                                                        </Col>
+                                                                        <Col span={12}>
+                                                                            <Box sx={{
+                                                                                p: 2,
+                                                                                backgroundColor: '#fef3c7',
+                                                                                borderRadius: 3,
+                                                                                border: '1px solid #fde68a'
+                                                                            }}>
+                                                                                <Typography.Text strong style={{
+                                                                                    fontSize: '13px',
+                                                                                    color: '#92400e'
+                                                                                }}>
+                                                                                    Logo Width
+                                                                                </Typography.Text>
+                                                                                <Typography.Text style={{
+                                                                                    fontSize: '14px',
+                                                                                    display: 'block',
+                                                                                    mt: 1,
+                                                                                    fontWeight: 600,
+                                                                                    color: '#92400e'
+                                                                                }}>
+                                                                                    {item.baseLogoWidth || item.logoWidth || 0} cm
+                                                                                </Typography.Text>
+                                                                            </Box>
+                                                                        </Col>
+                                                                    </Row>
+                                                                    <Box sx={{
+                                                                        p: 2,
+                                                                        backgroundColor: '#f0f9ff',
+                                                                        borderRadius: 3,
+                                                                        border: '1px solid #bae6fd',
+                                                                        display: 'flex',
+                                                                        alignItems: 'flex-start',
+                                                                        gap: 1
+                                                                    }}>
+                                                                        <Typography.Text strong style={{
+                                                                            fontSize: '16px',
+                                                                            color: '#0369a1',
+                                                                            fontWeight: 800
+                                                                        }}>
+                                                                            Technique Type:
+                                                                        </Typography.Text>
+                                                                        <Typography.Text style={{
+                                                                            fontSize: '16px',
+                                                                            display: 'block',
+                                                                            fontWeight: 600,
+                                                                            color: 'black'
+                                                                        }}>
+                                                                            {item.logoAttachingTechnique === 'embroidery' ? 'Embroidery Techniques' :
+                                                                                item.logoAttachingTechnique === 'printing' ? 'Printing Techniques' :
+                                                                                    item.logoAttachingTechnique === 'heatpress' ? 'Heat Press Techniques' : 'N/A'}
+                                                                        </Typography.Text>
+                                                                    </Box>
+                                                                    {item.logoNote && (
+                                                                        <Box sx={{
+                                                                            p: 2,
+                                                                            backgroundColor: '#f8fafc',
+                                                                            borderRadius: 3,
+                                                                            border: '1px solid #e2e8f0'
+                                                                        }}>
+                                                                            <Typography.Text type="secondary"
+                                                                                             style={{
+                                                                                                 fontSize: '12px',
+                                                                                                 fontStyle: 'italic'
+                                                                                             }}>
+                                                                                <strong>Technique
+                                                                                    Note:</strong> {item.logoNote}
+                                                                            </Typography.Text>
+                                                                        </Box>
+                                                                    )}
+                                                                </Box>
+                                                            </>
+                                                        )}
+
+                                                        {item.designItem?.type?.toLowerCase().includes('pants') && (
+                                                            <>
+                                                                <Divider style={{margin: '16px 0'}}>Zipper
+                                                                    Information</Divider>
+
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    backgroundColor: item.zipper ? '#f0fdf4' : '#fef2f2',
+                                                                    borderRadius: 3,
+                                                                    border: item.zipper ? '1px solid #bbf7d0' : '1px solid #fca5a5',
+                                                                    textAlign: 'center',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    gap: 2
+                                                                }}>
+                                                                    <Box sx={{
+                                                                        width: 12,
+                                                                        height: 12,
+                                                                        borderRadius: '50%',
+                                                                        backgroundColor: item.zipper ? '#22c55e' : '#ef4444',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center'
+                                                                    }}>
+                                                                        {item.zipper ? (
+                                                                            <CheckCircleOutlined style={{
+                                                                                color: 'white',
+                                                                                fontSize: '8px'
+                                                                            }}/>
+                                                                        ) : (
+                                                                            <CloseCircleOutlined style={{
+                                                                                color: 'white',
+                                                                                fontSize: '8px'
+                                                                            }}/>
+                                                                        )}
+                                                                    </Box>
+                                                                    <Typography.Text strong style={{
+                                                                        fontSize: '14px',
+                                                                        color: item.zipper ? '#166534' : '#991b1b',
+                                                                        fontWeight: 600
+                                                                    }}>
+                                                                        {item.zipper ? 'Has Zipper' : 'No Zipper'}
+                                                                    </Typography.Text>
+                                                                </Box>
+                                                            </>
+                                                        )}
+
+                                                        <Row gutter={[24, 16]} style={{marginTop: 16}}>
+                                                            <Col span={12}>
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    backgroundColor: '#f0fdf4',
+                                                                    borderRadius: 3,
+                                                                    border: '1px solid #bbf7d0',
+                                                                    textAlign: 'center'
+                                                                }}>
+                                                                    <Typography.Text strong style={{
+                                                                        fontSize: '13px',
+                                                                        color: '#166534',
+                                                                        display: 'block',
+                                                                        mb: 1
+                                                                    }}>
+                                                                        Front Design
+                                                                    </Typography.Text>
+                                                                    <DisplayImage
+                                                                        imageUrl={item.frontImageUrl}
+                                                                        alt="Front Design"
+                                                                        width="100%"
+                                                                        height="200px"
+                                                                        style={{borderRadius: 8, objectFit: 'cover'}}
+                                                                    />
+                                                                </Box>
+                                                            </Col>
+                                                            <Col span={12}>
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    backgroundColor: '#fef2f2',
+                                                                    borderRadius: 3,
+                                                                    border: '1px solid #fca5a5',
+                                                                    textAlign: 'center'
+                                                                }}>
+                                                                    <Typography.Text strong style={{
+                                                                        fontSize: '13px',
+                                                                        color: '#991b1b',
+                                                                        display: 'block',
+                                                                        mb: 1
+                                                                    }}>
+                                                                        Back Design
+                                                                    </Typography.Text>
+                                                                    <DisplayImage
+                                                                        imageUrl={item.backImageUrl}
+                                                                        alt="Back Design"
+                                                                        width="100%"
+                                                                        height="200px"
+                                                                        style={{borderRadius: 8, objectFit: 'cover'}}
+                                                                    />
+                                                                </Box>
+                                                            </Col>
+                                                        </Row>
+
                                                         {item.designItem?.note && (
                                                             <Box sx={{
                                                                 mt: 2,
@@ -1330,7 +1697,6 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                                         </Box>
                                     )}
 
-                                    {}
                                     {girlItems.length > 0 && (
                                         <Box sx={{mb: 3}}>
                                             <Box sx={{
@@ -1369,7 +1735,6 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                                                             transform: 'translateY(-2px)'
                                                         }
                                                     }}>
-                                                        {}
                                                         <Box
                                                             sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
                                                             <Box sx={{
@@ -1390,17 +1755,11 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                                                                                   style={{margin: 0, color: '#1e293b'}}>
                                                                     {item.designItem?.type?.charAt(0).toUpperCase() + item.designItem?.type?.slice(1)} - {formatCategory(item.designItem?.category)}
                                                                 </Typography.Title>
-                                                                <Typography.Text
-                                                                    style={{color: '#64748b', fontSize: '12px'}}>
-                                                                    Item #{index + 1}
-                                                                </Typography.Text>
                                                             </Box>
                                                         </Box>
 
-                                                        {}
                                                         <Row gutter={[24, 16]}>
-                                                            <Col
-                                                                span={item.designItem?.type?.toLowerCase().includes('shirt') ? 8 : 12}>
+                                                            <Col span={item.designItem?.logoPosition ? 8 : 12}>
                                                                 <Box sx={{
                                                                     p: 2,
                                                                     backgroundColor: '#f8fafc',
@@ -1417,7 +1776,6 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                                                                         display: 'flex',
                                                                         alignItems: 'center',
                                                                         gap: 1.5,
-                                                                        mt: 1
                                                                     }}>
                                                                         <Box sx={{
                                                                             width: 20,
@@ -1433,8 +1791,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                                                                     </Box>
                                                                 </Box>
                                                             </Col>
-                                                            <Col
-                                                                span={item.designItem?.type?.toLowerCase().includes('shirt') ? 8 : 12}>
+                                                            <Col span={item.designItem?.logoPosition ? 8 : 12}>
                                                                 <Box sx={{
                                                                     p: 2,
                                                                     backgroundColor: '#f8fafc',
@@ -1456,7 +1813,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                                                                     </Typography.Text>
                                                                 </Box>
                                                             </Col>
-                                                            {item.designItem?.type?.toLowerCase().includes('shirt') && (
+                                                            {item.designItem?.logoPosition && (
                                                                 <Col span={8}>
                                                                     <Box sx={{
                                                                         p: 2,
@@ -1475,244 +1832,336 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                                                                             display: 'block',
                                                                             mt: 1
                                                                         }}>
-                                                                            {item.designItem?.logoPosition || 'N/A'}
+                                                                            {item.designItem?.logoPosition}
                                                                         </Typography.Text>
                                                                     </Box>
                                                                 </Col>
                                                             )}
                                                         </Row>
 
-                                                        {}
-                                                        <Row gutter={[24, 16]} style={{marginTop: 16}}>
-                                                            <Col span={12}>
-                                                                <Box sx={{
-                                                                    p: 2,
-                                                                    backgroundColor: '#f0fdf4',
-                                                                    borderRadius: 3,
-                                                                    border: '1px solid #bbf7d0',
-                                                                    textAlign: 'center'
-                                                                }}>
-                                                                    <Typography.Text strong style={{
-                                                                        fontSize: '13px',
-                                                                        color: '#166534',
-                                                                        display: 'block',
-                                                                        mb: 1
-                                                                    }}>
-                                                                        Front Design
-                                                                    </Typography.Text>
-                                                                    <DisplayImage
-                                                                        imageUrl={item.frontImageUrl}
-                                                                        alt="Front Design"
-                                                                        width="100%"
-                                                                        height="200px"
-                                                                        style={{borderRadius: 8, objectFit: 'cover'}}
-                                                                    />
-                                                                </Box>
-                                                            </Col>
-                                                            <Col span={12}>
-                                                                <Box sx={{
-                                                                    p: 2,
-                                                                    backgroundColor: '#fef2f2',
-                                                                    borderRadius: 3,
-                                                                    border: '1px solid #fca5a5',
-                                                                    textAlign: 'center'
-                                                                }}>
-                                                                    <Typography.Text strong style={{
-                                                                        fontSize: '13px',
-                                                                        color: '#991b1b',
-                                                                        display: 'block',
-                                                                        mb: 1
-                                                                    }}>
-                                                                        Back Design
-                                                                    </Typography.Text>
-                                                                    <DisplayImage
-                                                                        imageUrl={item.backImageUrl}
-                                                                        alt="Back Design"
-                                                                        width="100%"
-                                                                        height="200px"
-                                                                        style={{borderRadius: 8, objectFit: 'cover'}}
-                                                                    />
-                                                                </Box>
-                                                            </Col>
-                                                        </Row>
+                                                        {item.designItem?.type?.toLowerCase().includes('shirt') && (
+                                                            <>
+                                                                <Divider style={{margin: '16px 0'}}>Button Information</Divider>
 
-                                                        {}
-                                                        {item.designItem?.note && (
-                                                            <Box sx={{
-                                                                mt: 2,
-                                                                p: 2,
-                                                                backgroundColor: '#f8fafc',
-                                                                borderRadius: 3,
-                                                                border: '1px solid #e2e8f0'
-                                                            }}>
-                                                                <Typography.Text type="secondary"
-                                                                                 style={{
-                                                                                     fontSize: '12px',
-                                                                                     fontStyle: 'italic'
-                                                                                 }}>
-                                                                    <strong>Note:</strong> {item.designItem.note}
-                                                                </Typography.Text>
-                                                            </Box>
+                                                                <Row gutter={[24, 16]}>
+                                                                    <Col span={6}>
+                                                                        <Box sx={{
+                                                                            p: 2,
+                                                                            backgroundColor: '#e0f2fe',
+                                                                            borderRadius: 3,
+                                                                            border: '1px solid #81d4fa',
+                                                                            textAlign: 'center'
+                                                                        }}>
+                                                                            <Typography.Text strong style={{
+                                                                                fontSize: '13px',
+                                                                                color: '#0277bd'
+                                                                            }}>
+                                                                                Button Quantity
+                                                                            </Typography.Text>
+                                                                            <Typography.Text style={{
+                                                                                fontSize: '16px',
+                                                                                display: 'block',
+                                                                                mt: 1,
+                                                                                fontWeight: 700,
+                                                                                color: '#0277bd'
+                                                                            }}>
+                                                                                {item.buttonQty || 0}
+                                                                            </Typography.Text>
+                                                                        </Box>
+                                                                    </Col>
+                                                                    <Col span={6}>
+                                                                        <Box sx={{
+                                                                            p: 2,
+                                                                            backgroundColor: '#e8f5e8',
+                                                                            borderRadius: 3,
+                                                                            border: '1px solid #a5d6a7',
+                                                                            textAlign: 'center'
+                                                                        }}>
+                                                                            <Typography.Text strong style={{
+                                                                                fontSize: '13px',
+                                                                                color: '#2e7d32'
+                                                                            }}>
+                                                                                Button Holes
+                                                                            </Typography.Text>
+                                                                            <Typography.Text style={{
+                                                                                fontSize: '16px',
+                                                                                display: 'block',
+                                                                                mt: 1,
+                                                                                fontWeight: 700,
+                                                                                color: '#2e7d32'
+                                                                            }}>
+                                                                                {item.buttonHoleQty || 0}
+                                                                            </Typography.Text>
+                                                                        </Box>
+                                                                    </Col>
+                                                                    <Col span={6}>
+                                                                        <Box sx={{
+                                                                            p: 2,
+                                                                            backgroundColor: '#fff3e0',
+                                                                            borderRadius: 3,
+                                                                            border: '1px solid #ffcc02',
+                                                                            textAlign: 'center'
+                                                                        }}>
+                                                                            <Typography.Text strong style={{
+                                                                                fontSize: '13px',
+                                                                                color: '#ef6c00'
+                                                                            }}>
+                                                                                Size (cm)
+                                                                            </Typography.Text>
+                                                                            <Typography.Text style={{
+                                                                                fontSize: '14px',
+                                                                                display: 'block',
+                                                                                mt: 1,
+                                                                                fontWeight: 600,
+                                                                                color: '#ef6c00'
+                                                                            }}>
+                                                                                {item.buttonHeight || 0} × {item.buttonWidth || 0}
+                                                                            </Typography.Text>
+                                                                        </Box>
+                                                                    </Col>
+                                                                    <Col span={6}>
+                                                                        <Box sx={{
+                                                                            p: 2,
+                                                                            backgroundColor: '#f8fafc',
+                                                                            borderRadius: 4,
+                                                                            border: '2px solid #e2e8f0',
+                                                                            textAlign: 'center',
+                                                                            position: 'relative',
+                                                                            overflow: 'hidden',
+                                                                            transition: 'all 0.3s ease',
+                                                                            '&:hover': {
+                                                                                transform: 'translateY(-2px)',
+                                                                                boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                                                                                borderColor: '#cbd5e1'
+                                                                            }
+                                                                        }}>
+                                                                            <Typography.Text strong style={{
+                                                                                fontSize: '13px',
+                                                                                color: '#64748b',
+                                                                                letterSpacing: '0.5px',
+                                                                                fontWeight: 600,
+                                                                                display: 'block',
+                                                                            }}>
+                                                                                Button Color
+                                                                            </Typography.Text>
+                                                                            
+                                                                            <Box sx={{
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                            }}>
+                                                                                {/* Color Circle */}
+                                                                                <Box sx={{
+                                                                                    width: 20,
+                                                                                    height: 20,
+                                                                                    borderRadius: '50%',
+                                                                                    backgroundColor: item.buttonColor || '#FFFFFF',
+                                                                                    border: '3px solid #ffffff',
+                                                                                    boxShadow: '0 4px 12px rgba(0,0,0,0.15), inset 0 1px 3px rgba(0,0,0,0.1)',
+                                                                                    position: 'relative',
+                                                                                    transition: 'all 0.3s ease',
+                                                                                    '&::before': {
+                                                                                        content: '""',
+                                                                                        position: 'absolute',
+                                                                                        top: -3,
+                                                                                        left: -3,
+                                                                                        right: -3,
+                                                                                        bottom: -3,
+                                                                                        borderRadius: '50%',
+                                                                                        background: 'linear-gradient(45deg, #f1f5f9, #e2e8f0)',
+                                                                                        zIndex: -1
+                                                                                    }
+                                                                                }}/>
+                                                                                
+                                                                                {/* Color Code */}
+                                                                                <Box sx={{
+                                                                                    borderRadius: 3,
+                                                                                    px: 2,
+                                                                                    minWidth: '80px'
+                                                                                }}>
+                                                                                    <Typography.Text style={{
+                                                                                        fontSize: '11px',
+                                                                                        fontWeight: 700,
+                                                                                        color: '#475569',
+                                                                                    }}>
+                                                                                        {item.buttonColor.toUpperCase() || '#FFFFFF'}
+                                                                                    </Typography.Text>
+                                                                                </Box>
+                                                                            </Box>
+                                                                        </Box>
+                                                                    </Col>
+                                                                </Row>
+
+                                                                {item.buttonNote && (
+                                                                    <Box sx={{
+                                                                        mt: 2,
+                                                                        p: 2,
+                                                                        backgroundColor: '#f8f9fa',
+                                                                        borderRadius: 3,
+                                                                        border: '1px solid #dee2e6'
+                                                                    }}>
+                                                                        <Typography.Text strong style={{
+                                                                            fontSize: '13px',
+                                                                            color: '#495057',
+                                                                            display: 'block',
+                                                                            mb: 1
+                                                                        }}>
+                                                                            Button Note:
+                                                                        </Typography.Text>
+                                                                        <Typography.Text style={{
+                                                                            fontSize: '12px',
+                                                                            color: '#6c757d',
+                                                                            fontStyle: 'italic'
+                                                                        }}>
+                                                                            {item.buttonNote}
+                                                                        </Typography.Text>
+                                                                    </Box>
+                                                                )}
+
+                                                                <Divider style={{margin: '16px 0'}}>Logo & Attaching Technique</Divider>
+
+                                                                <Box sx={{
+                                                                    mt: 2,
+                                                                    display: 'flex',
+                                                                    flexDirection: 'column',
+                                                                    gap: 2
+                                                                }}>
+                                                                    <Row gutter={[16, 16]}>
+                                                                        <Col span={12}>
+                                                                            <Box sx={{
+                                                                                p: 2,
+                                                                                backgroundColor: '#fef3c7',
+                                                                                borderRadius: 3,
+                                                                                border: '1px solid #fde68a'
+                                                                            }}>
+                                                                                <Typography.Text strong style={{
+                                                                                    fontSize: '13px',
+                                                                                    color: '#92400e'
+                                                                                }}>
+                                                                                    Logo Height
+                                                                                </Typography.Text>
+                                                                                <Typography.Text style={{
+                                                                                    fontSize: '14px',
+                                                                                    display: 'block',
+                                                                                    mt: 1,
+                                                                                    fontWeight: 600,
+                                                                                    color: '#92400e'
+                                                                                }}>
+                                                                                    {item.baseLogoHeight || item.logoHeight || 0} cm
+                                                                                </Typography.Text>
+                                                                            </Box>
+                                                                        </Col>
+                                                                        <Col span={12}>
+                                                                            <Box sx={{
+                                                                                p: 2,
+                                                                                backgroundColor: '#fef3c7',
+                                                                                borderRadius: 3,
+                                                                                border: '1px solid #fde68a'
+                                                                            }}>
+                                                                                <Typography.Text strong style={{
+                                                                                    fontSize: '13px',
+                                                                                    color: '#92400e'
+                                                                                }}>
+                                                                                    Logo Width
+                                                                                </Typography.Text>
+                                                                                <Typography.Text style={{
+                                                                                    fontSize: '14px',
+                                                                                    display: 'block',
+                                                                                    mt: 1,
+                                                                                    fontWeight: 600,
+                                                                                    color: '#92400e'
+                                                                                }}>
+                                                                                    {item.baseLogoWidth || item.logoWidth || 0} cm
+                                                                                </Typography.Text>
+                                                                            </Box>
+                                                                        </Col>
+                                                                    </Row>
+                                                                    <Box sx={{
+                                                                        p: 2,
+                                                                        backgroundColor: '#f0f9ff',
+                                                                        borderRadius: 3,
+                                                                        border: '1px solid #bae6fd'
+                                                                    }}>
+                                                                        <Typography.Text strong style={{
+                                                                            fontSize: '13px',
+                                                                            color: '#0369a1'
+                                                                        }}>
+                                                                            Technique Type
+                                                                        </Typography.Text>
+                                                                        <Typography.Text style={{
+                                                                            fontSize: '14px',
+                                                                            display: 'block',
+                                                                            mt: 1,
+                                                                            fontWeight: 600,
+                                                                            color: '#0369a1'
+                                                                        }}>
+                                                                            {item.logoAttachingTechnique === 'embroidery' ? 'Embroidery Techniques' :
+                                                                                item.logoAttachingTechnique === 'printing' ? 'Printing Techniques' :
+                                                                                    item.logoAttachingTechnique === 'heatpress' ? 'Heat Press Techniques' : 'N/A'}
+                                                                        </Typography.Text>
+                                                                    </Box>
+                                                                    {item.logoNote && (
+                                                                        <Box sx={{
+                                                                            p: 2,
+                                                                            backgroundColor: '#f8fafc',
+                                                                            borderRadius: 3,
+                                                                            border: '1px solid #e2e8f0'
+                                                                        }}>
+                                                                            <Typography.Text type="secondary"
+                                                                                             style={{
+                                                                                                 fontSize: '12px',
+                                                                                                 fontStyle: 'italic'
+                                                                                             }}>
+                                                                                <strong>Technique
+                                                                                    Note:</strong> {item.logoNote}
+                                                                            </Typography.Text>
+                                                                        </Box>
+                                                                    )}
+                                                                </Box>
+                                                            </>
                                                         )}
-                                                    </Box>
-                                                ))}
-                                            </Box>
-                                        </Box>
-                                    )}
 
-                                    {}
-                                    {otherItems.length > 0 && (
-                                        <Box sx={{mb: 3}}>
-                                            <Box sx={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                mb: 2,
-                                                p: 2,
-                                                backgroundColor: '#f3f4f6',
-                                                borderRadius: 2,
-                                                border: '1px solid #d1d5db'
-                                            }}>
-                                                <Typography.Title level={4} style={{
-                                                    margin: 0,
-                                                    color: '#374151',
-                                                    fontWeight: 700
-                                                }}>
-                                                    OTHERS
-                                                </Typography.Title>
-                                                <Tag color="default"
-                                                     style={{margin: 0, fontSize: '12px', fontWeight: 600}}>
-                                                    {otherItems.length} cloth{otherItems.length !== 1 ? 'es' : ''}
-                                                </Tag>
-                                            </Box>
-                                            <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
-                                                {otherItems.map((item, index) => (
-                                                    <Box key={`other-${index}`} sx={{
-                                                        p: 3,
-                                                        backgroundColor: 'white',
-                                                        borderRadius: 4,
-                                                        border: '1px solid #e2e8f0',
-                                                        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                                                        transition: 'all 0.3s ease',
-                                                        '&:hover': {
-                                                            boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
-                                                            transform: 'translateY(-2px)'
-                                                        }
-                                                    }}>
-                                                        {}
-                                                        <Box
-                                                            sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
-                                                            <Box sx={{
-                                                                width: 40,
-                                                                height: 40,
-                                                                borderRadius: '50%',
-                                                                background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                color: 'white',
-                                                                fontSize: '16px'
-                                                            }}>
-                                                                {getItemIcon(item.designItem?.type)}
-                                                            </Box>
-                                                            <Box>
-                                                                <Typography.Title level={5}
-                                                                                  style={{margin: 0, color: '#1e293b'}}>
-                                                                    {item.designItem?.type?.charAt(0).toUpperCase() + item.designItem?.type?.slice(1)} - {formatCategory(item.designItem?.category)}
-                                                                </Typography.Title>
-                                                                <Typography.Text
-                                                                    style={{color: '#64748b', fontSize: '12px'}}>
-                                                                    Item #{index + 1}
-                                                                </Typography.Text>
-                                                            </Box>
-                                                        </Box>
-
-                                                        {}
-                                                        <Row gutter={[24, 16]}>
-                                                            <Col
-                                                                span={item.designItem?.type?.toLowerCase().includes('shirt') ? 8 : 12}>
+                                                        {item.designItem?.type?.toLowerCase().includes('pants') && (
+                                                            <>
+                                                                <Divider style={{margin: '16px 0'}}>Zipper Information</Divider>
+                                                                
                                                                 <Box sx={{
                                                                     p: 2,
-                                                                    backgroundColor: '#f8fafc',
+                                                                    backgroundColor: item.zipper ? '#f0fdf4' : '#fef2f2',
                                                                     borderRadius: 3,
-                                                                    border: '1px solid #e2e8f0'
+                                                                    border: item.zipper ? '1px solid #bbf7d0' : '1px solid #fca5a5',
+                                                                    textAlign: 'center',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    gap: 2
                                                                 }}>
-                                                                    <Typography.Text strong style={{
-                                                                        fontSize: '13px',
-                                                                        color: '#475569'
-                                                                    }}>
-                                                                        Color
-                                                                    </Typography.Text>
                                                                     <Box sx={{
+                                                                        width: 12,
+                                                                        height: 12,
+                                                                        borderRadius: '50%',
+                                                                        backgroundColor: item.zipper ? '#22c55e' : '#ef4444',
                                                                         display: 'flex',
                                                                         alignItems: 'center',
-                                                                        gap: 1.5,
-                                                                        mt: 1
+                                                                        justifyContent: 'center'
                                                                     }}>
-                                                                        <Box sx={{
-                                                                            width: 20,
-                                                                            height: 20,
-                                                                            borderRadius: '50%',
-                                                                            backgroundColor: item.designItem?.color,
-                                                                            border: '2px solid #e0e0e0',
-                                                                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                                                                        }}/>
-                                                                        <Typography.Text style={{fontSize: '13px'}}>
-                                                                            {item.designItem?.color}
-                                                                        </Typography.Text>
+                                                                        {item.zipper ? (
+                                                                            <CheckCircleOutlined style={{color: 'white', fontSize: '8px'}} />
+                                                                        ) : (
+                                                                            <CloseCircleOutlined style={{color: 'white', fontSize: '8px'}} />
+                                                                        )}
                                                                     </Box>
-                                                                </Box>
-                                                            </Col>
-                                                            <Col
-                                                                span={item.designItem?.type?.toLowerCase().includes('shirt') ? 8 : 12}>
-                                                                <Box sx={{
-                                                                    p: 2,
-                                                                    backgroundColor: '#f8fafc',
-                                                                    borderRadius: 3,
-                                                                    border: '1px solid #e2e8f0'
-                                                                }}>
                                                                     <Typography.Text strong style={{
-                                                                        fontSize: '13px',
-                                                                        color: '#475569'
+                                                                        fontSize: '14px',
+                                                                        color: item.zipper ? '#166534' : '#991b1b',
+                                                                        fontWeight: 600
                                                                     }}>
-                                                                        Fabric
-                                                                    </Typography.Text>
-                                                                    <Typography.Text style={{
-                                                                        fontSize: '13px',
-                                                                        display: 'block',
-                                                                        mt: 1
-                                                                    }}>
-                                                                        {item.designItem?.fabricName}
+                                                                        {item.zipper ? 'Has Zipper' : 'No Zipper'}
                                                                     </Typography.Text>
                                                                 </Box>
-                                                            </Col>
-                                                            {item.designItem?.type?.toLowerCase().includes('shirt') && (
-                                                                <Col span={8}>
-                                                                    <Box sx={{
-                                                                        p: 2,
-                                                                        backgroundColor: '#f8fafc',
-                                                                        borderRadius: 3,
-                                                                        border: '1px solid #e2e8f0'
-                                                                    }}>
-                                                                        <Typography.Text strong style={{
-                                                                            fontSize: '13px',
-                                                                            color: '#475569'
-                                                                        }}>
-                                                                            Logo Position
-                                                                        </Typography.Text>
-                                                                        <Typography.Text style={{
-                                                                            fontSize: '13px',
-                                                                            display: 'block',
-                                                                            mt: 1
-                                                                        }}>
-                                                                            {item.designItem?.logoPosition || 'N/A'}
-                                                                        </Typography.Text>
-                                                                    </Box>
-                                                                </Col>
-                                                            )}
-                                                        </Row>
+                                                            </>
+                                                        )}
 
-                                                        {}
                                                         <Row gutter={[24, 16]} style={{marginTop: 16}}>
                                                             <Col span={12}>
                                                                 <Box sx={{
@@ -1766,7 +2215,6 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                                                             </Col>
                                                         </Row>
 
-                                                        {}
                                                         {item.designItem?.note && (
                                                             <Box sx={{
                                                                 mt: 2,
@@ -1796,7 +2244,6 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision}) {
                 </Box>
             </Box>
 
-            {}
             <Box sx={{
                 p: 2,
                 borderTop: '1px solid #e2e8f0',
@@ -2126,7 +2573,7 @@ export default function SchoolChat() {
     const emojiPickerRef = useRef(null);
 
     const {chatMessages, unreadCount, sendMessage, markAsRead} = UseDesignChatMessages(roomId, userInfo);
-    
+
     // Get user info from cookie instead of Firebase auth
     useEffect(() => {
         const fetchUserInfo = async () => {
@@ -2141,15 +2588,15 @@ export default function SchoolChat() {
                 console.error("Error fetching user info:", error);
             }
         };
-        
+
         fetchUserInfo();
-        
+
         // Set up interval to refresh user info periodically (every 5 minutes)
         const interval = setInterval(fetchUserInfo, 5 * 60 * 1000);
-        
+
         return () => clearInterval(interval);
     }, []);
-    
+
     useEffect(() => {
         if (isChatOpen && chatMessages.length) {
             markAsRead();
@@ -2527,16 +2974,13 @@ export default function SchoolChat() {
                                 </Box>
                             </Box>
                             <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
-                                <Button
-                                    type="primary"
-                                    icon={<InfoCircleOutlined/>}
+                                <IconButton
                                     onClick={() => setIsRequestDetailPopupVisible(true)}
                                     style={{
                                         background: 'linear-gradient(135deg, #1976d2, #0d47a1)',
+                                        color: 'white',
                                         border: 'none',
-                                        borderRadius: '8px',
-                                        height: '40px',
-                                        fontSize: '14px',
+                                        fontSize: '18px',
                                         fontWeight: 600,
                                         boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
                                         transition: 'all 0.3s ease',
@@ -2546,8 +2990,8 @@ export default function SchoolChat() {
                                         }
                                     }}
                                 >
-                                    View Design Details
-                                </Button>
+                                    <InfoCircleOutlined/>
+                                </IconButton>
                                 <Chip
                                     label={requestData?.status?.toUpperCase() || 'UNKNOWN'}
                                     color="success"
@@ -3333,7 +3777,7 @@ export default function SchoolChat() {
                     disabled: isConfirmingFinal,
                     loading: isConfirmingFinal,
                     style: {
-                        backgroundColor: isConfirmingFinal ? '#d1d5db' : '#52c41a', 
+                        backgroundColor: isConfirmingFinal ? '#d1d5db' : '#52c41a',
                         borderColor: isConfirmingFinal ? '#d1d5db' : '#52c41a',
                         color: isConfirmingFinal ? '#6b7280' : 'white'
                     }
@@ -3488,9 +3932,9 @@ export default function SchoolChat() {
                                 <Box sx={{display: 'flex', gap: 1, alignItems: 'flex-end'}}>
                                     <Box sx={{flex: 1, position: 'relative'}}>
                                         <TextArea
-                                            placeholder={!userInfo ? 'Loading user info...' : 
-                                                requestData?.status === 'completed' ? 'Chat is read-only for completed requests' : 
-                                                'Type your message...'}
+                                            placeholder={!userInfo ? 'Loading user info...' :
+                                                requestData?.status === 'completed' ? 'Chat is read-only for completed requests' :
+                                                    'Type your message...'}
                                             value={newMessage}
                                             onChange={(e) => setNewMessage(e.target.value)}
                                             onPressEnter={(e) => {

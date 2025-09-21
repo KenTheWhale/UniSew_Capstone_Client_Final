@@ -11,7 +11,9 @@ import {
     Input,
     Radio,
     Row,
+    Select,
     Space,
+    Switch,
     Tag,
     Tooltip,
     Typography
@@ -31,7 +33,21 @@ import {
     UploadOutlined,
     UserOutlined
 } from '@ant-design/icons';
-import {Box, Chip, Container, Dialog, DialogActions, DialogContent, DialogTitle, Paper} from '@mui/material';
+import {
+    Box,
+    Chip,
+    Container,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    IconButton,
+    Paper,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails
+} from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import EmojiPicker from 'emoji-picker-react';
 import {useSnackbar} from 'notistack';
 import {parseID} from '../../utils/ParseIDUtil.jsx';
@@ -60,6 +76,7 @@ import {
 import {uploadCloudinary} from "../../services/UploadImageService.jsx";
 import AppliedRequestDetail from './dialog/AppliedRequestDetail.jsx';
 import {getAccessCookie} from "../../utils/CookieUtil.jsx";
+import {formatDateTime} from '../../utils/TimestampUtil.jsx';
 
 const {TextArea} = Input;
 
@@ -158,12 +175,12 @@ export function UseDesignerChatMessages(roomId, userInfo) {
 
     const markAsRead = async () => {
         if (!roomId) return;
-        
+
         // Get current user info for comparison
         let cookie = await getAccessCookie();
         if (!cookie) return;
         const currentUserId = cookie.id;
-        
+
         const q = query(
             collection(db, "messages"),
             where("room", "==", roomId),
@@ -210,7 +227,6 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision, showAddRevi
                 }
             }}
         >
-            {}
             <Box sx={{
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 color: 'white',
@@ -310,11 +326,7 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision, showAddRevi
                                     <Typography.Text style={{color: '#64748b', fontSize: '13px'}}>Submit
                                         Date</Typography.Text>
                                     <Typography.Text strong style={{fontSize: '14px'}}>
-                                        {new Date(delivery.submitDate).toLocaleDateString('vi-VN', {
-                                            day: '2-digit',
-                                            month: '2-digit',
-                                            year: 'numeric'
-                                        })}
+                                        {formatDateTime(delivery.submitDate)}
                                     </Typography.Text>
                                 </Box>
                                 <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
@@ -386,19 +398,13 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision, showAddRevi
                                 </Typography.Text>
                                 {revision.requestDate && (
                                     <Typography.Text style={{
-                                        color: '#94a3b8', 
-                                        fontSize: '12px', 
-                                        display: 'block', 
+                                        color: '#94a3b8',
+                                        fontSize: '12px',
+                                        display: 'block',
                                         mt: 1,
                                         fontStyle: 'italic'
                                     }}>
-                                        Requested on: {new Date(revision.requestDate).toLocaleDateString('vi-VN', {
-                                            day: '2-digit',
-                                            month: '2-digit',
-                                            year: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        })}
+                                        Requested on: {formatDateTime(revision.requestDate)}
                                     </Typography.Text>
                                 )}
                             </Box>
@@ -515,7 +521,6 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision, showAddRevi
                                                                         display: 'flex',
                                                                         alignItems: 'center',
                                                                         gap: 1.5,
-                                                                        mt: 1
                                                                     }}>
                                                                         <Box sx={{
                                                                             width: 20,
@@ -581,44 +586,45 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision, showAddRevi
 
                                                         {item.designItem?.type?.toLowerCase().includes('shirt') && (
                                                             <>
-                                                                <Divider style={{margin: '16px 0'}}>Button Information</Divider>
-                                                                
+                                                                <Divider style={{margin: '16px 0'}}>Button
+                                                                    Information</Divider>
+
                                                                 <Row gutter={[24, 16]}>
                                                                     <Col span={6}>
-                                                                    <Box sx={{
-                                                                        p: 2,
+                                                                        <Box sx={{
+                                                                            p: 2,
                                                                             backgroundColor: '#e0f2fe',
-                                                                        borderRadius: 3,
+                                                                            borderRadius: 3,
                                                                             border: '1px solid #81d4fa',
                                                                             textAlign: 'center'
-                                                                    }}>
-                                                                        <Typography.Text strong style={{
-                                                                            fontSize: '13px',
-                                                                                color: '#0277bd'
                                                                         }}>
+                                                                            <Typography.Text strong style={{
+                                                                                fontSize: '13px',
+                                                                                color: '#0277bd'
+                                                                            }}>
                                                                                 Button Quantity
-                                                                        </Typography.Text>
-                                                                        <Typography.Text style={{
+                                                                            </Typography.Text>
+                                                                            <Typography.Text style={{
                                                                                 fontSize: '16px',
-                                                                            display: 'block',
-                                                                            mt: 1,
+                                                                                display: 'block',
+                                                                                mt: 1,
                                                                                 fontWeight: 700,
                                                                                 color: '#0277bd'
-                                                                        }}>
+                                                                            }}>
                                                                                 {item.buttonQty || 0}
-                                                                        </Typography.Text>
-                                                                    </Box>
-                                                                </Col>
+                                                                            </Typography.Text>
+                                                                        </Box>
+                                                                    </Col>
                                                                     <Col span={6}>
-                                                                    <Box sx={{
-                                                                        p: 2,
+                                                                        <Box sx={{
+                                                                            p: 2,
                                                                             backgroundColor: '#e8f5e8',
-                                                                        borderRadius: 3,
+                                                                            borderRadius: 3,
                                                                             border: '1px solid #a5d6a7',
                                                                             textAlign: 'center'
-                                                                    }}>
-                                                                        <Typography.Text strong style={{
-                                                                            fontSize: '13px',
+                                                                        }}>
+                                                                            <Typography.Text strong style={{
+                                                                                fontSize: '13px',
                                                                                 color: '#2e7d32'
                                                                             }}>
                                                                                 Button Holes
@@ -647,12 +653,12 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision, showAddRevi
                                                                                 color: '#ef6c00'
                                                                             }}>
                                                                                 Size (cm)
-                                                                        </Typography.Text>
-                                                                        <Typography.Text style={{
-                                                                            fontSize: '14px',
-                                                                            display: 'block',
-                                                                            mt: 1,
-                                                                            fontWeight: 600,
+                                                                            </Typography.Text>
+                                                                            <Typography.Text style={{
+                                                                                fontSize: '14px',
+                                                                                display: 'block',
+                                                                                mt: 1,
+                                                                                fontWeight: 600,
                                                                                 color: '#ef6c00'
                                                                             }}>
                                                                                 {item.buttonHeight || 0} × {item.buttonWidth || 0}
@@ -662,48 +668,76 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision, showAddRevi
                                                                     <Col span={6}>
                                                                         <Box sx={{
                                                                             p: 2,
-                                                                            backgroundColor: '#f3e5f5',
-                                                                            borderRadius: 3,
-                                                                            border: '1px solid #ce93d8',
-                                                                            textAlign: 'center'
+                                                                            backgroundColor: '#f8fafc',
+                                                                            borderRadius: 4,
+                                                                            border: '2px solid #e2e8f0',
+                                                                            textAlign: 'center',
+                                                                            position: 'relative',
+                                                                            overflow: 'hidden',
+                                                                            transition: 'all 0.3s ease',
+                                                                            '&:hover': {
+                                                                                transform: 'translateY(-2px)',
+                                                                                boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                                                                                borderColor: '#cbd5e1'
+                                                                            }
                                                                         }}>
                                                                             <Typography.Text strong style={{
                                                                                 fontSize: '13px',
-                                                                                color: '#7b1fa2'
+                                                                                color: '#64748b',
+                                                                                letterSpacing: '0.5px',
+                                                                                fontWeight: 600,
+                                                                                display: 'block',
                                                                             }}>
                                                                                 Button Color
                                                                             </Typography.Text>
+                                                                            
                                                                             <Box sx={{
                                                                                 display: 'flex',
                                                                                 alignItems: 'center',
-                                                                                gap: 1,
-                                                                                mt: 1
+                                                                                justifyContent: 'center',
                                                                             }}>
+                                                                                {/* Color Circle */}
                                                                                 <Box sx={{
-                                                                                    width: 24,
-                                                                                    height: 24,
+                                                                                    width: 20,
+                                                                                    height: 20,
                                                                                     borderRadius: '50%',
                                                                                     backgroundColor: item.buttonColor || '#FFFFFF',
-                                                                                    border: '2px solid #e0e0e0',
-                                                                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                                                                                    flexShrink: 0
+                                                                                    border: '3px solid #ffffff',
+                                                                                    boxShadow: '0 4px 12px rgba(0,0,0,0.15), inset 0 1px 3px rgba(0,0,0,0.1)',
+                                                                                    position: 'relative',
+                                                                                    transition: 'all 0.3s ease',
+                                                                                    '&::before': {
+                                                                                        content: '""',
+                                                                                        position: 'absolute',
+                                                                                        top: -3,
+                                                                                        left: -3,
+                                                                                        right: -3,
+                                                                                        bottom: -3,
+                                                                                        borderRadius: '50%',
+                                                                                        background: 'linear-gradient(45deg, #f1f5f9, #e2e8f0)',
+                                                                                        zIndex: -1
+                                                                                    }
                                                                                 }}/>
-                                                                                <Box sx={{flex: 1}}>
+                                                                                
+                                                                                {/* Color Code */}
+                                                                                <Box sx={{
+                                                                                    borderRadius: 3,
+                                                                                    px: 2,
+                                                                                    minWidth: '80px'
+                                                                                }}>
                                                                                     <Typography.Text style={{
-                                                                                        fontSize: '14px',
-                                                                                        fontWeight: 600,
-                                                                                        color: '#7b1fa2',
-                                                                                        fontFamily: 'monospace',
-                                                                                        display: 'block'
+                                                                                        fontSize: '11px',
+                                                                                        fontWeight: 700,
+                                                                                        color: '#475569',
                                                                                     }}>
-                                                                                        {item.buttonColor || 'N/A'}
+                                                                                        {item.buttonColor.toUpperCase() || '#FFFFFF'}
                                                                                     </Typography.Text>
                                                                                 </Box>
                                                                             </Box>
                                                                         </Box>
                                                                     </Col>
                                                                 </Row>
-                                                                
+
                                                                 {item.buttonNote && (
                                                                     <Box sx={{
                                                                         mt: 2,
@@ -730,43 +764,93 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision, showAddRevi
                                                                     </Box>
                                                                 )}
 
-                                                                <Box sx={{mt: 2, display: 'flex', flexDirection: 'column', gap: 2}}>
-                                                                    <Typography.Text strong style={{fontSize: '14px', color: '#1e293b', mb: 1}}>
-                                                                        Logo & Attaching Technique
-                                                                    </Typography.Text>
+                                                                <Divider style={{margin: '16px 0'}}>Logo & Attaching Technique</Divider>
+
+                                                                <Box sx={{
+                                                                    mt: 2,
+                                                                    display: 'flex',
+                                                                    flexDirection: 'column',
+                                                                    gap: 2
+                                                                }}>
+                                                                
                                                                     <Row gutter={[16, 16]}>
                                                                         <Col span={12}>
-                                                                            <Box sx={{p: 2, backgroundColor: '#fef3c7', borderRadius: 3, border: '1px solid #fde68a'}}>
-                                                                                <Typography.Text strong style={{fontSize: '13px', color: '#92400e'}}>
+                                                                            <Box sx={{
+                                                                                p: 2,
+                                                                                backgroundColor: '#fef3c7',
+                                                                                borderRadius: 3,
+                                                                                border: '1px solid #fde68a'
+                                                                            }}>
+                                                                                <Typography.Text strong style={{
+                                                                                    fontSize: '13px',
+                                                                                    color: '#92400e'
+                                                                                }}>
                                                                                     Logo Height
                                                                                 </Typography.Text>
-                                                                                <Typography.Text style={{fontSize: '14px', display: 'block', mt: 1, fontWeight: 600, color: '#92400e'}}>
+                                                                                <Typography.Text style={{
+                                                                                    fontSize: '14px',
+                                                                                    display: 'block',
+                                                                                    mt: 1,
+                                                                                    fontWeight: 600,
+                                                                                    color: '#92400e'
+                                                                                }}>
                                                                                     {item.baseLogoHeight || item.logoHeight || 0} cm
                                                                                 </Typography.Text>
                                                                             </Box>
                                                                         </Col>
                                                                         <Col span={12}>
-                                                                            <Box sx={{p: 2, backgroundColor: '#fef3c7', borderRadius: 3, border: '1px solid #fde68a'}}>
-                                                                                <Typography.Text strong style={{fontSize: '13px', color: '#92400e'}}>
+                                                                            <Box sx={{
+                                                                                p: 2,
+                                                                                backgroundColor: '#fef3c7',
+                                                                                borderRadius: 3,
+                                                                                border: '1px solid #fde68a'
+                                                                            }}>
+                                                                                <Typography.Text strong style={{
+                                                                                    fontSize: '13px',
+                                                                                    color: '#92400e'
+                                                                                }}>
                                                                                     Logo Width
                                                                                 </Typography.Text>
-                                                                                <Typography.Text style={{fontSize: '14px', display: 'block', mt: 1, fontWeight: 600, color: '#92400e'}}>
-                                                                            {item.baseLogoWidth || item.logoWidth || 0} cm
+                                                                                <Typography.Text style={{
+                                                                                    fontSize: '14px',
+                                                                                    display: 'block',
+                                                                                    mt: 1,
+                                                                                    fontWeight: 600,
+                                                                                    color: '#92400e'
+                                                                                }}>
+                                                                                    {item.baseLogoWidth || item.logoWidth || 0} cm
+                                                                                </Typography.Text>
+                                                                            </Box>
+                                                                        </Col>
+                                                                    </Row>
+                                                                    <Box sx={{
+                                                                        p: 2,
+                                                                        backgroundColor: '#f0f9ff',
+                                                                        borderRadius: 3,
+                                                                        border: '1px solid #bae6fd',
+                                                                        display: 'flex',
+                                                                        alignItems: 'flex-start',
+                                                                        gap: 1
+                                                                    }}>
+                                                                        <Typography.Text strong style={{
+                                                                            fontSize: '16px',
+                                                                            color: '#0369a1',
+                                                                            fontWeight: 800
+                                                                        }}>
+                                                                            Technique Type: 
                                                                         </Typography.Text>
-                                                                    </Box>
-                                                                </Col>
-                                                            </Row>
-                                                                    <Box sx={{p: 2, backgroundColor: '#f0f9ff', borderRadius: 3, border: '1px solid #bae6fd'}}>
-                                                                        <Typography.Text strong style={{fontSize: '13px', color: '#0369a1'}}>
-                                                                            Technique Type
-                                                                        </Typography.Text>
-                                                                        <Typography.Text style={{fontSize: '14px', display: 'block', mt: 1, fontWeight: 600, color: '#0369a1'}}>
+                                                                        <Typography.Text style={{
+                                                                            fontSize: '16px',
+                                                                            display: 'block',
+                                                                            fontWeight: 600,
+                                                                            color: 'black'
+                                                                        }}>
                                                                             {item.logoAttachingTechnique === 'embroidery' ? 'Embroidery Techniques' :
-                                                                             item.logoAttachingTechnique === 'printing' ? 'Printing Techniques' :
-                                                                             item.logoAttachingTechnique === 'heatpress' ? 'Heat Press Techniques' : 'N/A'}
+                                                                                item.logoAttachingTechnique === 'printing' ? 'Printing Techniques' :
+                                                                                    item.logoAttachingTechnique === 'heatpress' ? 'Heat Press Techniques' : 'N/A'}
                                                                         </Typography.Text>
                                                                     </Box>
-                                                                    {item.techniqueNote && (
+                                                                    {item.logoNote && (
                                                                         <Box sx={{
                                                                             p: 2,
                                                                             backgroundColor: '#f8fafc',
@@ -778,10 +862,52 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision, showAddRevi
                                                                                                  fontSize: '12px',
                                                                                                  fontStyle: 'italic'
                                                                                              }}>
-                                                                                <strong>Technique Note:</strong> {item.techniqueNote}
+                                                                                <strong>Technique
+                                                                                    Note:</strong> {item.logoNote}
                                                                             </Typography.Text>
                                                                         </Box>
                                                                     )}
+                                                                </Box>
+                                                            </>
+                                                        )}
+
+                                                        {item.designItem?.type?.toLowerCase().includes('pants') && (
+                                                            <>
+                                                                <Divider style={{margin: '16px 0'}}>Zipper Information</Divider>
+                                                                
+                                                                <Box sx={{
+                                                                    p: 2,
+                                                                    backgroundColor: item.zipper ? '#f0fdf4' : '#fef2f2',
+                                                                    borderRadius: 3,
+                                                                    border: item.zipper ? '1px solid #bbf7d0' : '1px solid #fca5a5',
+                                                                    textAlign: 'center',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    gap: 2
+                                                                }}>
+                                                                    <Box sx={{
+                                                                        width: 12,
+                                                                        height: 12,
+                                                                        borderRadius: '50%',
+                                                                        backgroundColor: item.zipper ? '#22c55e' : '#ef4444',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center'
+                                                                    }}>
+                                                                        {item.zipper ? (
+                                                                            <CheckCircleOutlined style={{color: 'white', fontSize: '8px'}} />
+                                                                        ) : (
+                                                                            <CloseCircleOutlined style={{color: 'white', fontSize: '8px'}} />
+                                                                        )}
+                                                                    </Box>
+                                                                    <Typography.Text strong style={{
+                                                                        fontSize: '14px',
+                                                                        color: item.zipper ? '#166534' : '#991b1b',
+                                                                        fontWeight: 600
+                                                                    }}>
+                                                                        {item.zipper ? 'Has Zipper' : 'No Zipper'}
+                                                                    </Typography.Text>
                                                                 </Box>
                                                             </>
                                                         )}
@@ -941,7 +1067,6 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision, showAddRevi
                                                                         display: 'flex',
                                                                         alignItems: 'center',
                                                                         gap: 1.5,
-                                                                        mt: 1
                                                                     }}>
                                                                         <Box sx={{
                                                                             width: 20,
@@ -1008,43 +1133,43 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision, showAddRevi
                                                         {item.designItem?.type?.toLowerCase().includes('shirt') && (
                                                             <>
                                                                 <Divider style={{margin: '16px 0'}}>Button Information</Divider>
-                                                                
+
                                                                 <Row gutter={[24, 16]}>
                                                                     <Col span={6}>
-                                                                    <Box sx={{
-                                                                        p: 2,
+                                                                        <Box sx={{
+                                                                            p: 2,
                                                                             backgroundColor: '#e0f2fe',
-                                                                        borderRadius: 3,
+                                                                            borderRadius: 3,
                                                                             border: '1px solid #81d4fa',
                                                                             textAlign: 'center'
-                                                                    }}>
-                                                                        <Typography.Text strong style={{
-                                                                            fontSize: '13px',
-                                                                                color: '#0277bd'
                                                                         }}>
+                                                                            <Typography.Text strong style={{
+                                                                                fontSize: '13px',
+                                                                                color: '#0277bd'
+                                                                            }}>
                                                                                 Button Quantity
-                                                                        </Typography.Text>
-                                                                        <Typography.Text style={{
+                                                                            </Typography.Text>
+                                                                            <Typography.Text style={{
                                                                                 fontSize: '16px',
-                                                                            display: 'block',
-                                                                            mt: 1,
+                                                                                display: 'block',
+                                                                                mt: 1,
                                                                                 fontWeight: 700,
                                                                                 color: '#0277bd'
-                                                                        }}>
+                                                                            }}>
                                                                                 {item.buttonQty || 0}
-                                                                        </Typography.Text>
-                                                                    </Box>
-                                                                </Col>
+                                                                            </Typography.Text>
+                                                                        </Box>
+                                                                    </Col>
                                                                     <Col span={6}>
-                                                                    <Box sx={{
-                                                                        p: 2,
+                                                                        <Box sx={{
+                                                                            p: 2,
                                                                             backgroundColor: '#e8f5e8',
-                                                                        borderRadius: 3,
+                                                                            borderRadius: 3,
                                                                             border: '1px solid #a5d6a7',
                                                                             textAlign: 'center'
-                                                                    }}>
-                                                                        <Typography.Text strong style={{
-                                                                            fontSize: '13px',
+                                                                        }}>
+                                                                            <Typography.Text strong style={{
+                                                                                fontSize: '13px',
                                                                                 color: '#2e7d32'
                                                                             }}>
                                                                                 Button Holes
@@ -1073,12 +1198,12 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision, showAddRevi
                                                                                 color: '#ef6c00'
                                                                             }}>
                                                                                 Size (cm)
-                                                                        </Typography.Text>
-                                                                        <Typography.Text style={{
-                                                                            fontSize: '14px',
-                                                                            display: 'block',
-                                                                            mt: 1,
-                                                                            fontWeight: 600,
+                                                                            </Typography.Text>
+                                                                            <Typography.Text style={{
+                                                                                fontSize: '14px',
+                                                                                display: 'block',
+                                                                                mt: 1,
+                                                                                fontWeight: 600,
                                                                                 color: '#ef6c00'
                                                                             }}>
                                                                                 {item.buttonHeight || 0} × {item.buttonWidth || 0}
@@ -1088,46 +1213,76 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision, showAddRevi
                                                                     <Col span={6}>
                                                                         <Box sx={{
                                                                             p: 2,
-                                                                            backgroundColor: '#f3e5f5',
-                                                                            borderRadius: 3,
-                                                                            border: '1px solid #ce93d8',
-                                                                            textAlign: 'center'
+                                                                            backgroundColor: '#f8fafc',
+                                                                            borderRadius: 4,
+                                                                            border: '2px solid #e2e8f0',
+                                                                            textAlign: 'center',
+                                                                            position: 'relative',
+                                                                            overflow: 'hidden',
+                                                                            transition: 'all 0.3s ease',
+                                                                            '&:hover': {
+                                                                                transform: 'translateY(-2px)',
+                                                                                boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                                                                                borderColor: '#cbd5e1'
+                                                                            }
                                                                         }}>
                                                                             <Typography.Text strong style={{
                                                                                 fontSize: '13px',
-                                                                                color: '#7b1fa2'
+                                                                                color: '#64748b',
+                                                                                letterSpacing: '0.5px',
+                                                                                fontWeight: 600,
+                                                                                display: 'block',
                                                                             }}>
                                                                                 Button Color
                                                                             </Typography.Text>
+                                                                            
                                                                             <Box sx={{
                                                                                 display: 'flex',
-                                                                                alignItems: 'center'
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
                                                                             }}>
+                                                                                {/* Color Circle */}
                                                                                 <Box sx={{
-                                                                                    width: 24,
-                                                                                    height: 24,
+                                                                                    width: 20,
+                                                                                    height: 20,
                                                                                     borderRadius: '50%',
                                                                                     backgroundColor: item.buttonColor || '#FFFFFF',
-                                                                                    border: '2px solid #e0e0e0',
-                                                                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                                                                                    flexShrink: 0
+                                                                                    border: '3px solid #ffffff',
+                                                                                    boxShadow: '0 4px 12px rgba(0,0,0,0.15), inset 0 1px 3px rgba(0,0,0,0.1)',
+                                                                                    position: 'relative',
+                                                                                    transition: 'all 0.3s ease',
+                                                                                    '&::before': {
+                                                                                        content: '""',
+                                                                                        position: 'absolute',
+                                                                                        top: -3,
+                                                                                        left: -3,
+                                                                                        right: -3,
+                                                                                        bottom: -3,
+                                                                                        borderRadius: '50%',
+                                                                                        background: 'linear-gradient(45deg, #f1f5f9, #e2e8f0)',
+                                                                                        zIndex: -1
+                                                                                    }
                                                                                 }}/>
-                                                                                <Box sx={{flex: 1}}>
+                                                                                
+                                                                                {/* Color Code */}
+                                                                                <Box sx={{
+                                                                                    borderRadius: 3,
+                                                                                    px: 2,
+                                                                                    minWidth: '80px'
+                                                                                }}>
                                                                                     <Typography.Text style={{
-                                                                                        fontSize: '14px',
-                                                                                        fontWeight: 600,
-                                                                                        color: '#7b1fa2',
-                                                                                        fontFamily: 'monospace',
-                                                                                        display: 'block'
+                                                                                        fontSize: '11px',
+                                                                                        fontWeight: 700,
+                                                                                        color: '#475569',
                                                                                     }}>
-                                                                                        {item.buttonColor || 'N/A'}
+                                                                                        {item.buttonColor.toUpperCase() || '#FFFFFF'}
                                                                                     </Typography.Text>
                                                                                 </Box>
                                                                             </Box>
                                                                         </Box>
                                                                     </Col>
                                                                 </Row>
-                                                                
+
                                                                 {item.buttonNote && (
                                                                     <Box sx={{
                                                                         mt: 2,
@@ -1154,43 +1309,89 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision, showAddRevi
                                                                     </Box>
                                                                 )}
 
-                                                                <Box sx={{mt: 2, display: 'flex', flexDirection: 'column', gap: 2}}>
-                                                                    <Typography.Text strong style={{fontSize: '14px', color: '#1e293b', mb: 1}}>
-                                                                        Logo & Attaching Technique
-                                                                    </Typography.Text>
+                                                                <Divider style={{margin: '16px 0'}}>Logo & Attaching Technique</Divider>
+
+                                                                <Box sx={{
+                                                                    mt: 2,
+                                                                    display: 'flex',
+                                                                    flexDirection: 'column',
+                                                                    gap: 2
+                                                                }}>
                                                                     <Row gutter={[16, 16]}>
                                                                         <Col span={12}>
-                                                                            <Box sx={{p: 2, backgroundColor: '#fef3c7', borderRadius: 3, border: '1px solid #fde68a'}}>
-                                                                                <Typography.Text strong style={{fontSize: '13px', color: '#92400e'}}>
+                                                                            <Box sx={{
+                                                                                p: 2,
+                                                                                backgroundColor: '#fef3c7',
+                                                                                borderRadius: 3,
+                                                                                border: '1px solid #fde68a'
+                                                                            }}>
+                                                                                <Typography.Text strong style={{
+                                                                                    fontSize: '13px',
+                                                                                    color: '#92400e'
+                                                                                }}>
                                                                                     Logo Height
                                                                                 </Typography.Text>
-                                                                                <Typography.Text style={{fontSize: '14px', display: 'block', mt: 1, fontWeight: 600, color: '#92400e'}}>
+                                                                                <Typography.Text style={{
+                                                                                    fontSize: '14px',
+                                                                                    display: 'block',
+                                                                                    mt: 1,
+                                                                                    fontWeight: 600,
+                                                                                    color: '#92400e'
+                                                                                }}>
                                                                                     {item.baseLogoHeight || item.logoHeight || 0} cm
                                                                                 </Typography.Text>
                                                                             </Box>
                                                                         </Col>
                                                                         <Col span={12}>
-                                                                            <Box sx={{p: 2, backgroundColor: '#fef3c7', borderRadius: 3, border: '1px solid #fde68a'}}>
-                                                                                <Typography.Text strong style={{fontSize: '13px', color: '#92400e'}}>
+                                                                            <Box sx={{
+                                                                                p: 2,
+                                                                                backgroundColor: '#fef3c7',
+                                                                                borderRadius: 3,
+                                                                                border: '1px solid #fde68a'
+                                                                            }}>
+                                                                                <Typography.Text strong style={{
+                                                                                    fontSize: '13px',
+                                                                                    color: '#92400e'
+                                                                                }}>
                                                                                     Logo Width
                                                                                 </Typography.Text>
-                                                                                <Typography.Text style={{fontSize: '14px', display: 'block', mt: 1, fontWeight: 600, color: '#92400e'}}>
-                                                                            {item.baseLogoWidth || item.logoWidth || 0} cm
-                                                                        </Typography.Text>
-                                                                    </Box>
-                                                                </Col>
-                                                            </Row>
-                                                                    <Box sx={{p: 2, backgroundColor: '#f0f9ff', borderRadius: 3, border: '1px solid #bae6fd'}}>
-                                                                        <Typography.Text strong style={{fontSize: '13px', color: '#0369a1'}}>
+                                                                                <Typography.Text style={{
+                                                                                    fontSize: '14px',
+                                                                                    display: 'block',
+                                                                                    mt: 1,
+                                                                                    fontWeight: 600,
+                                                                                    color: '#92400e'
+                                                                                }}>
+                                                                                    {item.baseLogoWidth || item.logoWidth || 0} cm
+                                                                                </Typography.Text>
+                                                                            </Box>
+                                                                        </Col>
+                                                                    </Row>
+                                                                    <Box sx={{
+                                                                        p: 2,
+                                                                        backgroundColor: '#f0f9ff',
+                                                                        borderRadius: 3,
+                                                                        border: '1px solid #bae6fd'
+                                                                    }}>
+                                                                        <Typography.Text strong style={{
+                                                                            fontSize: '13px',
+                                                                            color: '#0369a1'
+                                                                        }}>
                                                                             Technique Type
                                                                         </Typography.Text>
-                                                                        <Typography.Text style={{fontSize: '14px', display: 'block', mt: 1, fontWeight: 600, color: '#0369a1'}}>
-                                                                            {item.attachingTechnique === 'embroidery' ? 'Embroidery Techniques' :
-                                                                             item.attachingTechnique === 'printing' ? 'Printing Techniques' :
-                                                                             item.attachingTechnique === 'heatpress' ? 'Heat Press Techniques' : 'N/A'}
+                                                                        <Typography.Text style={{
+                                                                            fontSize: '14px',
+                                                                            display: 'block',
+                                                                            mt: 1,
+                                                                            fontWeight: 600,
+                                                                            color: '#0369a1'
+                                                                        }}>
+                                                                            {item.logoAttachingTechnique === 'embroidery' ? 'Embroidery Techniques' :
+                                                                                item.logoAttachingTechnique === 'printing' ? 'Printing Techniques' :
+                                                                                    item.logoAttachingTechnique === 'heatpress' ? 'Heat Press Techniques' : 'N/A'}
                                                                         </Typography.Text>
                                                                     </Box>
-                                                                    {item.techniqueNote && (
+                                                                    {item.logoNote && (
                                                                         <Box sx={{
                                                                             p: 2,
                                                                             backgroundColor: '#f8fafc',
@@ -1202,7 +1403,8 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision, showAddRevi
                                                                                                  fontSize: '12px',
                                                                                                  fontStyle: 'italic'
                                                                                              }}>
-                                                                                <strong>Technique Note:</strong> {item.techniqueNote}
+                                                                                <strong>Technique
+                                                                                    Note:</strong> {item.logoNote}
                                                                             </Typography.Text>
                                                                         </Box>
                                                                     )}
@@ -1210,224 +1412,46 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision, showAddRevi
                                                             </>
                                                         )}
 
-                                                        <Row gutter={[24, 16]} style={{marginTop: 16}}>
-                                                            <Col span={12}>
+                                                        {item.designItem?.type?.toLowerCase().includes('pants') && (
+                                                            <>
+                                                                <Divider style={{margin: '16px 0'}}>Zipper Information</Divider>
+                                                                
                                                                 <Box sx={{
                                                                     p: 2,
-                                                                    backgroundColor: '#f0fdf4',
+                                                                    backgroundColor: item.zipper ? '#f0fdf4' : '#fef2f2',
                                                                     borderRadius: 3,
-                                                                    border: '1px solid #bbf7d0',
-                                                                    textAlign: 'center'
+                                                                    border: item.zipper ? '1px solid #bbf7d0' : '1px solid #fca5a5',
+                                                                    textAlign: 'center',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    gap: 2
                                                                 }}>
-                                                                    <Typography.Text strong style={{
-                                                                        fontSize: '13px',
-                                                                        color: '#166534',
-                                                                        display: 'block',
-                                                                        mb: 1
-                                                                    }}>
-                                                                        Front Design
-                                                                    </Typography.Text>
-                                                                    <DisplayImage
-                                                                        imageUrl={item.frontImageUrl}
-                                                                        alt="Front Design"
-                                                                        width="100%"
-                                                                        height="200px"
-                                                                        style={{borderRadius: 8, objectFit: 'cover'}}
-                                                                    />
-                                                                </Box>
-                                                            </Col>
-                                                            <Col span={12}>
-                                                                <Box sx={{
-                                                                    p: 2,
-                                                                    backgroundColor: '#fef2f2',
-                                                                    borderRadius: 3,
-                                                                    border: '1px solid #fca5a5',
-                                                                    textAlign: 'center'
-                                                                }}>
-                                                                    <Typography.Text strong style={{
-                                                                        fontSize: '13px',
-                                                                        color: '#991b1b',
-                                                                        display: 'block',
-                                                                        mb: 1
-                                                                    }}>
-                                                                        Back Design
-                                                                    </Typography.Text>
-                                                                    <DisplayImage
-                                                                        imageUrl={item.backImageUrl}
-                                                                        alt="Back Design"
-                                                                        width="100%"
-                                                                        height="200px"
-                                                                        style={{borderRadius: 8, objectFit: 'cover'}}
-                                                                    />
-                                                                </Box>
-                                                            </Col>
-                                                        </Row>
-
-                                                        {item.designItem?.note && (
-                                                            <Box sx={{
-                                                                mt: 2,
-                                                                p: 2,
-                                                                backgroundColor: '#f8fafc',
-                                                                borderRadius: 3,
-                                                                border: '1px solid #e2e8f0'
-                                                            }}>
-                                                                <Typography.Text type="secondary"
-                                                                                 style={{
-                                                                                     fontSize: '12px',
-                                                                                     fontStyle: 'italic'
-                                                                                 }}>
-                                                                    <strong>Note:</strong> {item.designItem.note}
-                                                                </Typography.Text>
-                                                            </Box>
-                                                        )}
-                                                    </Box>
-                                                ))}
-                                            </Box>
-                                        </Box>
-                                    )}
-
-                                    {otherItems.length > 0 && (
-                                        <Box sx={{mb: 3}}>
-                                            <Box sx={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                mb: 2,
-                                                p: 2,
-                                                backgroundColor: '#f3f4f6',
-                                                borderRadius: 2,
-                                                border: '1px solid #d1d5db'
-                                            }}>
-                                                <Typography.Title level={4} style={{
-                                                    margin: 0,
-                                                    color: '#374151',
-                                                    fontWeight: 700
-                                                }}>
-                                                    OTHERS
-                                                </Typography.Title>
-                                                <Tag color="default"
-                                                     style={{margin: 0, fontSize: '12px', fontWeight: 600}}>
-                                                    {otherItems.length} cloth{otherItems.length !== 1 ? 'es' : ''}
-                                                </Tag>
-                                            </Box>
-                                            <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
-                                                {otherItems.map((item, index) => (
-                                                    <Box key={`other-${index}`} sx={{
-                                                        p: 3,
-                                                        backgroundColor: 'white',
-                                                        borderRadius: 4,
-                                                        border: '1px solid #e2e8f0',
-                                                        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                                                        transition: 'all 0.3s ease',
-                                                        '&:hover': {
-                                                            boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
-                                                            transform: 'translateY(-2px)'
-                                                        }
-                                                    }}>
-                                                        <Box
-                                                            sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
-                                                            <Box sx={{
-                                                                width: 40,
-                                                                height: 40,
-                                                                borderRadius: '50%',
-                                                                background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                color: 'white',
-                                                                fontSize: '16px'
-                                                            }}>
-                                                                {getItemIcon(item.designItem?.type)}
-                                                            </Box>
-                                                            <Box>
-                                                                <Typography.Title level={5}
-                                                                                  style={{margin: 0, color: '#1e293b'}}>
-                                                                    {item.designItem?.type?.charAt(0).toUpperCase() + item.designItem?.type?.slice(1)} - {formatCategory(item.designItem?.category)}
-                                                                </Typography.Title>
-                                                            </Box>
-                                                        </Box>
-
-                                                        <Row gutter={[24, 16]}>
-                                                            <Col span={item.designItem?.logoPosition ? 8 : 12}>
-                                                                <Box sx={{
-                                                                    p: 2,
-                                                                    backgroundColor: '#f8fafc',
-                                                                    borderRadius: 3,
-                                                                    border: '1px solid #e2e8f0'
-                                                                }}>
-                                                                    <Typography.Text strong style={{
-                                                                        fontSize: '13px',
-                                                                        color: '#475569'
-                                                                    }}>
-                                                                        Color
-                                                                    </Typography.Text>
                                                                     <Box sx={{
+                                                                        width: 12,
+                                                                        height: 12,
+                                                                        borderRadius: '50%',
+                                                                        backgroundColor: item.zipper ? '#22c55e' : '#ef4444',
                                                                         display: 'flex',
                                                                         alignItems: 'center',
-                                                                        gap: 1.5,
-                                                                        mt: 1
+                                                                        justifyContent: 'center'
                                                                     }}>
-                                                                        <Box sx={{
-                                                                            width: 20,
-                                                                            height: 20,
-                                                                            borderRadius: '50%',
-                                                                            backgroundColor: item.designItem?.color,
-                                                                            border: '2px solid #e0e0e0',
-                                                                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                                                                        }}/>
-                                                                        <Typography.Text style={{fontSize: '13px'}}>
-                                                                            {item.designItem?.color}
-                                                                        </Typography.Text>
+                                                                        {item.zipper ? (
+                                                                            <CheckCircleOutlined style={{color: 'white', fontSize: '8px'}} />
+                                                                        ) : (
+                                                                            <CloseCircleOutlined style={{color: 'white', fontSize: '8px'}} />
+                                                                        )}
                                                                     </Box>
-                                                                </Box>
-                                                            </Col>
-                                                            <Col span={item.designItem?.logoPosition ? 8 : 12}>
-                                                                <Box sx={{
-                                                                    p: 2,
-                                                                    backgroundColor: '#f8fafc',
-                                                                    borderRadius: 3,
-                                                                    border: '1px solid #e2e8f0'
-                                                                }}>
                                                                     <Typography.Text strong style={{
-                                                                        fontSize: '13px',
-                                                                        color: '#475569'
+                                                                        fontSize: '14px',
+                                                                        color: item.zipper ? '#166534' : '#991b1b',
+                                                                        fontWeight: 600
                                                                     }}>
-                                                                        Fabric
-                                                                    </Typography.Text>
-                                                                    <Typography.Text style={{
-                                                                        fontSize: '13px',
-                                                                        display: 'block',
-                                                                        mt: 1
-                                                                    }}>
-                                                                        {item.designItem?.fabricName}
+                                                                        {item.zipper ? 'Has Zipper' : 'No Zipper'}
                                                                     </Typography.Text>
                                                                 </Box>
-                                                            </Col>
-                                                            {item.designItem?.logoPosition && (
-                                                                <Col span={8}>
-                                                                    <Box sx={{
-                                                                        p: 2,
-                                                                        backgroundColor: '#f8fafc',
-                                                                        borderRadius: 3,
-                                                                        border: '1px solid #e2e8f0'
-                                                                    }}>
-                                                                        <Typography.Text strong style={{
-                                                                            fontSize: '13px',
-                                                                            color: '#475569'
-                                                                        }}>
-                                                                            Logo Position
-                                                                        </Typography.Text>
-                                                                        <Typography.Text style={{
-                                                                            fontSize: '13px',
-                                                                            display: 'block',
-                                                                            mt: 1
-                                                                        }}>
-                                                                            {item.designItem.logoPosition}
-                                                                        </Typography.Text>
-                                                                    </Box>
-                                                                </Col>
-                                                            )}
-                                                        </Row>
+                                                            </>
+                                                        )}
 
                                                         <Row gutter={[24, 16]} style={{marginTop: 16}}>
                                                             <Col span={12}>
@@ -1511,7 +1535,6 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision, showAddRevi
                 </Box>
             </Box>
 
-            {}
             <Box sx={{
                 p: 2,
                 borderTop: '1px solid #e2e8f0',
@@ -1573,7 +1596,7 @@ function DeliverySubmissionModal({
     const [deliveryDescription, setDeliveryDescription] = useState('');
     const [revisionOf, setRevisionOf] = useState(undefined);
     const [itemList, setItemList] = useState([]);
-    
+
     const [uploading, setUploading] = useState(false);
     const [uploadedFiles, setUploadedFiles] = useState({});
     const [revisionRequests, setRevisionRequests] = useState([]);
@@ -1608,7 +1631,7 @@ function DeliverySubmissionModal({
     const isFormComplete = (currentDeliveryType) => {
         const deliveryNameOk = typeof deliveryName === 'string' && deliveryName.trim().length > 0;
         const items = Array.isArray(itemList) ? itemList : [];
-        if (!deliveryNameOk) return {ok: false, reason: 'missing deliveryName'};
+        if (!deliveryNameOk) return {ok: false, reason: 'Delivery name is required'};
         if (items.length === 0) return {ok: false, reason: 'itemList empty'};
         for (let i = 0; i < items.length; i++) {
             const it = items[i] || {};
@@ -1621,18 +1644,18 @@ function DeliverySubmissionModal({
                 const wOk = Number(it.logoWidth) > 0;
                 if (!hOk) return {ok: false, reason: `${label}'s logo height invalid`};
                 if (!wOk) return {ok: false, reason: `${label}'s logo width invalid`};
-                
+
                 // Check button information for shirts
                 const buttonQuantityOk = Number(it.buttonQuantity) >= 1 && Number(it.buttonQuantity) <= 50;
                 const buttonHolesOk = Number(it.buttonHoles) >= 2 && Number(it.buttonHoles) <= 4;
                 const buttonLengthOk = Number(it.buttonLength) >= 0.5 && Number(it.buttonLength) <= 10;
                 const buttonWidthOk = Number(it.buttonWidth) >= 0.5 && Number(it.buttonWidth) <= 10;
                 const buttonColorOk = typeof it.buttonColor === 'string' && it.buttonColor.trim().length > 0;
-                
+
                 // Check attaching technique for shirts
-                const attachingTechniqueOk = typeof it.attachingTechnique === 'string' && 
+                const attachingTechniqueOk = typeof it.attachingTechnique === 'string' &&
                     ['embroidery', 'printing', 'heatpress'].includes(it.attachingTechnique);
-                
+
                 if (!buttonQuantityOk) return {ok: false, reason: `${label}'s button quantity invalid`};
                 if (!buttonHolesOk) return {ok: false, reason: `${label}'s button holes invalid`};
                 if (!buttonLengthOk) return {ok: false, reason: `${label}'s button length invalid`};
@@ -1693,8 +1716,8 @@ function DeliverySubmissionModal({
         if (deliveryType === 'normal') {
             setUploadedFiles({});
             // Initialize itemList with default white color for all items
-            const defaultItemList = Array.isArray(requestData?.items) 
-                ? requestData.items.map((item, index) => ({
+            const defaultItemList = Array.isArray(requestData?.items)
+                ? requestData.items.sort((a, b) => a.id - b.id).map((item, index) => ({
                     designItemId: item.id,
                     logoHeight: 0,
                     logoWidth: 0,
@@ -1796,7 +1819,7 @@ function DeliverySubmissionModal({
         const hasErrors = Object.keys(errors).length > 0;
         const completeness = isFormComplete(deliveryType);
         if (hasErrors || !completeness.ok) {
-            const message = hasErrors ? 'Some fields are invalid. Please fix highlighted errors.' : `Missing/invalid data: ${completeness.reason}`;
+            const message = hasErrors ? 'Some fields are invalid. Please fix highlighted errors.' : `${completeness.reason}`;
             enqueueSnackbar(message, {
                 variant: 'error',
                 autoHideDuration: 4000
@@ -1809,7 +1832,7 @@ function DeliverySubmissionModal({
             // Transform itemList to new structure
             const transformedItemList = (itemList || []).map(item => {
                 const isShirt = requestData?.items?.find(reqItem => reqItem.id === item.designItemId)?.type?.toLowerCase().includes('shirt');
-                
+
                 return {
                     designItemId: item.designItemId,
                     frontUrl: item.frontUrl || '',
@@ -1828,7 +1851,7 @@ function DeliverySubmissionModal({
                         baseWidth: item.logoWidth || 0,
                         note: item.techniqueNote || ''
                     } : null,
-                    zipper: false // Default value, can be updated if needed
+                    zipper: item.hasZipper || false // Default value, can be updated if needed
                 };
             });
 
@@ -1849,26 +1872,25 @@ function DeliverySubmissionModal({
     };
 
     const indexedItems = Array.isArray(requestData?.items)
-        ? requestData.items.map((it, idx) => ({...it, __index: idx}))
+        ? requestData.items.sort((a, b) => a.id - b.id).map((it, idx) => ({...it, __index: idx}))
         : [];
     const modalBoyItems = indexedItems.filter(i => (i.gender || '').toLowerCase() === 'boy');
     const modalGirlItems = indexedItems.filter(i => (i.gender || '').toLowerCase() === 'girl');
-    const modalOtherItems = indexedItems.filter(i => {
-        const g = (i.gender || '').toLowerCase();
-        return g !== 'boy' && g !== 'girl';
-    });
+
 
     // Helper functions for updating item data
-    const updateItemField = (itemIndex, field, value) => {
-        setItemList(prev => prev.map((item, index) => 
-            index === itemIndex ? { ...item, [field]: value } : item
-        ));
+    const updateItemField = (id, field, value) => {
+        const newData = itemList.map((item) =>
+            item.designItemId === id ? {...item, [field]: value} : item
+        )
+        console.log('new data: ', newData.find((item) => item.designItemId === id));
+        setItemList(newData);
     };
 
-    const validateField = (field, value, itemIndex = null) => {
-        const fieldKey = itemIndex !== null ? `item_${itemIndex}_${field}` : field;
-        const newErrors = { ...errors };
-        
+    const validateField = (field, value, id = null) => {
+        const fieldKey = id !== null ? `item_${id}_${field}` : field;
+        const newErrors = {...errors};
+
         switch (field) {
             case 'deliveryName':
                 if (!value || value.trim().length === 0) {
@@ -1928,7 +1950,7 @@ function DeliverySubmissionModal({
             default:
                 delete newErrors[fieldKey];
         }
-        
+
         setErrors(newErrors);
         updateFormValidity();
     };
@@ -1937,7 +1959,7 @@ function DeliverySubmissionModal({
         <Dialog
             open={visible}
             onClose={onCancel}
-            maxWidth="sm"
+            maxWidth="md"
             fullWidth
             slotProps={{
                 paper: {
@@ -1960,15 +1982,14 @@ function DeliverySubmissionModal({
             }}>
                 <FileTextOutlined style={{color: 'white', fontSize: '18px'}}/>
                 <span style={{fontWeight: 600, fontSize: '16px'}}>
-                    Submit New Delivery
+                    Submit New Design
                 </span>
             </DialogTitle>
             <DialogContent sx={{padding: '24px'}}>
                 <Box sx={{width: '100%'}}>
-                    {}
                     <Box sx={{mb: 3}}>
                         <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                            Delivery Type: <span style={{color: 'red'}}>*</span>
+                            Design Type: <span style={{color: 'red'}}>*</span>
                         </Typography.Text>
                         <Radio.Group
                             value={deliveryType}
@@ -1979,10 +2000,10 @@ function DeliverySubmissionModal({
                             disabled={revisionRequests.length === 0}
                         >
                             <Radio value="normal" style={{marginBottom: '8px'}}>
-                                Normal Delivery
+                                Normal Design
                             </Radio>
                             <Radio value="revision" disabled={revisionRequests.length === 0}>
-                                Revision Delivery
+                                Revision Design
                             </Radio>
                         </Radio.Group>
                         {revisionRequests.length === 0 && (
@@ -1992,7 +2013,6 @@ function DeliverySubmissionModal({
                         )}
                     </Box>
 
-                    {}
                     {deliveryType === 'revision' && (
                         <>
                             <Box sx={{mb: 3}}>
@@ -2071,20 +2091,21 @@ function DeliverySubmissionModal({
                                                     ))}
                                                 </Space>
                                             </Radio.Group>
-                                        <Box sx={{
-                                            p: 1.5,
-                                            backgroundColor: '#e6f7ff',
-                                            borderRadius: 4,
-                                            border: '1px solid #91d5ff',
-                                            fontSize: '12px',
+                                            <Box sx={{
+                                                p: 1.5,
+                                                backgroundColor: '#e6f7ff',
+                                                borderRadius: 4,
+                                                border: '1px solid #91d5ff',
+                                                fontSize: '12px',
                                                 color: '#1890ff',
                                                 mt: 1
-                                        }}>
-                                            <Typography.Text style={{fontSize: '12px', color: '#1890ff'}}>
-                                                💡 Data from the previous delivery has been auto-filled. You can modify
-                                                the values as needed.
-                                            </Typography.Text>
-                                        </Box>
+                                            }}>
+                                                <Typography.Text style={{fontSize: '12px', color: '#1890ff'}}>
+                                                    💡 Data from the previous delivery has been auto-filled. You can
+                                                    modify
+                                                    the values as needed.
+                                                </Typography.Text>
+                                            </Box>
                                         </>
                                     )}
                                 </Box>
@@ -2099,7 +2120,7 @@ function DeliverySubmissionModal({
 
                     <Box sx={{mb: 3}}>
                         <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                            Delivery Name: <span style={{color: 'red'}}>*</span>
+                            Design Name: <span style={{color: 'red'}}>*</span>
                         </Typography.Text>
                         <Input
                             value={deliveryName}
@@ -2130,7 +2151,7 @@ function DeliverySubmissionModal({
                                 setDeliveryDescription(e.target.value);
                             }}
                             rows={4}
-                            placeholder={deliveryType === 'revision' ? "Add notes about the changes and improvements made to the previous version..." : "Add notes about the design changes, improvements, or new concepts included in this delivery..."}
+                            placeholder={deliveryType === 'revision' ? "Add notes about the changes and improvements made to the previous version..." : "Add notes about the design changes, improvements, or new concepts included in this design..."}
                             style={{
                                 maxHeight: '120px',
                                 overflowY: 'auto',
@@ -2143,432 +2164,535 @@ function DeliverySubmissionModal({
                     </Box>
 
 
-                    {}
                     <Divider>Design Items</Divider>
 
                     {modalBoyItems.length > 0 && (
                         <>
-                            <Typography.Title level={5} style={{marginTop: 0}}>Boy
-                                ({modalBoyItems.length} clothes)</Typography.Title>
-                            {modalBoyItems.map((item) => (
-                                <Card key={`boy-${item.__index}`} size="small"
-                                      style={{marginBottom: '16px', border: '1px solid #e2e8f0'}}>
-                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
-                                        {getItemIcon(item.type)}
-                                        <Typography.Title level={5} style={{margin: 0}}>
-                                            {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {formatCategory(item.category)}
-                                        </Typography.Title>
-                                        <Tag color="blue" style={{marginLeft: 'auto'}}>Boy</Tag>
-                                    </Box>
-                                    {}
-                                    {item.type.toLowerCase().includes('shirt') && (
-                                        <>
-                                            
-                                            <Divider style={{margin: '16px 0'}}>Button Information</Divider>
-                                            
-                                            <Row gutter={[16, 16]}>
-                                                <Col span={12}>
-                                                    <Box sx={{mb: 3}}>
-                                                        <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                            Button Quantity: <span style={{color: 'red'}}>*</span>
-                                                        </Typography.Text>
-                                                        <Input 
-                                                            type="number" 
-                                                            min={1} 
-                                                            max={50} 
-                                                            placeholder="e.g., 6"
-                                                            value={itemList[item.__index]?.buttonQuantity || ''}
-                                                            onChange={(e) => {
-                                                                updateItemField(item.__index, 'buttonQuantity', Number(e.target.value));
-                                                                validateField('buttonQuantity', Number(e.target.value), item.__index);
-                                                            }}
-                                                            style={{borderRadius: '8px'}} 
-                                                            autoComplete="off"
-                                                        />
-                                                        {errors[`item_${item.__index}_buttonQuantity`] && (
-                                                            <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                                {errors[`item_${item.__index}_buttonQuantity`]}
+                            <Typography.Title level={5} style={{marginTop: 0}}>
+                                Boy ({modalBoyItems.length} clothes)
+                            </Typography.Title>
+                            {modalBoyItems.sort((i1, i2) => i1.id - i2.id).map((item) => (
+                                <Accordion key={`boy-${item.id}`}
+                                           sx={{
+                                               marginBottom: '16px',
+                                               border: '1px solid #e2e8f0',
+                                               borderRadius: '8px',
+                                               '&:before': {
+                                                   display: 'none',
+                                               },
+                                               boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                                           }}>
+                                    <AccordionSummary
+                                        expandIcon={<ExpandMoreIcon/>}
+                                        sx={{
+                                            backgroundColor: '#f8fafc',
+                                            borderRadius: '8px 8px 0 0',
+                                            '&.Mui-expanded': {
+                                                borderRadius: '8px 8px 0 0',
+                                            }
+                                        }}
+                                    >
+                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2, width: '100%'}}>
+                                            {getItemIcon(item.type)}
+                                            <Typography.Title level={5} style={{margin: 0}}>
+                                                {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {formatCategory(item.category)} - {item.id}
+                                            </Typography.Title>
+                                            <Tag color="blue" style={{marginLeft: 'auto'}}>Boy</Tag>
+                                        </Box>
+                                    </AccordionSummary>
+                                    <AccordionDetails sx={{padding: '16px'}}>
+                                        {item.type.toLowerCase().includes('shirt') && (
+                                            <>
+
+                                                <Divider style={{margin: '16px 0'}}>Button Information</Divider>
+
+                                                <Row gutter={[16, 16]}>
+                                                    <Col span={12}>
+                                                        <Box sx={{mb: 3}}>
+                                                            <Typography.Text strong style={{
+                                                                display: 'block',
+                                                                marginBottom: '8px'
+                                                            }}>
+                                                                Button Quantity: <span style={{color: 'red'}}>*</span>
                                                             </Typography.Text>
-                                                        )}
-                                                    </Box>
-                                                </Col>
-                                                <Col span={12}>
-                                                    <Box sx={{mb: 3}}>
-                                                        <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                            Button Holes: <span style={{color: 'red'}}>*</span>
-                                                        </Typography.Text>
-                                                        <Input 
-                                                            type="number" 
-                                                            min={2} 
-                                                            max={4} 
-                                                            placeholder="e.g., 4"
-                                                            value={itemList[item.__index]?.buttonHoles || ''}
-                                                            onChange={(e) => {
-                                                                updateItemField(item.__index, 'buttonHoles', Number(e.target.value));
-                                                                validateField('buttonHoles', Number(e.target.value), item.__index);
-                                                            }}
-                                                            style={{borderRadius: '8px'}} 
-                                                            autoComplete="off"
-                                                        />
-                                                        {errors[`item_${item.__index}_buttonQuantity`] && (
-                                                            <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                                {errors[`item_${item.__index}_buttonQuantity`]}
+                                                            <Input
+                                                                type="number"
+                                                                min={1}
+                                                                max={50}
+                                                                placeholder="e.g., 6"
+                                                                value={itemList.find((storedItem) => storedItem.designItemId === item.id)?.buttonQuantity || ''}
+                                                                onChange={(e) => {
+                                                                    updateItemField(item.id, 'buttonQuantity', Number(e.target.value));
+                                                                    validateField('buttonQuantity', Number(e.target.value), item.id);
+                                                                }}
+                                                                style={{borderRadius: '8px'}}
+                                                                autoComplete="off"
+                                                            />
+                                                            {errors[`item_${item.id}_buttonQuantity`] && (
+                                                                <Typography.Text type="danger"
+                                                                                 style={{fontSize: '12px'}}>
+                                                                    {errors[`item_${item.id}_buttonQuantity`]}
+                                                                </Typography.Text>
+                                                            )}
+                                                        </Box>
+                                                    </Col>
+                                                    <Col span={12}>
+                                                        <Box sx={{mb: 3}}>
+                                                            <Typography.Text strong style={{
+                                                                display: 'block',
+                                                                marginBottom: '8px'
+                                                            }}>
+                                                                Button Holes: <span style={{color: 'red'}}>*</span>
                                                             </Typography.Text>
-                                                        )}
-                                                    </Box>
-                                                </Col>
-                                            </Row>
-                                            
-                                            <Row gutter={[16, 16]}>
-                                                <Col span={8}>
-                                                    <Box sx={{mb: 3}}>
-                                                        <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                            Button Length (cm): <span style={{color: 'red'}}>*</span>
-                                                        </Typography.Text>
-                                                        <Input 
-                                                            type="number" 
-                                                            min={0.5} 
-                                                            max={10} 
-                                                            step={0.1} 
-                                                            placeholder="e.g., 1.2"
-                                                            value={itemList[item.__index]?.buttonLength || ''}
-                                                            onChange={(e) => {
-                                                                updateItemField(item.__index, 'buttonLength', Number(e.target.value));
-                                                                validateField('buttonLength', Number(e.target.value), item.__index);
-                                                            }}
-                                                            style={{borderRadius: '8px'}} 
-                                                            autoComplete="off"
-                                                        />
-                                                        {errors[`item_${item.__index}_buttonQuantity`] && (
-                                                            <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                                {errors[`item_${item.__index}_buttonQuantity`]}
+                                                            <Select
+                                                                placeholder="Select button holes"
+                                                                value={itemList.find((storedItem) => storedItem.designItemId === item.id)?.buttonHoles || undefined}
+                                                                onChange={(value) => {
+                                                                    updateItemField(item.id, 'buttonHoles', value);
+                                                                    validateField('buttonHoles', value, item.id);
+                                                                }}
+                                                                style={{borderRadius: '8px', width: '100%'}}
+                                                                size="large"
+                                                                getPopupContainer={(triggerNode) => triggerNode.parentElement || document.body}
+                                                                styles={{popup: {root: {zIndex: 9999}}}}
+                                                                showSearch={false}
+                                                                allowClear={false}
+                                                            >
+                                                                <Select.Option value={2}>2 holes</Select.Option>
+                                                                <Select.Option value={3}>3 holes</Select.Option>
+                                                                <Select.Option value={4}>4 holes</Select.Option>
+                                                            </Select>
+                                                            {errors[`item_${item.id}_buttonHoles`] && (
+                                                                <Typography.Text type="danger"
+                                                                                 style={{fontSize: '12px'}}>
+                                                                    {errors[`item_${item.id}_buttonHoles`]}
+                                                                </Typography.Text>
+                                                            )}
+                                                        </Box>
+                                                    </Col>
+                                                </Row>
+
+                                                <Row gutter={[16, 16]}>
+                                                    <Col span={8}>
+                                                        <Box sx={{mb: 3}}>
+                                                            <Typography.Text strong style={{
+                                                                display: 'block',
+                                                                marginBottom: '8px'
+                                                            }}>
+                                                                Button Length (cm): <span
+                                                                style={{color: 'red'}}>*</span>
                                                             </Typography.Text>
-                                                        )}
-                                                    </Box>
-                                                </Col>
-                                                <Col span={8}>
-                                                    <Box sx={{mb: 3}}>
-                                                        <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                            Button Width (cm): <span style={{color: 'red'}}>*</span>
-                                                        </Typography.Text>
-                                                        <Input 
-                                                            type="number" 
-                                                            min={0.5} 
-                                                            max={10} 
-                                                            step={0.1} 
-                                                            placeholder="e.g., 1.0"
-                                                            value={itemList[item.__index]?.buttonWidth || ''}
-                                                            onChange={(e) => {
-                                                                updateItemField(item.__index, 'buttonWidth', Number(e.target.value));
-                                                                validateField('buttonWidth', Number(e.target.value), item.__index);
-                                                            }}
-                                                            style={{borderRadius: '8px'}} 
-                                                            autoComplete="off"
-                                                        />
-                                                        {errors[`item_${item.__index}_buttonQuantity`] && (
-                                                            <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                                {errors[`item_${item.__index}_buttonQuantity`]}
+                                                            <Input
+                                                                type="number"
+                                                                min={1}
+                                                                max={50}
+                                                                step={1}
+                                                                placeholder="e.g., 1.2"
+                                                                value={itemList.find((storedItem) => storedItem.designItemId === item.id)?.buttonLength || ''}
+                                                                onChange={(e) => {
+                                                                    updateItemField(item.id, 'buttonLength', Number(e.target.value));
+                                                                    validateField('buttonLength', Number(e.target.value), item.id);
+                                                                }}
+                                                                style={{borderRadius: '8px'}}
+                                                                autoComplete="off"
+                                                            />
+                                                            {errors[`item_${item.id}_buttonLength`] && (
+                                                                <Typography.Text type="danger"
+                                                                                 style={{fontSize: '12px'}}>
+                                                                    {errors[`item_${item.id}_buttonLength`]}
+                                                                </Typography.Text>
+                                                            )}
+                                                        </Box>
+                                                    </Col>
+                                                    <Col span={8}>
+                                                        <Box sx={{mb: 3}}>
+                                                            <Typography.Text strong style={{
+                                                                display: 'block',
+                                                                marginBottom: '8px'
+                                                            }}>
+                                                                Button Width (cm): <span style={{color: 'red'}}>*</span>
                                                             </Typography.Text>
-                                                        )}
-                                                    </Box>
-                                                </Col>
-                                                <Col span={8}>
-                                                    <Box sx={{mb: 3}}>
-                                                        <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                            Button Color: <span style={{color: 'red'}}>*</span>
-                                                        </Typography.Text>
-                                                        <ColorPicker
-                                                            defaultValue="#FFFFFF"
-                                                            value={itemList[item.__index]?.buttonColor || '#FFFFFF'}
-                                                            onChange={(color) => {
-                                                                const colorValue = color.toHexString();
-                                                                updateItemField(item.__index, 'buttonColor', colorValue);
-                                                            }}
-                                                            showText
-                                                            size="medium"
-                                                            getPopupContainer={(triggerNode) => triggerNode.parentElement || document.body}
-                                                            style={{
-                                                                borderRadius: '8px',
-                                                                width: '100%'
-                                                            }}
-                                                            popupStyle={{
-                                                                zIndex: 9999
-                                                            }}
-                                                        />
-                                                        {errors[`item_${item.__index}_buttonQuantity`] && (
-                                                            <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                                {errors[`item_${item.__index}_buttonQuantity`]}
+                                                            <Input
+                                                                type="number"
+                                                                min={1}
+                                                                max={50}
+                                                                step={1}
+                                                                placeholder="e.g., 1.0"
+                                                                value={itemList.find((storedItem) => storedItem.designItemId === item.id)?.buttonWidth || ''}
+                                                                onChange={(e) => {
+                                                                    updateItemField(item.id, 'buttonWidth', Number(e.target.value));
+                                                                    validateField('buttonWidth', Number(e.target.value), item.id);
+                                                                }}
+                                                                style={{borderRadius: '8px'}}
+                                                                autoComplete="off"
+                                                            />
+                                                            {errors[`item_${item.id}_buttonWidth`] && (
+                                                                <Typography.Text type="danger"
+                                                                                 style={{fontSize: '12px'}}>
+                                                                    {errors[`item_${item.id}_buttonWidth`]}
+                                                                </Typography.Text>
+                                                            )}
+                                                        </Box>
+                                                    </Col>
+                                                    <Col span={8}>
+                                                        <Box sx={{mb: 3}}>
+                                                            <Typography.Text strong style={{
+                                                                display: 'block',
+                                                                marginBottom: '8px'
+                                                            }}>
+                                                                Button Color: <span style={{color: 'red'}}>*</span>
                                                             </Typography.Text>
-                                                        )}
-                                                    </Box>
-                                                </Col>
-                                            </Row>
-                                            
-                                            <Box sx={{mb: 3}}>
-                                                <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                    Button Note:
-                                                </Typography.Text>
-                                                <TextArea
-                                                    rows={2}
-                                                    placeholder="Add notes about buttons (optional)..."
-                                                    style={{
-                                                        borderRadius: '8px',
-                                                        resize: 'none'
-                                                    }}
-                                                    autoComplete="off"
-                                                />
-                                                {errors[`item_${item.__index}_buttonNote`] && (
-                                                    <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                        {errors[`item_${item.__index}_buttonNote`]}
+                                                            <ColorPicker
+                                                                defaultValue="#FFFFFF"
+                                                                value={itemList.find((storedItem) => storedItem.designItemId === item.id)?.buttonColor || '#FFFFFF'}
+                                                                onChange={(color) => {
+                                                                    const colorValue = color.toHexString();
+                                                                    updateItemField(item.id, 'buttonColor', colorValue);
+                                                                }}
+                                                                showText
+                                                                size="medium"
+                                                                getPopupContainer={(triggerNode) => triggerNode.parentElement || document.body}
+                                                                style={{
+                                                                    borderRadius: '8px',
+                                                                    width: '100%',
+                                                                    justifyContent: 'flex-start'
+                                                                }}
+                                                                popupStyle={{
+                                                                    zIndex: 9999
+                                                                }}
+                                                            />
+                                                            {errors[`item_${item.id}_buttonColor`] && (
+                                                                <Typography.Text type="danger"
+                                                                                 style={{fontSize: '12px'}}>
+                                                                    {errors[`item_${item.id}_buttonColor`]}
+                                                                </Typography.Text>
+                                                            )}
+                                                        </Box>
+                                                    </Col>
+                                                </Row>
+
+                                                <Box sx={{mb: 3}}>
+                                                    <Typography.Text strong
+                                                                     style={{display: 'block', marginBottom: '8px'}}>
+                                                        Button Note:
                                                     </Typography.Text>
-                                                )}
-                                            </Box>
+                                                    <TextArea
+                                                        rows={2}
+                                                        placeholder="Add notes about buttons (optional)..."
+                                                        style={{
+                                                            borderRadius: '8px',
+                                                            resize: 'none'
+                                                        }}
+                                                        autoComplete="off"
+                                                        onChange={(e) => {
+                                                            updateItemField(item.id, 'buttonNote', e.target.value);
+                                                            validateField('buttonNote', e.target.value, item.id);
+                                                        }}
+                                                    />
+                                                    {errors[`item_${item.id}_buttonNote`] && (
+                                                        <Typography.Text type="danger" style={{fontSize: '12px'}}>
+                                                            {errors[`item_${item.id}_buttonNote`]}
+                                                        </Typography.Text>
+                                                    )}
+                                                </Box>
 
-                                            <Divider style={{margin: '16px 0'}}>Logo & Attaching Technique</Divider>
+                                                <Divider style={{margin: '16px 0'}}>Logo & Attaching Technique</Divider>
 
+                                                <Row gutter={[16, 16]}>
+                                                    <Col span={12}>
+                                                        <Box sx={{mb: 3}}>
+                                                            <Typography.Text strong style={{
+                                                                display: 'block',
+                                                                marginBottom: '8px'
+                                                            }}>
+                                                                <Space size={4} style={{overflow: 'visible'}}>Logo
+                                                                    Height
+                                                                    (cm): <Tooltip
+                                                                        title="This height is for the smallest size of cloth"
+                                                                        styles={{root: {zIndex: 3000}}}
+                                                                        getPopupContainer={() => document.body}><InfoCircleOutlined
+                                                                        style={{
+                                                                            color: '#64748b',
+                                                                            cursor: 'pointer'
+                                                                        }}/></Tooltip></Space> <span
+                                                                style={{color: 'red'}}>*</span>
+                                                            </Typography.Text>
+                                                            <Input
+                                                                type="number"
+                                                                min={1}
+                                                                max={999}
+                                                                placeholder="e.g., 5"
+                                                                value={itemList.find((storedItem) => storedItem.designItemId === item.id)?.logoHeight || ''}
+                                                                onChange={(e) => {
+                                                                    updateItemField(item.id, 'logoHeight', Number(e.target.value));
+                                                                    validateField('logoHeight', Number(e.target.value), item.id);
+                                                                }}
+                                                                style={{borderRadius: '8px'}}
+                                                                autoComplete="off"
+                                                            />
+                                                            {errors[`item_${item.id}_logoHeight`] && (
+                                                                <Typography.Text type="danger"
+                                                                                 style={{fontSize: '12px'}}>
+                                                                    {errors[`item_${item.id}_logoHeight`]}
+                                                                </Typography.Text>
+                                                            )}
+                                                        </Box>
+                                                    </Col>
+                                                    <Col span={12}>
+                                                        <Box sx={{mb: 3}}>
+                                                            <Typography.Text strong style={{
+                                                                display: 'block',
+                                                                marginBottom: '8px'
+                                                            }}>
+                                                                <Space size={4} style={{overflow: 'visible'}}>Logo Width
+                                                                    (cm): <Tooltip
+                                                                        title="This width is for the smallest size of cloth"
+                                                                        styles={{root: {zIndex: 3000}}}
+                                                                        getPopupContainer={() => document.body}><InfoCircleOutlined
+                                                                        style={{
+                                                                            color: '#64748b',
+                                                                            cursor: 'pointer'
+                                                                        }}/></Tooltip></Space> <span
+                                                                style={{color: 'red'}}>*</span>
+                                                            </Typography.Text>
+                                                            <Input
+                                                                type="number"
+                                                                min={1}
+                                                                max={999}
+                                                                placeholder="e.g., 8"
+                                                                value={itemList.find((storedItem) => storedItem.designItemId === item.id)?.logoWidth || ''}
+                                                                onChange={(e) => {
+                                                                    updateItemField(item.id, 'logoWidth', Number(e.target.value));
+                                                                    validateField('logoWidth', Number(e.target.value), item.id);
+                                                                }}
+                                                                style={{borderRadius: '8px'}}
+                                                                autoComplete="off"
+                                                            />
+                                                            {errors[`item_${item.id}_logoWidth`] && (
+                                                                <Typography.Text type="danger"
+                                                                                 style={{fontSize: '12px'}}>
+                                                                    {errors[`item_${item.id}_logoWidth`]}
+                                                                </Typography.Text>
+                                                            )}
+                                                        </Box>
+                                                    </Col>
+                                                </Row>
+
+                                                <Box sx={{mb: 3}}>
+                                                    <Typography.Text strong
+                                                                     style={{display: 'block', marginBottom: '8px'}}>
+                                                        Attaching Technique: <span style={{color: 'red'}}>*</span>
+                                                    </Typography.Text>
+                                                    <Radio.Group
+                                                        value={itemList.find((storedItem) => storedItem.designItemId === item.id)?.attachingTechnique || ''}
+                                                        onChange={(e) => {
+                                                            updateItemField(item.id, 'attachingTechnique', e.target.value);
+                                                            validateField('attachingTechnique', e.target.value, item.id);
+                                                        }}
+                                                    >
+                                                        <Space direction="vertical">
+                                                            <Radio value="embroidery">Embroidery Techniques</Radio>
+                                                            <Radio value="printing">Printing Techniques</Radio>
+                                                            <Radio value="heatpress">Heat Press Techniques</Radio>
+                                                        </Space>
+                                                    </Radio.Group>
+                                                    {errors[`item_${item.id}_attachingTechnique`] && (
+                                                        <Typography.Text type="danger" style={{fontSize: '12px'}}>
+                                                            {errors[`item_${item.id}_attachingTechnique`]}
+                                                        </Typography.Text>
+                                                    )}
+                                                </Box>
+
+                                                <Box sx={{mb: 3}}>
+                                                    <Typography.Text strong
+                                                                     style={{display: 'block', marginBottom: '8px'}}>
+                                                        Technique Note:
+                                                    </Typography.Text>
+                                                    <TextArea
+                                                        rows={2}
+                                                        placeholder="Add notes about attaching technique (optional)..."
+                                                        style={{
+                                                            borderRadius: '8px',
+                                                            resize: 'none'
+                                                        }}
+                                                        autoComplete="off"
+                                                        onChange={(e) => {
+                                                            updateItemField(item.id, 'techniqueNote', e.target.value);
+                                                            validateField('techniqueNote', e.target.value, item.id);
+                                                        }}
+                                                    />
+                                                    {errors[`item_${item.id}_techniqueNote`] && (
+                                                        <Typography.Text type="danger" style={{fontSize: '12px'}}>
+                                                            {errors[`item_${item.id}_techniqueNote`]}
+                                                        </Typography.Text>
+                                                    )}
+                                                </Box>
+                                            </>
+                                        )}
+
+                                        {item.type.toLowerCase().includes('pants') && (
+                                            <>
+                                                <Divider style={{margin: '16px 0'}}>Zipper Information</Divider>
+                                                <Box sx={{mb: 3}}>
+                                                    <Typography.Text strong style={{
+                                                        display: 'block',
+                                                        marginBottom: '8px'
+                                                    }}>
+                                                        Has Zipper: <span style={{color: 'red'}}>*</span>
+                                                    </Typography.Text>
+                                                    <Switch
+                                                        checked={itemList.find((storedItem) => storedItem.designItemId === item.id)?.hasZipper || false}
+                                                        onChange={(checked) => {
+                                                            updateItemField(item.id, 'hasZipper', checked);
+                                                        }}
+                                                        checkedChildren="Yes"
+                                                        unCheckedChildren="No"
+                                                        style={{marginBottom: '8px'}}
+                                                    />
+                                                    <Typography.Text type="secondary"
+                                                                     style={{fontSize: '12px', marginLeft: '8px'}}>
+                                                        {itemList.find((storedItem) => storedItem.designItemId === item.id)?.hasZipper ? 'This pants has zipper' : 'This pants has no zipper'}
+                                                    </Typography.Text>
+                                                </Box>
+                                            </>
+
+                                        )}
                                         <Row gutter={[16, 16]}>
                                             <Col span={12}>
                                                 <Box sx={{mb: 3}}>
-                                                    <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                        <Space size={4} style={{overflow: 'visible'}}>Logo Height
-                                                            (cm): <Tooltip
-                                                                title="This height is for the smallest size of cloth"
-                                                                styles={{root: {zIndex: 3000}}}
-                                                                getPopupContainer={() => document.body}><InfoCircleOutlined
-                                                                style={{
-                                                                    color: '#64748b',
-                                                                    cursor: 'pointer'
-                                                                }}/></Tooltip></Space> <span style={{color: 'red'}}>*</span>
+                                                    <Typography.Text strong
+                                                                     style={{display: 'block', marginBottom: '8px'}}>
+                                                        Front Design: <span style={{color: 'red'}}>*</span>
                                                     </Typography.Text>
-                                                    <Input 
-                                                        type="number" 
-                                                        min={1} 
-                                                        max={999} 
-                                                        placeholder="e.g., 5"
-                                                        value={itemList[item.__index]?.logoHeight || ''}
-                                                        onChange={(e) => {
-                                                            updateItemField(item.__index, 'logoHeight', Number(e.target.value));
-                                                            validateField('logoHeight', Number(e.target.value), item.__index);
-                                                        }}
-                                                        style={{borderRadius: '8px'}} 
-                                                        autoComplete="off"
-                                                    />
-                                                    {errors[`item_${item.__index}_logoHeight`] && (
+                                                    <Box sx={{position: 'relative'}}>
+                                                        <input type="file" accept="image/*"
+                                                               id={`front-upload-${item.id}`}
+                                                               style={{display: 'none'}}
+                                                               onChange={async (e) => {
+                                                                   const file = e.target.files[0];
+                                                                   if (file) {
+                                                                       setUploading(true);
+                                                                       try {
+                                                                           const url = await uploadCloudinary(file);
+                                                                           updateItemField(item.id, 'frontUrl', url);
+                                                                           setUploadedFiles(prev => ({
+                                                                               ...prev,
+                                                                               [`front-${item.id}`]: url
+                                                                           }));
+                                                                       } finally {
+                                                                           setUploading(false);
+                                                                       }
+                                                                   }
+                                                               }}/>
+                                                        <Box sx={{width: '100%'}}>
+                                                            <Button
+                                                                onClick={() => document.getElementById(`front-upload-${item.id}`).click()}
+                                                                icon={<UploadOutlined/>} loading={uploading} style={{
+                                                                width: '100%',
+                                                                height: '40px',
+                                                                borderRadius: '8px',
+                                                                border: '2px dashed #d9d9d9',
+                                                                backgroundColor: '#fafafa',
+                                                                color: '#666',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                gap: '8px',
+                                                                transition: 'all 0.3s ease',
+                                                                cursor: 'pointer'
+                                                            }}> {uploading ? 'Uploading...' : 'Upload Front Design'} </Button>
+                                                            {uploadedFiles[`front-${item.id}`] && (
+                                                                <Box
+                                                                    sx={{
+                                                                        mt: 1,
+                                                                        display: 'flex',
+                                                                        justifyContent: 'center'
+                                                                    }}>
+                                                                    <DisplayImage
+                                                                        imageUrl={uploadedFiles[`front-${item.id}`]}
+                                                                        alt="Front Design"
+                                                                        width="120px"
+                                                                        height="120px"/>
+                                                                </Box>
+                                                            )}
+                                                        </Box>
+                                                    </Box>
+                                                    {errors[`item_${item.id}_frontUrl`] && (
                                                         <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                            {errors[`item_${item.__index}_logoHeight`]}
+                                                            {errors[`item_${item.id}_frontUrl`]}
                                                         </Typography.Text>
                                                     )}
                                                 </Box>
                                             </Col>
                                             <Col span={12}>
                                                 <Box sx={{mb: 3}}>
-                                                    <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                        <Space size={4} style={{overflow: 'visible'}}>Logo Width
-                                                            (cm): <Tooltip
-                                                                title="This width is for the smallest size of cloth"
-                                                                styles={{root: {zIndex: 3000}}}
-                                                                getPopupContainer={() => document.body}><InfoCircleOutlined
-                                                                style={{
-                                                                    color: '#64748b',
-                                                                    cursor: 'pointer'
-                                                                }}/></Tooltip></Space> <span style={{color: 'red'}}>*</span>
+                                                    <Typography.Text strong
+                                                                     style={{display: 'block', marginBottom: '8px'}}>
+                                                        Back Design: <span style={{color: 'red'}}>*</span>
                                                     </Typography.Text>
-                                                    <Input 
-                                                        type="number" 
-                                                        min={1} 
-                                                        max={999} 
-                                                        placeholder="e.g., 8"
-                                                        value={itemList[item.__index]?.logoWidth || ''}
-                                                        onChange={(e) => {
-                                                            updateItemField(item.__index, 'logoWidth', Number(e.target.value));
-                                                            validateField('logoWidth', Number(e.target.value), item.__index);
-                                                        }}
-                                                        style={{borderRadius: '8px'}} 
-                                                        autoComplete="off"
-                                                    />
-                                                    {errors[`item_${item.__index}_logoHeight`] && (
+                                                    <Box sx={{position: 'relative'}}>
+                                                        <input type="file" accept="image/*"
+                                                               id={`back-upload-${item.id}`}
+                                                               style={{display: 'none'}}
+                                                               onChange={async (e) => {
+                                                                   const file = e.target.files[0];
+                                                                   if (file) {
+                                                                       setUploading(true);
+                                                                       try {
+                                                                           const url = await uploadCloudinary(file);
+                                                                           updateItemField(item.id, 'backUrl', url);
+                                                                           setUploadedFiles(prev => ({
+                                                                               ...prev,
+                                                                               [`back-${item.id}`]: url
+                                                                           }));
+                                                                       } finally {
+                                                                           setUploading(false);
+                                                                       }
+                                                                   }
+                                                               }}/>
+                                                        <Box sx={{width: '100%'}}>
+                                                            <Button
+                                                                onClick={() => document.getElementById(`back-upload-${item.id}`).click()}
+                                                                icon={<UploadOutlined/>} loading={uploading} style={{
+                                                                width: '100%',
+                                                                height: '40px',
+                                                                borderRadius: '8px',
+                                                                border: '2px dashed #d9d9d9',
+                                                                backgroundColor: '#fafafa',
+                                                                color: '#666',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                gap: '8px',
+                                                                transition: 'all 0.3s ease',
+                                                                cursor: 'pointer'
+                                                            }}> {uploading ? 'Uploading...' : 'Upload Back Design'} </Button>
+                                                            {uploadedFiles[`back-${item.id}`] && (
+                                                                <Box
+                                                                    sx={{
+                                                                        mt: 1,
+                                                                        display: 'flex',
+                                                                        justifyContent: 'center'
+                                                                    }}>
+                                                                    <DisplayImage
+                                                                        imageUrl={uploadedFiles[`back-${item.id}`]}
+                                                                        alt="Back Design"
+                                                                        width="120px"
+                                                                        height="120px"/>
+                                                                </Box>
+                                                            )}
+                                                        </Box>
+                                                    </Box>
+                                                    {errors[`item_${item.id}_frontUrl`] && (
                                                         <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                            {errors[`item_${item.__index}_logoHeight`]}
+                                                            {errors[`item_${item.id}_frontUrl`]}
                                                         </Typography.Text>
                                                     )}
                                                 </Box>
                                             </Col>
                                         </Row>
-
-                                            <Box sx={{mb: 3}}>
-                                                <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                    Attaching Technique: <span style={{color: 'red'}}>*</span>
-                                                </Typography.Text>
-                                                <Radio.Group
-                                                    value={itemList[item.__index]?.attachingTechnique || ''}
-                                                    onChange={(e) => {
-                                                        updateItemField(item.__index, 'attachingTechnique', e.target.value);
-                                                        validateField('attachingTechnique', e.target.value, item.__index);
-                                                    }}
-                                                >
-                                                    <Space direction="vertical">
-                                                        <Radio value="embroidery">Embroidery Techniques</Radio>
-                                                        <Radio value="printing">Printing Techniques</Radio>
-                                                        <Radio value="heatpress">Heat Press Techniques</Radio>
-                                                    </Space>
-                                                </Radio.Group>
-                                                {errors[`item_${item.__index}_attachingTechnique`] && (
-                                                    <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                        {errors[`item_${item.__index}_attachingTechnique`]}
-                                                    </Typography.Text>
-                                                )}
-                                            </Box>
-
-                                            <Box sx={{mb: 3}}>
-                                                <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                    Technique Note:
-                                                </Typography.Text>
-                                                <TextArea
-                                                    rows={2}
-                                                    placeholder="Add notes about attaching technique (optional)..."
-                                                    style={{
-                                                        borderRadius: '8px',
-                                                        resize: 'none'
-                                                    }}
-                                                    autoComplete="off"
-                                                />
-                                                {errors[`item_${item.__index}_buttonNote`] && (
-                                                    <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                        {errors[`item_${item.__index}_buttonNote`]}
-                                                    </Typography.Text>
-                                                )}
-                                            </Box>
-                                        </>
-                                    )}
-                                    {}
-                                    {/* Hidden fields are no longer needed with state management */}
-                                    <Row gutter={[16, 16]}>
-                                        <Col span={12}>
-                                            <Box sx={{mb: 3}}>
-                                                <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                    Front Design: <span style={{color: 'red'}}>*</span>
-                                                </Typography.Text>
-                                                <Box sx={{position: 'relative'}}>
-                                                    <input type="file" accept="image/*"
-                                                           id={`front-upload-${item.__index}`} style={{display: 'none'}}
-                                                           onChange={async (e) => {
-                                                               const file = e.target.files[0];
-                                                               if (file) {
-                                                                   setUploading(true);
-                                                                   try {
-                                                                       const url = await uploadCloudinary(file);
-                                                                       updateItemField(item.__index, 'frontUrl', url);
-                                                                       setUploadedFiles(prev => ({
-                                                                           ...prev,
-                                                                           [`front-${item.__index}`]: url
-                                                                       }));
-                                                                   } finally {
-                                                                       setUploading(false);
-                                                                   }
-                                                               }
-                                                           }}/>
-                                                    <Box sx={{width: '100%'}}>
-                                                        <Button
-                                                            onClick={() => document.getElementById(`front-upload-${item.__index}`).click()}
-                                                            icon={<UploadOutlined/>} loading={uploading} style={{
-                                                            width: '100%',
-                                                            height: '40px',
-                                                            borderRadius: '8px',
-                                                            border: '2px dashed #d9d9d9',
-                                                            backgroundColor: '#fafafa',
-                                                            color: '#666',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            gap: '8px',
-                                                            transition: 'all 0.3s ease',
-                                                            cursor: 'pointer'
-                                                        }}> {uploading ? 'Uploading...' : 'Upload Front Design'} </Button>
-                                                        {uploadedFiles[`front-${item.__index}`] && (
-                                                            <Box
-                                                                sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
-                                                                <DisplayImage
-                                                                    imageUrl={uploadedFiles[`front-${item.__index}`]}
-                                                                    alt="Front Design"
-                                                                    width="120px"
-                                                                    height="120px"/>
-                                                            </Box>
-                                                        )}
-                                                    </Box>
-                                                </Box>
-                                                {errors[`item_${item.__index}_frontUrl`] && (
-                                                    <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                        {errors[`item_${item.__index}_frontUrl`]}
-                                                    </Typography.Text>
-                                                )}
-                                            </Box>
-                                        </Col>
-                                        <Col span={12}>
-                                            <Box sx={{mb: 3}}>
-                                                <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                    Back Design: <span style={{color: 'red'}}>*</span>
-                                                </Typography.Text>
-                                                <Box sx={{position: 'relative'}}>
-                                                    <input type="file" accept="image/*"
-                                                           id={`back-upload-${item.__index}`} style={{display: 'none'}}
-                                                           onChange={async (e) => {
-                                                               const file = e.target.files[0];
-                                                               if (file) {
-                                                                   setUploading(true);
-                                                                   try {
-                                                                       const url = await uploadCloudinary(file);
-                                                                       updateItemField(item.__index, 'backUrl', url);
-                                                                       setUploadedFiles(prev => ({
-                                                                           ...prev,
-                                                                           [`back-${item.__index}`]: url
-                                                                       }));
-                                                                   } finally {
-                                                                       setUploading(false);
-                                                                   }
-                                                               }
-                                                           }}/>
-                                                    <Box sx={{width: '100%'}}>
-                                                        <Button
-                                                            onClick={() => document.getElementById(`back-upload-${item.__index}`).click()}
-                                                            icon={<UploadOutlined/>} loading={uploading} style={{
-                                                            width: '100%',
-                                                            height: '40px',
-                                                            borderRadius: '8px',
-                                                            border: '2px dashed #d9d9d9',
-                                                            backgroundColor: '#fafafa',
-                                                            color: '#666',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            gap: '8px',
-                                                            transition: 'all 0.3s ease',
-                                                            cursor: 'pointer'
-                                                        }}> {uploading ? 'Uploading...' : 'Upload Back Design'} </Button>
-                                                        {uploadedFiles[`back-${item.__index}`] && (
-                                                            <Box
-                                                                sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
-                                                                <DisplayImage
-                                                                    imageUrl={uploadedFiles[`back-${item.__index}`]}
-                                                                    alt="Back Design"
-                                                                    width="120px"
-                                                                    height="120px"/>
-                                                            </Box>
-                                                        )}
-                                                    </Box>
-                                                </Box>
-                                                {errors[`item_${item.__index}_frontUrl`] && (
-                                                    <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                        {errors[`item_${item.__index}_frontUrl`]}
-                                                    </Typography.Text>
-                                                )}
-                                            </Box>
-                                        </Col>
-                                    </Row>
-                                    {/* designItemId is handled by state management */}
-                                    
-                                    {/* Hidden fields for button info when not shirt */}
-                                    {/* Hidden fields are no longer needed with state management */}
-                                </Card>
+                                    </AccordionDetails>
+                                </Accordion>
                             ))}
                         </>
                     )}
@@ -2577,922 +2701,516 @@ function DeliverySubmissionModal({
                         <>
                             <Typography.Title level={5} style={{marginTop: 16}}>Girl
                                 ({modalGirlItems.length} clothes)</Typography.Title>
-                            {modalGirlItems.map((item) => (
-                                <Card key={`girl-${item.__index}`} size="small"
-                                      style={{marginBottom: '16px', border: '1px solid #e2e8f0'}}>
-                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
-                                        {getItemIcon(item.type)}
-                                        <Typography.Title level={5} style={{margin: 0}}>
-                                            {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {formatCategory(item.category)}
-                                        </Typography.Title>
-                                        <Tag color="magenta" style={{marginLeft: 'auto'}}>Girl</Tag>
-                                    </Box>
-                                    {}
-                                    {item.type.toLowerCase().includes('shirt') && (
-                                        <>
+                            {modalGirlItems.sort((i1, i2) => i1.id - i2.id).map((item) => (
+                                <Accordion key={`girl-${item.id}`}
+                                           sx={{
+                                               marginBottom: '16px',
+                                               border: '1px solid #e2e8f0',
+                                               borderRadius: '8px',
+                                               '&:before': {
+                                                   display: 'none',
+                                               },
+                                               boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                                           }}>
+                                    <AccordionSummary
+                                        expandIcon={<ExpandMoreIcon/>}
+                                        sx={{
+                                            backgroundColor: '#fef7f7',
+                                            borderRadius: '8px 8px 0 0',
+                                            '&.Mui-expanded': {
+                                                borderRadius: '8px 8px 0 0',
+                                            }
+                                        }}
+                                    >
+                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2, width: '100%'}}>
+                                            {getItemIcon(item.type)}
+                                            <Typography.Title level={5} style={{margin: 0}}>
+                                                {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {formatCategory(item.category)} - {item.id}
+                                            </Typography.Title>
+                                            <Tag color="magenta" style={{marginLeft: 'auto'}}>Girl</Tag>
+                                        </Box>
+                                    </AccordionSummary>
+                                    <AccordionDetails sx={{padding: '16px'}}>
+                                        {item.type.toLowerCase().includes('shirt') && (
+                                            <>
+
+                                                <Divider style={{margin: '16px 0'}}>Button Information</Divider>
+
+                                                <Row gutter={[16, 16]}>
+                                                    <Col span={12}>
+                                                        <Box sx={{mb: 3}}>
+                                                            <Typography.Text strong style={{
+                                                                display: 'block',
+                                                                marginBottom: '8px'
+                                                            }}>
+                                                                Button Quantity: <span style={{color: 'red'}}>*</span>
+                                                            </Typography.Text>
+                                                            <Input
+                                                                type="number"
+                                                                min={1}
+                                                                max={50}
+                                                                placeholder="e.g., 6"
+                                                                value={itemList.find((storedItem) => storedItem.designItemId === item.id)?.buttonQuantity || ''}
+                                                                onChange={(e) => {
+                                                                    updateItemField(item.id, 'buttonQuantity', Number(e.target.value));
+                                                                    validateField('buttonQuantity', Number(e.target.value), item.id);
+                                                                }}
+                                                                style={{borderRadius: '8px'}}
+                                                                autoComplete="off"
+                                                            />
+                                                            {errors[`item_${item.id}_buttonQuantity`] && (
+                                                                <Typography.Text type="danger"
+                                                                                 style={{fontSize: '12px'}}>
+                                                                    {errors[`item_${item.id}_buttonQuantity`]}
+                                                                </Typography.Text>
+                                                            )}
+                                                        </Box>
+                                                    </Col>
+                                                    <Col span={12}>
+                                                        <Box sx={{mb: 3}}>
+                                                            <Typography.Text strong style={{
+                                                                display: 'block',
+                                                                marginBottom: '8px'
+                                                            }}>
+                                                                Button Holes: <span style={{color: 'red'}}>*</span>
+                                                            </Typography.Text>
+                                                            <Select
+                                                                placeholder="Select button holes"
+                                                                value={itemList.find((storedItem) => storedItem.designItemId === item.id)?.buttonHoles || undefined}
+                                                                onChange={(value) => {
+                                                                    updateItemField(item.id, 'buttonHoles', value);
+                                                                    validateField('buttonHoles', value, item.id);
+                                                                }}
+                                                                style={{borderRadius: '8px', width: '100%'}}
+                                                                size="large"
+                                                                styles={{popup: {root: {zIndex: 9999}}}}
+                                                                showSearch={false}
+                                                                allowClear={false}
+                                                            >
+                                                                <Select.Option value={2}>2 holes</Select.Option>
+                                                                <Select.Option value={3}>3 holes</Select.Option>
+                                                                <Select.Option value={4}>4 holes</Select.Option>
+                                                            </Select>
+                                                            {errors[`item_${item.id}_buttonHoles`] && (
+                                                                <Typography.Text type="danger"
+                                                                                 style={{fontSize: '12px'}}>
+                                                                    {errors[`item_${item.id}_buttonHoles`]}
+                                                                </Typography.Text>
+                                                            )}
+                                                        </Box>
+                                                    </Col>
+                                                </Row>
+
+                                                <Row gutter={[16, 16]}>
+                                                    <Col span={8}>
+                                                        <Box sx={{mb: 3}}>
+                                                            <Typography.Text strong style={{
+                                                                display: 'block',
+                                                                marginBottom: '8px'
+                                                            }}>
+                                                                Button Length (cm): <span
+                                                                style={{color: 'red'}}>*</span>
+                                                            </Typography.Text>
+                                                            <Input
+                                                                type="number"
+                                                                min={1}
+                                                                max={50}
+                                                                step={1}
+                                                                placeholder="e.g., 1.2"
+                                                                value={itemList.find((storedItem) => storedItem.designItemId === item.id)?.buttonLength || ''}
+                                                                onChange={(e) => {
+                                                                    updateItemField(item.id, 'buttonLength', Number(e.target.value));
+                                                                    validateField('buttonLength', Number(e.target.value), item.id);
+                                                                }}
+                                                                style={{borderRadius: '8px'}}
+                                                                autoComplete="off"
+                                                            />
+                                                            {errors[`item_${item.id}_buttonLength`] && (
+                                                                <Typography.Text type="danger"
+                                                                                 style={{fontSize: '12px'}}>
+                                                                    {errors[`item_${item.id}_buttonLength`]}
+                                                                </Typography.Text>
+                                                            )}
+                                                        </Box>
+                                                    </Col>
+                                                    <Col span={8}>
+                                                        <Box sx={{mb: 3}}>
+                                                            <Typography.Text strong style={{
+                                                                display: 'block',
+                                                                marginBottom: '8px'
+                                                            }}>
+                                                                Button Width (cm): <span style={{color: 'red'}}>*</span>
+                                                            </Typography.Text>
+                                                            <Input
+                                                                type="number"
+                                                                min={1}
+                                                                max={50}
+                                                                step={1}
+                                                                placeholder="e.g., 1.0"
+                                                                value={itemList.find((storedItem) => storedItem.designItemId === item.id)?.buttonWidth || ''}
+                                                                onChange={(e) => {
+                                                                    updateItemField(item.id, 'buttonWidth', Number(e.target.value));
+                                                                    validateField('buttonWidth', Number(e.target.value), item.id);
+                                                                }}
+                                                                style={{borderRadius: '8px'}}
+                                                                autoComplete="off"
+                                                            />
+                                                            {errors[`item_${item.id}_buttonWidth`] && (
+                                                                <Typography.Text type="danger"
+                                                                                 style={{fontSize: '12px'}}>
+                                                                    {errors[`item_${item.id}_buttonWidth`]}
+                                                                </Typography.Text>
+                                                            )}
+                                                        </Box>
+                                                    </Col>
+                                                    <Col span={8}>
+                                                        <Box sx={{mb: 3}}>
+                                                            <Typography.Text strong style={{
+                                                                display: 'block',
+                                                                marginBottom: '8px'
+                                                            }}>
+                                                                Button Color: <span style={{color: 'red'}}>*</span>
+                                                            </Typography.Text>
+                                                            <ColorPicker
+                                                                defaultValue="#FFFFFF"
+                                                                value={itemList.find((storedItem) => storedItem.designItemId === item.id)?.buttonColor || '#FFFFFF'}
+                                                                onChange={(color) => {
+                                                                    const colorValue = color.toHexString();
+                                                                    updateItemField(item.id, 'buttonColor', colorValue);
+                                                                }}
+                                                                showText
+                                                                size="medium"
+                                                                getPopupContainer={(triggerNode) => triggerNode.parentElement || document.body}
+                                                                style={{
+                                                                    borderRadius: '8px',
+                                                                    width: '100%',
+                                                                    justifyContent: 'flex-start'
+                                                                }}
+                                                                popupStyle={{
+                                                                    zIndex: 9999
+                                                                }}
+                                                            />
+                                                            {errors[`item_${item.id}_buttonColor`] && (
+                                                                <Typography.Text type="danger"
+                                                                                 style={{fontSize: '12px'}}>
+                                                                    {errors[`item_${item.id}_buttonColor`]}
+                                                                </Typography.Text>
+                                                            )}
+                                                        </Box>
+                                                    </Col>
+                                                </Row>
+
+                                                <Box sx={{mb: 3}}>
+                                                    <Typography.Text strong
+                                                                     style={{display: 'block', marginBottom: '8px'}}>
+                                                        Button Note:
+                                                    </Typography.Text>
+                                                    <TextArea
+                                                        rows={2}
+                                                        placeholder="Add notes about buttons (optional)..."
+                                                        style={{
+                                                            borderRadius: '8px',
+                                                            resize: 'none'
+                                                        }}
+                                                        autoComplete="off"
+                                                        onChange={(e) => {
+                                                            updateItemField(item.id, 'buttonNote', e.target.value);
+                                                            validateField('buttonNote', e.target.value, item.id);
+                                                        }}
+                                                    />
+                                                    {errors[`item_${item.id}_buttonNote`] && (
+                                                        <Typography.Text type="danger" style={{fontSize: '12px'}}>
+                                                            {errors[`item_${item.id}_buttonNote`]}
+                                                        </Typography.Text>
+                                                    )}
+                                                </Box>
+
+                                                <Divider style={{margin: '16px 0'}}>Logo & Attaching Technique</Divider>
+
+                                                <Row gutter={[16, 16]}>
+                                                    <Col span={12}>
+                                                        <Box sx={{mb: 3}}>
+                                                            <Typography.Text strong style={{
+                                                                display: 'block',
+                                                                marginBottom: '8px'
+                                                            }}>
+                                                                <Space size={4} style={{overflow: 'visible'}}>Logo
+                                                                    Height
+                                                                    (cm): <Tooltip
+                                                                        title="This height is for the smallest size of cloth"
+                                                                        styles={{root: {zIndex: 3000}}}
+                                                                        getPopupContainer={() => document.body}><InfoCircleOutlined
+                                                                        style={{
+                                                                            color: '#64748b',
+                                                                            cursor: 'pointer'
+                                                                        }}/></Tooltip></Space> <span
+                                                                style={{color: 'red'}}>*</span>
+                                                            </Typography.Text>
+                                                            <Input
+                                                                type="number"
+                                                                min={1}
+                                                                max={999}
+                                                                placeholder="e.g., 5"
+                                                                style={{borderRadius: '8px'}}
+                                                                autoComplete="off"
+                                                                value={itemList.find((storedItem) => storedItem.designItemId === item.id)?.logoHeight || ''}
+                                                                onChange={(e) => {
+                                                                    updateItemField(item.id, 'logoHeight', e.target.value);
+                                                                    validateField('logoHeight', e.target.value, item.id);
+                                                                }}
+                                                            />
+                                                        </Box>
+                                                    </Col>
+                                                    <Col span={12}>
+                                                        <Box sx={{mb: 3}}>
+                                                            <Typography.Text strong style={{
+                                                                display: 'block',
+                                                                marginBottom: '8px'
+                                                            }}>
+                                                                <Space size={4} style={{overflow: 'visible'}}>Logo Width
+                                                                    (cm): <Tooltip
+                                                                        title="This width is for the smallest size of cloth"
+                                                                        styles={{root: {zIndex: 3000}}}
+                                                                        getPopupContainer={() => document.body}><InfoCircleOutlined
+                                                                        style={{
+                                                                            color: '#64748b',
+                                                                            cursor: 'pointer'
+                                                                        }}/></Tooltip></Space> <span
+                                                                style={{color: 'red'}}>*</span>
+                                                            </Typography.Text>
+                                                            <Input
+                                                                type="number"
+                                                                min={1}
+                                                                max={999}
+                                                                placeholder="e.g., 8"
+                                                                style={{borderRadius: '8px'}}
+                                                                autoComplete="off"
+                                                                value={itemList.find((storedItem) => storedItem.designItemId === item.id)?.logoWidth || ''}
+                                                                onChange={(e) => {
+                                                                    updateItemField(item.id, 'logoWidth', e.target.value);
+                                                                    validateField('logoWidth', e.target.value, item.id);
+                                                                }}
+                                                            />
+                                                        </Box>
+                                                    </Col>
+                                                </Row>
+
+                                                <Box sx={{mb: 3}}>
+                                                    <Typography.Text strong
+                                                                     style={{display: 'block', marginBottom: '8px'}}>
+                                                        Attaching Technique: <span style={{color: 'red'}}>*</span>
+                                                    </Typography.Text>
+                                                    <Radio.Group
+                                                        value={itemList.find((storedItem) => storedItem.designItemId === item.id)?.attachingTechnique || ''}
+                                                        onChange={(e) => {
+                                                            updateItemField(item.id, 'attachingTechnique', e.target.value);
+                                                            validateField('attachingTechnique', e.target.value, item.id);
+                                                        }}
+                                                    >
+                                                        <Space direction="vertical">
+                                                            <Radio value="embroidery">Embroidery Techniques</Radio>
+                                                            <Radio value="printing">Printing Techniques</Radio>
+                                                            <Radio value="heatpress">Heat Press Techniques</Radio>
+                                                        </Space>
+                                                    </Radio.Group>
+                                                    {errors[`item_${item.id}_attachingTechnique`] && (
+                                                        <Typography.Text type="danger" style={{fontSize: '12px'}}>
+                                                            {errors[`item_${item.id}_attachingTechnique`]}
+                                                        </Typography.Text>
+                                                    )}
+                                                </Box>
+
+                                                <Box sx={{mb: 3}}>
+                                                    <Typography.Text strong
+                                                                     style={{display: 'block', marginBottom: '8px'}}>
+                                                        Technique Note:
+                                                    </Typography.Text>
+                                                    <TextArea
+                                                        rows={2}
+                                                        placeholder="Add notes about attaching technique (optional)..."
+                                                        style={{
+                                                            borderRadius: '8px',
+                                                            resize: 'none'
+                                                        }}
+                                                        autoComplete="off"
+                                                        onChange={(e) => {
+                                                            updateItemField(item.id, 'techniqueNote', e.target.value);
+                                                            validateField('techniqueNote', e.target.value, item.id);
+                                                        }}
+                                                    />
+                                                    {errors[`item_${item.id}_buttonNote`] && (
+                                                        <Typography.Text type="danger" style={{fontSize: '12px'}}>
+                                                            {errors[`item_${item.id}_buttonNote`]}
+                                                        </Typography.Text>
+                                                    )}
+                                                </Box>
+                                            </>
+                                        )}
+
+                                        {item.type.toLowerCase().includes('pants') && (
+                                            <>
+                                                <Divider style={{margin: '16px 0'}}>Zipper Information</Divider>
+                                                <Box sx={{mb: 3}}>
+                                                    <Typography.Text strong style={{
+                                                        display: 'block',
+                                                        marginBottom: '8px'
+                                                    }}>
+                                                        Has Zipper: <span style={{color: 'red'}}>*</span>
+                                                    </Typography.Text>
+                                                    <Switch
+                                                        checked={itemList.find((storedItem) => storedItem.designItemId === item.id)?.hasZipper || false}
+                                                        onChange={(checked) => {
+                                                            updateItemField(item.id, 'hasZipper', checked);
+                                                        }}
+                                                        checkedChildren="Yes"
+                                                        unCheckedChildren="No"
+                                                        style={{marginBottom: '8px'}}
+                                                    />
+                                                    <Typography.Text type="secondary"
+                                                                     style={{fontSize: '12px', marginLeft: '8px'}}>
+                                                        {itemList.find((storedItem) => storedItem.designItemId === item.id)?.hasZipper ? 'This pants has zipper' : 'This pants has no zipper'}
+                                                    </Typography.Text>
+                                                </Box>
+                                            </>
+
+                                        )}
+
                                         <Row gutter={[16, 16]}>
                                             <Col span={12}>
                                                 <Box sx={{mb: 3}}>
-                                                    <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                        <Space size={4} style={{overflow: 'visible'}}>Logo
-                                                            Height (cm): <Tooltip
-                                                                title="This height is for the smallest size of cloth"
-                                                                styles={{root: {zIndex: 3000}}}
-                                                                getPopupContainer={() => document.body}><InfoCircleOutlined
-                                                                style={{
-                                                                    color: '#64748b',
-                                                                    cursor: 'pointer'
-                                                                }}/></Tooltip></Space> <span style={{color: 'red'}}>*</span>
+                                                    <Typography.Text strong
+                                                                     style={{display: 'block', marginBottom: '8px'}}>
+                                                        Front Design: <span style={{color: 'red'}}>*</span>
                                                     </Typography.Text>
-                                                    <Input 
-                                                        type="number" 
-                                                        min={1} 
-                                                        max={999} 
-                                                        placeholder="e.g., 5"
-                                                        value={itemList[item.__index]?.logoHeight || ''}
-                                                        onChange={(e) => {
-                                                            updateItemField(item.__index, 'logoHeight', Number(e.target.value));
-                                                            validateField('logoHeight', Number(e.target.value), item.__index);
-                                                        }}
-                                                        style={{borderRadius: '8px'}} 
-                                                        autoComplete="off"
-                                                    />
-                                                    {errors[`item_${item.__index}_logoHeight`] && (
-                                                        <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                            {errors[`item_${item.__index}_logoHeight`]}
-                                                        </Typography.Text>
-                                                    )}
-                                                </Box>
-                                            </Col>
-                                            <Col span={12}>
-                                                <Box sx={{mb: 3}}>
-                                                    <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                        <Space size={4} style={{overflow: 'visible'}}>Logo
-                                                            Width (cm): <Tooltip
-                                                                title="This width is for the smallest size of cloth"
-                                                                styles={{root: {zIndex: 3000}}}
-                                                                getPopupContainer={() => document.body}><InfoCircleOutlined
-                                                                style={{
-                                                                    color: '#64748b',
-                                                                    cursor: 'pointer'
-                                                                }}/></Tooltip></Space> <span style={{color: 'red'}}>*</span>
-                                                    </Typography.Text>
-                                                    <Input 
-                                                        type="number" 
-                                                        min={1} 
-                                                        max={999} 
-                                                        placeholder="e.g., 8"
-                                                        value={itemList[item.__index]?.logoWidth || ''}
-                                                        onChange={(e) => {
-                                                            updateItemField(item.__index, 'logoWidth', Number(e.target.value));
-                                                            validateField('logoWidth', Number(e.target.value), item.__index);
-                                                        }}
-                                                        style={{borderRadius: '8px'}} 
-                                                        autoComplete="off"
-                                                    />
-                                                    {errors[`item_${item.__index}_logoHeight`] && (
-                                                        <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                            {errors[`item_${item.__index}_logoHeight`]}
-                                                        </Typography.Text>
-                                                    )}
-                                                </Box>
-                                            </Col>
-                                        </Row>
-                                            
-                                            <Divider style={{margin: '16px 0'}}>Button Information</Divider>
-                                            
-                                            <Row gutter={[16, 16]}>
-                                                <Col span={12}>
-                                                    <Box sx={{mb: 3}}>
-                                                        <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                            Button Quantity: <span style={{color: 'red'}}>*</span>
-                                                        </Typography.Text>
-                                                        <Input 
-                                                            type="number" 
-                                                            min={1} 
-                                                            max={50} 
-                                                            placeholder="e.g., 6"
-                                                            value={itemList[item.__index]?.buttonQuantity || ''}
-                                                            onChange={(e) => {
-                                                                updateItemField(item.__index, 'buttonQuantity', Number(e.target.value));
-                                                                validateField('buttonQuantity', Number(e.target.value), item.__index);
-                                                            }}
-                                                            style={{borderRadius: '8px'}} 
-                                                            autoComplete="off"
-                                                        />
-                                                        {errors[`item_${item.__index}_buttonQuantity`] && (
-                                                            <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                                {errors[`item_${item.__index}_buttonQuantity`]}
-                                                            </Typography.Text>
-                                                        )}
-                                                    </Box>
-                                                </Col>
-                                                <Col span={12}>
-                                                    <Box sx={{mb: 3}}>
-                                                        <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                            Button Holes: <span style={{color: 'red'}}>*</span>
-                                                        </Typography.Text>
-                                                        <Input 
-                                                            type="number" 
-                                                            min={2} 
-                                                            max={4} 
-                                                            placeholder="e.g., 4"
-                                                            value={itemList[item.__index]?.buttonHoles || ''}
-                                                            onChange={(e) => {
-                                                                updateItemField(item.__index, 'buttonHoles', Number(e.target.value));
-                                                                validateField('buttonHoles', Number(e.target.value), item.__index);
-                                                            }}
-                                                            style={{borderRadius: '8px'}} 
-                                                            autoComplete="off"
-                                                        />
-                                                        {errors[`item_${item.__index}_buttonQuantity`] && (
-                                                            <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                                {errors[`item_${item.__index}_buttonQuantity`]}
-                                                            </Typography.Text>
-                                                        )}
-                                                    </Box>
-                                                </Col>
-                                            </Row>
-                                            
-                                            <Row gutter={[16, 16]}>
-                                                <Col span={8}>
-                                                    <Box sx={{mb: 3}}>
-                                                        <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                            Button Length (cm): <span style={{color: 'red'}}>*</span>
-                                                        </Typography.Text>
-                                                        <Input 
-                                                            type="number" 
-                                                            min={0.5} 
-                                                            max={10} 
-                                                            step={0.1} 
-                                                            placeholder="e.g., 1.2"
-                                                            value={itemList[item.__index]?.buttonLength || ''}
-                                                            onChange={(e) => {
-                                                                updateItemField(item.__index, 'buttonLength', Number(e.target.value));
-                                                                validateField('buttonLength', Number(e.target.value), item.__index);
-                                                            }}
-                                                            style={{borderRadius: '8px'}} 
-                                                            autoComplete="off"
-                                                        />
-                                                        {errors[`item_${item.__index}_buttonQuantity`] && (
-                                                            <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                                {errors[`item_${item.__index}_buttonQuantity`]}
-                                                            </Typography.Text>
-                                                        )}
-                                                    </Box>
-                                                </Col>
-                                                <Col span={8}>
-                                                    <Box sx={{mb: 3}}>
-                                                        <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                            Button Width (cm): <span style={{color: 'red'}}>*</span>
-                                                        </Typography.Text>
-                                                        <Input 
-                                                            type="number" 
-                                                            min={0.5} 
-                                                            max={10} 
-                                                            step={0.1} 
-                                                            placeholder="e.g., 1.0"
-                                                            value={itemList[item.__index]?.buttonWidth || ''}
-                                                            onChange={(e) => {
-                                                                updateItemField(item.__index, 'buttonWidth', Number(e.target.value));
-                                                                validateField('buttonWidth', Number(e.target.value), item.__index);
-                                                            }}
-                                                            style={{borderRadius: '8px'}} 
-                                                            autoComplete="off"
-                                                        />
-                                                        {errors[`item_${item.__index}_buttonQuantity`] && (
-                                                            <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                                {errors[`item_${item.__index}_buttonQuantity`]}
-                                                            </Typography.Text>
-                                                        )}
-                                                    </Box>
-                                                </Col>
-                                                <Col span={8}>
-                                                    <Box sx={{mb: 3}}>
-                                                        <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                            Button Color: <span style={{color: 'red'}}>*</span>
-                                                        </Typography.Text>
-                                                        <ColorPicker
-                                                            defaultValue="#FFFFFF"
-                                                            value={itemList[item.__index]?.buttonColor || '#FFFFFF'}
-                                                            onChange={(color) => {
-                                                                const colorValue = color.toHexString();
-                                                                updateItemField(item.__index, 'buttonColor', colorValue);
-                                                            }}
-                                                            showText
-                                                            size="medium"
-                                                            getPopupContainer={(triggerNode) => triggerNode.parentElement || document.body}
-                                                            style={{
+                                                    <Box sx={{position: 'relative'}}>
+                                                        <input type="file" accept="image/*"
+                                                               id={`front-upload-${item.id}`}
+                                                               style={{display: 'none'}}
+                                                               onChange={async (e) => {
+                                                                   const file = e.target.files[0];
+                                                                   if (file) {
+                                                                       setUploading(true);
+                                                                       try {
+                                                                           const url = await uploadCloudinary(file);
+                                                                           updateItemField(item.id, 'frontUrl', url);
+                                                                           setUploadedFiles(prev => ({
+                                                                               ...prev,
+                                                                               [`front-${item.id}`]: url
+                                                                           }));
+                                                                       } finally {
+                                                                           setUploading(false);
+                                                                       }
+                                                                   }
+                                                               }}/>
+                                                        <Box sx={{width: '100%'}}>
+                                                            <Button
+                                                                onClick={() => document.getElementById(`front-upload-${item.id}`).click()}
+                                                                icon={<UploadOutlined/>} loading={uploading} style={{
+                                                                width: '100%',
+                                                                height: '40px',
                                                                 borderRadius: '8px',
-                                                                width: '100%'
-                                                            }}
-                                                            popupStyle={{
-                                                                zIndex: 9999
-                                                            }}
-                                                        />
-                                                        {errors[`item_${item.__index}_buttonQuantity`] && (
-                                                            <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                                {errors[`item_${item.__index}_buttonQuantity`]}
-                                                            </Typography.Text>
-                                                        )}
+                                                                border: '2px dashed #d9d9d9',
+                                                                backgroundColor: '#fafafa',
+                                                                color: '#666',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                gap: '8px',
+                                                                transition: 'all 0.3s ease',
+                                                                cursor: 'pointer'
+                                                            }}>{uploading ? 'Uploading...' : 'Upload Front Design'}</Button>
+                                                            {uploadedFiles[`front-${item.id}`] && (
+                                                                <Box
+                                                                    sx={{
+                                                                        mt: 1,
+                                                                        display: 'flex',
+                                                                        justifyContent: 'center'
+                                                                    }}>
+                                                                    <DisplayImage
+                                                                        imageUrl={uploadedFiles[`front-${item.id}`]}
+                                                                        alt="Front Design"
+                                                                        width="120px"
+                                                                        height="120px"/>
+                                                                </Box>
+                                                            )}
+                                                        </Box>
                                                     </Box>
-                                                </Col>
-                                            </Row>
-                                            
-                                            <Box sx={{mb: 3}}>
-                                                <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                    Button Note:
-                                                </Typography.Text>
-                                                <TextArea
-                                                    rows={2}
-                                                    placeholder="Add notes about buttons (optional)..."
-                                                    style={{
-                                                        borderRadius: '8px',
-                                                        resize: 'none'
-                                                    }}
-                                                    autoComplete="off"
-                                                />
-                                                {errors[`item_${item.__index}_buttonNote`] && (
-                                                    <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                        {errors[`item_${item.__index}_buttonNote`]}
-                                                    </Typography.Text>
-                                                )}
-                                            </Box>
-
-                                            <Divider style={{margin: '16px 0'}}>Logo & Attaching Technique</Divider>
-
-                                            <Row gutter={[16, 16]}>
-                                                <Col span={12}>
-                                                    <Box sx={{mb: 3}}>
-                                                        <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                            <Space size={4} style={{overflow: 'visible'}}>Logo Height
-                                                                (cm): <Tooltip
-                                                                    title="This height is for the smallest size of cloth"
-                                                                    styles={{root: {zIndex: 3000}}}
-                                                                    getPopupContainer={() => document.body}><InfoCircleOutlined
-                                                                    style={{
-                                                                        color: '#64748b',
-                                                                        cursor: 'pointer'
-                                                                }}/></Tooltip></Space> <span style={{color: 'red'}}>*</span>
-                                                        </Typography.Text>
-                                                        <Input type="number" min={1} max={999} placeholder="e.g., 5"
-                                                               style={{borderRadius: '8px'}} autoComplete="off"/>
-                                                    </Box>
-                                                </Col>
-                                                <Col span={12}>
-                                                    <Box sx={{mb: 3}}>
-                                                        <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                            <Space size={4} style={{overflow: 'visible'}}>Logo Width
-                                                                (cm): <Tooltip
-                                                                    title="This width is for the smallest size of cloth"
-                                                                    styles={{root: {zIndex: 3000}}}
-                                                                    getPopupContainer={() => document.body}><InfoCircleOutlined
-                                                                    style={{
-                                                                        color: '#64748b',
-                                                                        cursor: 'pointer'
-                                                                }}/></Tooltip></Space> <span style={{color: 'red'}}>*</span>
-                                                        </Typography.Text>
-                                                    <Input type="number" min={1} max={999} placeholder="e.g., 8"
-                                                           style={{borderRadius: '8px'}} autoComplete="off"/>
-                                                </Box>
-                                            </Col>
-                                        </Row>
-
-                                            <Box sx={{mb: 3}}>
-                                                <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                    Attaching Technique: <span style={{color: 'red'}}>*</span>
-                                                </Typography.Text>
-                                                <Radio.Group
-                                                    value={itemList[item.__index]?.attachingTechnique || ''}
-                                                    onChange={(e) => {
-                                                        updateItemField(item.__index, 'attachingTechnique', e.target.value);
-                                                        validateField('attachingTechnique', e.target.value, item.__index);
-                                                    }}
-                                                >
-                                                    <Space direction="vertical">
-                                                        <Radio value="embroidery">Embroidery Techniques</Radio>
-                                                        <Radio value="printing">Printing Techniques</Radio>
-                                                        <Radio value="heatpress">Heat Press Techniques</Radio>
-                                                    </Space>
-                                                </Radio.Group>
-                                                {errors[`item_${item.__index}_attachingTechnique`] && (
-                                                    <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                        {errors[`item_${item.__index}_attachingTechnique`]}
-                                                    </Typography.Text>
-                                                )}
-                                            </Box>
-
-                                            <Box sx={{mb: 3}}>
-                                                <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                    Technique Note:
-                                                </Typography.Text>
-                                                <TextArea
-                                                    rows={2}
-                                                    placeholder="Add notes about attaching technique (optional)..."
-                                                    style={{
-                                                        borderRadius: '8px',
-                                                        resize: 'none'
-                                                    }}
-                                                    autoComplete="off"
-                                                />
-                                                {errors[`item_${item.__index}_buttonNote`] && (
-                                                    <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                        {errors[`item_${item.__index}_buttonNote`]}
-                                                    </Typography.Text>
-                                                )}
-                                            </Box>
-                                        </>
-                                    )}
-                                    {/* Hidden fields are no longer needed with state management */}
-                                    <Row gutter={[16, 16]}>
-                                        <Col span={12}>
-                                            <Box sx={{mb: 3}}>
-                                                <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                    Front Design: <span style={{color: 'red'}}>*</span>
-                                                </Typography.Text>
-                                                <Box sx={{position: 'relative'}}>
-                                                    <input type="file" accept="image/*"
-                                                           id={`front-upload-${item.__index}`} style={{display: 'none'}}
-                                                           onChange={async (e) => {
-                                                               const file = e.target.files[0];
-                                                               if (file) {
-                                                                   setUploading(true);
-                                                                   try {
-                                                                       const url = await uploadCloudinary(file);
-                                                                       updateItemField(item.__index, 'frontUrl', url);
-                                                                       setUploadedFiles(prev => ({
-                                                                           ...prev,
-                                                                           [`front-${item.__index}`]: url
-                                                                       }));
-                                                                   } finally {
-                                                                       setUploading(false);
-                                                                   }
-                                                               }
-                                                           }}/>
-                                                    <Box sx={{width: '100%'}}>
-                                                        <Button
-                                                            onClick={() => document.getElementById(`front-upload-${item.__index}`).click()}
-                                                            icon={<UploadOutlined/>} loading={uploading} style={{
-                                                            width: '100%',
-                                                            height: '40px',
-                                                            borderRadius: '8px',
-                                                            border: '2px dashed #d9d9d9',
-                                                            backgroundColor: '#fafafa',
-                                                            color: '#666',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            gap: '8px',
-                                                            transition: 'all 0.3s ease',
-                                                            cursor: 'pointer'
-                                                        }}>{uploading ? 'Uploading...' : 'Upload Front Design'}</Button>
-                                                        {uploadedFiles[`front-${item.__index}`] && (
-                                                            <Box
-                                                                sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
-                                                                <DisplayImage
-                                                                    imageUrl={uploadedFiles[`front-${item.__index}`]}
-                                                                    alt="Front Design"
-                                                                    width="120px"
-                                                                    height="120px"/>
-                                                            </Box>
-                                                        )}
-                                                    </Box>
-                                                </Box>
-                                                {errors[`item_${item.__index}_frontUrl`] && (
-                                                    <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                        {errors[`item_${item.__index}_frontUrl`]}
-                                                    </Typography.Text>
-                                                )}
-                                            </Box>
-                                        </Col>
-                                        <Col span={12}>
-                                            <Box sx={{mb: 3}}>
-                                                <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                    Back Design: <span style={{color: 'red'}}>*</span>
-                                                </Typography.Text>
-                                                <Box sx={{position: 'relative'}}>
-                                                    <input type="file" accept="image/*"
-                                                           id={`back-upload-${item.__index}`} style={{display: 'none'}}
-                                                           onChange={async (e) => {
-                                                               const file = e.target.files[0];
-                                                               if (file) {
-                                                                   setUploading(true);
-                                                                   try {
-                                                                       const url = await uploadCloudinary(file);
-                                                                       updateItemField(item.__index, 'backUrl', url);
-                                                                       setUploadedFiles(prev => ({
-                                                                           ...prev,
-                                                                           [`back-${item.__index}`]: url
-                                                                       }));
-                                                                   } finally {
-                                                                       setUploading(false);
-                                                                   }
-                                                               }
-                                                           }}/>
-                                                    <Box sx={{width: '100%'}}>
-                                                        <Button
-                                                            onClick={() => document.getElementById(`back-upload-${item.__index}`).click()}
-                                                            icon={<UploadOutlined/>} loading={uploading} style={{
-                                                            width: '100%',
-                                                            height: '40px',
-                                                            borderRadius: '8px',
-                                                            border: '2px dashed #d9d9d9',
-                                                            backgroundColor: '#fafafa',
-                                                            color: '#666',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            gap: '8px',
-                                                            transition: 'all 0.3s ease',
-                                                            cursor: 'pointer'
-                                                        }}>{uploading ? 'Uploading...' : 'Upload Back Design'}</Button>
-                                                        {uploadedFiles[`back-${item.__index}`] && (
-                                                            <Box
-                                                                sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
-                                                                <DisplayImage
-                                                                    imageUrl={uploadedFiles[`back-${item.__index}`]}
-                                                                    alt="Back Design"
-                                                                    width="120px"
-                                                                    height="120px"/>
-                                                            </Box>
-                                                        )}
-                                                    </Box>
-                                                </Box>
-                                                {errors[`item_${item.__index}_frontUrl`] && (
-                                                    <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                        {errors[`item_${item.__index}_frontUrl`]}
-                                                    </Typography.Text>
-                                                )}
-                                            </Box>
-                                        </Col>
-                                    </Row>
-                                    {/* designItemId is handled by state management */}
-                                    
-                                    {/* Hidden fields for button info when not shirt */}
-                                    {/* Hidden fields are no longer needed with state management */}
-                                </Card>
-                            ))}
-                        </>
-                    )}
-
-                    {modalOtherItems.length > 0 && (
-                        <>
-                            <Typography.Title level={5} style={{marginTop: 16}}>Others
-                                ({modalOtherItems.length})</Typography.Title>
-                            {modalOtherItems.map((item) => (
-                                <Card key={`other-${item.__index}`} size="small"
-                                      style={{marginBottom: '16px', border: '1px solid #e2e8f0'}}>
-                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
-                                        {getItemIcon(item.type)}
-                                        <Typography.Title level={5} style={{margin: 0}}>
-                                            {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {formatCategory(item.category)}
-                                        </Typography.Title>
-                                        <Tag style={{marginLeft: 'auto'}}>Unspecified</Tag>
-                                    </Box>
-                                    {}
-                                    {/* Hidden fields are no longer needed with state management */}
-                                    {item.type.toLowerCase().includes('shirt') && (
-                                        <>
-                                        <Row gutter={[16, 16]}>
-                                            <Col span={12}>
-                                                <Box sx={{mb: 3}}>
-                                                    <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                        <Space size={4} style={{overflow: 'visible'}}>Logo
-                                                            Height (cm): <Tooltip
-                                                                title="This height is for the smallest size of cloth"
-                                                                styles={{root: {zIndex: 3000}}}
-                                                                getPopupContainer={() => document.body}><InfoCircleOutlined
-                                                                style={{
-                                                                    color: '#64748b',
-                                                                    cursor: 'pointer'
-                                                                }}/></Tooltip></Space> <span style={{color: 'red'}}>*</span>
-                                                    </Typography.Text>
-                                                    <Input 
-                                                        type="number" 
-                                                        min={1} 
-                                                        max={999} 
-                                                        placeholder="e.g., 5"
-                                                        value={itemList[item.__index]?.logoHeight || ''}
-                                                        onChange={(e) => {
-                                                            updateItemField(item.__index, 'logoHeight', Number(e.target.value));
-                                                            validateField('logoHeight', Number(e.target.value), item.__index);
-                                                        }}
-                                                        style={{borderRadius: '8px'}} 
-                                                        autoComplete="off"
-                                                    />
-                                                    {errors[`item_${item.__index}_logoHeight`] && (
+                                                    {errors[`item_${item.id}_frontUrl`] && (
                                                         <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                            {errors[`item_${item.__index}_logoHeight`]}
+                                                            {errors[`item_${item.id}_frontUrl`]}
                                                         </Typography.Text>
                                                     )}
                                                 </Box>
                                             </Col>
                                             <Col span={12}>
                                                 <Box sx={{mb: 3}}>
-                                                    <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                        <Space size={4} style={{overflow: 'visible'}}>Logo
-                                                            Width (cm): <Tooltip
-                                                                title="This width is for the smallest size of cloth"
-                                                                styles={{root: {zIndex: 3000}}}
-                                                                getPopupContainer={() => document.body}><InfoCircleOutlined
-                                                                style={{
-                                                                    color: '#64748b',
-                                                                    cursor: 'pointer'
-                                                                }}/></Tooltip></Space> <span style={{color: 'red'}}>*</span>
+                                                    <Typography.Text strong
+                                                                     style={{display: 'block', marginBottom: '8px'}}>
+                                                        Back Design: <span style={{color: 'red'}}>*</span>
                                                     </Typography.Text>
-                                                    <Input 
-                                                        type="number" 
-                                                        min={1} 
-                                                        max={999} 
-                                                        placeholder="e.g., 8"
-                                                        value={itemList[item.__index]?.logoWidth || ''}
-                                                        onChange={(e) => {
-                                                            updateItemField(item.__index, 'logoWidth', Number(e.target.value));
-                                                            validateField('logoWidth', Number(e.target.value), item.__index);
-                                                        }}
-                                                        style={{borderRadius: '8px'}} 
-                                                        autoComplete="off"
-                                                    />
-                                                    {errors[`item_${item.__index}_logoHeight`] && (
-                                                        <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                            {errors[`item_${item.__index}_logoHeight`]}
-                                                        </Typography.Text>
-                                                    )}
-                                                </Box>
-                                            </Col>
-                                        </Row>
-                                            
-                                            <Divider style={{margin: '16px 0'}}>Button Information</Divider>
-                                            
-                                            <Row gutter={[16, 16]}>
-                                                <Col span={12}>
-                                                    <Box sx={{mb: 3}}>
-                                                        <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                            Button Quantity: <span style={{color: 'red'}}>*</span>
-                                                        </Typography.Text>
-                                                        <Input 
-                                                            type="number" 
-                                                            min={1} 
-                                                            max={50} 
-                                                            placeholder="e.g., 6"
-                                                            value={itemList[item.__index]?.buttonQuantity || ''}
-                                                            onChange={(e) => {
-                                                                updateItemField(item.__index, 'buttonQuantity', Number(e.target.value));
-                                                                validateField('buttonQuantity', Number(e.target.value), item.__index);
-                                                            }}
-                                                            style={{borderRadius: '8px'}} 
-                                                            autoComplete="off"
-                                                        />
-                                                        {errors[`item_${item.__index}_buttonQuantity`] && (
-                                                            <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                                {errors[`item_${item.__index}_buttonQuantity`]}
-                                                            </Typography.Text>
-                                                        )}
-                                                    </Box>
-                                                </Col>
-                                                <Col span={12}>
-                                                    <Box sx={{mb: 3}}>
-                                                        <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                            Button Holes: <span style={{color: 'red'}}>*</span>
-                                                        </Typography.Text>
-                                                        <Input 
-                                                            type="number" 
-                                                            min={2} 
-                                                            max={4} 
-                                                            placeholder="e.g., 4"
-                                                            value={itemList[item.__index]?.buttonHoles || ''}
-                                                            onChange={(e) => {
-                                                                updateItemField(item.__index, 'buttonHoles', Number(e.target.value));
-                                                                validateField('buttonHoles', Number(e.target.value), item.__index);
-                                                            }}
-                                                            style={{borderRadius: '8px'}} 
-                                                            autoComplete="off"
-                                                        />
-                                                        {errors[`item_${item.__index}_buttonQuantity`] && (
-                                                            <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                                {errors[`item_${item.__index}_buttonQuantity`]}
-                                                            </Typography.Text>
-                                                        )}
-                                                    </Box>
-                                                </Col>
-                                            </Row>
-                                            
-                                            <Row gutter={[16, 16]}>
-                                                <Col span={8}>
-                                                    <Box sx={{mb: 3}}>
-                                                        <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                            Button Length (cm): <span style={{color: 'red'}}>*</span>
-                                                        </Typography.Text>
-                                                        <Input 
-                                                            type="number" 
-                                                            min={0.5} 
-                                                            max={10} 
-                                                            step={0.1} 
-                                                            placeholder="e.g., 1.2"
-                                                            value={itemList[item.__index]?.buttonLength || ''}
-                                                            onChange={(e) => {
-                                                                updateItemField(item.__index, 'buttonLength', Number(e.target.value));
-                                                                validateField('buttonLength', Number(e.target.value), item.__index);
-                                                            }}
-                                                            style={{borderRadius: '8px'}} 
-                                                            autoComplete="off"
-                                                        />
-                                                        {errors[`item_${item.__index}_buttonQuantity`] && (
-                                                            <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                                {errors[`item_${item.__index}_buttonQuantity`]}
-                                                            </Typography.Text>
-                                                        )}
-                                                    </Box>
-                                                </Col>
-                                                <Col span={8}>
-                                                    <Box sx={{mb: 3}}>
-                                                        <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                            Button Width (cm): <span style={{color: 'red'}}>*</span>
-                                                        </Typography.Text>
-                                                        <Input 
-                                                            type="number" 
-                                                            min={0.5} 
-                                                            max={10} 
-                                                            step={0.1} 
-                                                            placeholder="e.g., 1.0"
-                                                            value={itemList[item.__index]?.buttonWidth || ''}
-                                                            onChange={(e) => {
-                                                                updateItemField(item.__index, 'buttonWidth', Number(e.target.value));
-                                                                validateField('buttonWidth', Number(e.target.value), item.__index);
-                                                            }}
-                                                            style={{borderRadius: '8px'}} 
-                                                            autoComplete="off"
-                                                        />
-                                                        {errors[`item_${item.__index}_buttonQuantity`] && (
-                                                            <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                                {errors[`item_${item.__index}_buttonQuantity`]}
-                                                            </Typography.Text>
-                                                        )}
-                                                    </Box>
-                                                </Col>
-                                                <Col span={8}>
-                                                    <Box sx={{mb: 3}}>
-                                                        <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                            Button Color: <span style={{color: 'red'}}>*</span>
-                                                        </Typography.Text>
-                                                        <ColorPicker
-                                                            defaultValue="#FFFFFF"
-                                                            value={itemList[item.__index]?.buttonColor || '#FFFFFF'}
-                                                            onChange={(color) => {
-                                                                const colorValue = color.toHexString();
-                                                                updateItemField(item.__index, 'buttonColor', colorValue);
-                                                            }}
-                                                            showText
-                                                            size="medium"
-                                                            getPopupContainer={(triggerNode) => triggerNode.parentElement || document.body}
-                                                            style={{
+                                                    <Box sx={{position: 'relative'}}>
+                                                        <input type="file" accept="image/*"
+                                                               id={`back-upload-${item.id}`}
+                                                               style={{display: 'none'}}
+                                                               onChange={async (e) => {
+                                                                   const file = e.target.files[0];
+                                                                   if (file) {
+                                                                       setUploading(true);
+                                                                       try {
+                                                                           const url = await uploadCloudinary(file);
+                                                                           updateItemField(item.id, 'backUrl', url);
+                                                                           setUploadedFiles(prev => ({
+                                                                               ...prev,
+                                                                               [`back-${item.id}`]: url
+                                                                           }));
+                                                                       } finally {
+                                                                           setUploading(false);
+                                                                       }
+                                                                   }
+                                                               }}/>
+                                                        <Box sx={{width: '100%'}}>
+                                                            <Button
+                                                                onClick={() => document.getElementById(`back-upload-${item.id}`).click()}
+                                                                icon={<UploadOutlined/>} loading={uploading} style={{
+                                                                width: '100%',
+                                                                height: '40px',
                                                                 borderRadius: '8px',
-                                                                width: '100%'
-                                                            }}
-                                                            popupStyle={{
-                                                                zIndex: 9999
-                                                            }}
-                                                        />
-                                                        {errors[`item_${item.__index}_buttonQuantity`] && (
-                                                            <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                                {errors[`item_${item.__index}_buttonQuantity`]}
-                                                            </Typography.Text>
-                                                        )}
+                                                                border: '2px dashed #d9d9d9',
+                                                                backgroundColor: '#fafafa',
+                                                                color: '#666',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                gap: '8px',
+                                                                transition: 'all 0.3s ease',
+                                                                cursor: 'pointer'
+                                                            }}>{uploading ? 'Uploading...' : 'Upload Back Design'}</Button>
+                                                            {uploadedFiles[`back-${item.id}`] && (
+                                                                <Box
+                                                                    sx={{
+                                                                        mt: 1,
+                                                                        display: 'flex',
+                                                                        justifyContent: 'center'
+                                                                    }}>
+                                                                    <DisplayImage
+                                                                        imageUrl={uploadedFiles[`back-${item.id}`]}
+                                                                        alt="Back Design"
+                                                                        width="120px"
+                                                                        height="120px"/>
+                                                                </Box>
+                                                            )}
+                                                        </Box>
                                                     </Box>
-                                                </Col>
-                                            </Row>
-                                            
-                                            <Box sx={{mb: 3}}>
-                                                <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                    Button Note:
-                                                </Typography.Text>
-                                                <TextArea
-                                                    rows={2}
-                                                    placeholder="Add notes about buttons (optional)..."
-                                                    style={{
-                                                        borderRadius: '8px',
-                                                        resize: 'none'
-                                                    }}
-                                                    autoComplete="off"
-                                                />
-                                                {errors[`item_${item.__index}_buttonNote`] && (
-                                                    <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                        {errors[`item_${item.__index}_buttonNote`]}
-                                                    </Typography.Text>
-                                                )}
-                                            </Box>
-
-                                            <Divider style={{margin: '16px 0'}}>Logo & Attaching Technique</Divider>
-
-                                            <Row gutter={[16, 16]}>
-                                                <Col span={12}>
-                                                    <Box sx={{mb: 3}}>
-                                                        <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                            <Space size={4} style={{overflow: 'visible'}}>Logo Height
-                                                                (cm): <Tooltip
-                                                                    title="This height is for the smallest size of cloth"
-                                                                    styles={{root: {zIndex: 3000}}}
-                                                                    getPopupContainer={() => document.body}><InfoCircleOutlined
-                                                                    style={{
-                                                                        color: '#64748b',
-                                                                        cursor: 'pointer'
-                                                                }}/></Tooltip></Space> <span style={{color: 'red'}}>*</span>
+                                                    {errors[`item_${item.id}_frontUrl`] && (
+                                                        <Typography.Text type="danger" style={{fontSize: '12px'}}>
+                                                            {errors[`item_${item.id}_frontUrl`]}
                                                         </Typography.Text>
-                                                        <Input type="number" min={1} max={999} placeholder="e.g., 5"
-                                                               style={{borderRadius: '8px'}} autoComplete="off"/>
-                                                    </Box>
-                                                </Col>
-                                                <Col span={12}>
-                                                    <Box sx={{mb: 3}}>
-                                                        <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                            <Space size={4} style={{overflow: 'visible'}}>Logo Width
-                                                                (cm): <Tooltip
-                                                                    title="This width is for the smallest size of cloth"
-                                                                    styles={{root: {zIndex: 3000}}}
-                                                                    getPopupContainer={() => document.body}><InfoCircleOutlined
-                                                                    style={{
-                                                                        color: '#64748b',
-                                                                        cursor: 'pointer'
-                                                                }}/></Tooltip></Space> <span style={{color: 'red'}}>*</span>
-                                                        </Typography.Text>
-                                                    <Input type="number" min={1} max={999} placeholder="e.g., 8"
-                                                           style={{borderRadius: '8px'}} autoComplete="off"/>
+                                                    )}
                                                 </Box>
                                             </Col>
                                         </Row>
-
-                                            <Box sx={{mb: 3}}>
-                                                <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                    Attaching Technique: <span style={{color: 'red'}}>*</span>
-                                                </Typography.Text>
-                                                <Radio.Group
-                                                    value={itemList[item.__index]?.attachingTechnique || ''}
-                                                    onChange={(e) => {
-                                                        updateItemField(item.__index, 'attachingTechnique', e.target.value);
-                                                        validateField('attachingTechnique', e.target.value, item.__index);
-                                                    }}
-                                                >
-                                                    <Space direction="vertical">
-                                                        <Radio value="embroidery">Embroidery Techniques</Radio>
-                                                        <Radio value="printing">Printing Techniques</Radio>
-                                                        <Radio value="heatpress">Heat Press Techniques</Radio>
-                                                    </Space>
-                                                </Radio.Group>
-                                                {errors[`item_${item.__index}_attachingTechnique`] && (
-                                                    <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                        {errors[`item_${item.__index}_attachingTechnique`]}
-                                                    </Typography.Text>
-                                                )}
-                                            </Box>
-
-                                            <Box sx={{mb: 3}}>
-                                                <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                    Technique Note:
-                                                </Typography.Text>
-                                                <TextArea
-                                                    rows={2}
-                                                    placeholder="Add notes about attaching technique (optional)..."
-                                                    style={{
-                                                        borderRadius: '8px',
-                                                        resize: 'none'
-                                                    }}
-                                                    autoComplete="off"
-                                                />
-                                                {errors[`item_${item.__index}_buttonNote`] && (
-                                                    <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                        {errors[`item_${item.__index}_buttonNote`]}
-                                                    </Typography.Text>
-                                                )}
-                                            </Box>
-                                        </>
-                                    )}
-                                    <Row gutter={[16, 16]}>
-                                        <Col span={12}>
-                                            <Box sx={{mb: 3}}>
-                                                <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                    Front Design: <span style={{color: 'red'}}>*</span>
-                                                </Typography.Text>
-                                                <Box sx={{position: 'relative'}}>
-                                                    <input type="file" accept="image/*"
-                                                           id={`front-upload-${item.__index}`} style={{display: 'none'}}
-                                                           onChange={async (e) => {
-                                                               const file = e.target.files[0];
-                                                               if (file) {
-                                                                   setUploading(true);
-                                                                   try {
-                                                                       const url = await uploadCloudinary(file);
-                                                                       updateItemField(item.__index, 'frontUrl', url);
-                                                                       setUploadedFiles(prev => ({
-                                                                           ...prev,
-                                                                           [`front-${item.__index}`]: url
-                                                                       }));
-                                                                   } finally {
-                                                                       setUploading(false);
-                                                                   }
-                                                               }
-                                                           }}/>
-                                                    <Box sx={{width: '100%'}}>
-                                                        <Button
-                                                            onClick={() => document.getElementById(`front-upload-${item.__index}`).click()}
-                                                            icon={<UploadOutlined/>} loading={uploading} style={{
-                                                            width: '100%',
-                                                            height: '40px',
-                                                            borderRadius: '8px',
-                                                            border: '2px dashed #d9d9d9',
-                                                            backgroundColor: '#fafafa',
-                                                            color: '#666',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            gap: '8px',
-                                                            transition: 'all 0.3s ease',
-                                                            cursor: 'pointer'
-                                                        }}>{uploading ? 'Uploading...' : 'Upload Front Design'}</Button>
-                                                        {uploadedFiles[`front-${item.__index}`] && (
-                                                            <Box
-                                                                sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
-                                                                <DisplayImage
-                                                                    imageUrl={uploadedFiles[`front-${item.__index}`]}
-                                                                    alt="Front Design"
-                                                                    width="120px"
-                                                                    height="120px"/>
-                                                            </Box>
-                                                        )}
-                                                    </Box>
-                                                </Box>
-                                                {errors[`item_${item.__index}_frontUrl`] && (
-                                                    <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                        {errors[`item_${item.__index}_frontUrl`]}
-                                                    </Typography.Text>
-                                                )}
-                                            </Box>
-                                        </Col>
-                                        <Col span={12}>
-                                            <Box sx={{mb: 3}}>
-                                                <Typography.Text strong style={{display: 'block', marginBottom: '8px'}}>
-                                                    Back Design: <span style={{color: 'red'}}>*</span>
-                                                </Typography.Text>
-                                                <Box sx={{position: 'relative'}}>
-                                                    <input type="file" accept="image/*"
-                                                           id={`back-upload-${item.__index}`} style={{display: 'none'}}
-                                                           onChange={async (e) => {
-                                                               const file = e.target.files[0];
-                                                               if (file) {
-                                                                   setUploading(true);
-                                                                   try {
-                                                                       const url = await uploadCloudinary(file);
-                                                                       updateItemField(item.__index, 'backUrl', url);
-                                                                       setUploadedFiles(prev => ({
-                                                                           ...prev,
-                                                                           [`back-${item.__index}`]: url
-                                                                       }));
-                                                                   } finally {
-                                                                       setUploading(false);
-                                                                   }
-                                                               }
-                                                           }}/>
-                                                    <Box sx={{width: '100%'}}>
-                                                        <Button
-                                                            onClick={() => document.getElementById(`back-upload-${item.__index}`).click()}
-                                                            icon={<UploadOutlined/>} loading={uploading} style={{
-                                                            width: '100%',
-                                                            height: '40px',
-                                                            borderRadius: '8px',
-                                                            border: '2px dashed #d9d9d9',
-                                                            backgroundColor: '#fafafa',
-                                                            color: '#666',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            gap: '8px',
-                                                            transition: 'all 0.3s ease',
-                                                            cursor: 'pointer'
-                                                        }}>{uploading ? 'Uploading...' : 'Upload Back Design'}</Button>
-                                                        {uploadedFiles[`back-${item.__index}`] && (
-                                                            <Box
-                                                                sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
-                                                                <DisplayImage
-                                                                    imageUrl={uploadedFiles[`back-${item.__index}`]}
-                                                                    alt="Back Design"
-                                                                    width="120px"
-                                                                    height="120px"/>
-                                                            </Box>
-                                                        )}
-                                                    </Box>
-                                                </Box>
-                                                {errors[`item_${item.__index}_frontUrl`] && (
-                                                    <Typography.Text type="danger" style={{fontSize: '12px'}}>
-                                                        {errors[`item_${item.__index}_frontUrl`]}
-                                                    </Typography.Text>
-                                                )}
-                                            </Box>
-                                        </Col>
-                                    </Row>
-                                    {/* designItemId is handled by state management */}
-                                    
-                                    {/* Hidden fields for button info when not shirt */}
-                                    {/* Hidden fields are no longer needed with state management */}
-                                </Card>
+                                    </AccordionDetails>
+                                </Accordion>
                             ))}
                         </>
                     )}
@@ -3546,7 +3264,7 @@ export default function DesignerChat() {
     const emojiPickerRef = useRef(null);
 
     const {chatMessages, unreadCount, sendMessage, markAsRead} = UseDesignerChatMessages(roomId, userInfo);
-    
+
     // Get user info from cookie instead of Firebase auth
     useEffect(() => {
         const fetchUserInfo = async () => {
@@ -3561,12 +3279,12 @@ export default function DesignerChat() {
                 console.error("Error fetching user info:", error);
             }
         };
-        
+
         fetchUserInfo();
-        
+
         // Set up interval to refresh user info periodically (every 5 minutes)
         const interval = setInterval(fetchUserInfo, 5 * 60 * 1000);
-        
+
         return () => clearInterval(interval);
     }, []);
 
@@ -3754,6 +3472,7 @@ export default function DesignerChat() {
 
     const handleDeliverySubmit = async (deliveryData) => {
         try {
+            console.log("deliveryData: ", deliveryData)
             const response = await createDesignDelivery(deliveryData);
 
             if (response && response.status === 201) {
@@ -3830,16 +3549,12 @@ export default function DesignerChat() {
                                 </Box>
                             </Box>
                             <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
-                                <Button
-                                    type="primary"
-                                    icon={<InfoCircleOutlined/>}
+                                <IconButton
                                     onClick={handleOpenAppliedRequestDetail}
                                     style={{
                                         background: 'linear-gradient(135deg, #1976d2, #42a5f5)',
                                         border: 'none',
-                                        borderRadius: '8px',
-                                        height: '36px',
-                                        fontSize: '14px',
+                                        fontSize: '18px',
                                         fontWeight: 600,
                                         color: 'white',
                                         boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
@@ -3850,8 +3565,8 @@ export default function DesignerChat() {
                                         }
                                     }}
                                 >
-                                    View Design Details
-                                </Button>
+                                    <InfoCircleOutlined/>
+                                </IconButton>
                                 <Chip
                                     label={requestData?.status?.toUpperCase() || 'UNKNOWN'}
                                     color={requestData?.status === 'completed' ? 'default' : 'warning'}
@@ -4639,7 +4354,7 @@ export default function DesignerChat() {
                                             }
                                         }}
                                         disabled={isViewOnly || !userInfo}
-                                        autoSize={{ minRows: 1, maxRows: 4 }}
+                                        autoSize={{minRows: 1, maxRows: 4}}
                                         style={{
                                             borderRadius: '12px',
                                             padding: '12px 16px',
