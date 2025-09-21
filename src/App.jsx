@@ -14,6 +14,10 @@ import AdminFabric from "./components/admin/AdminFabric.jsx";
 import SchoolTransaction from "./components/school/profile/SchoolTransaction.jsx";
 import DesignerTransaction from "./components/designer/profile/DesignerTransaction.jsx";
 import GarmentTransaction from "./components/garment/profile/GarmentTransaction.jsx";
+import GarmentWithdraw from "./components/garment/profile/GarmentWithdraw.jsx";
+import DesignerWithdraw from "./components/designer/profile/DesignerWithdraw.jsx";
+import AdminWithdrawRequest from "./components/admin/AdminWithdrawRequest.jsx";
+import SchoolWithdraw from "./components/school/profile/SchoolWithdraw.jsx";
 
 const DesignerFeedback = lazy(() => import("./components/designer/DesignerFeedback.jsx"));
 const GarmentFeedback = lazy(() => import("./components/garment/GarmentFeedback.jsx"));
@@ -282,6 +286,14 @@ const router = createBrowserRouter([
                         <SchoolTransaction/>
                     </Suspense>
                 )
+            },
+            {
+                path: 'withdraw',
+                element: (
+                    <Suspense fallback={<LoadingFallback />}>
+                        <SchoolWithdraw />
+                    </Suspense>
+                )
             }
         ]
     },
@@ -364,6 +376,14 @@ const router = createBrowserRouter([
                         <AdminFabric/>
                     </Suspense>
                 )
+            },
+            {
+                path: 'withdraw',
+                element: (
+                    <Suspense fallback={<LoadingFallback />}>
+                        <AdminWithdrawRequest />
+                    </Suspense>
+                )
             }
         ]
     },
@@ -428,6 +448,14 @@ const router = createBrowserRouter([
                 element: (
                     <Suspense fallback={<LoadingFallback />}>
                         <DesignerTransaction/>
+                    </Suspense>
+                )
+            },
+            {
+                path: 'withdraw',
+                element: (
+                    <Suspense fallback={<LoadingFallback />}>
+                        <DesignerWithdraw />
                     </Suspense>
                 )
             }
@@ -510,6 +538,14 @@ const router = createBrowserRouter([
                 element: (
                     <Suspense fallback={<LoadingFallback />}>
                         <GarmentTransaction />
+                    </Suspense>
+                )
+            },
+            {
+                path: 'withdraw',
+                element: (
+                    <Suspense fallback={<LoadingFallback />}>
+                        <GarmentWithdraw />
                     </Suspense>
                 )
             }

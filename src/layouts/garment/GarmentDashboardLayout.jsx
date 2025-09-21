@@ -249,6 +249,31 @@ function Navbar({activeMenu, navigate}) {
                             borderRadius: 2,
                             mx: 1,
                             my: 0.5,
+                            color: activeMenu === 'withdraw' ? "#FFFFFF" : "#495057",
+                            p: 2,
+                            cursor: "pointer",
+                            transition: "all 0.3s ease",
+                            background: activeMenu === 'withdraw' ? "linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)" : "transparent",
+                            "&:hover": {
+                                background: "linear-gradient(135deg, #3f51b5 0%, #303f9f 100%)",
+                                color: "#FFFFFF",
+                                transform: "translateY(-1px)",
+                            },
+                        }}
+                        onClick={() => navigate('/garment/withdraw')}
+                    >
+                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
+                            <Assessment sx={{color: "inherit", fontSize: 20}}/>
+                            <Typography variant="body2" sx={{fontWeight: 500}}>
+                                Withdraw
+                            </Typography>
+                        </Box>
+                    </Box>
+                    <Box
+                        sx={{
+                            borderRadius: 2,
+                            mx: 1,
+                            my: 0.5,
                             color: activeMenu === 'profile' ? "#FFFFFF" : "#495057",
                             p: 2,
                             cursor: "pointer",
@@ -324,6 +349,8 @@ export default function GarmentDashboardLayout() {
             setActiveMenu('profile');
         } else if (pathname.includes('/garment/fabric')) {
             setActiveMenu('fabric');
+        } else if (pathname.includes('/garment/withdraw')) {
+            setActiveMenu('withdraw');
         } else {
             setActiveMenu('');
         }
