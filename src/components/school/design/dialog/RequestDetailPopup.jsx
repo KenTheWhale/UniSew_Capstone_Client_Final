@@ -750,7 +750,6 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                 alignItems: 'stretch',
                                 minHeight: '200px'
                             }}>
-                                {}
                                 {(() => {
                                     const boyItems = request.items?.filter(item => item.gender === 'boy') || [];
                                     if (boyItems.length > 0) {
@@ -807,7 +806,6 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                             gap: 1,
                                                             height: '100%'
                                                         }}>
-                                                            {}
                                                             <Box sx={{
                                                                 display: 'flex',
                                                                 alignItems: 'center',
@@ -870,7 +868,6 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                             }
                                                                         }}
                                                                     >
-                                                                        {}
                                                                         <Box sx={{
                                                                             display: 'flex',
                                                                             alignItems: 'center',
@@ -915,14 +912,12 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                             </Tag>
                                                                         </Box>
 
-                                                                        {}
                                                                         <Box sx={{
                                                                             display: 'grid',
                                                                             gridTemplateColumns: '1fr 1fr',
                                                                             gap: 1,
                                                                             mb: 1
                                                                         }}>
-                                                                            {}
                                                                             <Box sx={{
                                                                                 p: 1,
                                                                                 background: 'rgba(46, 125, 50, 0.08)',
@@ -948,7 +943,6 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                 </Text>
                                                                             </Box>
 
-                                                                            {}
                                                                             <Box sx={{
                                                                                 p: 1,
                                                                                 background: 'rgba(124, 58, 237, 0.08)',
@@ -988,7 +982,6 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                 </Box>
                                                                             </Box>
 
-                                                                            {}
                                                                             {item.logoPosition ? (
                                                                                 <Box sx={{
                                                                                     p: 1,
@@ -1093,7 +1086,6 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                             )}
                                                                         </Box>
 
-                                                                        {}
                                                                         <Box sx={{
                                                                             pt: 1,
                                                                             borderTop: '1px solid #f1f5f9',
@@ -1125,8 +1117,8 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                             sx={{
                                                                                                 position: 'relative',
                                                                                                 overflow: 'hidden',
-                                                                                                height: '36px',
-                                                                                                width: '36px',
+                                                                                                height: '50px',
+                                                                                                width: '50px',
                                                                                                 border: '1px solid #e2e8f0',
                                                                                                 transition: 'all 0.2s ease',
                                                                                                 '&:hover': {
@@ -1138,15 +1130,15 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                             <DisplayImage
                                                                                                 imageUrl={image.url}
                                                                                                 alt={`Sample ${imgIndex + 1}`}
-                                                                                                width="36px"
-                                                                                                height="36px"
+                                                                                                width="50px"
+                                                                                                height="50px"
                                                                                             />
                                                                                         </Box>
                                                                                     ))}
                                                                                 </Box>
                                                                             ) : (
                                                                                 <Box sx={{
-                                                                                    height: '36px',
+                                                                                    height: '50px',
                                                                                 }}>
                                                                                     <Text style={{
                                                                                         fontSize: '10px',
@@ -1436,11 +1428,10 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                             sx={{
                                                                                                 position: 'relative',
                                                                                                 overflow: 'hidden',
-                                                                                                height: '36px',
-                                                                                                width: '36px',
+                                                                                                height: '50px',
+                                                                                                width: '50px',
                                                                                                 border: '1px solid #e2e8f0',
                                                                                                 transition: 'all 0.2s ease',
-                                                                                                boxSizing: 'border-box',
                                                                                                 '&:hover': {
                                                                                                     borderColor: '#f59e0b',
                                                                                                     transform: 'scale(1.05)'
@@ -1450,18 +1441,15 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                             <DisplayImage
                                                                                                 imageUrl={image.url}
                                                                                                 alt={`Sample ${imgIndex + 1}`}
-                                                                                                width="36px"
-                                                                                                height="36px"
+                                                                                                width="50px"
+                                                                                                height="50px"
                                                                                             />
                                                                                         </Box>
                                                                                     ))}
                                                                                 </Box>
                                                                             ) : (
                                                                                 <Box sx={{
-                                                                                    height: '36px',
-                                                                                    display: 'flex',
-                                                                                    alignItems: 'center',
-                                                                                    justifyContent: 'flex-start'
+                                                                                    height: '50px',
                                                                                 }}>
                                                                                     <Text style={{
                                                                                         fontSize: '10px',
@@ -1861,13 +1849,12 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                             sx={{
                                                                                                 position: 'relative',
                                                                                                 overflow: 'hidden',
-                                                                                                height: '36px',
-                                                                                                width: '36px',
+                                                                                                height: '50px',
+                                                                                                width: '50px',
                                                                                                 border: '1px solid #e2e8f0',
                                                                                                 transition: 'all 0.2s ease',
-                                                                                                boxSizing: 'border-box',
                                                                                                 '&:hover': {
-                                                                                                    borderColor: '#ec4899',
+                                                                                                    borderColor: '#f59e0b',
                                                                                                     transform: 'scale(1.05)'
                                                                                                 }
                                                                                             }}
@@ -1875,15 +1862,15 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                             <DisplayImage
                                                                                                 imageUrl={image.url}
                                                                                                 alt={`Sample ${imgIndex + 1}`}
-                                                                                                width="36px"
-                                                                                                height="36px"
+                                                                                                width="50px"
+                                                                                                height="50px"
                                                                                             />
                                                                                         </Box>
                                                                                     ))}
                                                                                 </Box>
                                                                             ) : (
                                                                                 <Box sx={{
-                                                                                    height: '36px',
+                                                                                    height: '50px',
                                                                                 }}>
                                                                                     <Text style={{
                                                                                         fontSize: '10px',
@@ -2173,11 +2160,10 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                             sx={{
                                                                                                 position: 'relative',
                                                                                                 overflow: 'hidden',
-                                                                                                height: '36px',
-                                                                                                width: '36px',
+                                                                                                height: '50px',
+                                                                                                width: '50px',
                                                                                                 border: '1px solid #e2e8f0',
                                                                                                 transition: 'all 0.2s ease',
-                                                                                                boxSizing: 'border-box',
                                                                                                 '&:hover': {
                                                                                                     borderColor: '#f59e0b',
                                                                                                     transform: 'scale(1.05)'
@@ -2187,18 +2173,15 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                                             <DisplayImage
                                                                                                 imageUrl={image.url}
                                                                                                 alt={`Sample ${imgIndex + 1}`}
-                                                                                                width="36px"
-                                                                                                height="36px"
+                                                                                                width="50px"
+                                                                                                height="50px"
                                                                                             />
                                                                                         </Box>
                                                                                     ))}
                                                                                 </Box>
                                                                             ) : (
                                                                                 <Box sx={{
-                                                                                    height: '36px',
-                                                                                    display: 'flex',
-                                                                                    alignItems: 'center',
-                                                                                    justifyContent: 'flex-start'
+                                                                                    height: '50px',
                                                                                 }}>
                                                                                     <Text style={{
                                                                                         fontSize: '10px',

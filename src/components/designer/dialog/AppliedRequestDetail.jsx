@@ -892,8 +892,8 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                                             sx={{
                                                                                                 position: 'relative',
                                                                                                 overflow: 'hidden',
-                                                                                                height: '36px',
-                                                                                                width: '36px',
+                                                                                                height: '50px',
+                                                                                                width: '50px',
                                                                                                 border: '1px solid #e2e8f0',
                                                                                                 transition: 'all 0.2s ease',
                                                                                                 boxSizing: 'border-box',
@@ -906,15 +906,15 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                                             <DisplayImage
                                                                                                 imageUrl={image.url}
                                                                                                 alt={`Sample ${imgIndex + 1}`}
-                                                                                                width="36px"
-                                                                                                height="36px"
+                                                                                                width="50px"
+                                                                                                height="50px"
                                                                                             />
                                                                                         </Box>
                                                                                     ))}
                                                                                 </Box>
                                                                             ) : (
                                                                                 <Box sx={{
-                                                                                    height: '36px',
+                                                                                    height: '50px',
                                                                                 }}>
                                                                                     <Text style={{
                                                                                         fontSize: '10px',
@@ -1234,8 +1234,8 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                                             sx={{
                                                                                                 position: 'relative',
                                                                                                 overflow: 'hidden',
-                                                                                                height: '36px',
-                                                                                                width: '36px',
+                                                                                                height: '50px',
+                                                                                                width: '50px',
                                                                                                 border: '1px solid #e2e8f0',
                                                                                                 transition: 'all 0.2s ease',
                                                                                                 boxSizing: 'border-box',
@@ -1248,15 +1248,15 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                                             <DisplayImage
                                                                                                 imageUrl={image.url}
                                                                                                 alt={`Sample ${imgIndex + 1}`}
-                                                                                                width="36px"
-                                                                                                height="36px"
+                                                                                                width="50px"
+                                                                                                height="50px"
                                                                                             />
                                                                                         </Box>
                                                                                     ))}
                                                                                 </Box>
                                                                             ) : (
                                                                                 <Box sx={{
-                                                                                    height: '36px',
+                                                                                    height: '50px',
                                                                                 }}>
                                                                                     <Text style={{
                                                                                         fontSize: '10px',
@@ -1649,8 +1649,8 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                                             sx={{
                                                                                                 position: 'relative',
                                                                                                 overflow: 'hidden',
-                                                                                                height: '36px',
-                                                                                                width: '36px',
+                                                                                                height: '50px',
+                                                                                                width: '50px',
                                                                                                 border: '1px solid #e2e8f0',
                                                                                                 transition: 'all 0.2s ease',
                                                                                                 boxSizing: 'border-box',
@@ -1663,15 +1663,15 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                                             <DisplayImage
                                                                                                 imageUrl={image.url}
                                                                                                 alt={`Sample ${imgIndex + 1}`}
-                                                                                                width="36px"
-                                                                                                height="36px"
+                                                                                                width="50px"
+                                                                                                height="50px"
                                                                                             />
                                                                                         </Box>
                                                                                     ))}
                                                                                 </Box>
                                                                             ) : (
                                                                                 <Box sx={{
-                                                                                    height: '36px',
+                                                                                    height: '50px',
                                                                                 }}>
                                                                                     <Text style={{
                                                                                         fontSize: '10px',
@@ -1991,8 +1991,8 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                                             sx={{
                                                                                                 position: 'relative',
                                                                                                 overflow: 'hidden',
-                                                                                                height: '36px',
-                                                                                                width: '36px',
+                                                                                                height: '50px',
+                                                                                                width: '50px',
                                                                                                 border: '1px solid #e2e8f0',
                                                                                                 transition: 'all 0.2s ease',
                                                                                                 boxSizing: 'border-box',
@@ -2005,15 +2005,15 @@ export default function AppliedRequestDetail({visible, onCancel, request, hideFo
                                                                                             <DisplayImage
                                                                                                 imageUrl={image.url}
                                                                                                 alt={`Sample ${imgIndex + 1}`}
-                                                                                                width="36px"
-                                                                                                height="36px"
+                                                                                                width="50px"
+                                                                                                height="50px"
                                                                                             />
                                                                                         </Box>
                                                                                     ))}
                                                                                 </Box>
                                                                             ) : (
                                                                                 <Box sx={{
-                                                                                    height: '36px',
+                                                                                    height: '50px',
                                                                                 }}>
                                                                                     <Text style={{
                                                                                         fontSize: '10px',
