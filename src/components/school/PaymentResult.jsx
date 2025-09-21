@@ -1,4 +1,4 @@
-import {Box, Container, Divider, Paper, Stack} from '@mui/material';
+import {Box, Container, Divider, Paper, Stack, Skeleton} from '@mui/material';
 import {Button, Typography} from 'antd';
 import {
     ArrowRightOutlined,
@@ -17,10 +17,148 @@ import {
 import {parseID} from "../../utils/ParseIDUtil.jsx";
 import {buyExtraRevision, pickQuotation} from "../../services/DesignService.jsx";
 import {approveQuotation, confirmDeliveryOrder} from "../../services/OrderService.jsx";
-import {createDesignTransaction, createDepositTransaction, createDepositWalletTransaction, createOrderTransaction} from "../../services/PaymentService.jsx";
+import {
+    createDepositTransaction,
+    createDepositWalletTransaction,
+    createDesignTransaction,
+    createOrderTransaction
+} from "../../services/PaymentService.jsx";
 import {emailType, sendEmail} from "../../services/EmailService.jsx";
 import {createShipping} from "../../services/ShippingService.jsx";
 import {useEffect, useState} from 'react';
+
+// Skeleton loading component
+const PaymentResultSkeleton = () => (
+    <Box sx={{
+        minHeight: '100vh',
+        backgroundColor: '#f8fafc',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        py: 4
+    }}>
+        <Container maxWidth="md">
+            <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4}}>
+                <Paper
+                    elevation={0}
+                    sx={{
+                        p: {xs: 3, md: 5},
+                        borderRadius: 4,
+                        textAlign: 'center',
+                        width: '100%',
+                        backgroundColor: 'white',
+                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+                    }}
+                >
+                    <Stack spacing={3} alignItems="center">
+                        {/* Icon skeleton */}
+                        <Skeleton variant="circular" width={80} height={80} />
+                        
+                        {/* Title skeleton */}
+                        <Skeleton variant="text" width={300} height={40} />
+                        
+                        {/* Description skeleton */}
+                        <Skeleton variant="text" width={500} height={24} />
+                        <Skeleton variant="text" width={400} height={24} />
+                        
+                        {/* Payment details skeleton */}
+                        <Box sx={{
+                            mt: 3,
+                            backgroundColor: 'white',
+                            borderRadius: 3,
+                            border: '1px solid #e2e8f0',
+                            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
+                            overflow: 'hidden',
+                            width: '100%'
+                        }}>
+                            <Box sx={{
+                                p: 4,
+                                background: 'linear-gradient(135deg, #52c41a 0%, #389e0d 100%)',
+                                color: 'white'
+                            }}>
+                                <Skeleton variant="rectangular" width="100%" height={60} sx={{bgcolor: 'rgba(255,255,255,0.2)'}} />
+                            </Box>
+                            
+                            <Box sx={{p: 4}}>
+                                <Box sx={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                                    gap: 3
+                                }}>
+                                    <Skeleton variant="rectangular" width="100%" height={80} />
+                                    <Skeleton variant="rectangular" width="100%" height={80} />
+                                </Box>
+                                
+                                <Box sx={{
+                                    mt: 4,
+                                    p: 3,
+                                    backgroundColor: '#f8fafc',
+                                    borderRadius: 2,
+                                    border: '1px solid #e2e8f0',
+                                    textAlign: 'center'
+                                }}>
+                                    <Skeleton variant="text" width="80%" height={24} />
+                                </Box>
+                            </Box>
+                        </Box>
+                        
+                        {/* Security badges skeleton */}
+                        <Box sx={{display: 'flex', gap: 3, mt: 2}}>
+                            <Skeleton variant="rectangular" width={120} height={24} />
+                            <Skeleton variant="rectangular" width={140} height={24} />
+                        </Box>
+                    </Stack>
+                </Paper>
+                
+                {/* Summary skeleton */}
+                <Paper
+                    elevation={0}
+                    sx={{
+                        p: {xs: 3, md: 4},
+                        borderRadius: 4,
+                        width: '100%',
+                        backgroundColor: 'white',
+                        border: '1px solid #e2e8f0',
+                        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)'
+                    }}
+                >
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 3}}>
+                        <Skeleton variant="circular" width={40} height={40} />
+                        <Skeleton variant="text" width={200} height={32} />
+                    </Box>
+                    
+                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                        {[1, 2, 3, 4].map((item) => (
+                            <Box key={item} sx={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                p: 2,
+                                backgroundColor: '#f8fafc',
+                                borderRadius: 2
+                            }}>
+                                <Skeleton variant="text" width={150} height={20} />
+                                <Skeleton variant="text" width={100} height={20} />
+                            </Box>
+                        ))}
+                    </Box>
+                </Paper>
+                
+                {/* Button skeleton */}
+                <Box sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 2,
+                    width: '100%',
+                    maxWidth: '400px',
+                    mb: 4
+                }}>
+                    <Skeleton variant="rectangular" width="100%" height={48} />
+                </Box>
+            </Box>
+        </Container>
+    </Box>
+);
 
 export default function PaymentResult() {
     const queryString = window.location.search;
@@ -32,6 +170,7 @@ export default function PaymentResult() {
         return localStorage.getItem(processedKey) === 'true';
     });
     const [isInitialRender, setIsInitialRender] = useState(true);
+    const [isFinished, setIsFinished] = useState(false);
 
     const vnpResponseCode = urlParams.get('vnp_ResponseCode');
     const vnpAmount = urlParams.get('vnp_Amount');
@@ -284,6 +423,8 @@ export default function PaymentResult() {
                     await handleFailedOrder();
                 } else if (quotationDetails) {
                     await handleFailedDesign();
+                } else if (hasWalletPayment && isWalletPayment){
+                    await handleFailedWallet();
                 }
             } else {
                 console.error('Email service returned non-200 status:', emailResponse?.status);
@@ -313,8 +454,10 @@ export default function PaymentResult() {
         const response = await approveQuotation(data);
         if (response && response.status === 201) {
             console.log('Deposit payment processed successfully');
+            setIsFinished(true)
         } else {
             console.error('Failed to process deposit payment:', response);
+            setIsFinished(true)
         }
     };
 
@@ -370,12 +513,15 @@ export default function PaymentResult() {
 
             if (response && response.status === 201) {
                 console.log('Order delivery confirmed successfully with shipping code:', shippingOrderCode);
+                setIsFinished(true)
             } else {
                 console.error('Failed to confirm order delivery:', response);
+                setIsFinished(true)
             }
 
         } catch (error) {
             console.error('Error in handleSuccessfulOrder:', error);
+            setIsFinished(true)
         }
     };
 
@@ -392,8 +538,10 @@ export default function PaymentResult() {
         if (response && response.status === 200) {
             console.log('Extra revisions purchased successfully');
             await new Promise(resolve => setTimeout(resolve, 1000));
+            setIsFinished(true)
         } else {
             console.error('Failed to purchase extra revisions');
+            setIsFinished(true)
         }
     };
 
@@ -420,8 +568,10 @@ export default function PaymentResult() {
         const response = await pickQuotation(data);
         if (response && response.status === 200) {
             console.log('Design quotation picked successfully');
+            setIsFinished(true)
         } else {
             console.error('Failed to pick design quotation');
+            setIsFinished(true)
         }
     };
 
@@ -448,12 +598,15 @@ export default function PaymentResult() {
 
             if (response && response.status === 201) {
                 console.log('Wallet top-up transaction created successfully');
+                setIsFinished(true)
             } else {
                 console.error('Failed to create wallet top-up transaction:', response);
+                setIsFinished(true)
             }
 
         } catch (error) {
             console.error('Error in handleSuccessfulWallet:', error);
+            setIsFinished(true)
         }
     };
 
@@ -471,8 +624,10 @@ export default function PaymentResult() {
         );
         if (response && response.status === 201) {
             console.log('Failed deposit payment transaction recorded successfully');
+            setIsFinished(true)
         } else {
             console.error('Failed to record deposit payment transaction:', response);
+            setIsFinished(true)
         }
     };
 
@@ -490,8 +645,10 @@ export default function PaymentResult() {
         );
         if (response && response.status === 201) {
             console.log('Failed order/deposit payment transaction recorded successfully');
+            setIsFinished(true)
         } else {
             console.error('Failed to record order/deposit payment transaction:', response);
+            setIsFinished(true)
         }
     };
 
@@ -512,8 +669,10 @@ export default function PaymentResult() {
         );
         if (response && response.status === 201) {
             console.log('Failed design payment transaction recorded successfully');
+            setIsFinished(true)
         } else {
             console.error('Failed to record design payment transaction:', response);
+            setIsFinished(true)
         }
     };
 
@@ -540,12 +699,15 @@ export default function PaymentResult() {
 
             if (response && response.status === 201) {
                 console.log('Failed wallet top-up transaction recorded successfully');
+                setIsFinished(true)
             } else {
                 console.error('Failed to record wallet top-up transaction:', response);
+                setIsFinished(true)
             }
 
         } catch (error) {
             console.error('Error in handleFailedWallet:', error);
+            setIsFinished(true)
         }
     };
 
@@ -590,7 +752,7 @@ export default function PaymentResult() {
     }, [success, quotationDetails, hasProcessed, isProcessing, quotation, request, isOrderPayment, quotationId, isRevisionPurchase, revisionPurchaseDetails, walletDetails, isPaymentFromWallet]);
 
     return (
-        <Box sx={{
+        !isFinished ? <PaymentResultSkeleton /> : <Box sx={{
             minHeight: '100vh',
             backgroundColor: '#f8fafc',
             display: 'flex',
