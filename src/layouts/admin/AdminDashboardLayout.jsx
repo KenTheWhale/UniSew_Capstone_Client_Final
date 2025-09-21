@@ -164,6 +164,32 @@ function Navbar({activeMenu, navigate}) {
                             borderRadius: 2,
                             mx: 1,
                             my: 0.5,
+                            color: activeMenu === 'withdraw' ? "#FFFFFF" : "#495057",
+                            p: 2,
+                            cursor: "pointer",
+                            transition: "all 0.3s ease",
+                            background: activeMenu === 'withdraw' ? "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)" : "transparent",
+                            "&:hover": {
+                                background: "linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)",
+                                color: "#FFFFFF",
+                                transform: "translateY(-1px)",
+                            },
+                        }}
+                        onClick={() => navigate("/admin/withdraw")}
+                    >
+                        <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
+                            <Receipt sx={{color: "inherit", fontSize: 20}}/>
+                            <Typography variant="body2" sx={{fontWeight: 500}}>
+                                Withdraw Requests
+                            </Typography>
+                        </Box>
+                    </Box>
+
+                    <Box
+                        sx={{
+                            borderRadius: 2,
+                            mx: 1,
+                            my: 0.5,
                             color: activeMenu === 'reports' ? "#FFFFFF" : "#495057",
                             p: 2,
                             cursor: "pointer",
@@ -353,6 +379,8 @@ export default function AdminDashboardLayout() {
             setActiveMenu('platform-settings');
         } else if (pathname.includes('/admin/requests')) {
             setActiveMenu('requests');
+        } else if (pathname.includes('/admin/withdraw')) {
+            setActiveMenu('withdraw');
         } else {
             setActiveMenu('');
         }

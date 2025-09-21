@@ -1,4 +1,5 @@
 import axiosClient from "../configs/APIConfig.jsx";
+import axios from "axios";
 
 export const signout = async () => {
     const response = await axiosClient.post("/account/logout");
@@ -60,5 +61,42 @@ export const getPartnerProfileForQuotation = async (partnerId) => {
     const response = await axiosClient.post("/account/partner/profile", {
         partnerId: partnerId
     })
+    return response || null;
+}
+
+export const getWithdrawRequests = async () => {
+    const response = await axiosClient.post("/account/withdraw/my-list")
+    return response || null;
+}
+
+export const createWithdrawRequest = async (data) => {
+    const response = await axiosClient.post("/account/withdraw", data)
+    return response || null;
+}
+
+export const getAllWithdrawRequest = async () => {
+    const response = await axiosClient.get("/account/withdraw/all-list")
+    return response || null;
+}
+
+export const getAllBanks = async () => {
+    const response = await axios.get("https://api.vietqr.io/v2/banks")
+    return response || null;
+}
+
+export const createQR = async (data) => {
+    const response = await axios.post("https://api.vietqr.io/v2/generate", data,
+        {
+            headers: {
+                "x-client-id": '8d53c315-01c4-4439-a547-35cd7c173449',
+                "x-api-key": '989fe7f4-9826-415b-89b1-29280d143ba6',
+                'Content-Type': 'application/json'
+            }
+        })
+    return response || null;
+}
+
+export const updateWithdrawRequestStatus = async (data) => {
+    const response = await axiosClient.put("/account/withdraw/decision", data)
     return response || null;
 }

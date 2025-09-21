@@ -568,15 +568,6 @@ export default function AdminDashboard() {
         setActiveTab(newValue);
     };
 
-    const handleRefresh = () => {
-        console.log('Manual refresh clicked for tab:', activeTab);
-        if (activeTab === 0) {
-            fetchAccountStats();
-        } else {
-            fetchTransactionStats();
-        }
-    };
-
     if (loading && !statsData && !transactionData) {
         return (
             <Box sx={{
