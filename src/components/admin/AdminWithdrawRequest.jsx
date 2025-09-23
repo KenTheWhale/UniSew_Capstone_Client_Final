@@ -195,7 +195,7 @@ export default function AdminWithdrawRequest() {
             
             const data = {
                 withdrawId: selectedRequest.id,
-                decision: decision,
+                approved: decision === 'approve',
                 evidenceImage: decision === 'approve' ? null : null // Will be set below if approved
             };
 
