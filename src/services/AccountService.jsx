@@ -65,7 +65,7 @@ export const getPartnerProfileForQuotation = async (partnerId) => {
 }
 
 export const getWithdrawRequests = async () => {
-    const response = await axiosClient.post("/account/withdraw/my-list")
+    const response = await axiosClient.post("/account/withdraw/list")
     return response || null;
 }
 
@@ -75,7 +75,7 @@ export const createWithdrawRequest = async (data) => {
 }
 
 export const getAllWithdrawRequest = async () => {
-    const response = await axiosClient.get("/account/withdraw/all-list")
+    const response = await axiosClient.get("/account/withdraw/list")
     return response || null;
 }
 
@@ -97,6 +97,6 @@ export const createQR = async (data) => {
 }
 
 export const updateWithdrawRequestStatus = async (data) => {
-    const response = await axiosClient.put("/account/withdraw/decision", data)
+    const response = await axiosClient.put("/account/withdraw", data)
     return response || null;
 }
