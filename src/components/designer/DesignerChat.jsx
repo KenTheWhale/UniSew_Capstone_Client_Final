@@ -428,17 +428,13 @@ function DeliveryDetailModal({visible, onCancel, delivery, revision, showAddRevi
 
                     <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
                         {(() => {
-                            const items = delivery.deliveryItems || delivery.items || [];
+                            const items = delivery.deliveryItems?.sort((i1,i2) => i1.id - i2.id) || delivery.items?.sort((i1,i2) => i1.id - i2.id) || [];
                             const boyItems = items.filter(item =>
                                 item.designItem?.gender?.toLowerCase() === 'boy'
                             ) || [];
                             const girlItems = items.filter(item =>
                                 item.designItem?.gender?.toLowerCase() === 'girl'
                             ) || [];
-                            const otherItems = items.filter(item => {
-                                const gender = item.designItem?.gender?.toLowerCase();
-                                return gender !== 'boy' && gender !== 'girl';
-                            }) || [];
 
                             return (
                                 <>
@@ -1759,14 +1755,16 @@ function DeliverySubmissionModal({
                             logoWidth: prevItem.baseLogoWidth || prevItem.logoWidth || 0,
                             frontUrl: prevItem.frontImageUrl,
                             backUrl: prevItem.backImageUrl,
-                            buttonQuantity: prevItem.buttonQuantity || 0,
-                            buttonHoles: prevItem.buttonHoles || 0,
-                            buttonLength: prevItem.buttonLength || 0,
+                            // Map legacy API fields -> form state
+                            buttonQuantity: (prevItem.buttonQuantity ?? prevItem.buttonQty) || 0,
+                            buttonHoles: (prevItem.buttonHoles ?? prevItem.buttonHoleQty) || 0,
+                            buttonLength: (prevItem.buttonLength ?? prevItem.buttonHeight) || 0,
                             buttonWidth: prevItem.buttonWidth || 0,
                             buttonColor: prevItem.buttonColor || '#FFFFFF',
                             buttonNote: prevItem.buttonNote || '',
-                            attachingTechnique: prevItem.attachingTechnique || '',
-                            techniqueNote: prevItem.techniqueNote || ''
+                            attachingTechnique: (prevItem.attachingTechnique ?? prevItem.logoAttachingTechnique) || '',
+                            techniqueNote: (prevItem.techniqueNote ?? prevItem.logoNote) || '',
+                            hasZipper: prevItem.zipper || false
                         };
                     }
                 });
@@ -2195,7 +2193,7 @@ function DeliverySubmissionModal({
                                         <Box sx={{display: 'flex', alignItems: 'center', gap: 2, width: '100%'}}>
                                             {getItemIcon(item.type)}
                                             <Typography.Title level={5} style={{margin: 0}}>
-                                                {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {formatCategory(item.category)} - {item.id}
+                                                {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {formatCategory(item.category)}
                                             </Typography.Title>
                                             <Tag color="blue" style={{marginLeft: 'auto'}}>Boy</Tag>
                                         </Box>
@@ -2725,7 +2723,7 @@ function DeliverySubmissionModal({
                                         <Box sx={{display: 'flex', alignItems: 'center', gap: 2, width: '100%'}}>
                                             {getItemIcon(item.type)}
                                             <Typography.Title level={5} style={{margin: 0}}>
-                                                {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {formatCategory(item.category)} - {item.id}
+                                                {item.type.charAt(0).toUpperCase() + item.type.slice(1)} - {formatCategory(item.category)}
                                             </Typography.Title>
                                             <Tag color="magenta" style={{marginLeft: 'auto'}}>Girl</Tag>
                                         </Box>

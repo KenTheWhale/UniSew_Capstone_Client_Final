@@ -31,8 +31,8 @@ import {
     BankOutlined,
     CalendarOutlined,
     CheckCircleOutlined,
-    CloseCircleOutlined,
     ClockCircleOutlined,
+    CloseCircleOutlined,
     CreditCardOutlined,
     DollarOutlined,
     EditOutlined,
@@ -175,13 +175,15 @@ export default function SchoolProfile() {
             'order': 'Order Payment',
             'order_return': 'Order Refund',
             'design_return': 'Design Refund',
-            'wallet': 'Wallet Top-up'
+            'wallet': 'Wallet Top-up',
+            'withdraw': 'Withdraw'
         };
         return typeMap[type] || type;
     };
 
     const getTransactionIcon = (type, isReceiver) => {
         if (type === 'order_return') return <ArrowDownOutlined/>;
+        if (type === 'withdraw') return <ArrowUpOutlined/>;
         if (isReceiver) return <ArrowDownOutlined/>;
         return <ArrowUpOutlined/>;
     };
@@ -966,7 +968,13 @@ export default function SchoolProfile() {
 
                             <Grid container spacing={3}>
                                 <Grid sx={{width: '100%'}}>
-                                    <Box sx={{display: 'flex', gap: 3, width: '100%', justifyContent: 'space-between', alignItems: 'stretch'}}>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        gap: 3,
+                                        width: '100%',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'stretch'
+                                    }}>
                                         <Box sx={{flex: 1}}>
                                             <Card
                                                 elevation={6}
@@ -1252,7 +1260,7 @@ export default function SchoolProfile() {
                                                                 width: 48,
                                                                 height: 48,
                                                                 borderRadius: '50%',
-                                                                backgroundColor: isReceiver ? '#dcfce7' : '#fef3c7'
+                                                                backgroundColor: isReceiver && transaction.paymentType !== 'withdraw' ? '#dcfce7' : '#fef3c7'
                                                             }}>
                                                                 {getTransactionIcon(transaction.paymentType, isReceiver)}
                                                             </Box>
@@ -1268,7 +1276,7 @@ export default function SchoolProfile() {
                                                                     color: '#64748b',
                                                                     fontSize: '14px'
                                                                 }}>
-                                                                    {isReceiver ? 'Received from' : 'Sent to'} {otherParty?.business || 'Unknown'}
+                                                                    {isReceiver && (transaction.paymentType !== 'withdraw' && transaction.paymentType !== 'wallet') ? 'Received from' : transaction.paymentType === 'withdraw' || transaction.paymentType === 'wallet' ? 'Proceed by' : 'Sent to'} {transaction.paymentType === 'withdraw' || transaction.paymentType === 'wallet' ? 'UniSew' : otherParty?.business || 'Unknown'}
                                                                 </Typography>
                                                             </Box>
                                                         </Box>
@@ -1276,13 +1284,13 @@ export default function SchoolProfile() {
                                                         <Box sx={{textAlign: 'right'}}>
                                                             <Typography variant="h6" sx={{
                                                                 fontWeight: 700,
-                                                                color: isReceiver ? '#10b981' : '#ef4444',
+                                                                color: isReceiver && transaction.paymentType !== 'withdraw' ? '#10b981' : '#ef4444',
                                                                 fontSize: '17px'
                                                             }}>
-                                                                {isReceiver ? '+' : '-'}{transaction.serviceFee > 0 ? formatCurrency(transaction.amount + transaction.serviceFee) : formatCurrency(transaction.amount)}
+                                                                {isReceiver && transaction.paymentType !== 'withdraw' ? '+' : '-'}{transaction.serviceFee > 0 ? formatCurrency(transaction.amount + transaction.serviceFee) : formatCurrency(transaction.amount)}
                                                             </Typography>
                                                             <Chip
-                                                                label={transaction.status  === 'success' ? 'Successful' : 'Failed'}
+                                                                label={transaction.status === 'success' ? 'Successful' : 'Failed'}
                                                                 size="small"
                                                                 sx={{
                                                                     backgroundColor: transaction.status === 'success' ? '#dcfce7' : '#fee2e2',
@@ -1296,7 +1304,11 @@ export default function SchoolProfile() {
                                                                 if (newBalance === undefined || newBalance === null || newBalance === -1) return null;
                                                                 const isPending = transaction.balanceType === 'pending';
                                                                 return (
-                                                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 0.5 }}>
+                                                                    <Box sx={{
+                                                                        display: 'flex',
+                                                                        justifyContent: 'flex-end',
+                                                                        mt: 0.5
+                                                                    }}>
                                                                         <Chip
                                                                             size="small"
                                                                             label={`${isPending ? 'Balance' : 'Balance'}: ${formatCurrency(newBalance)}`}
@@ -1324,16 +1336,21 @@ export default function SchoolProfile() {
                                                         borderTop: '1px solid #f1f5f9'
                                                     }}>
                                                         <Box sx={{display: 'flex', gap: 3}}>
-                                                            {transaction.itemId && transaction.itemId !== 0 && (
+                                                            {transaction.itemId && transaction.itemId !== 0 ? (
                                                                 <Box>
                                                                     <Typography variant="body2"
-                                                                                sx={{color: '#64748b', fontSize: '12px'}}>
-                                                                        {transaction.paymentType === 'design' || transaction.paymentType === 'design_return' ? 'Request ID' : 'Order ID'}
+                                                                                sx={{
+                                                                                    color: '#64748b',
+                                                                                    fontSize: '12px'
+                                                                                }}>
+                                                                        {transaction.paymentType === 'design' || transaction.paymentType === 'design_return' ? 'Request ID' : transaction.paymentType === 'withdraw' ? 'Withdraw ID' : 'Order ID'}
                                                                     </Typography>
                                                                     <Chip
                                                                         label={transaction.paymentType === 'design' || transaction.paymentType === 'design_return' ?
-                                                                            parseID(transaction.itemId, 'dr') : 
-                                                                            parseID(transaction.itemId, 'ord')}
+                                                                            parseID(transaction.itemId, 'dr') :
+                                                                            transaction.paymentType === 'withdraw' ?
+                                                                                parseID(transaction.itemId, 'wdr') :
+                                                                                parseID(transaction.itemId, 'ord')}
                                                                         size="small"
                                                                         sx={{
                                                                             backgroundColor: transaction.paymentType === 'design' || transaction.paymentType === 'design_return' ? '#f3e8ff' : '#e0f2fe',
@@ -1344,7 +1361,7 @@ export default function SchoolProfile() {
                                                                         }}
                                                                     />
                                                                 </Box>
-                                                            )}
+                                                            ) : null}
                                                             {transaction.serviceFee > 0 && (
                                                                 <Box>
                                                                     <Typography variant="body2" sx={{
@@ -1363,22 +1380,23 @@ export default function SchoolProfile() {
                                                                     </Typography>
                                                                 </Box>
                                                             )}
-                                                            {transaction.paymentType !== 'design_return' && transaction.paymentType !== 'order_return' && <Box>
-                                                                <Typography variant="body2" sx={{
-                                                                    color: '#64748b',
-                                                                    fontSize: '12px'
-                                                                }}>
-                                                                    Paid from
-                                                                </Typography>
-                                                                <Typography variant="body2" sx={{
-                                                                    color: '#8900ff',
-                                                                    fontWeight: 600,
-                                                                    fontSize: '13px',
-                                                                    mt: '0.5vh'
-                                                                }}>
-                                                                    {transaction.paymentGatewayCode.includes('w') ? 'Wallet' : "VNPay"}
-                                                                </Typography>
-                                                            </Box>}
+                                                            {transaction.paymentType !== 'design_return' && transaction.paymentType !== 'order_return' &&
+                                                                <Box>
+                                                                    <Typography variant="body2" sx={{
+                                                                        color: '#64748b',
+                                                                        fontSize: '12px'
+                                                                    }}>
+                                                                        Paid from
+                                                                    </Typography>
+                                                                    <Typography variant="body2" sx={{
+                                                                        color: '#8900ff',
+                                                                        fontWeight: 600,
+                                                                        fontSize: '13px',
+                                                                        mt: '0.5vh'
+                                                                    }}>
+                                                                        {transaction.paymentGatewayCode.includes('w') ? 'Wallet' : transaction.paymentGatewayCode.includes('q') ? 'UniSew' : "VNPay"}
+                                                                    </Typography>
+                                                                </Box>}
                                                         </Box>
 
                                                         <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
@@ -1651,16 +1669,16 @@ export default function SchoolProfile() {
                     alignItems: 'center',
                     justifyContent: 'space-between'
                 }}>
-                    <Box sx={{ flex: 1 }} />
+                    <Box sx={{flex: 1}}/>
                     <IconButton
                         onClick={handleWalletTopUpClose}
-                        sx={{ color: 'white' }}
+                        sx={{color: 'white'}}
                     >
-                        <CloseCircleOutlined />
+                        <CloseCircleOutlined/>
                     </IconButton>
                 </DialogTitle>
-                <DialogContent sx={{ p: 0 }}>
-                    <WalletTopUp />
+                <DialogContent sx={{p: 0}}>
+                    <WalletTopUp/>
                 </DialogContent>
             </Dialog>
         </Box>

@@ -1706,6 +1706,7 @@ export default function MilestoneManagement() {
                                 value={newPhase.name}
                                 onChange={(e) => setNewPhase({...newPhase, name: e.target.value})}
                                 fullWidth
+                                required
                                 placeholder="e.g., Cutting, Sewing, Quality Check"
                                 sx={{
                                     '& .MuiOutlinedInput-root': {
@@ -1718,6 +1719,7 @@ export default function MilestoneManagement() {
                                 value={newPhase.description}
                                 onChange={(e) => setNewPhase({...newPhase, description: e.target.value})}
                                 fullWidth
+                                required
                                 multiline
                                 rows={3}
                                 placeholder="Describe what this phase involves..."
