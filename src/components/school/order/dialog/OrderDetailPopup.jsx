@@ -463,10 +463,6 @@ export default function OrderDetailPopup({open, onClose, order}) {
         return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
     };
 
-    const formatPrice = (price) => {
-        return price.toLocaleString('vi-VN') + ' VND';
-    };
-
     const calculateServiceFee = (price) => {
         return Math.round(price * (businessConfig?.serviceRate || 0));
     };
@@ -613,21 +609,9 @@ export default function OrderDetailPopup({open, onClose, order}) {
         return result;
     };
 
-    const items = groupItemsByCategory(order.orderDetails || []);
-
-    const handleViewImages = (groupedItem) => {
-        setSelectedItemImages(groupedItem);
-        setImagesDialogOpen(true);
-    };
-
     const handleCloseImagesDialog = () => {
         setImagesDialogOpen(false);
         setSelectedItemImages(null);
-    };
-
-    const handleOpenQuantityDetails = (groupedItem) => {
-        setSelectedQuantityDetails(groupedItem);
-        setShowQuantityDetailsDialog(true);
     };
 
     const handleCloseQuantityDetails = () => {
@@ -1278,8 +1262,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                     const rate = (selectedQuotation.depositRate || 50) / 100;
                                                     if (order.status === 'pending') {
                                                         const depositAmount = Math.round(subtotal * rate + fee);
-                                                        const remaining = Math.max(0, totalAmount - depositAmount);
-                                                        return remaining.toLocaleString('vi-VN') + ' VND';
+                                                        return depositAmount.toLocaleString('vi-VN') + ' VND';
                                                     }
                                                     return totalAmount.toLocaleString('vi-VN') + ' VND';
                                                 })()}
@@ -1590,7 +1573,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                     <TableChartIcon style={{color: '#1976d2', fontSize: '20px'}}/>
                                     Order Detail Table
                                 </Typography>
-                                <OrderDetailTable detail={order.orderDetails}/>
+                                <OrderDetailTable order={order}/>
                             </Box>
                         </Box>
                     </Box>)}

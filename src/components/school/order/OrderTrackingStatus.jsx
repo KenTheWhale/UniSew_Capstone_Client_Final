@@ -2704,7 +2704,7 @@ export default function OrderTrackingStatus() {
                                                                 fontWeight: 700,
                                                                 color: isReceiver ? '#10b981' : '#ef4444'
                                                             }}>
-                                                                {isReceiver ? '+' : '-'}{formatCurrency(transaction.amount)}
+                                                                {isReceiver ? '+' : '-'}{formatCurrency(transaction.amount + transaction.serviceFee)}
                                                             </Typography>
                                                             <Chip
                                                                 label={isSuccess ? 'Successful' : 'Failed'}
@@ -2796,19 +2796,6 @@ export default function OrderTrackingStatus() {
                                                                     mt: '0.5vh'
                                                                 }}>
                                                                     {transaction.paymentGatewayCode?.includes('w') ? 'Wallet' : 'VNPay'}
-                                                                </Typography>
-                                                            </Box>
-                                                            <Box>
-                                                                <Typography variant="body2" sx={{color: '#64748b', fontSize: '12px'}}>
-                                                                    To receiver
-                                                                </Typography>
-                                                                <Typography variant="body2" sx={{
-                                                                    color: '#5096de',
-                                                                    fontWeight: 600,
-                                                                    fontSize: '13px',
-                                                                    mt: '0.5vh'
-                                                                }}>
-                                                                    {transaction.balanceType === 'pending' ? 'Pending balance' : transaction.balanceType === 'balance' ? 'Balance' : 'N/A'}
                                                                 </Typography>
                                                             </Box>
                                                         </Box>
@@ -3463,7 +3450,7 @@ export default function OrderTrackingStatus() {
                         )}
 
                         <Box>
-                            <OrderDetailTable detail={orderDetail.orderDetails} />
+                            <OrderDetailTable order={orderDetai} />
                         </Box>
                     </CardContent>
                 </Card>
