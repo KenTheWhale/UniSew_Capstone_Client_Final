@@ -1496,7 +1496,7 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                         </Box>
                                     ) : (
                                         <OrderDetailTable
-                                            detail={mergedOrderData.orderDetails}
+                                            order={mergedOrderData}
                                             garmentQuotation={true}
                                             orderId={mergedOrderData.id}
                                             onTotalPriceChange={(v) => setComputedTotalPrice(v || 0)}

@@ -39,8 +39,7 @@ import {
     MailOutlined,
     PhoneOutlined,
     StarOutlined,
-    UserOutlined,
-    WalletOutlined
+    UserOutlined
 } from '@ant-design/icons';
 import {getPartnerProfile, updatePartnerProfile} from '../../../services/AccountService.jsx';
 import {getBanks} from '../../../services/ShippingService.jsx';
@@ -151,6 +150,7 @@ export default function DesignerProfile() {
         try {
             return dayjs(dateString).locale('vi').format('DD/MM/YYYY');
         } catch (error) {
+            console.log('Error format date:', error);
             return dateString;
         }
     };
@@ -171,24 +171,15 @@ export default function DesignerProfile() {
             'deposit': 'Order Deposit',
             'order': 'Order Payment',
             'order_return': 'Order Refund',
-            'wallet': 'Wallet Top-up'
+            'wallet': 'Wallet Top-up',
+            'withdraw': 'Withdraw'
         };
         return typeMap[type] || type;
     };
 
-    const getPaymentTypeColor = (type) => {
-        const colorMap = {
-            'design': '#9333ea',
-            'deposit': '#0ea5e9',
-            'order': '#10b981',
-            'order_return': '#f59e0b',
-            'wallet': '#64748b'
-        };
-        return colorMap[type] || '#64748b';
-    };
-
     const getTransactionIcon = (type, isReceiver) => {
         if (type === 'order_return') return <ArrowUpOutlined/>;
+        if (type === 'withdraw') return <ArrowUpOutlined/>;
         if (isReceiver) return <ArrowDownOutlined/>;
         return <ArrowUpOutlined/>;
     };
@@ -1036,7 +1027,13 @@ export default function DesignerProfile() {
 
                             <Grid container spacing={3}>
                                 <Grid sx={{width: '100%'}}>
-                                    <Box sx={{display: 'flex', gap: 3, width: '100%', justifyContent: 'space-between', alignItems: 'stretch'}}>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        gap: 3,
+                                        width: '100%',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'stretch'
+                                    }}>
                                         <Box sx={{flex: 1}}>
                                             <Card
                                                 elevation={6}
@@ -1291,9 +1288,14 @@ export default function DesignerProfile() {
                                                     minHeight: 'max-content',
                                                 }}
                                             >
-                                                <CardContent sx={{ p: 4, minHeight: 'max-content' }}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                <CardContent sx={{p: 4, minHeight: 'max-content'}}>
+                                                    <Box sx={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'space-between',
+                                                        mb: 3
+                                                    }}>
+                                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                                                             <Box sx={{
                                                                 display: 'flex',
                                                                 alignItems: 'center',
@@ -1301,7 +1303,7 @@ export default function DesignerProfile() {
                                                                 width: 48,
                                                                 height: 48,
                                                                 borderRadius: '50%',
-                                                                backgroundColor: isReceiver ? '#dcfce7' : '#fef3c7'
+                                                                backgroundColor: isReceiver && transaction.paymentType !== 'withdraw' ? '#dcfce7' : '#fef3c7'
                                                             }}>
                                                                 {getTransactionIcon(transaction.paymentType, isReceiver)}
                                                             </Box>
@@ -1317,7 +1319,7 @@ export default function DesignerProfile() {
                                                                     color: '#64748b',
                                                                     fontSize: '14px'
                                                                 }}>
-                                                                    {isReceiver ? 'Received from' : 'Sent to'} {otherParty?.business || 'Unknown'}
+                                                                    {isReceiver && (transaction.paymentType !== 'withdraw' && transaction.paymentType !== 'wallet') ? 'Received from' : transaction.paymentType === 'withdraw' || transaction.paymentType === 'wallet' ? 'Proceed by' : 'Sent to'} {transaction.paymentType === 'withdraw' || transaction.paymentType === 'wallet' ? 'UniSew' : otherParty?.business || 'Unknown'}
                                                                 </Typography>
                                                             </Box>
                                                         </Box>
@@ -1325,10 +1327,10 @@ export default function DesignerProfile() {
                                                         <Box sx={{textAlign: 'right'}}>
                                                             <Typography variant="h6" sx={{
                                                                 fontWeight: 700,
-                                                                color: isReceiver ? '#10b981' : '#ef4444',
+                                                                color: isReceiver && transaction.paymentType !== 'withdraw' ? '#10b981' : '#ef4444',
                                                                 fontSize: '17px'
                                                             }}>
-                                                                {isReceiver ? '+' : '-'}{formatCurrency(transaction.amount)}
+                                                                {isReceiver && transaction.paymentType !== 'withdraw' ? '+' : '-'}{formatCurrency(transaction.amount)}
                                                             </Typography>
                                                             <Chip
                                                                 label={transaction.status}
@@ -1345,7 +1347,11 @@ export default function DesignerProfile() {
                                                                 if (newBalance === undefined || newBalance === null || newBalance === -1) return null;
                                                                 const isPending = transaction.balanceType === 'pending';
                                                                 return (
-                                                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 0.5 }}>
+                                                                    <Box sx={{
+                                                                        display: 'flex',
+                                                                        justifyContent: 'flex-end',
+                                                                        mt: 0.5
+                                                                    }}>
                                                                         <Chip
                                                                             size="small"
                                                                             label={`${isPending ? 'Pending' : 'Balance'}: ${formatCurrency(newBalance)}`}
@@ -1375,13 +1381,18 @@ export default function DesignerProfile() {
                                                             {transaction.itemId && transaction.itemId !== 0 && (
                                                                 <Box>
                                                                     <Typography variant="body2"
-                                                                                sx={{color: '#64748b', fontSize: '12px'}}>
-                                                                        {transaction.paymentType === 'design' ? 'Request ID' : 'Order ID'}
+                                                                                sx={{
+                                                                                    color: '#64748b',
+                                                                                    fontSize: '12px'
+                                                                                }}>
+                                                                        {transaction.paymentType === 'design' || transaction.paymentType === 'design_return' ? 'Request ID' : transaction.paymentType === 'withdraw' ? 'Withdraw ID' : 'Order ID'}
                                                                     </Typography>
                                                                     <Chip
                                                                         label={transaction.paymentType === 'design' ?
                                                                             parseID(transaction.itemId, 'dr') :
-                                                                            parseID(transaction.itemId, 'ord')}
+                                                                            transaction.paymentType === 'withdraw' ?
+                                                                                parseID(transaction.itemId, 'wdr') :
+                                                                                parseID(transaction.itemId, 'ord')}
                                                                         size="small"
                                                                         sx={{
                                                                             backgroundColor: transaction.paymentType === 'design' ? '#f3e8ff' : '#e0f2fe',
@@ -1406,7 +1417,7 @@ export default function DesignerProfile() {
                                                                     fontSize: '13px',
                                                                     mt: '0.5vh'
                                                                 }}>
-                                                                    {transaction.paymentGatewayCode.includes('w') ? 'Wallet' : "VNPay"}
+                                                                    {transaction.paymentGatewayCode.includes('w') ? 'Wallet' : transaction.paymentGatewayCode.includes('q') ? 'UniSew' : "VNPay"}
                                                                 </Typography>
                                                             </Box>
                                                             <Box>

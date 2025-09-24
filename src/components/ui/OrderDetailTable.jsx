@@ -3,10 +3,15 @@ import '../../styles/OrderDetailTable.css';
 import DisplayImage from './DisplayImage.jsx';
 import {getSizes} from '../../services/OrderService.jsx';
 import {getGarmentFabricForQuotation} from '../../services/SystemService.jsx';
+import DeliveryDetailModal from '../school/design/dialog/DeliveryDetailModal.jsx';
+import {Button} from '@mui/material';
+import {DesignServices as DesignServicesIcon} from '@mui/icons-material';
 
-export default function OrderDetailTable({detail, garmentQuotation = false, orderId = 0, onTotalPriceChange}) {
+export default function OrderDetailTable({order, garmentQuotation = false, orderId = 0, onTotalPriceChange}) {
+    const detail = order?.orderDetails;
     const [sizeData, setSizeData] = useState([]);
     const [quotationData, setQuotationData] = useState({totalPrice: 0, detailMap: {}});
+    const [showDesignDetailModal, setShowDesignDetailModal] = useState(false);
 
     // Get size data from API
     useEffect(() => {
@@ -256,8 +261,60 @@ export default function OrderDetailTable({detail, garmentQuotation = false, orde
             <div className="order-detail-table-container">
                 <div className="table-header">
                     <h3 style={{color: '#1976d2'}}>Order Details</h3>
-                    <div className="summary-info">
-                        <span style={{backgroundColor: '#e3f2fd', color: '#1976d2', border: '1px solid #1976d2'}}>Total items: {detail.length}</span>
+                    <div className="summary-info" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}>
+                        <span style={{
+                            backgroundColor: '#e3f2fd', 
+                            color: '#1976d2', 
+                            border: '1px solid #1976d2',
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            fontSize: '13px',
+                            fontWeight: '600',
+                            display: 'flex',
+                            alignItems: 'center',
+                            height: '32px'
+                        }}>
+                            Total items: {detail.length}
+                        </span>
+                        {order?.selectedDesign && (
+                            <button
+                                onClick={() => {
+                                    console.log('Order data:', order);
+                                    console.log('Selected design:', order?.selectedDesign);
+                                    setShowDesignDetailModal(true);
+                                }}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    padding: '6px 12px',
+                                    backgroundColor: 'transparent',
+                                    border: '1px solid #1976d2',
+                                    borderRadius: '6px',
+                                    color: '#1976d2',
+                                    fontSize: '13px',
+                                    fontWeight: '600',
+                                    cursor: 'pointer',
+                                    fontFamily: 'inherit',
+                                    whiteSpace: 'nowrap',
+                                    transition: 'all 0.2s ease',
+                                    height: '32px'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.target.style.backgroundColor = 'rgba(25, 118, 210, 0.1)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.target.style.backgroundColor = 'transparent';
+                                }}
+                            >
+                                <DesignServicesIcon style={{ fontSize: '16px' }}/>
+                                View Design Detail
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -287,7 +344,7 @@ export default function OrderDetailTable({detail, garmentQuotation = false, orde
                             const price = (garmentQuotation && orderId !== 0) ? quotationData.detailMap[item.id] : null;
                             return (
                                 <tr key={`${designItem.type}-${designItem.id}-${index}`} className="data-row">
-                                    <td className="text-center">{item.id}</td>
+                                    <td className="text-center">{index+1}</td>
                                     <td className="image-cell">
                                         <div className="product-images">
                                             <div className="image-item">
@@ -380,7 +437,7 @@ export default function OrderDetailTable({detail, garmentQuotation = false, orde
                                             borderRadius: 999,
                                             padding: '4px 10px',
                                             fontWeight: 700
-                                        }}>{detail.reduce((total, item) => total + (item.quantity || 0), 0)}</span>
+                                        }}>{detail.reduce((total, item) => total + (item.quantity || 0)/2, 0)}</span>
                                     </div>
                                     {garmentQuotation && orderId !== 0 && (
                                         <div style={{display: 'flex', alignItems: 'center', gap: 8}}>
@@ -405,6 +462,13 @@ export default function OrderDetailTable({detail, garmentQuotation = false, orde
                     </table>
                 </div>
             </div>
+
+            {/* Design Detail Modal */}
+            <DeliveryDetailModal
+                visible={showDesignDetailModal}
+                onCancel={() => setShowDesignDetailModal(false)}
+                delivery={order?.selectedDesign}
+            />
         </div>
     );
 }

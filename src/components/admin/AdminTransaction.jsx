@@ -220,6 +220,8 @@ export default function AdminTransaction() {
                 return 'Design Payment';
             case 'wallet':
                 return 'Wallet Deposit';
+            case 'withdraw':
+                return 'Withdraw';
             default:
                 return type;
         }
@@ -304,7 +306,8 @@ export default function AdminTransaction() {
         order: 'Order',
         order_return: 'Refund',
         design_return: 'Refund',
-        wallet: 'Top-up'
+        wallet: 'Top-up',
+        withdraw: 'Withdraw'
     }[type] || type);
 
     const columns = useMemo(() => [
@@ -324,7 +327,7 @@ export default function AdminTransaction() {
                     );
                 }
                 if (!val || val === 0) return '—';
-                const pref = (record.paymentType === 'design' || record.paymentType === 'design_return') ? 'dr' : 'ord';
+                const pref = (record.paymentType === 'design' || record.paymentType === 'design_return') ? 'dr' : record.paymentType === 'withdraw' ? 'wdr' : 'ord';
                 return (
                     <Chip
                         label={parseID(val, pref)}
@@ -351,6 +354,7 @@ export default function AdminTransaction() {
                 {text: 'Order Refund', value: 'order_return'},
                 {text: 'Design Refund', value: 'design_return'},
                 {text: 'Top-up', value: 'wallet'},
+                {text: 'Withdraw', value: 'withdraw'},
             ],
             onFilter: (value, record) => record.paymentType === value,
         },
@@ -361,7 +365,7 @@ export default function AdminTransaction() {
             width: 120,
             render: (val) => (
                 <Typography variant="body2" sx={{fontWeight: 600, color: '#0ea5b8'}}>
-                    {val?.includes('w') ? 'Wallet' : 'VNPay'}
+                    {val?.includes('w') ? 'Wallet' : val?.includes('q') ? 'UniSew' : 'VNPay'}
                 </Typography>
             )
         },

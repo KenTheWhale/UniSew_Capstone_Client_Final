@@ -2610,7 +2610,7 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                             )}
 
                             <Box>
-                                <OrderDetailTable detail={selectedOrder.orderDetails}/>
+                                <OrderDetailTable order={selectedOrder}/>
                             </Box>
                         </CardContent>
                     </Card>

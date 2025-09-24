@@ -172,6 +172,27 @@ export default function SchoolCreateOrder() {
         return allUniformsHaveItems && totalQuantity >= orderConfig.minUniformQty;
     };
 
+    const getUniformsWithZeroQuantity = () => {
+        const uniforms = groupItemsByUniform(selectedDesign?.delivery?.deliveryItems || []);
+        const uniformsWithZero = [];
+
+        Object.entries(uniforms).forEach(([uniformKey, uniform]) => {
+            const uniformQuantities = Object.entries(selectedUniformSizeQuantities)
+                .filter(([key]) => key.startsWith(uniformKey))
+                .map(([, quantity]) => quantity);
+            const uniformTotal = uniformQuantities.reduce((sum, qty) => sum + qty, 0);
+            
+            if (uniformTotal === 0) {
+                const gender = uniform.gender === 'boy' ? 'Boys' : 'Girls';
+                const category = uniform.category === 'regular' ? 'Regular' : 'Physical Education';
+                const uniformType = uniform.pants ? 'Uniform Set (Shirt + Pants)' : 'Uniform Set (Shirt + Skirt)';
+                uniformsWithZero.push(`${gender} ${category} ${uniformType}`);
+            }
+        });
+
+        return uniformsWithZero;
+    };
+
     const validateOrder = () => {
         const errors = {};
 
@@ -184,7 +205,12 @@ export default function SchoolCreateOrder() {
             errors.quantity = 'Please select at least 1 item to order';
         }
 
-        const uniforms = groupItemsByUniform(selectedDesign?.delivery?.designItems || []);
+        const uniformsWithZero = getUniformsWithZeroQuantity();
+        if (uniformsWithZero.length > 0) {
+            errors.zeroQuantities = 'All uniform types must have quantities greater than zero';
+        }
+
+        const uniforms = groupItemsByUniform(selectedDesign?.delivery?.deliveryItems || []);
         const uniformKeys = Object.keys(uniforms);
 
         uniformKeys.forEach(uniformKey => {
@@ -198,8 +224,8 @@ export default function SchoolCreateOrder() {
             if (uniformTotal < 1) {
                 const gender = uniform.gender === 'boy' ? 'Boys' : 'Girls';
                 const category = uniform.category === 'regular' ? 'Regular' : 'Physical Education';
-                const type = uniform.shirt ? 'Shirt' : (uniform.pants ? 'Pants' : 'Skirt');
-                errors[`uniform_${uniformKey}`] = `Please select at least 1 ${gender} ${category} ${type}`;
+                const uniformType = uniform.pants ? 'Uniform Set (Shirt + Pants)' : 'Uniform Set (Shirt + Skirt)';
+                errors[`uniform_${uniformKey}`] = `Please select at least 1 ${gender} ${category} ${uniformType}`;
             }
         });
 
@@ -231,6 +257,7 @@ export default function SchoolCreateOrder() {
 
                     const gender = uniform.gender === 'boy' ? 'male' : 'female';
 
+                    // Always add shirt for each uniform set
                     if (uniform.shirt) {
                         const shirtSize = findEnumName('shirt', gender);
                         orderDetails.push({
@@ -239,6 +266,8 @@ export default function SchoolCreateOrder() {
                             quantity: quantity
                         });
                     }
+                    
+                    // Add pants or skirt for each uniform set
                     if (uniform.pants) {
                         const pantsSize = findEnumName('pants', gender);
                         orderDetails.push({
@@ -246,8 +275,7 @@ export default function SchoolCreateOrder() {
                             size: pantsSize,
                             quantity: quantity
                         });
-                    }
-                    if (uniform.skirt) {
+                    } else if (uniform.skirt) {
                         const skirtSize = findEnumName('skirt', gender);
                         orderDetails.push({
                             deliveryItemId: uniform.skirt.id,
@@ -346,13 +374,13 @@ export default function SchoolCreateOrder() {
             const uniformTotal = uniformQuantities.reduce((sum, qty) => sum + qty, 0);
 
             if (uniformTotal < 1) {
-                const uniforms = groupItemsByUniform(selectedDesign?.delivery?.designItems || []);
+                const uniforms = groupItemsByUniform(selectedDesign?.delivery?.deliveryItems || []);
                 const uniform = uniforms[uniformKey];
                 if (uniform) {
                     const gender = uniform.gender === 'boy' ? 'Boys' : 'Girls';
                     const category = uniform.category === 'regular' ? 'Regular' : 'Physical Education';
-                    const type = uniform.shirt ? 'Shirt' : (uniform.pants ? 'Pants' : 'Skirt');
-                    newErrors[`uniform_${uniformKey}`] = `Please select at least 1 ${gender} ${category} ${type}`;
+                    const uniformType = uniform.pants ? 'Uniform Set (Shirt + Pants)' : 'Uniform Set (Shirt + Skirt)';
+                    newErrors[`uniform_${uniformKey}`] = `Please select at least 1 ${gender} ${category} ${uniformType}`;
                 }
             }
             return newErrors;
@@ -367,51 +395,37 @@ export default function SchoolCreateOrder() {
             const type = item.designItem.type;
             const category = item.designItem.category;
 
+            // Group by gender and category to create uniform sets
+            const uniformKey = `${gender}_${category}`;
+            
+            if (!uniforms[uniformKey]) {
+                uniforms[uniformKey] = {
+                    gender: gender,
+                    category: category,
+                    shirt: null,
+                    pants: null,
+                    skirt: null
+                };
+            }
+
             if (type === 'shirt') {
-                const uniformKey = `${gender}_${category}_shirt`;
-                if (!uniforms[uniformKey]) {
-                    uniforms[uniformKey] = {
-                        gender: gender,
-                        category: category,
-                        shirt: item,
-                        pants: null,
-                        skirt: null
-                    };
-                } else {
-                    uniforms[uniformKey].shirt = item;
-                }
+                uniforms[uniformKey].shirt = item;
             } else if (type === 'pants') {
-                const uniformKey = `${gender}_${category}_shirt`;
-                if (uniforms[uniformKey]) {
-                    uniforms[uniformKey].pants = item;
-                } else {
-                    const pantsKey = `${gender}_${category}_pants_only`;
-                    uniforms[pantsKey] = {
-                        gender: gender,
-                        category: category,
-                        shirt: null,
-                        pants: item,
-                        skirt: null
-                    };
-                }
+                uniforms[uniformKey].pants = item;
             } else if (type === 'skirt') {
-                const uniformKey = `${gender}_${category}_shirt`;
-                if (uniforms[uniformKey]) {
-                    uniforms[uniformKey].skirt = item;
-                } else {
-                    const skirtKey = `${gender}_${category}_skirt_only`;
-                    uniforms[skirtKey] = {
-                        gender: gender,
-                        category: category,
-                        shirt: null,
-                        pants: null,
-                        skirt: item
-                    };
-                }
+                uniforms[uniformKey].skirt = item;
             }
         });
 
-        return uniforms;
+        // Filter out incomplete uniforms (those without shirt)
+        const completeUniforms = {};
+        Object.entries(uniforms).forEach(([key, uniform]) => {
+            if (uniform.shirt && (uniform.pants || uniform.skirt)) {
+                completeUniforms[key] = uniform;
+            }
+        });
+
+        return completeUniforms;
     };
 
     const handleItemClick = (uniform) => {
@@ -912,9 +926,36 @@ export default function SchoolCreateOrder() {
                                                 </Button>
                                             </Box>
                                         </Box>
-                                        <Typography variant="body1" sx={{mt: 1, opacity: 0.9}}>
-                                            Select quantities using spreadsheet-like interface
-                                        </Typography>
+                                                        <Typography variant="body1" sx={{mt: 1, opacity: 0.9}}>
+                                                            Select uniform set quantities using spreadsheet-like interface
+                                                        </Typography>
+                                                        <Typography variant="body2" sx={{
+                                                            mt: 1, 
+                                                            opacity: 0.8,
+                                                            fontSize: '13px',
+                                                            fontStyle: 'italic',
+                                                            color: '#fff3e0',
+                                                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                                            padding: '8px 12px',
+                                                            borderRadius: '6px',
+                                                            border: '1px solid rgba(255, 255, 255, 0.2)'
+                                                        }}>
+                                                            💡 Note: Each uniform set includes 1 shirt + 1 pants/skirt. When you enter 30 uniforms, 
+                                                            you'll get 30 shirts + 30 pants/skirts.
+                                                        </Typography>
+                                                        <Typography variant="body2" sx={{
+                                                            mt: 1, 
+                                                            opacity: 0.8,
+                                                            fontSize: '13px',
+                                                            fontStyle: 'italic',
+                                                            color: '#ffcc02',
+                                                            backgroundColor: 'rgba(255, 204, 2, 0.1)',
+                                                            padding: '8px 12px',
+                                                            borderRadius: '6px',
+                                                            border: '1px solid rgba(255, 204, 2, 0.3)'
+                                                        }}>
+                                                            ⚠️ Important: All uniform types must have quantities greater than zero to create an order.
+                                                        </Typography>
                                     </Box>
 
                                     {(() => {
@@ -968,7 +1009,7 @@ export default function SchoolCreateOrder() {
                                                             color: '#1976d2',
                                                             fontSize: '14px'
                                                         }}>
-                                                            Type
+                                                            Category
                                                         </Typography>
                                                     </Box>
 
@@ -1034,141 +1075,195 @@ export default function SchoolCreateOrder() {
                                                     </Box>
 
                                                     {}
-                                                    {Object.entries(uniforms).map(([uniformKey, uniform], uniformIndex) => {
-                                                        const genderForSizes = uniform.gender === 'boy' ? 'male' : 'female';
-                                                        const isFirstOfType = uniformIndex === 0 ||
-                                                            uniforms[Object.keys(uniforms)[uniformIndex - 1]]?.category !== uniform.category;
-                                                        const isLastOfType = uniformIndex === Object.keys(uniforms).length - 1 ||
-                                                            uniforms[Object.keys(uniforms)[uniformIndex + 1]]?.category !== uniform.category;
+                                                    {(() => {
+                                                        // Group uniforms by category and gender
+                                                        const groupedUniforms = {};
+                                                        
+                                                        Object.entries(uniforms).forEach(([uniformKey, uniform]) => {
+                                                            const groupKey = `${uniform.category}_${uniform.gender}`;
+                                                            if (!groupedUniforms[groupKey]) {
+                                                                groupedUniforms[groupKey] = {
+                                                                    category: uniform.category,
+                                                                    gender: uniform.gender,
+                                                                    uniforms: []
+                                                                };
+                                                            }
+                                                            groupedUniforms[groupKey].uniforms.push({uniformKey, uniform});
+                                                        });
 
-                                                        const sameTypeCount = Object.values(uniforms).filter(u => u.category === uniform.category).length;
+                                                        const groupedEntries = Object.entries(groupedUniforms);
+                                                        let categoryRowSpans = {};
+                                                        
+                                                        // Calculate row spans for categories
+                                                        groupedEntries.forEach(([groupKey, group]) => {
+                                                            const category = group.category;
+                                                            if (!categoryRowSpans[category]) {
+                                                                categoryRowSpans[category] = 0;
+                                                            }
+                                                            categoryRowSpans[category] += group.uniforms.length;
+                                                        });
 
-                                                        return (
-                                                            <React.Fragment key={uniformKey}>
-                                                                {}
-                                                                {isFirstOfType && (
-                                                                    <Box sx={{
-                                                                        p: 2,
-                                                                        borderRight: '1px solid #000000',
-                                                                        borderBottom: '1px solid #000000',
-                                                                        backgroundColor: '#f8fafc',
-                                                                        display: 'flex',
-                                                                        alignItems: 'center',
-                                                                        justifyContent: 'center',
-                                                                        minHeight: `${60 * sameTypeCount}px`,
-                                                                        gridRow: `span ${sameTypeCount}`
-                                                                    }}>
-                                                                        <Typography variant="body2" sx={{
-                                                                            fontWeight: 600,
-                                                                            color: '#374151',
-                                                                            fontSize: '13px',
-                                                                            textAlign: 'center'
-                                                                        }}>
-                                                                            {uniform.category === 'regular' ? 'Regular' : 'PE'}
-                                                                        </Typography>
-                                                                    </Box>
-                                                                )}
+                                                        return groupedEntries.map(([groupKey, group], groupIndex) => {
+                                                            const isFirstOfCategory = groupIndex === 0 || 
+                                                                groupedEntries[groupIndex - 1][1].category !== group.category;
+                                                            
+                                                            return group.uniforms.map(({uniformKey, uniform}, uniformIndexInGroup) => {
+                                                                const isFirstUniformInGroup = uniformIndexInGroup === 0;
+                                                                const genderForSizes = uniform.gender === 'boy' ? 'male' : 'female';
 
-                                                                {}
-                                                                <Box sx={{
-                                                                    p: 2,
-                                                                    borderRight: '1px solid #000000',
-                                                                    borderBottom: '1px solid #000000',
-                                                                    backgroundColor: '#f8fafc',
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'center',
-                                                                    minHeight: '60px'
-                                                                }}>
-                                                                    <Typography variant="body2" sx={{
-                                                                        fontWeight: 600,
-                                                                        color: '#374151',
-                                                                        fontSize: '13px',
-                                                                        textAlign: 'center',
-                                                                        textTransform: 'capitalize'
-                                                                    }}>
-                                                                        {uniform.gender}
-                                                                    </Typography>
-                                                                </Box>
+                                                                return (
+                                                                    <React.Fragment key={uniformKey}>
+                                                                        {/* Category Cell (spans multiple rows for same category) */}
+                                                                        {isFirstOfCategory && uniformIndexInGroup === 0 && (
+                                                                            <Box sx={{
+                                                                                p: 2,
+                                                                                borderRight: '1px solid #000000',
+                                                                                borderBottom: '1px solid #000000',
+                                                                                backgroundColor: '#f8fafc',
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                                minHeight: `${60 * categoryRowSpans[group.category]}px`,
+                                                                                gridRow: `span ${categoryRowSpans[group.category]}`
+                                                                            }}>
+                                                                                <Typography variant="body2" sx={{
+                                                                                    fontWeight: 600,
+                                                                                    color: '#374151',
+                                                                                    fontSize: '13px',
+                                                                                    textAlign: 'center'
+                                                                                }}>
+                                                                                    {group.category === 'regular' ? 'Regular' : 'PE'}
+                                                                                </Typography>
+                                                                            </Box>
+                                                                        )}
 
-                                                                {}
-                                                                {allSizes.map((size, index) => {
-                                                                    const quantityKey = `${uniformKey}_${size.size}`;
-                                                                    const currentQuantity = selectedUniformSizeQuantities[quantityKey] || 0;
+                                                                        {/* Gender Cell (spans multiple rows for same category-gender group) */}
+                                                                        {isFirstUniformInGroup && (
+                                                                            <Box sx={{
+                                                                                p: 2,
+                                                                                borderRight: '1px solid #000000',
+                                                                                borderBottom: '1px solid #000000',
+                                                                                backgroundColor: '#f8fafc',
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                                minHeight: `${60 * group.uniforms.length}px`,
+                                                                                gridRow: `span ${group.uniforms.length}`
+                                                                            }}>
+                                                                                <Typography variant="body2" sx={{
+                                                                                    fontWeight: 600,
+                                                                                    color: '#374151',
+                                                                                    fontSize: '13px',
+                                                                                    textAlign: 'center',
+                                                                                    textTransform: 'capitalize'
+                                                                                }}>
+                                                                                    {group.gender}
+                                                                                </Typography>
+                                                                            </Box>
+                                                                        )}
 
-                                                                    return (
-                                                                        <Box key={`data-${uniformKey}-${index}`} sx={{
+                                                                        {/* Size quantity inputs */}
+                                                                        {allSizes.map((size, index) => {
+                                                                            const quantityKey = `${uniformKey}_${size.size}`;
+                                                                            const currentQuantity = selectedUniformSizeQuantities[quantityKey] || 0;
+
+                                                                            return (
+                                                                                <Box key={`data-${uniformKey}-${index}`} sx={{
+                                                                                    p: 2,
+                                                                                    borderRight: index < allSizes.length - 1 ? '1px solid #000000' : 'none',
+                                                                                    borderBottom: '1px solid #000000',
+                                                                                    display: 'flex',
+                                                                                    alignItems: 'center',
+                                                                                    justifyContent: 'center',
+                                                                                    minHeight: '60px',
+                                                                                    position: 'relative',
+                                                                                    transition: 'all 0.2s ease'
+                                                                                }}>
+                                                                                    <TextField
+                                                                                        type="number"
+                                                                                        size="small"
+                                                                                        value={currentQuantity}
+                                                                                        onChange={(e) => {
+                                                                                            const newQuantity = parseInt(e.target.value) || 0;
+                                                                                            if (newQuantity > 0) {
+                                                                                                handleUniformSizeQuantityChange(uniformKey, size.size, newQuantity);
+                                                                                            } else {
+                                                                                                handleRemoveSizeFromUniform(uniformKey, size.size);
+                                                                                            }
+                                                                                        }}
+                                                                                        placeholder="Uniform sets"
+                                                                                        sx={{
+                                                                                            width: '80px',
+                                                                                            '& .MuiOutlinedInput-root': {
+                                                                                                fontSize: '14px',
+                                                                                                height: '40px',
+                                                                                                borderRadius: 1.5,
+                                                                                                fontWeight: 600,
+                                                                                                border: '1px solid #e2e8f0'
+                                                                                            }
+                                                                                        }}
+                                                                                        inputProps={{
+                                                                                            min: 0,
+                                                                                            style: {
+                                                                                                fontSize: '14px',
+                                                                                                textAlign: 'center',
+                                                                                                fontWeight: 600,
+                                                                                                color: '#374151'
+                                                                                            }
+                                                                                        }}
+                                                                                    />
+                                                                                </Box>
+                                                                            );
+                                                                        })}
+
+                                                                        {/* Total column */}
+                                                                        <Box sx={{
                                                                             p: 2,
-                                                                            borderRight: index < allSizes.length - 1 ? '1px solid #000000' : 'none',
+                                                                            borderLeft: '1px solid #000000',
                                                                             borderBottom: '1px solid #000000',
+                                                                            backgroundColor: (() => {
+                                                                                const total = Object.keys(selectedUniformSizeQuantities)
+                                                                                    .filter(key => key.startsWith(uniformKey))
+                                                                                    .reduce((sum, key) => sum + selectedUniformSizeQuantities[key], 0);
+                                                                                return total === 0 ? 'rgba(255, 152, 0, 0.15)' : '#f8fafc';
+                                                                            })(),
                                                                             display: 'flex',
                                                                             alignItems: 'center',
                                                                             justifyContent: 'center',
                                                                             minHeight: '60px',
-                                                                            position: 'relative',
-                                                                            transition: 'all 0.2s ease'
+                                                                            border: (() => {
+                                                                                const total = Object.keys(selectedUniformSizeQuantities)
+                                                                                    .filter(key => key.startsWith(uniformKey))
+                                                                                    .reduce((sum, key) => sum + selectedUniformSizeQuantities[key], 0);
+                                                                                return total === 0 ? '2px solid #ff9800' : '1px solid #000000';
+                                                                            })()
                                                                         }}>
-                                                                            <TextField
-                                                                                type="number"
-                                                                                size="small"
-                                                                                value={currentQuantity}
-                                                                                onChange={(e) => {
-                                                                                    const newQuantity = parseInt(e.target.value) || 0;
-                                                                                    if (newQuantity > 0) {
-                                                                                        handleUniformSizeQuantityChange(uniformKey, size.size, newQuantity);
-                                                                                    } else {
-                                                                                        handleRemoveSizeFromUniform(uniformKey, size.size);
-                                                                                    }
-                                                                                }}
-                                                                                placeholder="0"
-                                                                                sx={{
-                                                                                    width: '80px',
-                                                                                    '& .MuiOutlinedInput-root': {
-                                                                                        fontSize: '14px',
-                                                                                        height: '40px',
-                                                                                        borderRadius: 1.5,
-                                                                                        fontWeight: 600,
-                                                                                        border: '1px solid #e2e8f0'
-                                                                                    }
-                                                                                }}
-                                                                                inputProps={{
-                                                                                    min: 0,
-                                                                                    style: {
-                                                                                        fontSize: '14px',
-                                                                                        textAlign: 'center',
-                                                                                        fontWeight: 600,
-                                                                                        color: '#374151'
-                                                                                    }
-                                                                                }}
-                                                                            />
+                                                                            <Typography variant="h6" sx={{
+                                                                                fontWeight: 700,
+                                                                                color: (() => {
+                                                                                    const total = Object.keys(selectedUniformSizeQuantities)
+                                                                                        .filter(key => key.startsWith(uniformKey))
+                                                                                        .reduce((sum, key) => sum + selectedUniformSizeQuantities[key], 0);
+                                                                                    return total === 0 ? '#f57c00' : '#1976d2';
+                                                                                })(),
+                                                                                fontSize: '16px'
+                                                                            }}>
+                                                                                {Object.keys(selectedUniformSizeQuantities)
+                                                                                    .filter(key => key.startsWith(uniformKey))
+                                                                                    .reduce((sum, key) => sum + selectedUniformSizeQuantities[key], 0)}
+                                                                                {(() => {
+                                                                                    const total = Object.keys(selectedUniformSizeQuantities)
+                                                                                        .filter(key => key.startsWith(uniformKey))
+                                                                                        .reduce((sum, key) => sum + selectedUniformSizeQuantities[key], 0);
+                                                                                    return '';
+                                                                                })()}
+                                                                            </Typography>
                                                                         </Box>
-                                                                    );
-                                                                })}
-
-                                                                {}
-                                                                <Box sx={{
-                                                                    p: 2,
-                                                                    borderLeft: '1px solid #000000',
-                                                                    borderBottom: '1px solid #000000',
-                                                                    backgroundColor: '#f8fafc',
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'center',
-                                                                    minHeight: '60px'
-                                                                }}>
-                                                                    <Typography variant="h6" sx={{
-                                                                        fontWeight: 700,
-                                                                        color: '#1976d2',
-                                                                        fontSize: '16px'
-                                                                    }}>
-                                                                        {Object.keys(selectedUniformSizeQuantities)
-                                                                            .filter(key => key.startsWith(uniformKey))
-                                                                            .reduce((sum, key) => sum + selectedUniformSizeQuantities[key], 0)}
-                                                                    </Typography>
-                                                                </Box>
-                                                            </React.Fragment>
-                                                        );
-                                                    })}
+                                                                    </React.Fragment>
+                                                                );
+                                                            });
+                                                        }).flat();
+                                                    })()}
                                                 </Box>
                                             </Box>
                                         );
@@ -1197,12 +1292,12 @@ export default function SchoolCreateOrder() {
                                             {getTotalQuantity() >= orderConfig.minUniformQty ? '✅' : '⚠️'} Order Summary
                                         </Typography>
                                         <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1}}>
-                                            <Typography variant="body1" sx={{
-                                                color: '#374151',
-                                                fontWeight: 500
-                                            }}>
-                                                Total Uniforms Selected:
-                                            </Typography>
+                                                            <Typography variant="body1" sx={{
+                                                                color: '#374151',
+                                                                fontWeight: 500
+                                                            }}>
+                                                                Total Uniform Sets Selected:
+                                                            </Typography>
                                             <Typography variant="h5" sx={{
                                                 color: getTotalQuantity() >= orderConfig.minUniformQty ? '#2e7d32' : '#d32f2f',
                                                 fontWeight: 700
@@ -1221,7 +1316,7 @@ export default function SchoolCreateOrder() {
                                                 color: '#64748b',
                                                 fontWeight: 600
                                             }}>
-                                                {orderConfig.minUniformQty} uniforms
+                                                                {orderConfig.minUniformQty} uniform sets
                                             </Typography>
                                         </Box>
                                         
@@ -1235,11 +1330,11 @@ export default function SchoolCreateOrder() {
                                                 backgroundColor: 'rgba(244, 67, 54, 0.1)',
                                                 border: '1px solid rgba(244, 67, 54, 0.2)'
                                             }}>
-                                                You need to select {orderConfig.minUniformQty - getTotalQuantity()} more uniforms to meet the minimum order requirement.
+                                                You need to select {orderConfig.minUniformQty - getTotalQuantity()} more uniform sets to meet the minimum order requirement.
                                             </Typography>
                                         )}
                                         
-                                        {getTotalQuantity() >= orderConfig.minUniformQty && (
+                                        {getTotalQuantity() >= orderConfig.minUniformQty && getUniformsWithZeroQuantity().length === 0 && (
                                             <Typography variant="body2" sx={{
                                                 color: '#2e7d32',
                                                 fontWeight: 500,
@@ -1250,6 +1345,31 @@ export default function SchoolCreateOrder() {
                                                 border: '1px solid rgba(76, 175, 80, 0.2)'
                                             }}>
                                                 Great! Your order meets the minimum requirement. You can proceed to create the order.
+                                            <br/><br/>
+                                            📦 Total items to be produced: {getTotalQuantity() * 2} pieces 
+                                            ({getTotalQuantity()} shirts + {getTotalQuantity()} pants/skirts)
+                                            </Typography>
+                                        )}
+
+                                        {getUniformsWithZeroQuantity().length > 0 && (
+                                            <Typography variant="body2" sx={{
+                                                color: '#f57c00',
+                                                fontWeight: 500,
+                                                fontSize: '14px',
+                                                p: 2,
+                                                borderRadius: 2,
+                                                backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                                                border: '1px solid rgba(255, 152, 0, 0.3)',
+                                                mt: 1
+                                            }}>
+                                                ⚠️ Warning: The following uniform types have zero quantity. Please add quantities for all uniform types:
+                                                <br/><br/>
+                                                {getUniformsWithZeroQuantity().map((uniformType, index) => (
+                                                    <span key={index}>
+                                                        • {uniformType}
+                                                        {index < getUniformsWithZeroQuantity().length - 1 ? <br/> : ''}
+                                                    </span>
+                                                ))}
                                             </Typography>
                                         )}
                                     </Box>
@@ -1301,7 +1421,7 @@ export default function SchoolCreateOrder() {
                                     variant="contained"
                                     size="large"
                                     onClick={handleCreateOrder}
-                                    disabled={!deadline || !canCreateOrder() || isCreatingOrder}
+                                    disabled={!deadline || !canCreateOrder() || getUniformsWithZeroQuantity().length > 0 || isCreatingOrder}
                                     sx={{
                                         px: 6,
                                         py: 2,
