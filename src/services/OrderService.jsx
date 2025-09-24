@@ -84,7 +84,6 @@ export const confirmDeliveryOrder = async (orderId, receiverId, totalPrice, gate
     const response = await axiosClient.put("/order/status/delivery", {
         orderId: orderId,
         shippingCode: shippingCode,
-        shippingFee: shippingFee,
         createTransactionRequest: {
             type: 'order',
             receiverId: receiverId,
@@ -92,7 +91,8 @@ export const confirmDeliveryOrder = async (orderId, receiverId, totalPrice, gate
             totalPrice: totalPrice,
             gatewayCode: gatewayCode,
             serviceFee: 0,
-            payFromWallet: payFromWallet
+            payFromWallet: payFromWallet,
+            shippingFee: shippingFee,
 
         }
     })

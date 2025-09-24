@@ -95,7 +95,8 @@ export const buyExtraRevision = async (requestId, revisionTime, receiverId, tota
             totalPrice: totalPrice,
             gatewayCode: gatewayCode,
             serviceFee: 0,
-            payFromWallet: false
+            payFromWallet: false,
+            shippingFee: 0,
         }
     })
     return response || null

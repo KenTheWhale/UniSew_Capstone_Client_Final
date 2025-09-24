@@ -447,7 +447,8 @@ export default function PaymentResult() {
                 totalPrice: paymentAmount,
                 gatewayCode: isPaymentFromWallet ? "00" : vnpResponseCode,
                 serviceFee: orderDetails.serviceFee,
-                payFromWallet: isPaymentFromWallet
+                payFromWallet: isPaymentFromWallet,
+                shippingFee: 0,
             }
         };
 
@@ -551,7 +552,6 @@ export default function PaymentResult() {
             designQuotationId: quotation.id,
             designRequestId: request.id,
             extraRevision: extraRevision,
-            serviceFee: designServiceFee || 0,
             createTransactionRequest: {
                 type: "design",
                 receiverId: quotation.designer.id,
@@ -559,7 +559,8 @@ export default function PaymentResult() {
                 totalPrice: paymentAmount,
                 gatewayCode: isPaymentFromWallet ? "00" : vnpResponseCode,
                 serviceFee: designServiceFee || 0,
-                payFromWallet: isPaymentFromWallet
+                payFromWallet: isPaymentFromWallet,
+                shippingFee: 0,
             }
         };
 
@@ -641,7 +642,8 @@ export default function PaymentResult() {
             paymentAmount,
             isPaymentFromWallet ? "00" : vnpResponseCode,
             isDepositPayment ? orderDetails.serviceFee : 0,
-            isPaymentFromWallet
+            isPaymentFromWallet,
+            orderDetails.shippingFee
         );
         if (response && response.status === 201) {
             console.log('Failed order/deposit payment transaction recorded successfully');
