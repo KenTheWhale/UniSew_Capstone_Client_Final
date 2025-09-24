@@ -27,6 +27,7 @@ import {giveFeedback} from '../../../../services/FeedbackService.jsx';
 import {uploadCloudinary, uploadCloudinaryVideo} from '../../../../services/UploadImageService.jsx';
 import DisplayImage from '../../../ui/DisplayImage.jsx';
 import {parseID} from "../../../../utils/ParseIDUtil.jsx";
+import {formatDate} from "../../../../utils/TimestampUtil.jsx";
 
 export default function FeedbackReportPopup({
                                                 visible,
@@ -476,7 +477,7 @@ export default function FeedbackReportPopup({
                                     color: '#1e293b',
                                     fontSize: '0.9rem'
                                 }}>
-                                    {requestData?.orderId ? (requestData?.orderDate || 'N/A') : (requestData?.name || 'N/A')}
+                                    {formatDate(requestData?.orderId ? (requestData?.orderDate || 'N/A') : (requestData?.name || 'N/A'))}
                                 </Typography>
                             </Box>
 

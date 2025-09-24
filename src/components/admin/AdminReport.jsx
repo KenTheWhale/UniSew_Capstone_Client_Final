@@ -48,6 +48,8 @@ import {refundTransaction} from '../../services/PaymentService';
 import DisplayImage from '../ui/DisplayImage';
 import dayjs from 'dayjs';
 import {parseID} from "../../utils/ParseIDUtil.jsx";
+import DesignDetailPopup from './dialog/DesignDetailPopup';
+import OrderAdminDetailPopup from './dialog/OrderAdminDetailPopup';
 
 export default function AdminReport() {
     const [reports, setReports] = useState([]);
@@ -70,6 +72,14 @@ export default function AdminReport() {
     const [appealResponse, setAppealResponse] = useState('');
     const [appealDialogOpen, setAppealDialogOpen] = useState(false);
     const [selectedAppeal, setSelectedAppeal] = useState(null);
+    
+    // Design Detail Popup state
+    const [designDetailPopupOpen, setDesignDetailPopupOpen] = useState(false);
+    const [selectedDesignRequest, setSelectedDesignRequest] = useState(null);
+    
+    // Order Admin Detail Popup state
+    const [orderAdminDetailPopupOpen, setOrderAdminDetailPopupOpen] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState(null);
 
     useEffect(() => {
         fetchReports();
@@ -187,6 +197,28 @@ export default function AdminReport() {
         } finally {
             setApprovingAppeal(false);
         }
+    };
+
+    // Handle Design Detail Popup
+    const handleOpenDesignDetailPopup = (designRequest) => {
+        setSelectedDesignRequest(designRequest);
+        setDesignDetailPopupOpen(true);
+    };
+
+    const handleCloseDesignDetailPopup = () => {
+        setDesignDetailPopupOpen(false);
+        setSelectedDesignRequest(null);
+    };
+
+    // Handle Order Admin Detail Popup
+    const handleOpenOrderAdminDetailPopup = (order) => {
+        setSelectedOrder(order);
+        setOrderAdminDetailPopupOpen(true);
+    };
+
+    const handleCloseOrderAdminDetailPopup = () => {
+        setOrderAdminDetailPopupOpen(false);
+        setSelectedOrder(null);
     };
 
     const handleSubmitApproval = async () => {
@@ -521,7 +553,7 @@ export default function AdminReport() {
                                             fontWeight: 500
                                         }}
                                     >
-                                        Approved/Accepted
+                                        Accepted
                                     </Typography>
                                 </Box>
                                 <Box
@@ -1199,7 +1231,7 @@ export default function AdminReport() {
                                                 variant="outlined"
                                                 size="small"
                                                 startIcon={<InfoIcon/>}
-                                                onClick={() => setOrderDetailOpen(true)}
+                                                onClick={() => handleOpenOrderAdminDetailPopup(selectedReport.order)}
                                                 sx={{
                                                     borderColor: '#3f51b5',
                                                     color: '#3f51b5',
@@ -1253,7 +1285,7 @@ export default function AdminReport() {
                                                 variant="outlined"
                                                 size="small"
                                                 startIcon={<InfoIcon/>}
-                                                onClick={() => setDesignRequestDetailOpen(true)}
+                                                onClick={() => handleOpenDesignDetailPopup(selectedReport.designRequest)}
                                                 sx={{
                                                     borderColor: '#10b981',
                                                     color: '#10b981',
@@ -4363,6 +4395,20 @@ export default function AdminReport() {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            {/* Design Detail Popup */}
+            <DesignDetailPopup
+                open={designDetailPopupOpen}
+                onClose={handleCloseDesignDetailPopup}
+                selectedRequest={selectedDesignRequest}
+            />
+
+            {/* Order Admin Detail Popup */}
+            <OrderAdminDetailPopup
+                open={orderAdminDetailPopupOpen}
+                onClose={handleCloseOrderAdminDetailPopup}
+                selectedOrder={selectedOrder}
+            />
         </Box>
     );
 }
