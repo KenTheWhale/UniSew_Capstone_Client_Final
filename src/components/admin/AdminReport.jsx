@@ -630,82 +630,289 @@ export default function AdminReport() {
                             </Typography>
                         </Box>
                     ) : (
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <Box sx={{ 
+                            display: 'grid', 
+                            gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
+                            gap: 3
+                        }}>
                             {reports.map((report) => (
-                                <Box key={report.id}>
-                                    <Card elevation={0} sx={{
-                                        borderRadius: 2,
+                                <Card 
+                                    key={report.id}
+                                    elevation={0} 
+                                    sx={{
+                                        borderRadius: 3,
                                         border: '1px solid #e2e8f0',
                                         transition: 'all 0.3s ease',
+                                        background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
                                         '&:hover': {
-                                            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-                                            transform: 'translateY(-2px)'
-                                        },
-                                        minHeight: "270px"
-                                    }}>
-                                        <CardContent sx={{p: 3}}>
-                                            <Box sx={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                mb: 2
-                                            }}>
-                                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
-                                                    <Avatar sx={{
-                                                        bgcolor: report.report ? '#ef4444' : '#10b981',
-                                                        width: 40,
-                                                        height: 40
+                                            boxShadow: '0 12px 40px rgba(0, 0, 0, 0.12)',
+                                            transform: 'translateY(-4px)',
+                                            borderColor: '#3b82f6'
+                                        }
+                                    }}
+                                >
+                                    <CardContent sx={{ p: 0, height: '100%', display: 'flex', flexDirection: 'column' }}>
+                                        {/* Header Section */}
+                                        <Box sx={{
+                                            p: 3,
+                                            pb: 2,
+                                            background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+                                            borderRadius: '12px 12px 0 0',
+                                            borderBottom: '1px solid #e2e8f0'
+                                        }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                    <Box sx={{
+                                                        width: 48,
+                                                        height: 48,
+                                                        borderRadius: '12px',
+                                                        background: report.report 
+                                                            ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
+                                                            : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
                                                     }}>
-                                                        {report.report ? <ReportIcon/> : <FeedbackIcon/>}
-                                                    </Avatar>
+                                                        {report.report ? (
+                                                            <ReportIcon sx={{ color: 'white', fontSize: 24 }} />
+                                                        ) : (
+                                                            <FeedbackIcon sx={{ color: 'white', fontSize: 24 }} />
+                                                        )}
+                                                    </Box>
                                                     <Box>
-                                                        <Typography variant="body2" sx={{color: '#64748b'}}>
+                                                        <Typography variant="h6" sx={{ 
+                                                            fontWeight: 700, 
+                                                            color: '#1e293b',
+                                                            fontSize: '1rem',
+                                                            mb: 0.5
+                                                        }}>
                                                             {report.order ? `Order ${parseID(report.order.id, "ord")}` :
                                                                 report.designRequest ? `Design Request ${parseID(report.designRequest.id, "dr")}` : 'General Report'}
                                                         </Typography>
-                                                        {report.sender && (
-                                                            <Typography variant="body2"
-                                                                        sx={{color: '#64748b', fontSize: '0.8rem'}}>
-                                                                From: {report.sender.name} ({report.sender.type})
-                                                            </Typography>
-                                                        )}
-                                                        {report.receiver && (
-                                                            <Typography variant="body2"
-                                                                        sx={{color: '#64748b', fontSize: '0.8rem'}}>
-                                                                To: {report.receiver.name} ({report.receiver.type})
-                                                            </Typography>
-                                                        )}
+                                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                                            {report.sender && (
+                                                                <Typography variant="caption" sx={{ 
+                                                                    color: '#64748b', 
+                                                                    fontSize: '0.75rem',
+                                                                    fontWeight: 500
+                                                                }}>
+                                                                    From: {report.sender.name} ({report.sender.type})
+                                                                </Typography>
+                                                            )}
+                                                            {report.receiver && (
+                                                                <Typography variant="caption" sx={{ 
+                                                                    color: '#64748b', 
+                                                                    fontSize: '0.75rem',
+                                                                    fontWeight: 500
+                                                                }}>
+                                                                    To: {report.receiver.name} ({report.receiver.type})
+                                                                </Typography>
+                                                            )}
+                                                        </Box>
                                                     </Box>
                                                 </Box>
-                                                <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1}}>
-                                                    <Chip
-                                                        label={report.status}
-                                                        sx={{
-                                                            background: getStatusBgColor(report.status),
-                                                            color: getStatusColor(report.status),
-                                                            fontWeight: 'bold',
-                                                            textTransform: 'uppercase',
-                                                            fontSize: '0.75rem',
-                                                            letterSpacing: '0.5px',
-                                                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                                                            border: 'none'
-                                                        }}
-                                                    />
+                                                <Chip
+                                                    label={report.status}
+                                                    sx={{
+                                                        background: getStatusBgColor(report.status),
+                                                        color: getStatusColor(report.status),
+                                                        fontWeight: 'bold',
+                                                        textTransform: 'uppercase',
+                                                        fontSize: '0.7rem',
+                                                        letterSpacing: '0.5px',
+                                                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                                                        border: 'none',
+                                                        px: 2,
+                                                        py: 0.5
+                                                    }}
+                                                />
+                                            </Box>
+                                        </Box>
+
+                                        {/* Content Section */}
+                                        <Box sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                            <Box sx={{ mb: 3 }}>
+                                                <Typography variant="body2" sx={{ 
+                                                    color: '#64748b', 
+                                                    mb: 1.5,
+                                                    fontWeight: 600,
+                                                    textTransform: 'uppercase',
+                                                    fontSize: '0.75rem',
+                                                    letterSpacing: '0.5px'
+                                                }}>
+                                                    Content:
+                                                </Typography>
+                                                <Typography variant="body1" sx={{ 
+                                                    color: '#1e293b',
+                                                    lineHeight: 1.6,
+                                                    display: '-webkit-box',
+                                                    WebkitLineClamp: 3,
+                                                    WebkitBoxOrient: 'vertical',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis'
+                                                }}>
+                                                    {report.schoolContent}
+                                                </Typography>
+                                            </Box>
+
+                                            {/* Media & Rating Info */}
+                                            <Box sx={{ 
+                                                display: 'flex', 
+                                                flexWrap: 'wrap',
+                                                gap: 2,
+                                                mb: 3
+                                            }}>
+                                                {report.rating && (
+                                                    <Box sx={{ 
+                                                        display: 'flex', 
+                                                        alignItems: 'center', 
+                                                        gap: 1,
+                                                        p: 1,
+                                                        backgroundColor: '#fef3c7',
+                                                        borderRadius: 2,
+                                                        border: '1px solid #fbbf24'
+                                                    }}>
+                                                        <Typography variant="caption" sx={{ 
+                                                            color: '#92400e',
+                                                            fontWeight: 600,
+                                                            fontSize: '0.7rem'
+                                                        }}>
+                                                            Rating:
+                                                        </Typography>
+                                                        <Rating value={report.rating} readOnly size="small" />
+                                                    </Box>
+                                                )}
+                                                {report.images && report.images.length > 0 && (
+                                                    <Box sx={{ 
+                                                        display: 'flex', 
+                                                        alignItems: 'center', 
+                                                        gap: 1,
+                                                        p: 1,
+                                                        backgroundColor: '#e0e7ff',
+                                                        borderRadius: 2,
+                                                        border: '1px solid #3b82f6'
+                                                    }}>
+                                                        <Typography variant="caption" sx={{ 
+                                                            color: '#3730a3',
+                                                            fontWeight: 600,
+                                                            fontSize: '0.7rem'
+                                                        }}>
+                                                            Images:
+                                                        </Typography>
+                                                        <Chip
+                                                            label={`${report.images.length} image${report.images.length > 1 ? 's' : ''}`}
+                                                            size="small"
+                                                            sx={{
+                                                                backgroundColor: '#3b82f6',
+                                                                color: 'white',
+                                                                fontWeight: 'bold',
+                                                                fontSize: '0.65rem',
+                                                                height: 20
+                                                            }}
+                                                        />
+                                                    </Box>
+                                                )}
+                                                {(report.video || report.designRequest?.feedback?.video) && (
+                                                    <Box sx={{ 
+                                                        display: 'flex', 
+                                                        alignItems: 'center', 
+                                                        gap: 1,
+                                                        p: 1,
+                                                        backgroundColor: '#fef3c7',
+                                                        borderRadius: 2,
+                                                        border: '1px solid #f59e0b'
+                                                    }}>
+                                                        <Typography variant="caption" sx={{ 
+                                                            color: '#92400e',
+                                                            fontWeight: 600,
+                                                            fontSize: '0.7rem'
+                                                        }}>
+                                                            Video:
+                                                        </Typography>
+                                                        <Chip
+                                                            icon={<VideocamIcon sx={{ fontSize: '10px' }} />}
+                                                            label="Available"
+                                                            size="small"
+                                                            sx={{
+                                                                backgroundColor: '#f59e0b',
+                                                                color: 'white',
+                                                                fontWeight: 'bold',
+                                                                fontSize: '0.65rem',
+                                                                height: 20
+                                                            }}
+                                                        />
+                                                    </Box>
+                                                )}
+                                                {report.partnerVideo && (
+                                                    <Box sx={{ 
+                                                        display: 'flex', 
+                                                        alignItems: 'center', 
+                                                        gap: 1,
+                                                        p: 1,
+                                                        backgroundColor: '#ddd6fe',
+                                                        borderRadius: 2,
+                                                        border: '1px solid #8b5cf6'
+                                                    }}>
+                                                        <Typography variant="caption" sx={{ 
+                                                            color: '#5b21b6',
+                                                            fontWeight: 600,
+                                                            fontSize: '0.7rem'
+                                                        }}>
+                                                            Partner Video:
+                                                        </Typography>
+                                                        <Chip
+                                                            icon={<VideocamIcon sx={{ fontSize: '10px' }} />}
+                                                            label="Available"
+                                                            size="small"
+                                                            sx={{
+                                                                backgroundColor: '#8b5cf6',
+                                                                color: 'white',
+                                                                fontWeight: 'bold',
+                                                                fontSize: '0.65rem',
+                                                                height: 20
+                                                            }}
+                                                        />
+                                                    </Box>
+                                                )}
+                                            </Box>
+
+                                            {/* Footer */}
+                                            <Box sx={{ 
+                                                mt: 'auto',
+                                                display: 'flex', 
+                                                alignItems: 'center', 
+                                                justifyContent: 'space-between',
+                                                pt: 2,
+                                                borderTop: '1px solid #e2e8f0'
+                                            }}>
+                                                <Typography variant="caption" sx={{ 
+                                                    color: '#64748b',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: 500
+                                                }}>
+                                                    {formatDate(report.creationDate)}
+                                                </Typography>
+                                                <Box sx={{ display: 'flex', gap: 1 }}>
                                                     <Button
                                                         variant="outlined"
                                                         size="small"
-                                                        startIcon={<VisibilityIcon/>}
+                                                        startIcon={<VisibilityIcon sx={{ fontSize: 16 }} />}
                                                         onClick={() => handleViewDetail(report)}
                                                         sx={{
                                                             borderColor: '#3b82f6',
                                                             color: '#3b82f6',
+                                                            fontSize: '0.75rem',
+                                                            px: 2,
+                                                            py: 0.5,
+                                                            borderRadius: 2,
                                                             '&:hover': {
                                                                 borderColor: '#2563eb',
                                                                 backgroundColor: '#eff6ff'
                                                             }
                                                         }}
                                                     >
-                                                        View Details
+                                                        View
                                                     </Button>
                                                     
                                                     {/* View Appeals Button - Only for reports with appeals */}
@@ -713,107 +920,29 @@ export default function AdminReport() {
                                                         <Button
                                                             variant="contained"
                                                             size="small"
-                                                            startIcon={<CheckCircleIcon/>}
+                                                            startIcon={<CheckCircleIcon sx={{ fontSize: 16 }} />}
                                                             onClick={() => handleViewAppeals(report)}
                                                             sx={{
                                                                 background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
                                                                 color: 'white',
                                                                 fontWeight: 'bold',
+                                                                fontSize: '0.75rem',
+                                                                px: 2,
+                                                                py: 0.5,
+                                                                borderRadius: 2,
                                                                 '&:hover': {
                                                                     background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)'
                                                                 }
                                                             }}
                                                         >
-                                                            View Appeals ({report.appeals.length})
+                                                            Appeals ({report.appeals.length})
                                                         </Button>
                                                     )}
                                                 </Box>
                                             </Box>
-
-                                            <Box sx={{mb: 2}}>
-                                                <Typography variant="body2" sx={{color: '#64748b', mb: 1}}>
-                                                    Content:
-                                                </Typography>
-                                                <Typography variant="body1" sx={{color: '#1e293b'}}>
-                                                    {report.content}
-                                                </Typography>
-                                            </Box>
-
-                                            <Box sx={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between'
-                                            }}>
-                                                <Box sx={{display: 'flex', alignItems: 'center', gap: 3}}>
-                                                    {report.rating && (
-                                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                                                            <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                                Rating:
-                                                            </Typography>
-                                                            <Rating value={report.rating} readOnly size="small"/>
-                                                        </Box>
-                                                    )}
-                                                    {report.images && report.images.length > 0 && (
-                                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                                                            <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                                Images:
-                                                            </Typography>
-                                                            <Chip
-                                                                label={`${report.images.length} image${report.images.length > 1 ? 's' : ''}`}
-                                                                size="small"
-                                                                sx={{
-                                                                    backgroundColor: '#e0e7ff',
-                                                                    color: '#3730a3',
-                                                                    fontWeight: 'bold',
-                                                                    fontSize: '0.7rem'
-                                                                }}
-                                                            />
-                                                        </Box>
-                                                    )}
-                                                    {(report.video || report.designRequest?.feedback?.video) && (
-                                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                                                            <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                                Video:
-                                                            </Typography>
-                                                            <Chip
-                                                                icon={<VideocamIcon sx={{fontSize: '12px'}}/>}
-                                                                label="Video Available"
-                                                                size="small"
-                                                                sx={{
-                                                                    backgroundColor: '#fef3c7',
-                                                                    color: '#92400e',
-                                                                    fontWeight: 'bold',
-                                                                    fontSize: '0.7rem'
-                                                                }}
-                                                            />
-                                                        </Box>
-                                                    )}
-                                                    {report.partnerVideo && (
-                                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                                                            <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                                Partner Video:
-                                                            </Typography>
-                                                            <Chip
-                                                                icon={<VideocamIcon sx={{fontSize: '12px'}}/>}
-                                                                label="Partner Video"
-                                                                size="small"
-                                                                sx={{
-                                                                    backgroundColor: '#ddd6fe',
-                                                                    color: '#5b21b6',
-                                                                    fontWeight: 'bold',
-                                                                    fontSize: '0.7rem'
-                                                                }}
-                                                            />
-                                                        </Box>
-                                                    )}
-                                                    <Typography variant="body2" sx={{color: '#64748b'}}>
-                                                        {formatDate(report.creationDate)}
-                                                    </Typography>
-                                                </Box>
-                                            </Box>
-                                        </CardContent>
-                                    </Card>
-                                </Box>
+                                        </Box>
+                                    </CardContent>
+                                </Card>
                             ))}
                         </Box>
                     )}

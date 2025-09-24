@@ -48,6 +48,38 @@ import { getSizes } from '../../services/OrderService';
 import { getGarmentFabric, updateGarmentFabric, deleteGarmentFabric } from '../../services/SystemService';
 import { FABRIC_PRICE_MIN, FABRIC_PRICE_MAX, FABRIC_PRICE_STEP } from '../../configs/FixedVariables';
 
+// Helper function to determine fabric types from boolean flags (returns array)
+const getFabricTypesFromFlags = (fabric) => {
+  const types = [];
+  if (fabric.forShirt) types.push('shirt');
+  if (fabric.forPants) types.push('pants');
+  if (fabric.forSkirt) types.push('skirt');
+  return types.length > 0 ? types : ['unknown'];
+};
+
+// Helper function to determine fabric categories from boolean flags (returns array)
+const getFabricCategoriesFromFlags = (fabric) => {
+  const categories = [];
+  if (fabric.forRegular) categories.push('regular');
+  if (fabric.forPE) categories.push('physical');
+  return categories.length > 0 ? categories : ['unknown'];
+};
+
+// Helper function to get primary fabric type (for backward compatibility)
+const getFabricTypeFromFlags = (fabric) => {
+  if (fabric.forShirt) return 'shirt';
+  if (fabric.forPants) return 'pants';
+  if (fabric.forSkirt) return 'skirt';
+  return 'unknown';
+};
+
+// Helper function to get primary fabric category (for backward compatibility)
+const getFabricCategoryFromFlags = (fabric) => {
+  if (fabric.forRegular) return 'regular';
+  if (fabric.forPE) return 'physical';
+  return 'unknown';
+};
+
 const FabricManagement = () => {
   const { enqueueSnackbar } = useSnackbar();
   
@@ -378,7 +410,8 @@ const MyFabricsTab = ({ garmentFabrics, sizes, onEditFabric, onDeleteFabric, onA
 
   const filteredFabrics = garmentFabrics.filter(fabric => {
     const matchesSearch = fabric.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === 'all' || fabric.clothType === filterType;
+    const fabricTypes = getFabricTypesFromFlags(fabric);
+    const matchesType = filterType === 'all' || fabricTypes.includes(filterType);
     return matchesSearch && matchesType;
   });
 
@@ -525,18 +558,28 @@ const MyFabricsTab = ({ garmentFabrics, sizes, onEditFabric, onDeleteFabric, onA
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Chip
-                        label={fabric.clothType === 'shirt' ? 'Shirt' : fabric.clothType === 'pants' ? 'Pants' : 'Skirt'}
-                        size="small"
-                        color={getFabricTypeColor(fabric.clothType)}
-                      />
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {getFabricTypesFromFlags(fabric).map((type) => (
+                          <Chip
+                            key={type}
+                            label={type === 'shirt' ? 'Shirt' : type === 'pants' ? 'Pants' : type === 'skirt' ? 'Skirt' : 'Unknown'}
+                            size="small"
+                            color={type === 'shirt' ? 'primary' : type === 'pants' ? 'secondary' : type === 'skirt' ? 'warning' : 'default'}
+                          />
+                        ))}
+                      </Box>
                     </TableCell>
                     <TableCell>
-                      <Chip
-                        label={fabric.clothCategory === 'regular' ? 'Regular' : 'Physical'}
-                        size="small"
-                        color={fabric.clothCategory === 'regular' ? 'default' : 'success'}
-                      />
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {getFabricCategoriesFromFlags(fabric).map((category) => (
+                          <Chip
+                            key={category}
+                            label={category === 'regular' ? 'Regular' : category === 'physical' ? 'Physical' : 'Unknown'}
+                            size="small"
+                            color={category === 'regular' ? 'default' : category === 'physical' ? 'success' : 'error'}
+                          />
+                        ))}
+                      </Box>
                     </TableCell>
                     <TableCell align="center">
                       <IconButton 
@@ -566,9 +609,10 @@ const MyFabricsTab = ({ garmentFabrics, sizes, onEditFabric, onDeleteFabric, onA
                         </Typography>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
                           {fabric.sizes && fabric.sizes
+                              .filter((size => size.enumName.includes('FEMALE_')))
                             .sort((a, b) => {
                               const sizeOrder = ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'];
-                              return sizeOrder.indexOf(a.name) - sizeOrder.indexOf(b.name);
+                              return sizeOrder.indexOf(a.name) - sizeOrder.indexOf(b.name) ;
                             })
                             .map((size) => (
                             <Box
@@ -719,8 +763,18 @@ const FabricSelectionDialog = ({
       systemFabrics.nonPrice.forEach(fabric => {
         allFabrics.push({
           ...fabric,
-          type: fabric.clothType,
-          category: fabric.clothCategory === 'pe' ? 'physical' : 'regular'
+          type: getFabricTypeFromFlags(fabric), // For backward compatibility
+          category: getFabricCategoryFromFlags(fabric), // For backward compatibility
+          types: getFabricTypesFromFlags(fabric), // Array of all types
+          categories: getFabricCategoriesFromFlags(fabric), // Array of all categories
+          // Keep original flags for future reference
+          originalFlags: {
+            forShirt: fabric.forShirt,
+            forPants: fabric.forPants,
+            forSkirt: fabric.forSkirt,
+            forRegular: fabric.forRegular,
+            forPE: fabric.forPE
+          }
         });
       });
     }
@@ -731,16 +785,21 @@ const FabricSelectionDialog = ({
   const filteredSystemFabrics = getAllSystemFabrics().filter(fabric => {
     const matchesSearch = fabric.name.toLowerCase().includes(systemSearchTerm.toLowerCase()) ||
                          fabric.description.toLowerCase().includes(systemSearchTerm.toLowerCase());
-    const matchesCategory = systemFilterCategory === 'all' || fabric.category === systemFilterCategory;
-    const matchesType = systemFilterType === 'all' || fabric.type === systemFilterType;
+    const fabricCategories = getFabricCategoriesFromFlags(fabric);
+    const fabricTypes = getFabricTypesFromFlags(fabric);
+    const matchesCategory = systemFilterCategory === 'all' || fabricCategories.includes(systemFilterCategory);
+    const matchesType = systemFilterType === 'all' || fabricTypes.includes(systemFilterType);
     
     return matchesSearch && matchesCategory && matchesType;
   });
 
   const handleAddFabric = (fabric) => {
     setSelectedFabric(fabric);
+    
+    const fabricType = getFabricTypeFromFlags(fabric);
+    
     // Khởi tạo giá cho các size phù hợp với loại vải
-    const relevantSizes = sizes.filter(size => size.type === fabric.type);
+    const relevantSizes = sizes.filter(size => size.type === fabricType);
     const initialPrices = {};
     relevantSizes.forEach(size => {
       initialPrices[size.enumName] = '';
@@ -780,8 +839,10 @@ const FabricSelectionDialog = ({
     }
 
     try {
+      const fabricType = getFabricTypeFromFlags(selectedFabric);
+      
       // Get all unique sizes (grouped by size name only)
-      const filteredSizes = sizes.filter(size => size.type === selectedFabric.type);
+      const filteredSizes = sizes.filter(size => size.type === fabricType);
       const sizesToShow = filteredSizes.length > 0 ? filteredSizes : sizes;
       
       const groupedSizes = sizesToShow.reduce((acc, size) => {
@@ -857,8 +918,10 @@ const FabricSelectionDialog = ({
   const validationState = useMemo(() => {
     if (!selectedFabric) return { isValid: false, message: 'Select a Fabric' };
     
+    const fabricType = getFabricTypeFromFlags(selectedFabric);
+    
     // Get all unique sizes (grouped by size name)
-    const filteredSizes = sizes.filter(size => size.type === selectedFabric.type);
+    const filteredSizes = sizes.filter(size => size.type === fabricType);
     const sizesToShow = filteredSizes.length > 0 ? filteredSizes : sizes;
     
     const groupedSizes = sizesToShow.reduce((acc, size) => {
@@ -894,8 +957,10 @@ const FabricSelectionDialog = ({
     const newErrors = {};
     if (!selectedFabric) return newErrors;
     
+    const fabricType = getFabricTypeFromFlags(selectedFabric);
+    
     // Get all unique sizes (grouped by size name)
-    const filteredSizes = sizes.filter(size => size.type === selectedFabric.type);
+    const filteredSizes = sizes.filter(size => size.type === fabricType);
     const sizesToShow = filteredSizes.length > 0 ? filteredSizes : sizes;
     
     const groupedSizes = sizesToShow.reduce((acc, size) => {
@@ -1034,18 +1099,28 @@ const FabricSelectionDialog = ({
                         </Box>
                       </TableCell>
                       <TableCell>
-                        <Chip
-                          label={fabric.type === 'shirt' ? 'Shirt' : fabric.type === 'pants' ? 'Pants' : 'Skirt'}
-                          size="small"
-                          color={fabric.type === 'shirt' ? 'primary' : fabric.type === 'pants' ? 'secondary' : 'warning'}
-                        />
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {getFabricTypesFromFlags(fabric).map((type) => (
+                            <Chip
+                              key={type}
+                              label={type === 'shirt' ? 'Shirt' : type === 'pants' ? 'Pants' : type === 'skirt' ? 'Skirt' : 'Unknown'}
+                              size="small"
+                              color={type === 'shirt' ? 'primary' : type === 'pants' ? 'secondary' : type === 'skirt' ? 'warning' : 'default'}
+                            />
+                          ))}
+                        </Box>
                       </TableCell>
                       <TableCell>
-                        <Chip
-                          label={fabric.category === 'regular' ? 'Regular' : 'Physical'}
-                          size="small"
-                          color={fabric.category === 'regular' ? 'default' : 'success'}
-                        />
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {getFabricCategoriesFromFlags(fabric).map((category) => (
+                            <Chip
+                              key={category}
+                              label={category === 'regular' ? 'Regular' : category === 'physical' ? 'Physical' : 'Unknown'}
+                              size="small"
+                              color={category === 'regular' ? 'default' : category === 'physical' ? 'success' : 'error'}
+                            />
+                          ))}
+                        </Box>
                       </TableCell>
                       <TableCell align="center">
                         <Button
@@ -1131,12 +1206,22 @@ const FabricSelectionDialog = ({
                     const myFabrics = systemFabrics.hasPrice && Array.isArray(systemFabrics.hasPrice) 
                       ? systemFabrics.hasPrice.map(fabric => ({
                           ...fabric,
-                          type: fabric.clothType,
-                          category: fabric.clothCategory === 'pe' ? 'physical' : 'regular',
+                          type: getFabricTypeFromFlags(fabric), // For backward compatibility
+                          category: getFabricCategoryFromFlags(fabric), // For backward compatibility
+                          types: getFabricTypesFromFlags(fabric), // Array of all types
+                          categories: getFabricCategoriesFromFlags(fabric), // Array of all categories
                           prices: fabric.sizes ? fabric.sizes.reduce((acc, size) => {
                             acc[size.enumName] = size.price;
                             return acc;
-                          }, {}) : {}
+                          }, {}) : {},
+                          // Keep original flags for future reference
+                          originalFlags: {
+                            forShirt: fabric.forShirt,
+                            forPants: fabric.forPants,
+                            forSkirt: fabric.forSkirt,
+                            forRegular: fabric.forRegular,
+                            forPE: fabric.forPE
+                          }
                         }))
                       : [];
                     
@@ -1144,8 +1229,10 @@ const FabricSelectionDialog = ({
                       .filter(fabric => {
                         const matchesSearch = fabric.name.toLowerCase().includes(mySearchTerm.toLowerCase()) ||
                                              fabric.description.toLowerCase().includes(mySearchTerm.toLowerCase());
-                        const matchesCategory = myFilterCategory === 'all' || fabric.category === myFilterCategory;
-                        const matchesType = myFilterType === 'all' || fabric.type === myFilterType;
+                        const fabricCategories = getFabricCategoriesFromFlags(fabric);
+                        const fabricTypes = getFabricTypesFromFlags(fabric);
+                        const matchesCategory = myFilterCategory === 'all' || fabricCategories.includes(myFilterCategory);
+                        const matchesType = myFilterType === 'all' || fabricTypes.includes(myFilterType);
                         return matchesSearch && matchesCategory && matchesType;
                       })
                       .map((fabric) => (
@@ -1162,18 +1249,28 @@ const FabricSelectionDialog = ({
                           </Box>
                         </TableCell>
                         <TableCell>
-                          <Chip
-                            label={fabric.type === 'shirt' ? 'Shirt' : fabric.type === 'pants' ? 'Pants' : 'Skirt'}
-                            size="small"
-                            color={fabric.type === 'shirt' ? 'primary' : fabric.type === 'pants' ? 'secondary' : 'warning'}
-                          />
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                            {getFabricTypesFromFlags(fabric).map((type) => (
+                              <Chip
+                                key={type}
+                                label={type === 'shirt' ? 'Shirt' : type === 'pants' ? 'Pants' : type === 'skirt' ? 'Skirt' : 'Unknown'}
+                                size="small"
+                                color={type === 'shirt' ? 'primary' : type === 'pants' ? 'secondary' : type === 'skirt' ? 'warning' : 'default'}
+                              />
+                            ))}
+                          </Box>
                         </TableCell>
                         <TableCell>
-                          <Chip
-                            label={fabric.category === 'regular' ? 'Regular' : 'Physical'}
-                            size="small"
-                            color={fabric.category === 'regular' ? 'default' : 'success'}
-                          />
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                            {getFabricCategoriesFromFlags(fabric).map((category) => (
+                              <Chip
+                                key={category}
+                                label={category === 'regular' ? 'Regular' : category === 'physical' ? 'Physical' : 'Unknown'}
+                                size="small"
+                                color={category === 'regular' ? 'default' : category === 'physical' ? 'success' : 'error'}
+                              />
+                            ))}
+                          </Box>
                         </TableCell>
                       </TableRow>
                       <TableRow>
@@ -1278,28 +1375,6 @@ const FabricSelectionDialog = ({
               ⚠️ Enter prices for ALL sizes (Required)
             </Typography>
             
-            {/* Debug info */}
-            <Box sx={{ mb: 2, p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
-              <Typography variant="caption" display="block">
-                Debug: Total sizes: {sizes.length}
-              </Typography>
-              <Typography variant="caption" display="block">
-                Selected fabric type: {selectedFabric?.type}
-              </Typography>
-              <Typography variant="caption" display="block">
-                Filtered sizes: {sizes.filter(size => size.type === selectedFabric?.type).length}
-              </Typography>
-              <Typography variant="caption" display="block">
-                Fabric prices: {JSON.stringify(fabricPrices)}
-              </Typography>
-              <Typography variant="caption" display="block">
-                Validation state: {JSON.stringify(validationState)}
-              </Typography>
-              <Typography variant="caption" display="block">
-                Field errors: {JSON.stringify(fieldErrors)}
-              </Typography>
-            </Box>
-            
             <TableContainer 
               component={Paper} 
               sx={{ 
@@ -1320,7 +1395,9 @@ const FabricSelectionDialog = ({
                 </TableHead>
                 <TableBody>
                   {(() => {
-                    const filteredSizes = sizes.filter(size => size.type === selectedFabric?.type);
+                    const fabricType = getFabricTypeFromFlags(selectedFabric || {});
+                    
+                    const filteredSizes = sizes.filter(size => size.type === fabricType);
                     const sizesToShow = filteredSizes.length > 0 ? filteredSizes : sizes;
                     
                     // Group sizes by size name only

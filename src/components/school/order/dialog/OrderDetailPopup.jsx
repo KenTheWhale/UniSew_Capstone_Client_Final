@@ -1184,28 +1184,6 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                         </Box>
 
 
-                                        <Box sx={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center',
-                                            p: 1,
-                                            backgroundColor: '#f0f9ff',
-                                            borderRadius: 1,
-                                            border: '1px solid #0ea5e9'
-                                        }}>
-                                            <Typography variant="body2" sx={{
-                                                color: '#0369a1', fontWeight: 700, fontSize: '12px'
-                                            }}>
-                                                Total Amount
-                                            </Typography>
-                                            <Typography variant="body2" sx={{
-                                                color: '#0369a1', fontWeight: 700, fontSize: '12px'
-                                            }}>
-                                                {(selectedQuotation.price + calculateServiceFee(selectedQuotation.price)).toLocaleString('vi-VN')} VND
-                                            </Typography>
-                                        </Box>
-
-
                                         {order.status === 'pending' && (<Box sx={{
                                                 display: 'flex',
                                                 justifyContent: 'space-between',

@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useState, useCallback} from 'react';
-import {Box, Chip, Paper, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Alert} from '@mui/material';
+import {Box, Chip, Paper, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Alert, IconButton} from '@mui/material';
 import {Table} from 'antd';
-import {DollarOutlined, PlusOutlined} from '@ant-design/icons';
+import {DollarOutlined, PlusOutlined, EyeOutlined} from '@ant-design/icons';
 import {getWithdrawRequests, createWithdrawRequest} from '../../../services/AccountService.jsx';
 import {parseID} from '../../../utils/ParseIDUtil.jsx';
 import {formatDateTimeSecond} from '../../../utils/TimestampUtil.jsx';
@@ -38,6 +38,8 @@ export default function GarmentWithdraw() {
     const [openDialog, setOpenDialog] = useState(false);
     const [withdrawAmount, setWithdrawAmount] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [evidenceDialogOpen, setEvidenceDialogOpen] = useState(false);
+    const [evidenceImage, setEvidenceImage] = useState('');
     const {enqueueSnackbar} = useSnackbar();
 
     const fetchWithdrawRequests = useCallback(async () => {
@@ -68,6 +70,20 @@ export default function GarmentWithdraw() {
     const handleCloseDialog = () => {
         setOpenDialog(false);
         setWithdrawAmount('');
+    };
+
+    const handleViewEvidence = (evidenceImg) => {
+        if (evidenceImg) {
+            setEvidenceImage(evidenceImg);
+            setEvidenceDialogOpen(true);
+        } else {
+            enqueueSnackbar('No evidence image available', {variant: 'info'});
+        }
+    };
+
+    const handleCloseEvidenceDialog = () => {
+        setEvidenceDialogOpen(false);
+        setEvidenceImage('');
     };
 
     const formatNumberInput = (value) => {
@@ -196,6 +212,28 @@ export default function GarmentWithdraw() {
                 <Typography variant="body2" sx={{color: '#64748b'}}>
                     {formatDateTimeSecond(val)}
                 </Typography>
+            )
+        },
+        {
+            title: 'Evidence',
+            dataIndex: 'evidenceImg',
+            key: 'evidenceImg',
+            width: 80,
+            align: 'center',
+            render: (evidenceImg, record) => (
+                <IconButton
+                    size="small"
+                    onClick={() => handleViewEvidence(evidenceImg)}
+                    disabled={!evidenceImg}
+                    sx={{
+                        color: evidenceImg ? '#2e7d32' : '#9ca3af',
+                        '&:hover': {
+                            backgroundColor: evidenceImg ? 'rgba(46, 125, 50, 0.1)' : 'transparent'
+                        }
+                    }}
+                >
+                    <EyeOutlined />
+                </IconButton>
             )
         },
     ], []);
@@ -357,6 +395,90 @@ export default function GarmentWithdraw() {
                         }}
                     >
                         {isSubmitting ? 'Creating...' : 'Create Request'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Evidence Image Dialog */}
+            <Dialog
+                open={evidenceDialogOpen}
+                onClose={handleCloseEvidenceDialog}
+                maxWidth="md"
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        borderRadius: 2,
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                    }
+                }}
+            >
+                <DialogTitle sx={{
+                    background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
+                    color: 'white',
+                    fontWeight: 700,
+                    fontSize: '1.25rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                }}>
+                    <EyeOutlined />
+                    Evidence Image
+                </DialogTitle>
+                <DialogContent sx={{p: 3, textAlign: 'center'}}>
+                    {evidenceImage ? (
+                        <Box sx={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            minHeight: '300px'
+                        }}>
+                            <img
+                                src={evidenceImage}
+                                alt="Evidence"
+                                style={{
+                                    maxWidth: '100%',
+                                    maxHeight: '500px',
+                                    objectFit: 'contain',
+                                    borderRadius: '8px',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                                }}
+                                onError={(e) => {
+                                    e.target.style.display = 'none';
+                                    e.target.nextSibling.style.display = 'block';
+                                }}
+                            />
+                            <Typography
+                                variant="body1"
+                                sx={{
+                                    display: 'none',
+                                    color: '#64748b',
+                                    fontStyle: 'italic'
+                                }}
+                            >
+                                Failed to load image
+                            </Typography>
+                        </Box>
+                    ) : (
+                        <Typography variant="body1" sx={{color: '#64748b', fontStyle: 'italic'}}>
+                            No evidence image available
+                        </Typography>
+                    )}
+                </DialogContent>
+                <DialogActions sx={{p: 3, justifyContent: 'center'}}>
+                    <Button
+                        onClick={handleCloseEvidenceDialog}
+                        variant="contained"
+                        sx={{
+                            background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
+                            '&:hover': {
+                                background: 'linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%)',
+                            },
+                            fontWeight: 600,
+                            textTransform: 'none',
+                            px: 3
+                        }}
+                    >
+                        Close
                     </Button>
                 </DialogActions>
             </Dialog>

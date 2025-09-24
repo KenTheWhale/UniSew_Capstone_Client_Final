@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     Avatar,
     Box,
@@ -33,7 +33,7 @@ import {
     Videocam as VideocamIcon
 } from '@mui/icons-material';
 import {parseID} from '../../../utils/ParseIDUtil';
-import {formatDate} from '../../../utils/TimestampUtil';
+import {formatDate, formatDateTimeSecond} from '../../../utils/TimestampUtil';
 import OrderDetailTable from '../../ui/OrderDetailTable';
 
 const formatCurrency = (amount) => {
@@ -136,7 +136,7 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
 
         // Check if all API phases are completed and order is processing
         const allApiPhasesCompleted = apiMilestones.length > 0 && apiMilestones.every(phase => phase.isCompleted);
-        
+
         // Add fixed phases at the end
         const deliveringPhase = {
             title: 'Delivering',
@@ -174,7 +174,7 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
             clearTimeout(hoverTimeout);
             setHoverTimeout(null);
         }
-        
+
         setAnchorEl(event.currentTarget);
         setHoveredMilestone(milestone);
     };
@@ -249,7 +249,7 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                     background: 'linear-gradient(90deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%)',
                     width: '100%'
                 }}/>
-                
+
                 <Box sx={{
                     padding: '20px 24px',
                     display: 'flex',
@@ -277,7 +277,7 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                 fontSize: '24px'
                             }}/>
                         </Box>
-                        
+
                         <Box sx={{
                             display: 'flex',
                             flexDirection: 'column',
@@ -313,7 +313,7 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                             </Box>
                         </Box>
                     </Box>
-                    
+
                     <IconButton
                         onClick={onClose}
                         sx={{
@@ -336,7 +336,7 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                     </IconButton>
                 </Box>
             </DialogTitle>
-            
+
             <DialogContent sx={{p: 3}}>
                 {/* Order Header Card */}
                 <Card sx={{
@@ -604,30 +604,30 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                                         sx={{
                                                             width: 56,
                                                             height: 56,
-                                                    borderRadius: '50%',
-                                                    background: milestone.isCompleted
-                                                        ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'
-                                                        : milestone.isActive
-                                                            ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
-                                                            : milestone.isPaymentRequired
-                                                                ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
+                                                            borderRadius: '50%',
+                                                            background: milestone.isCompleted
+                                                                ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'
+                                                                : milestone.isActive
+                                                                    ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
+                                                                    : milestone.isPaymentRequired
+                                                                        ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
                                                                         : milestone.isNotStarted
                                                                             ? 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)'
-                                                                : 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
+                                                                            : 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
                                                             cursor: 'pointer',
-                                                    transition: 'all 0.3s ease',
-                                                    boxShadow: milestone.isCompleted
-                                                        ? '0 4px 12px rgba(34, 197, 94, 0.3)'
-                                                        : milestone.isActive
-                                                            ? '0 4px 12px rgba(59, 130, 246, 0.3)'
-                                                            : milestone.isPaymentRequired
-                                                                ? '0 4px 12px rgba(239, 68, 68, 0.3)'
+                                                            transition: 'all 0.3s ease',
+                                                            boxShadow: milestone.isCompleted
+                                                                ? '0 4px 12px rgba(34, 197, 94, 0.3)'
+                                                                : milestone.isActive
+                                                                    ? '0 4px 12px rgba(59, 130, 246, 0.3)'
+                                                                    : milestone.isPaymentRequired
+                                                                        ? '0 4px 12px rgba(239, 68, 68, 0.3)'
                                                                         : milestone.isNotStarted
                                                                             ? '0 4px 12px rgba(148, 163, 184, 0.3)'
-                                                                : '0 4px 12px rgba(148, 163, 184, 0.3)',
+                                                                            : '0 4px 12px rgba(148, 163, 184, 0.3)',
                                                             '&:hover': {
                                                                 transform: 'scale(1.1)',
                                                                 boxShadow: milestone.isCompleted
@@ -642,17 +642,17 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                                             }
                                                         }}
                                                     >
-                                                    {milestone.isCompleted ? (
+                                                        {milestone.isCompleted ? (
                                                             <CheckCircleIcon sx={{color: 'white', fontSize: 28}}/>
-                                                    ) : milestone.isActive ? (
+                                                        ) : milestone.isActive ? (
                                                             <DesignServicesIcon sx={{color: 'white', fontSize: 28}}/>
-                                                    ) : milestone.isPaymentRequired ? (
+                                                        ) : milestone.isPaymentRequired ? (
                                                             <PendingIcon sx={{color: 'white', fontSize: 28}}/>
                                                         ) : milestone.isNotStarted ? (
                                                             <PendingIcon sx={{color: 'white', fontSize: 28}}/>
-                                                    ) : (
+                                                        ) : (
                                                             <PendingIcon sx={{color: 'white', fontSize: 28}}/>
-                                                    )}
+                                                        )}
                                                     </Box>
 
                                                     {/* Exclamation mark icon for Required Payment */}
@@ -864,10 +864,10 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                             gap: 3,
                             mb: 3
                         }}>
-                            <Avatar 
-                                src={selectedOrder.school?.avatar} 
-                                sx={{ 
-                                    width: 64, 
+                            <Avatar
+                                src={selectedOrder.school?.avatar}
+                                sx={{
+                                    width: 64,
                                     height: 64,
                                     border: '3px solid #8b5cf6'
                                 }}
@@ -1118,10 +1118,10 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                 gap: 3,
                                 mb: 3
                             }}>
-                                <Avatar 
-                                    src={selectedOrder.garment.customer?.avatar} 
-                                    sx={{ 
-                                        width: 64, 
+                                <Avatar
+                                    src={selectedOrder.garment.customer?.avatar}
+                                    sx={{
+                                        width: 64,
                                         height: 64,
                                         border: '3px solid #10b981'
                                     }}
@@ -1370,7 +1370,7 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                     fontSize: '1.25rem'
                                 }}>
                                     Order Information
-                        </Typography>
+                                </Typography>
                                 <Typography variant="body2" sx={{
                                     color: 'rgba(255, 255, 255, 0.9)',
                                     fontWeight: 500
@@ -1794,9 +1794,9 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                                         color: '#1e293b',
                                                         fontSize: '1rem'
                                                     }}>
-                                    {formatCurrency(selectedOrder.serviceFee || 0)}
-                                </Typography>
-                            </Box>
+                                                        {formatCurrency(selectedOrder.serviceFee || 0)}
+                                                    </Typography>
+                                                </Box>
                                             </Box>
                                         </Box>
 
@@ -1860,9 +1860,9 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                                         fontSize: '1rem'
                                                     }}>
                                                         {formatCurrency(selectedOrder.shippingFee || 0)}
-                                </Typography>
-                            </Box>
-                        </Box>
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
                                         </Box>
 
                                         {/* Total Price (Paid) */}
@@ -2060,7 +2060,7 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                     fontSize: '1.25rem'
                                 }}>
                                     Payment Information
-                            </Typography>
+                                </Typography>
                                 <Typography variant="body2" sx={{
                                     color: 'rgba(255, 255, 255, 0.9)',
                                     fontWeight: 500
@@ -2075,10 +2075,10 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                         {/* Transactions Section */}
                         {selectedOrder.transactions && selectedOrder.transactions.length > 0 && (() => {
                             // Filter transactions to only show deposit, order, and order_return
-                            const filteredTransactions = selectedOrder.transactions.filter(transaction => 
+                            const filteredTransactions = selectedOrder.transactions.filter(transaction =>
                                 ['deposit', 'order', 'order_return'].includes(transaction.paymentType)
                             );
-                            
+
                             return filteredTransactions.length > 0 && (
                                 <Box sx={{mb: 4}}>
                                     <Box sx={{
@@ -2119,185 +2119,188 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                                 if (aPriority !== bPriority) return aPriority - bPriority;
                                                 return new Date(b.creationDate) - new Date(a.creationDate);
                                             })
-                                        .map((transaction) => {
-                                            const isReceiver = transaction?.receiver?.id === selectedOrder?.school?.id;
-                                            const otherParty = isReceiver ? transaction?.sender : transaction?.receiver;
-                                            const isSuccess = transaction?.status === 'success';
-                                            const paymentTypeLabel =
-                                                transaction?.paymentType === 'design' ? 'Design Payment' :
-                                                transaction?.paymentType === 'design_return' ? 'Design Refund' :
-                                                transaction?.paymentType === 'order' ? 'Order Payment' :
-                                                transaction?.paymentType === 'order_return' ? 'Order Refund' :
-                                                transaction?.paymentType === 'deposit' ? 'Deposit' : (transaction?.paymentType || 'Payment');
+                                            .map((transaction) => {
+                                                const isReceiver = transaction?.receiver?.id === selectedOrder?.school?.id;
+                                                const otherParty = isReceiver ? transaction?.sender : transaction?.receiver;
+                                                const senderParty = transaction?.sender;
+                                                const receiverParty = transaction?.receiver;
+                                                const isSuccess = transaction?.status === 'success';
+                                                const paymentTypeLabel =
+                                                    transaction?.paymentType === 'design' ? 'Design Payment' :
+                                                        transaction?.paymentType === 'design_return' ? 'Design Refund' :
+                                                            transaction?.paymentType === 'order' ? 'Order Payment' :
+                                                                transaction?.paymentType === 'order_return' ? 'Order Refund' :
+                                                                    transaction?.paymentType === 'deposit' ? 'Deposit' : (transaction?.paymentType || 'Payment');
 
-                                            return (
-                                                <Card
-                                                    key={transaction.id}
-                                                    elevation={0}
-                                                    sx={{
-                                                        border: '1px solid #e2e8f0',
-                                                        borderRadius: 2,
-                                                        boxShadow: 'none',
-                                                        '&:hover': {
-                                                            boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
-                                                            transform: 'translateY(-2px)'
-                                                        },
-                                                        transition: 'all 0.3s ease'
-                                                    }}
-                                                >
-                                                    <CardContent sx={{p: 3}}>
-                                                        <Box sx={{
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'space-between',
-                                                            mb: 2
-                                                        }}>
-                                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                                return (
+                                                    <Card
+                                                        key={transaction.id}
+                                                        elevation={0}
+                                                        sx={{
+                                                            border: '1px solid #e2e8f0',
+                                                            borderRadius: 2,
+                                                            boxShadow: 'none',
+                                                            '&:hover': {
+                                                                boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                                                                transform: 'translateY(-2px)'
+                                                            },
+                                                            transition: 'all 0.3s ease'
+                                                        }}
+                                                    >
+                                                        <CardContent sx={{p: 3}}>
+                                                            <Box sx={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'space-between',
+                                                                mb: 2
+                                                            }}>
                                                                 <Box sx={{
                                                                     display: 'flex',
                                                                     alignItems: 'center',
-                                                                    justifyContent: 'center',
-                                                                    width: 44,
-                                                                    height: 44,
-                                                                    borderRadius: '50%',
-                                                                    backgroundColor: isReceiver ? '#dcfce7' : '#fef3c7'
+                                                                    gap: 2
                                                                 }}>
-                                                                    <MoneyIcon sx={{color: isReceiver ? '#16a34a' : '#d97706'}}/>
+                                                                    <Box sx={{
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        width: 44,
+                                                                        height: 44,
+                                                                        borderRadius: '50%',
+                                                                        backgroundColor: isReceiver ? '#dcfce7' : '#fef3c7'
+                                                                    }}>
+                                                                        <MoneyIcon
+                                                                            sx={{color: isReceiver ? '#16a34a' : '#d97706'}}/>
+                                                                    </Box>
+                                                                    <Box>
+                                                                        <Typography variant="subtitle1" sx={{
+                                                                            fontWeight: 600,
+                                                                            color: '#1e293b'
+                                                                        }}>
+                                                                            {paymentTypeLabel}
+                                                                        </Typography>
+                                                                        <Typography variant="body2" sx={{
+                                                                            color: '#64748b'
+                                                                        }}>
+                                                                            From {senderParty?.business || 'Unknown'}
+                                                                        </Typography>
+                                                                        <Typography variant="body2" sx={{
+                                                                            color: '#64748b'
+                                                                        }}>
+                                                                            To {receiverParty?.business || 'Unknown'}
+                                                                        </Typography>
+                                                                    </Box>
                                                                 </Box>
-                                <Box>
-                                                                    <Typography variant="subtitle1" sx={{
-                                                                        fontWeight: 600,
-                                                                        color: '#1e293b'
+
+                                                                <Box sx={{textAlign: 'right'}}>
+                                                                    <Typography variant="h6" sx={{
+                                                                        fontWeight: 700,
+                                                                        color: '#10b981'
                                                                     }}>
-                                                                        {paymentTypeLabel}
-                                    </Typography>
-                                                                    <Typography variant="body2" sx={{
-                                                                        color: '#64748b'
-                                                                    }}>
-                                                                        {isReceiver ? 'Received from' : 'Sent to'} {otherParty?.business || 'Unknown'}
-                                    </Typography>
-                                </Box>
+                                                                        {formatCurrency(transaction.amount)}
+                                                                    </Typography>
+                                                                    <Chip
+                                                                        label={isSuccess ? 'Successful' : 'Failed'}
+                                                                        size="small"
+                                                                        sx={{
+                                                                            backgroundColor: isSuccess ? '#dcfce7' : '#fee2e2',
+                                                                            color: isSuccess ? '#166534' : '#dc2626',
+                                                                            fontWeight: 600,
+                                                                            fontSize: '11px',
+                                                                            mt: 0.5
+                                                                        }}
+                                                                    />
+                                                                </Box>
                                                             </Box>
 
-                                                            <Box sx={{textAlign: 'right'}}>
-                                                                <Typography variant="h6" sx={{
-                                                                    fontWeight: 700,
-                                                                    color: isReceiver ? '#10b981' : '#ef4444'
-                                                                }}>
-                                                                    {isReceiver ? '+' : '-'}{formatCurrency(transaction.amount)}
-                                                                </Typography>
-                                                                <Chip
-                                                                    label={isSuccess ? 'Successful' : 'Failed'}
-                                                                    size="small"
-                                                                    sx={{
-                                                                        backgroundColor: isSuccess ? '#dcfce7' : '#fee2e2',
-                                                                        color: isSuccess ? '#166534' : '#dc2626',
-                                                                        fontWeight: 600,
-                                                                        fontSize: '11px',
-                                                                        mt: 0.5
-                                                                    }}
-                                                                />
-                                                                {(() => {
-                                                                    const newBalance = isReceiver ? transaction?.remain?.receiver : transaction?.remain?.sender;
-                                                                    if (newBalance === undefined || newBalance === null || newBalance === -1) return null;
-                                                                    const isPending = !transaction.paymentGatewayCode.includes('w');
-                                                                    return (
-                                                                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 0.5 }}>
+                                                            <Box sx={{
+                                                                display: 'flex',
+                                                                justifyContent: 'space-between',
+                                                                alignItems: 'center',
+                                                                pt: 2,
+                                                                mt: 1,
+                                                                borderTop: '1px solid #f1f5f9'
+                                                            }}>
+                                                                <Box sx={{display: 'flex', gap: 2, flexWrap: 'wrap'}}>
+                                                                    {transaction.itemId && transaction.itemId !== 0 && (
+                                                                        <Box>
+                                                                            <Typography variant="body2" sx={{
+                                                                                color: '#64748b',
+                                                                                fontSize: '12px'
+                                                                            }}>
+                                                                                {transaction.paymentType === 'design' || transaction.paymentType === 'design_return' ? 'Request ID' : 'Order ID'}
+                                                                            </Typography>
                                                                             <Chip
+                                                                                label={transaction.paymentType === 'design' || transaction.paymentType === 'design_return' ?
+                                                                                    parseID(transaction.itemId, 'dr') :
+                                                                                    parseID(transaction.itemId, 'ord')}
                                                                                 size="small"
-                                                                                label={`${isPending ? 'Pending' : 'Balance'}: ${formatCurrency(newBalance)}`}
                                                                                 sx={{
-                                                                                    height: 22,
-                                                                                    fontSize: '11px',
+                                                                                    backgroundColor: transaction.paymentType === 'design' || transaction.paymentType === 'design_return' ? '#f3e8ff' : '#e0f2fe',
+                                                                                    color: transaction.paymentType === 'design' ? '#7c3aed' : '#0369a1',
                                                                                     fontWeight: 600,
-                                                                                    color: '#111827',
-                                                                                    backgroundColor: '#f3f4f6',
-                                                                                    border: '1px solid #e5e7eb'
+                                                                                    fontSize: '10px',
+                                                                                    height: '20px'
                                                                                 }}
                                                                             />
                                                                         </Box>
-                                                                    );
-                                                                })()}
-                                                            </Box>
-                                                        </Box>
-
-                                                        <Box sx={{
-                                                            display: 'flex',
-                                                            justifyContent: 'space-between',
-                                                            alignItems: 'center',
-                                                            pt: 2,
-                                                            mt: 1,
-                                                            borderTop: '1px solid #f1f5f9'
-                                                        }}>
-                                                            <Box sx={{display: 'flex', gap: 2, flexWrap: 'wrap'}}>
-                                                                {transaction.itemId && transaction.itemId !== 0 && (
-                                <Box>
-                                                                        <Typography variant="body2" sx={{color: '#64748b', fontSize: '12px'}}>
-                                                                            {transaction.paymentType === 'design' || transaction.paymentType === 'design_return' ? 'Request ID' : 'Order ID'}
-                                    </Typography>
-                                                                        <Chip
-                                                                            label={transaction.paymentType === 'design' || transaction.paymentType === 'design_return' ?
-                                                                                parseID(transaction.itemId, 'dr') : 
-                                                                                parseID(transaction.itemId, 'ord')}
-                                                                            size="small"
-                                                                            sx={{
-                                                                                backgroundColor: transaction.paymentType === 'design' || transaction.paymentType === 'design_return' ? '#f3e8ff' : '#e0f2fe',
-                                                                                color: transaction.paymentType === 'design' ? '#7c3aed' : '#0369a1',
+                                                                    )}
+                                                                    {transaction.serviceFee > 0 && (
+                                                                        <Box>
+                                                                            <Typography variant="body2" sx={{
+                                                                                color: '#64748b',
+                                                                                fontSize: '12px'
+                                                                            }}>
+                                                                                Service Fee
+                                                                            </Typography>
+                                                                            <Typography variant="body2" sx={{
+                                                                                color: '#f59e0b',
                                                                                 fontWeight: 600,
-                                                                                fontSize: '10px',
-                                                                                height: '20px'
-                                                                            }}
-                                                                        />
-                                                                    </Box>
-                                                                )}
-                                                                {transaction.serviceFee > 0 && (
+                                                                                fontSize: '13px',
+                                                                                mt: '0.5vh'
+                                                                            }}>
+                                                                                {formatCurrency(transaction.serviceFee)}
+                                                                            </Typography>
+                                                                        </Box>
+                                                                    )}
                                                                     <Box>
-                                                                        <Typography variant="body2" sx={{color: '#64748b', fontSize: '12px'}}>
-                                                                            Service Fee
+                                                                        <Typography variant="body2" sx={{
+                                                                            color: '#64748b',
+                                                                            fontSize: '12px'
+                                                                        }}>
+                                                                            Paid from
                                                                         </Typography>
                                                                         <Typography variant="body2" sx={{
-                                                                            color: '#f59e0b',
+                                                                            color: '#0ea5b8',
                                                                             fontWeight: 600,
                                                                             fontSize: '13px',
                                                                             mt: '0.5vh'
                                                                         }}>
-                                                                            {formatCurrency(transaction.serviceFee)}
-                                    </Typography>
-                                </Box>
-                                                                )}
-                                <Box>
-                                                                    <Typography variant="body2" sx={{color: '#64748b', fontSize: '12px'}}>
-                                                                        Paid from
-                                    </Typography>
+                                                                            {transaction.paymentGatewayCode?.includes('w') ? 'Wallet' : 'VNPay'}
+                                                                        </Typography>
+                                                                    </Box>
+                                                                </Box>
+
+                                                                <Box sx={{textAlign: 'right'}}>
                                                                     <Typography variant="body2" sx={{
-                                                                        color: '#0ea5b8',
+                                                                        color: '#64748b',
+                                                                        fontSize: '12px'
+                                                                    }}>
+                                                                        Payment Date
+                                                                    </Typography>
+                                                                    <Typography variant="body2" sx={{
+                                                                        color: '#1e293b',
                                                                         fontWeight: 600,
                                                                         fontSize: '13px',
                                                                         mt: '0.5vh'
                                                                     }}>
-                                                                        {transaction.paymentGatewayCode?.includes('w') ? 'Wallet' : 'VNPay'}
+                                                                        {formatDateTimeSecond(transaction.creationDate)}
                                                                     </Typography>
-                                </Box>
-                            </Box>
-
-                                                            <Box sx={{textAlign: 'right'}}>
-                                                                <Typography variant="body2" sx={{color: '#64748b', fontSize: '12px'}}>
-                                                                    Date
-                                    </Typography>
-                                                                <Typography variant="body2" sx={{
-                                                                    color: '#1e293b',
-                                                                    fontWeight: 600,
-                                                                    fontSize: '13px',
-                                                                    mt: '0.5vh'
-                                                                }}>
-                                                                    {formatDate(transaction.creationDate)}
-                                    </Typography>
-                                </Box>
-                                                        </Box>
-                        </CardContent>
-                    </Card>
-                                            );
-                                        })}
+                                                                </Box>
+                                                            </Box>
+                                                        </CardContent>
+                                                    </Card>
+                                                );
+                                            })}
                                     </Box>
                                 </Box>
                             );
@@ -2616,7 +2619,7 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                     </Card>
                 )}
             </DialogContent>
-            
+
             <DialogActions sx={{padding: '16px 24px', borderTop: '1px solid #f0f0f0'}}>
                 <Button onClick={onClose}>
                     Close
@@ -2823,7 +2826,7 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                 )}
 
                                 {hoveredMilestone.videoUrl && hoveredMilestone.isCompleted && (
-                                    <Box 
+                                    <Box
                                         onClick={() => handleOpenVideoDialog(hoveredMilestone)}
                                         sx={{
                                             display: 'flex',
@@ -2898,8 +2901,8 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                         height: '4px',
                         background: 'linear-gradient(90deg, #8b5cf6 0%, #7c3aed 50%, #a855f7 100%)',
                         width: '100%'
-                    }} />
-                    
+                    }}/>
+
                     <Box sx={{
                         padding: '20px 24px',
                         display: 'flex',
@@ -2927,7 +2930,7 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                     fontSize: '24px'
                                 }}/>
                             </Box>
-                            
+
                             <Box sx={{
                                 display: 'flex',
                                 flexDirection: 'column',
@@ -2950,7 +2953,7 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                 </Typography>
                             </Box>
                         </Box>
-                        
+
                         <IconButton
                             onClick={handleCloseVideoDialog}
                             sx={{
@@ -2973,7 +2976,7 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                         </IconButton>
                     </Box>
                 </DialogTitle>
-                
+
                 <DialogContent sx={{p: 3}}>
                     {selectedVideo?.videoUrl ? (
                         <Box sx={{
@@ -2993,9 +2996,9 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                 }}
                                 preload="metadata"
                             >
-                                <source src={selectedVideo.videoUrl} type="video/mp4" />
-                                <source src={selectedVideo.videoUrl} type="video/webm" />
-                                <source src={selectedVideo.videoUrl} type="video/ogg" />
+                                <source src={selectedVideo.videoUrl} type="video/mp4"/>
+                                <source src={selectedVideo.videoUrl} type="video/webm"/>
+                                <source src={selectedVideo.videoUrl} type="video/ogg"/>
                                 Your browser does not support the video tag.
                             </video>
                         </Box>
@@ -3038,12 +3041,12 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                         </Box>
                     )}
                 </DialogContent>
-                
+
                 <DialogActions sx={{padding: '16px 24px', borderTop: '1px solid #f0f0f0'}}>
                     <Button onClick={handleCloseVideoDialog}>
-                    Close
-                </Button>
-            </DialogActions>
+                        Close
+                    </Button>
+                </DialogActions>
             </Dialog>
         </Dialog>
     );

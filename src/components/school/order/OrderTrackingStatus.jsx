@@ -3122,19 +3122,34 @@ export default function OrderTrackingStatus() {
                                         <MoneyIcon sx={{color: 'white', fontSize: 18}}/>
                                     </Box>
                                     <Box>
-                                        <Typography variant="caption" sx={{
-                                            color: '#64748b',
-                                            fontWeight: 500,
-                                            textTransform: 'uppercase',
-                                            letterSpacing: '0.5px',
-                                            display: 'block'
+                                        <Box sx={{ 
+                                            display: 'flex', 
+                                            alignItems: 'center', 
+                                            gap: 1,
+                                            mb: 1
                                         }}>
-                                            Remaining Payment
-                                        </Typography>
+                                            <Typography variant="caption" sx={{
+                                                color: '#64748b',
+                                                fontWeight: 500,
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.5px'
+                                            }}>
+                                                Remaining
+                                            </Typography>
+                                            <Typography variant="caption" sx={{
+                                                color: '#f59e0b',
+                                                fontWeight: 500,
+                                                fontSize: '0.6rem',
+                                                padding: '2px 6px',
+                                                borderRadius: '4px'
+                                            }}>
+                                                Excl. shipping fee
+                                            </Typography>
+                                        </Box>
                                         <Typography variant="h6" sx={{
                                             fontWeight: 700,
                                             color: '#a855f7',
-                                            fontSize: '1rem'
+                                            fontSize: '1.1rem'
                                         }}>
                                             {formatCurrency(getRemainingPaymentAmount())}
                                         </Typography>
@@ -3450,7 +3465,7 @@ export default function OrderTrackingStatus() {
                         )}
 
                         <Box>
-                            <OrderDetailTable order={orderDetai} />
+                            <OrderDetailTable order={orderDetail} />
                         </Box>
                     </CardContent>
                 </Card>
@@ -4628,7 +4643,7 @@ export default function OrderTrackingStatus() {
                                         display: 'block',
                                         fontSize: '0.7rem'
                                     }}>
-                                        Total Price
+                                        Total Price (Incl. Service Fee)
                                     </Typography>
                                     <Typography variant="h6" sx={{
                                         fontWeight: 700,

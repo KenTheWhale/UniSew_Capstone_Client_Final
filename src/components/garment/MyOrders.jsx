@@ -408,19 +408,7 @@ export default function MyOrders() {
             },
         },
         {
-            title: 'Total Price',
-            dataIndex: 'price',
-            key: 'price',
-            align: 'center',
-            width: 140,
-            render: (price) => (
-                <Typography variant="body2" sx={{fontWeight: 600, color: '#2e7d32'}}>
-                    {formatCurrency(price)}
-                </Typography>
-            ),
-        },
-        {
-            title: 'Total Items',
+            title: 'Total Uniforms',
             dataIndex: 'orderDetails',
             key: 'totalItems',
             align: 'center',
@@ -429,9 +417,8 @@ export default function MyOrders() {
                 const totalItems = orderDetails?.reduce((sum, detail) => sum + detail.quantity, 0) || 0;
                 return (
                     <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1}}>
-                        <InventoryIcon sx={{fontSize: 16, color: '#64748b'}}/>
                         <Typography variant="body2" sx={{fontWeight: 600, color: '#1e293b'}}>
-                            {totalItems}
+                            {totalItems/2}
                         </Typography>
                     </Box>
                 );

@@ -194,6 +194,8 @@ export default function DesignRequestList() {
         switch (status) {
             case 'pending':
                 return 'Pending';
+            case 'processing':
+                return 'Processing';
             case 'imported':
                 return 'Imported';
             case 'completed':
@@ -203,13 +205,6 @@ export default function DesignRequestList() {
             default:
                 return status;
         }
-    };
-
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('vi-VN', {
-            style: 'currency',
-            currency: 'VND'
-        }).format(amount);
     };
 
     const formatDate = (dateString) => {
@@ -254,16 +249,16 @@ export default function DesignRequestList() {
 
     const stats = useMemo(() => {
         if (!Array.isArray(designRequests)) {
-            return {total: 0, pending: 0, imported: 0, completed: 0, cancelled: 0, withQuotation: 0};
+            return {total: 0, pending: 0, imported: 0, completed: 0, cancelled: 0, processing: 0};
         }
         const total = designRequests.length;
         const pending = designRequests.filter(r => r.status === 'pending').length;
         const imported = designRequests.filter(r => r.status === 'imported').length;
         const completed = designRequests.filter(r => r.status === 'completed').length;
         const cancelled = designRequests.filter(r => r.status === 'cancelled').length;
-        const withQuotation = designRequests.filter(r => r.quotation && typeof r.quotation === 'object').length;
+        const processing = designRequests.filter(r => r.status === 'processing').length;
 
-        return {total, pending, imported, completed, cancelled, withQuotation};
+        return {total, pending, imported, completed, cancelled, processing};
     }, [designRequests]);
 
     const columns = useMemo(() => [
@@ -576,10 +571,10 @@ export default function DesignRequestList() {
                             color="#3f51b5"
                         />
                         <StatCard
-                            icon={<CheckCircleOutlined style={{fontSize: 24}}/>}
-                            value={stats.completed}
-                            label="Completed"
-                            color="#4caf50"
+                            icon={<SchoolOutlined style={{fontSize: 24}}/>}
+                            value={stats.imported}
+                            label="Imported"
+                            color="#2196f3"
                         />
                         <StatCard
                             icon={<ClockCircleOutlined style={{fontSize: 24}}/>}
@@ -588,22 +583,22 @@ export default function DesignRequestList() {
                             color="#ff9800"
                         />
                         <StatCard
-                            icon={<SchoolOutlined style={{fontSize: 24}}/>}
-                            value={stats.imported}
-                            label="Imported"
-                            color="#2196f3"
+                            icon={<DesignServicesOutlined style={{fontSize: 24}}/>}
+                            value={stats.processing}
+                            label="Proccessing"
+                            color="#9c27b0"
+                        />
+                        <StatCard
+                            icon={<CheckCircleOutlined style={{fontSize: 24}}/>}
+                            value={stats.completed}
+                            label="Completed"
+                            color="#4caf50"
                         />
                         <StatCard
                             icon={<StopOutlined style={{fontSize: 24}}/>}
                             value={stats.cancelled}
                             label="Cancelled"
                             color="#f44336"
-                        />
-                        <StatCard
-                            icon={<DesignServicesOutlined style={{fontSize: 24}}/>}
-                            value={stats.withQuotation}
-                            label="With Quotation"
-                            color="#9c27b0"
                         />
                     </>
                 )}
