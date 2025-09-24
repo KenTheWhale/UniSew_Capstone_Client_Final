@@ -23,27 +23,29 @@ export const getPaymentUrlUsingWalletForOrder = (amount, quotationId) => {
 
 export const createDesignTransaction = async (receiverId, designRequestId, totalPrice, gatewayCode, serviceFee, payFromWallet) => {
     const response = await axiosClient.post("/payment/transaction", {
-        "type": "design",
-        "receiverId": receiverId,
-        "itemId": designRequestId,
-        "totalPrice": totalPrice,
-        "gatewayCode": gatewayCode,
-        "serviceFee": serviceFee,
-        "payFromWallet": payFromWallet
+        type: "design",
+        receiverId: receiverId,
+        itemId: designRequestId,
+        totalPrice: totalPrice,
+        gatewayCode: gatewayCode,
+        serviceFee: serviceFee,
+        payFromWallet: payFromWallet,
+        shippingFee: 0
     })
 
     return response || null
 }
 
-export const createOrderTransaction = async (receiverId, orderId, totalPrice, gatewayCode, serviceFee, payFromWallet) => {
+export const createOrderTransaction = async (receiverId, orderId, totalPrice, gatewayCode, serviceFee, payFromWallet, shippingFee) => {
     const response = await axiosClient.post("/payment/transaction", {
-        "type": "order",
-        "receiverId": receiverId,
-        "itemId": orderId,
-        "totalPrice": totalPrice,
-        "gatewayCode": gatewayCode,
-        "serviceFee": serviceFee,
-        "payFromWallet": payFromWallet
+        type: "order",
+        receiverId: receiverId,
+        itemId: orderId,
+        totalPrice: totalPrice,
+        gatewayCode: gatewayCode,
+        serviceFee: serviceFee,
+        payFromWallet: payFromWallet,
+        shippingFee: shippingFee
     })
 
     return response || null
@@ -51,13 +53,14 @@ export const createOrderTransaction = async (receiverId, orderId, totalPrice, ga
 
 export const createDepositTransaction = async (receiverId, orderId, totalPrice, gatewayCode, serviceFee, payFromWallet) => {
     const response = await axiosClient.post("/payment/transaction", {
-        "type": "deposit",
-        "receiverId": receiverId,
-        "itemId": orderId,
-        "totalPrice": totalPrice,
-        "gatewayCode": gatewayCode,
-        "serviceFee": serviceFee,
-        "payFromWallet": payFromWallet
+        type: "deposit",
+        receiverId: receiverId,
+        itemId: orderId,
+        totalPrice: totalPrice,
+        gatewayCode: gatewayCode,
+        serviceFee: serviceFee,
+        payFromWallet: payFromWallet,
+        shippingFee: 0
     })
 
     return response || null
@@ -65,13 +68,14 @@ export const createDepositTransaction = async (receiverId, orderId, totalPrice, 
 
 export const createDepositWalletTransaction = async (receiverId, totalPrice, gatewayCode, payFromWallet) => {
     const response = await axiosClient.post("/payment/transaction", {
-        "type": "wallet",
-        "receiverId": receiverId,
-        "itemId": 0,
-        "totalPrice": totalPrice,
-        "gatewayCode": gatewayCode,
-        "serviceFee": 0,
-        "payFromWallet": payFromWallet
+        type: "wallet",
+        receiverId: receiverId,
+        itemId: 0,
+        totalPrice: totalPrice,
+        gatewayCode: gatewayCode,
+        serviceFee: 0,
+        payFromWallet: payFromWallet,
+        shippingFee: 0,
     })
 
     return response || null
