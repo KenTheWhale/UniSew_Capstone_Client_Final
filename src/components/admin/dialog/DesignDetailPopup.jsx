@@ -2,6 +2,8 @@ import React from 'react';
 import {
     Box,
     Card,
+    CardContent,
+    Chip,
     Dialog,
     DialogActions,
     DialogContent,
@@ -25,7 +27,7 @@ import {
     EnvironmentOutlined
 } from "@ant-design/icons";
 import { parseID } from "../../../utils/ParseIDUtil.jsx";
-import { formatDate } from '../../../utils/TimestampUtil';
+import { formatDate, formatDateTimeSecond } from '../../../utils/TimestampUtil';
 import DisplayImage from '../../ui/DisplayImage.jsx';
 import { PiPantsFill, PiShirtFoldedFill } from "react-icons/pi";
 import { GiSkirt } from "react-icons/gi";
@@ -428,101 +430,304 @@ export default function DesignDetailPopup({ open, onClose, selectedRequest }) {
                         {/* Selected Designer */}
                         {selectedRequest.quotation && selectedRequest.quotation.designer && (
                             <Box sx={{flex: 1}}>
-                                <Typography style={{
-                                    fontSize: '14px',
-                                    fontWeight: 600,
-                                    color: '#374151',
-                                    marginBottom: '12px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px'
+                                <Card sx={{
+                                    background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                                    border: 'none',
+                                    borderRadius: 4,
+                                    boxShadow: '0 12px 40px rgba(0, 0, 0, 0.12)',
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        transform: 'translateY(-2px)',
+                                        boxShadow: '0 16px 50px rgba(0, 0, 0, 0.15)'
+                                    }
                                 }}>
-                                    <UserOutlined style={{color: '#2e7d32', fontSize: '16px'}}/>
-                                    Selected Designer
-                                </Typography>
-                                <Card
-                                    size="small"
-                                    style={{
-                                        border: '1px solid #e2e8f0',
-                                        borderRadius: 16,
-                                        height: '100%',
-                                        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                                        padding: '20px'
-                                    }}
-                                >
-                                    <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2}}>
-                                        <Avatar
-                                            size={48}
-                                            src={selectedRequest.quotation.designer.customer.avatar || selectedRequest.quotation.designer.customer.name.charAt(0)}
-                                            style={{
-                                                border: '2px solid #2e7d32',
-                                                backgroundColor: '#2e7d32'
-                                            }}
-                                        >
-                                            {selectedRequest.quotation.designer.customer.name.charAt(0)}
-                                        </Avatar>
-                                        <Box sx={{flex: 1}}>
-                                            <Typography style={{fontWeight: 600, fontSize: '14px', color: '#1e293b'}}>
-                                                {selectedRequest.quotation.designer.customer.name}
-                                            </Typography>
-                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mt: 0.5}}>
-                                                <Rate
-                                                    disabled
-                                                    defaultValue={selectedRequest.quotation.designer.rating || 0}
-                                                    style={{fontSize: '10px'}}
-                                                />
-                                                <Typography style={{fontSize: '10px', color: '#64748b'}}>
-                                                    ({selectedRequest.quotation.designer.rating || 0})
+                                    <Box sx={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        right: 0,
+                                        height: '6px',
+                                        background: 'linear-gradient(90deg, #3b82f6 0%, #2563eb 30%, #1d4ed8 60%, #1e40af 100%)'
+                                    }}/>
+
+                                    <Box sx={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        right: 0,
+                                        width: '150px',
+                                        height: '150px',
+                                        background: 'radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%)',
+                                        borderRadius: '50%',
+                                        transform: 'translate(30px, -30px)'
+                                    }}/>
+
+                                    <Box sx={{
+                                        background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                                        p: 3,
+                                        position: 'relative',
+                                        overflow: 'hidden'
+                                    }}>
+                                        <Box sx={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: '100px',
+                                            height: '100px',
+                                            background: 'rgba(255, 255, 255, 0.1)',
+                                            borderRadius: '50%',
+                                            transform: 'translate(-30px, -30px)'
+                                        }}/>
+                                        <Box sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 2,
+                                            position: 'relative',
+                                            zIndex: 1
+                                        }}>
+                                            <Box sx={{
+                                                width: 40,
+                                                height: 40,
+                                                borderRadius: '50%',
+                                                background: 'rgba(255, 255, 255, 0.2)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+                                            }}>
+                                                <UserOutlined sx={{color: 'white', fontSize: 20}}/>
+                                            </Box>
+                                            <Box>
+                                                <Typography variant="h6" sx={{
+                                                    fontWeight: 700,
+                                                    color: 'white',
+                                                    fontSize: '1.25rem'
+                                                }}>
+                                                    Selected Designer
+                                                </Typography>
+                                                <Typography variant="body2" sx={{
+                                                    color: 'rgba(255, 255, 255, 0.9)',
+                                                    fontWeight: 500
+                                                }}>
+                                                    Designer information and contact details
                                                 </Typography>
                                             </Box>
                                         </Box>
                                     </Box>
 
-                                    <Row gutter={[8, 8]}>
-                                        <Col span={12}>
-                                            <Space direction="vertical" size="small">
-                                                <Space>
-                                                    <ShopOutlined style={{color: '#2e7d32', fontSize: '12px'}}/>
-                                                    <Typography style={{fontSize: '12px'}}>
-                                                        {selectedRequest.quotation.designer.customer.business}
+                                    <CardContent sx={{p: 4}}>
+                                        <Box sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 2,
+                                            mb: 3
+                                        }}>
+                                            <Avatar
+                                                src={selectedRequest.quotation.designer.customer.avatar}
+                                                sx={{
+                                                    width: 64,
+                                                    height: 64,
+                                                    border: '3px solid #3b82f6'
+                                                }}
+                                            >
+                                                {selectedRequest.quotation.designer.customer.name?.charAt(0)}
+                                            </Avatar>
+                                            <Box sx={{flex: 1}}>
+                                                <Typography variant="h6" sx={{
+                                                    fontWeight: 700,
+                                                    color: '#1e293b',
+                                                    fontSize: '1.25rem',
+                                                    mb: 0.5
+                                                }}>
+                                                    {selectedRequest.quotation.designer.customer.name}
+                                                </Typography>
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 1,
+                                                    mb: 1
+                                                }}>
+                                                    <Rate
+                                                        disabled
+                                                        value={selectedRequest.quotation.designer.rating || 0}
+                                                        style={{fontSize: '14px'}}
+                                                    />
+                                                    <Typography variant="body2" sx={{
+                                                        color: '#64748b',
+                                                        fontSize: '12px'
+                                                    }}>
+                                                        ({selectedRequest.quotation.designer.rating || 0} reviews)
                                                     </Typography>
-                                                </Space>
-                                                <Space>
-                                                    <PhoneOutlined style={{color: '#2e7d32', fontSize: '12px'}}/>
-                                                    <Typography style={{fontSize: '12px', color: '#64748b'}}>
-                                                        {selectedRequest.quotation.designer.customer.phone}
-                                                    </Typography>
-                                                </Space>
-                                            </Space>
-                                        </Col>
-                                        <Col span={12}>
-                                            <Space direction="vertical" size="small">
-                                                <Space>
-                                                    <EnvironmentOutlined style={{color: '#64748b', fontSize: '12px'}}/>
-                                                    <Typography style={{fontSize: '12px', color: '#64748b'}}>
-                                                        {selectedRequest.quotation.designer.customer.address}
-                                                    </Typography>
-                                                </Space>
-                                                <Space>
-                                                    <ClockCircleOutlined style={{color: '#2e7d32', fontSize: '12px'}}/>
-                                                    <Typography style={{fontSize: '12px', color: '#64748b'}}>
-                                                        {(() => {
-                                                            const formatTime = (timeString) => {
-                                                                if (!timeString) return 'N/A';
-                                                                const time = new Date(`2000-01-01T${timeString}`);
-                                                                return time.toLocaleTimeString('vi-VN', {
-                                                                    hour: '2-digit',
-                                                                    minute: '2-digit',
-                                                                    hour12: false
-                                                                });
-                                                            };
-                                                            return `${formatTime(selectedRequest.quotation.designer.startTime)} - ${formatTime(selectedRequest.quotation.designer.endTime)}`;
-                                                        })()}
-                                                    </Typography>
-                                                </Space>
-                                            </Space>
-                                        </Col>
-                                    </Row>
+                                                </Box>
+                                                <Typography variant="body2" sx={{
+                                                    color: '#3b82f6',
+                                                    fontWeight: 600,
+                                                    fontSize: '0.9rem'
+                                                }}>
+                                                    {selectedRequest.quotation.designer.customer.business}
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+
+                                        <Box sx={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: 2
+                                        }}>
+                                            {selectedRequest.quotation.designer.customer.phone && (
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 2,
+                                                    p: 2,
+                                                    borderRadius: 2,
+                                                    background: 'rgba(248, 250, 252, 0.8)',
+                                                    transition: 'all 0.3s ease',
+                                                    '&:hover': {
+                                                        background: 'rgba(59, 130, 246, 0.05)',
+                                                        transform: 'translateX(4px)'
+                                                    }
+                                                }}>
+                                                    <Box sx={{
+                                                        width: 36,
+                                                        height: 36,
+                                                        borderRadius: '50%',
+                                                        background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        flexShrink: 0
+                                                    }}>
+                                                        <PhoneOutlined sx={{color: 'white', fontSize: 18}}/>
+                                                    </Box>
+                                                    <Box sx={{flex: 1}}>
+                                                        <Typography variant="caption" sx={{
+                                                            color: '#64748b',
+                                                            fontWeight: 500,
+                                                            textTransform: 'uppercase',
+                                                            letterSpacing: '0.5px',
+                                                            fontSize: '0.75rem'
+                                                        }}>
+                                                            Phone
+                                                        </Typography>
+                                                        <Typography variant="body2" sx={{
+                                                            color: '#1e293b',
+                                                            fontWeight: 500,
+                                                            lineHeight: 1.4
+                                                        }}>
+                                                            {selectedRequest.quotation.designer.customer.phone}
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+                                            )}
+
+                                            {selectedRequest.quotation.designer.customer.address && (
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 2,
+                                                    p: 2,
+                                                    borderRadius: 2,
+                                                    background: 'rgba(248, 250, 252, 0.8)',
+                                                    transition: 'all 0.3s ease',
+                                                    '&:hover': {
+                                                        background: 'rgba(59, 130, 246, 0.05)',
+                                                        transform: 'translateX(4px)'
+                                                    }
+                                                }}>
+                                                    <Box sx={{
+                                                        width: 36,
+                                                        height: 36,
+                                                        borderRadius: '50%',
+                                                        background: 'linear-gradient(135deg, #64748b 0%, #475569 100%)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        flexShrink: 0
+                                                    }}>
+                                                        <EnvironmentOutlined sx={{color: 'white', fontSize: 18}}/>
+                                                    </Box>
+                                                    <Box sx={{flex: 1}}>
+                                                        <Typography variant="caption" sx={{
+                                                            color: '#64748b',
+                                                            fontWeight: 500,
+                                                            textTransform: 'uppercase',
+                                                            letterSpacing: '0.5px',
+                                                            fontSize: '0.75rem'
+                                                        }}>
+                                                            Address
+                                                        </Typography>
+                                                        <Typography variant="body2" sx={{
+                                                            color: '#1e293b',
+                                                            fontWeight: 500,
+                                                            lineHeight: 1.4
+                                                        }}>
+                                                            {selectedRequest.quotation.designer.customer.address}
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+                                            )}
+
+                                            {selectedRequest.quotation.designer.startTime && selectedRequest.quotation.designer.endTime && (
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 2,
+                                                    p: 2,
+                                                    borderRadius: 2,
+                                                    background: 'rgba(248, 250, 252, 0.8)',
+                                                    transition: 'all 0.3s ease',
+                                                    '&:hover': {
+                                                        background: 'rgba(59, 130, 246, 0.05)',
+                                                        transform: 'translateX(4px)'
+                                                    }
+                                                }}>
+                                                    <Box sx={{
+                                                        width: 36,
+                                                        height: 36,
+                                                        borderRadius: '50%',
+                                                        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        flexShrink: 0
+                                                    }}>
+                                                        <ClockCircleOutlined sx={{color: 'white', fontSize: 18}}/>
+                                                    </Box>
+                                                    <Box sx={{flex: 1}}>
+                                                        <Typography variant="caption" sx={{
+                                                            color: '#64748b',
+                                                            fontWeight: 500,
+                                                            textTransform: 'uppercase',
+                                                            letterSpacing: '0.5px',
+                                                            fontSize: '0.75rem'
+                                                        }}>
+                                                            Working Time
+                                                        </Typography>
+                                                        <Typography variant="body2" sx={{
+                                                            color: '#1e293b',
+                                                            fontWeight: 500,
+                                                            lineHeight: 1.4
+                                                        }}>
+                                                            {(() => {
+                                                                const formatTime = (timeString) => {
+                                                                    if (!timeString) return 'N/A';
+                                                                    const time = new Date(`2000-01-01T${timeString}`);
+                                                                    return time.toLocaleTimeString('vi-VN', {
+                                                                        hour: '2-digit',
+                                                                        minute: '2-digit',
+                                                                        hour12: false
+                                                                    });
+                                                                };
+                                                                return `${formatTime(selectedRequest.quotation.designer.startTime)} - ${formatTime(selectedRequest.quotation.designer.endTime)}`;
+                                                            })()}
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+                                            )}
+                                        </Box>
+                                    </CardContent>
                                 </Card>
                             </Box>
                         )}
@@ -530,139 +735,668 @@ export default function DesignDetailPopup({ open, onClose, selectedRequest }) {
                         {/* Service Summary */}
                         {selectedRequest.quotation && typeof selectedRequest.quotation === 'object' && (
                             <Box sx={{flex: 1}}>
-                                <Typography style={{
-                                    fontSize: '14px',
-                                    fontWeight: 600,
-                                    color: '#374151',
-                                    marginBottom: '12px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px'
+                                <Card sx={{
+                                    height: '53vh',
+                                    background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                                    border: 'none',
+                                    borderRadius: 4,
+                                    boxShadow: '0 12px 40px rgba(0, 0, 0, 0.12)',
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        transform: 'translateY(-2px)',
+                                        boxShadow: '0 16px 50px rgba(0, 0, 0, 0.15)'
+                                    }
                                 }}>
-                                    <DollarOutlined style={{color: '#2e7d32', fontSize: '16px'}}/>
-                                    Service Summary
-                                </Typography>
-                                <Card
-                                    size="small"
-                                    style={{
-                                        border: '1px solid #e2e8f0',
-                                        borderRadius: 16,
-                                        height: '100%',
-                                        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                                        padding: '20px',
+                                    <Box sx={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        right: 0,
+                                        height: '6px',
+                                        background: 'linear-gradient(90deg, #8b5cf6 0%, #7c3aed 30%, #a855f7 60%, #c084fc 100%)'
+                                    }}/>
 
-                                    }}
-                                >
-                                    <Row gutter={[8, 8]} style={{display: 'flex', alignItems: 'center', height: '100%'}}>
-                                        <Col span={8} style={{display: 'flex', alignItems: 'center'}}>
-                                            <Box sx={{
-                                                p: 1.5,
-                                                background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.1) 0%, rgba(27, 94, 32, 0.15) 100%)',
-                                                borderRadius: 6,
-                                                border: '1px solid rgba(46, 125, 50, 0.2)',
-                                                textAlign: 'center',
-                                                width: '100%',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                justifyContent: 'center'
-                                            }}>
-                                                <Typography style={{
-                                                    fontSize: '10px',
-                                                    color: '#2e7d32',
-                                                    fontWeight: 600
-                                                }}>
-                                                    PRICE (VND)
-                                                </Typography>
-                                                <Typography variant="h6" style={{
-                                                    margin: '4px 0 0 0',
-                                                    color: '#2e7d32',
-                                                    fontWeight: 700,
-                                                    fontSize: '14px'
-                                                }}>
-                                                    {formatCurrency(selectedRequest.quotation.price)}
-                                                </Typography>
-                                            </Box>
-                                        </Col>
-                                        <Col span={8} style={{display: 'flex'}}>
-                                            <Box sx={{
-                                                p: 1.5,
-                                                background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(245, 124, 0, 0.15) 100%)',
-                                                borderRadius: 6,
-                                                border: '1px solid rgba(255, 152, 0, 0.2)',
-                                                textAlign: 'center',
-                                                width: '100%',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                justifyContent: 'center'
-                                            }}>
-                                                <Typography style={{
-                                                    fontSize: '10px',
-                                                    color: '#f57c00',
-                                                    fontWeight: 600
-                                                }}>
-                                                    DELIVERY
-                                                </Typography>
-                                                <Typography variant="h6" style={{
-                                                    margin: '4px 0 0 0',
-                                                    color: '#f57c00',
-                                                    fontWeight: 700,
-                                                    fontSize: '14px'
-                                                }}>
-                                                    {selectedRequest.quotation.deliveryWithIn} days
-                                                </Typography>
-                                            </Box>
-                                        </Col>
-                                        <Col span={8} style={{display: 'flex'}}>
-                                            <Box sx={{
-                                                p: 1.5,
-                                                background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(91, 33, 182, 0.15) 100%)',
-                                                borderRadius: 6,
-                                                border: '1px solid rgba(124, 58, 237, 0.2)',
-                                                textAlign: 'center',
-                                                width: '100%',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                justifyContent: 'center'
-                                            }}>
-                                                <Typography style={{
-                                                    fontSize: '10px',
-                                                    color: '#7c3aed',
-                                                    fontWeight: 600
-                                                }}>
-                                                    REVISIONS
-                                                </Typography>
-                                                <Typography variant="h6" style={{
-                                                    margin: '4px 0 0 0',
-                                                    color: '#7c3aed',
-                                                    fontWeight: 700,
-                                                    fontSize: '14px'
-                                                }}>
-                                                    {selectedRequest.quotation.revisionTime === 9999 ? 'Unlimited' : selectedRequest.quotation.revisionTime}
-                                                </Typography>
-                                            </Box>
-                                        </Col>
-                                    </Row>
-                                    {selectedRequest.quotation.note && (
+                                    <Box sx={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        right: 0,
+                                        width: '150px',
+                                        height: '150px',
+                                        background: 'radial-gradient(circle, rgba(139, 92, 246, 0.05) 0%, transparent 70%)',
+                                        borderRadius: '50%',
+                                        transform: 'translate(30px, -30px)'
+                                    }}/>
+
+                                    <Box sx={{
+                                        background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                                        p: 3,
+                                        position: 'relative',
+                                        overflow: 'hidden'
+                                    }}>
                                         <Box sx={{
-                                            mt: 1.5,
-                                            p: 1.5,
-                                            bgcolor: 'rgba(46, 125, 50, 0.05)',
-                                            borderRadius: 6,
-                                            border: '1px solid rgba(46, 125, 50, 0.1)'
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: '100px',
+                                            height: '100px',
+                                            background: 'rgba(255, 255, 255, 0.1)',
+                                            borderRadius: '50%',
+                                            transform: 'translate(-30px, -30px)'
+                                        }}/>
+                                        <Box sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 2,
+                                            position: 'relative',
+                                            zIndex: 1
                                         }}>
-                                            <Typography style={{
-                                                fontStyle: 'italic',
-                                                color: '#475569',
-                                                fontSize: '12px'
+                                            <Box sx={{
+                                                width: 40,
+                                                height: 40,
+                                                borderRadius: '50%',
+                                                background: 'rgba(255, 255, 255, 0.2)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)'
                                             }}>
-                                                <strong>Note:</strong> {selectedRequest.quotation.note}
-                                            </Typography>
+                                                <DollarOutlined sx={{color: 'white', fontSize: 20}}/>
+                                            </Box>
+                                            <Box>
+                                                <Typography variant="h6" sx={{
+                                                    fontWeight: 700,
+                                                    color: 'white',
+                                                    fontSize: '1.25rem'
+                                                }}>
+                                                    Service Summary
+                                                </Typography>
+                                                <Typography variant="body2" sx={{
+                                                    color: 'rgba(255, 255, 255, 0.9)',
+                                                    fontWeight: 500
+                                                }}>
+                                                    Pricing and service details
+                                                </Typography>
+                                            </Box>
                                         </Box>
-                                    )}
+                                    </Box>
+
+                                    <CardContent sx={{p: 4}}>
+                                        <Box sx={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: 3,
+                                            mb: 3
+                                        }}>
+                                            <Box sx={{
+                                                p: 3,
+                                                borderRadius: 3,
+                                                background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%)',
+                                                border: '1px solid rgba(34, 197, 94, 0.1)',
+                                                position: 'relative',
+                                                overflow: 'hidden',
+                                                transition: 'all 0.3s ease',
+                                                '&:hover': {
+                                                    transform: 'translateY(-2px)',
+                                                    boxShadow: '0 8px 25px rgba(34, 197, 94, 0.15)'
+                                                }
+                                            }}>
+                                                <Box sx={{
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    right: 0,
+                                                    width: '40px',
+                                                    height: '40px',
+                                                    background: 'rgba(34, 197, 94, 0.1)',
+                                                    borderRadius: '50%',
+                                                    transform: 'translate(10px, -10px)'
+                                                }}/>
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 2,
+                                                    position: 'relative',
+                                                    zIndex: 1
+                                                }}>
+                                                    <Box sx={{
+                                                        width: 32,
+                                                        height: 32,
+                                                        borderRadius: '50%',
+                                                        background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)'
+                                                    }}>
+                                                        <DollarOutlined sx={{color: 'white', fontSize: 16}}/>
+                                                    </Box>
+                                                    <Box>
+                                                        <Typography variant="caption" sx={{
+                                                            color: '#64748b',
+                                                            fontWeight: 500,
+                                                            textTransform: 'uppercase',
+                                                            letterSpacing: '0.5px',
+                                                            display: 'block',
+                                                            fontSize: '0.7rem'
+                                                        }}>
+                                                            Price (VND)
+                                                        </Typography>
+                                                        <Typography variant="h6" sx={{
+                                                            fontWeight: 700,
+                                                            color: '#1e293b',
+                                                            fontSize: '1rem'
+                                                        }}>
+                                                            {formatCurrency(selectedRequest.quotation.price)}
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+                                            </Box>
+
+                                            <Box sx={{
+                                                p: 3,
+                                                borderRadius: 3,
+                                                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(217, 119, 6, 0.05) 100%)',
+                                                border: '1px solid rgba(245, 158, 11, 0.1)',
+                                                position: 'relative',
+                                                overflow: 'hidden',
+                                                transition: 'all 0.3s ease',
+                                                '&:hover': {
+                                                    transform: 'translateY(-2px)',
+                                                    boxShadow: '0 8px 25px rgba(245, 158, 11, 0.15)'
+                                                }
+                                            }}>
+                                                <Box sx={{
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    right: 0,
+                                                    width: '40px',
+                                                    height: '40px',
+                                                    background: 'rgba(245, 158, 11, 0.1)',
+                                                    borderRadius: '50%',
+                                                    transform: 'translate(10px, -10px)'
+                                                }}/>
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 2,
+                                                    position: 'relative',
+                                                    zIndex: 1
+                                                }}>
+                                                    <Box sx={{
+                                                        width: 32,
+                                                        height: 32,
+                                                        borderRadius: '50%',
+                                                        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)'
+                                                    }}>
+                                                        <ClockCircleOutlined sx={{color: 'white', fontSize: 16}}/>
+                                                    </Box>
+                                                    <Box>
+                                                        <Typography variant="caption" sx={{
+                                                            color: '#64748b',
+                                                            fontWeight: 500,
+                                                            textTransform: 'uppercase',
+                                                            letterSpacing: '0.5px',
+                                                            display: 'block',
+                                                            fontSize: '0.7rem'
+                                                        }}>
+                                                            Delivery
+                                                        </Typography>
+                                                        <Typography variant="h6" sx={{
+                                                            fontWeight: 700,
+                                                            color: '#1e293b',
+                                                            fontSize: '1rem'
+                                                        }}>
+                                                            {selectedRequest.quotation.deliveryWithIn} days
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+                                            </Box>
+
+                                            <Box sx={{
+                                                p: 3,
+                                                borderRadius: 3,
+                                                background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%)',
+                                                border: '1px solid rgba(139, 92, 246, 0.1)',
+                                                position: 'relative',
+                                                overflow: 'hidden',
+                                                transition: 'all 0.3s ease',
+                                                '&:hover': {
+                                                    transform: 'translateY(-2px)',
+                                                    boxShadow: '0 8px 25px rgba(139, 92, 246, 0.15)'
+                                                }
+                                            }}>
+                                                <Box sx={{
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    right: 0,
+                                                    width: '40px',
+                                                    height: '40px',
+                                                    background: 'rgba(139, 92, 246, 0.1)',
+                                                    borderRadius: '50%',
+                                                    transform: 'translate(10px, -10px)'
+                                                }}/>
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 2,
+                                                    position: 'relative',
+                                                    zIndex: 1
+                                                }}>
+                                                    <Box sx={{
+                                                        width: 32,
+                                                        height: 32,
+                                                        borderRadius: '50%',
+                                                        background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)'
+                                                    }}>
+                                                        <FileTextOutlined sx={{color: 'white', fontSize: 16}}/>
+                                                    </Box>
+                                                    <Box>
+                                                        <Typography variant="caption" sx={{
+                                                            color: '#64748b',
+                                                            fontWeight: 500,
+                                                            textTransform: 'uppercase',
+                                                            letterSpacing: '0.5px',
+                                                            display: 'block',
+                                                            fontSize: '0.7rem'
+                                                        }}>
+                                                            Revisions
+                                                        </Typography>
+                                                        <Typography variant="h6" sx={{
+                                                            fontWeight: 700,
+                                                            color: '#1e293b',
+                                                            fontSize: '1rem'
+                                                        }}>
+                                                            {selectedRequest.quotation.revisionTime === 9999 ? 'Unlimited' : selectedRequest.quotation.revisionTime}
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+                                            </Box>
+                                        </Box>
+
+                                        {selectedRequest.quotation.note && (
+                                            <Box sx={{
+                                                p: 3,
+                                                borderRadius: 3,
+                                                background: 'linear-gradient(135deg, rgba(107, 114, 128, 0.05) 0%, rgba(75, 85, 99, 0.05) 100%)',
+                                                border: '1px solid rgba(107, 114, 128, 0.15)',
+                                                borderLeft: '4px solid #6b7280'
+                                            }}>
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'flex-start',
+                                                    gap: 2
+                                                }}>
+                                                    <Box sx={{
+                                                        width: 32,
+                                                        height: 32,
+                                                        borderRadius: '50%',
+                                                        background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        flexShrink: 0,
+                                                        mt: 0.5,
+                                                        boxShadow: '0 4px 12px rgba(107, 114, 128, 0.3)'
+                                                    }}>
+                                                        <InfoCircleOutlined sx={{color: 'white', fontSize: 16}}/>
+                                                    </Box>
+                                                    <Box sx={{flex: 1}}>
+                                                        <Typography variant="subtitle2" sx={{
+                                                            fontWeight: 600,
+                                                            color: '#374151',
+                                                            mb: 1
+                                                        }}>
+                                                            Service Notes
+                                                        </Typography>
+                                                        <Typography variant="body2" sx={{
+                                                            color: '#6b7280',
+                                                            lineHeight: 1.6,
+                                                            fontStyle: 'italic'
+                                                        }}>
+                                                            {selectedRequest.quotation.note}
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+                                            </Box>
+                                        )}
+                                    </CardContent>
                                 </Card>
                             </Box>
                         )}
                     </Box>
+
+                    {/* Payment Information Section */}
+                    {selectedRequest.transactions && selectedRequest.transactions.length > 0 && (
+                        <Card sx={{
+                            mb: 4,
+                            mt: 4,
+                            background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                            border: 'none',
+                            borderRadius: 4,
+                            boxShadow: '0 12px 40px rgba(0, 0, 0, 0.12)',
+                            position: 'relative',
+                            overflow: 'hidden',
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 16px 50px rgba(0, 0, 0, 0.15)'
+                            }
+                        }}>
+                            <Box sx={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                height: '6px',
+                                background: 'linear-gradient(90deg, #22c55e 0%, #16a34a 30%, #15803d 60%, #166534 100%)'
+                            }}/>
+
+                            <Box sx={{
+                                position: 'absolute',
+                                top: 0,
+                                right: 0,
+                                width: '150px',
+                                height: '150px',
+                                background: 'radial-gradient(circle, rgba(34, 197, 94, 0.05) 0%, transparent 70%)',
+                                borderRadius: '50%',
+                                transform: 'translate(30px, -30px)'
+                            }}/>
+
+                            <Box sx={{
+                                background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                                p: 3,
+                                position: 'relative',
+                                overflow: 'hidden'
+                            }}>
+                                <Box sx={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    width: '100px',
+                                    height: '100px',
+                                    background: 'rgba(255, 255, 255, 0.1)',
+                                    borderRadius: '50%',
+                                    transform: 'translate(-30px, -30px)'
+                                }}/>
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    position: 'relative',
+                                    zIndex: 1
+                                }}>
+                                    <Box sx={{
+                                        width: 40,
+                                        height: 40,
+                                        borderRadius: '50%',
+                                        background: 'rgba(255, 255, 255, 0.2)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)'
+                                    }}>
+                                        <DollarOutlined sx={{color: 'white', fontSize: 20}}/>
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="h6" sx={{
+                                            fontWeight: 700,
+                                            color: 'white',
+                                            fontSize: '1.25rem'
+                                        }}>
+                                            Payment Information
+                                        </Typography>
+                                        <Typography variant="body2" sx={{
+                                            color: 'rgba(255, 255, 255, 0.9)',
+                                            fontWeight: 500
+                                        }}>
+                                            Payment breakdown and financial details
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                            </Box>
+
+                            <CardContent sx={{p: 4}}>
+                                {/* Transactions Section */}
+                                {(() => {
+                                    // Filter transactions to only show design and design_return
+                                    const filteredTransactions = selectedRequest.transactions.filter(transaction =>
+                                        ['design', 'design_return'].includes(transaction.paymentType)
+                                    );
+
+                                    return filteredTransactions.length > 0 && (
+                                        <Box sx={{mb: 4}}>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                mb: 2
+                                            }}>
+                                                <Typography variant="h6" sx={{
+                                                    fontWeight: 700,
+                                                    color: '#1e293b'
+                                                }}>
+                                                    Transactions
+                                                </Typography>
+                                                <Chip
+                                                    label={`${filteredTransactions.length} transactions`}
+                                                    size="small"
+                                                    sx={{
+                                                        backgroundColor: '#06b6d410',
+                                                        color: '#06b6d4',
+                                                        fontWeight: 600
+                                                    }}
+                                                />
+                                            </Box>
+
+                                            <Box sx={{
+                                                display: 'grid',
+                                                gridTemplateColumns: {
+                                                    xs: '1fr',
+                                                    md: '1fr 1fr'
+                                                },
+                                                gap: 2
+                                            }}>
+                                                {[...filteredTransactions]
+                                                    .sort((a, b) => {
+                                                        const aPriority = a?.paymentType === 'design' ? 0 : 1;
+                                                        const bPriority = b?.paymentType === 'design' ? 0 : 1;
+                                                        if (aPriority !== bPriority) return aPriority - bPriority;
+                                                        return new Date(b.creationDate) - new Date(a.creationDate);
+                                                    })
+                                                    .map((transaction) => {
+                                                        const isReceiver = transaction?.receiver?.id === selectedRequest?.school?.id;
+                                                        const otherParty = isReceiver ? transaction?.sender : transaction?.receiver;
+                                                        const senderParty = transaction?.sender;
+                                                        const receiverParty = transaction?.receiver;
+                                                        const isSuccess = transaction?.status === 'success';
+                                                        const paymentTypeLabel =
+                                                            transaction?.paymentType === 'design' ? 'Design Payment' :
+                                                                transaction?.paymentType === 'design_return' ? 'Design Refund' :
+                                                                    transaction?.paymentType || 'Payment';
+
+                                                        return (
+                                                            <Card
+                                                                key={transaction.id}
+                                                                elevation={0}
+                                                                sx={{
+                                                                    border: '1px solid #e2e8f0',
+                                                                    borderRadius: 2,
+                                                                    boxShadow: 'none',
+                                                                    '&:hover': {
+                                                                        boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                                                                        transform: 'translateY(-2px)'
+                                                                    },
+                                                                    transition: 'all 0.3s ease'
+                                                                }}
+                                                            >
+                                                                <CardContent sx={{p: 3}}>
+                                                                    <Box sx={{
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'space-between',
+                                                                        mb: 2
+                                                                    }}>
+                                                                        <Box sx={{
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            gap: 2
+                                                                        }}>
+                                                                            <Box sx={{
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                                width: 44,
+                                                                                height: 44,
+                                                                                borderRadius: '50%',
+                                                                                backgroundColor: isReceiver ? '#dcfce7' : '#fef3c7'
+                                                                            }}>
+                                                                                <DollarOutlined
+                                                                                    sx={{color: isReceiver ? '#16a34a' : '#d97706'}}/>
+                                                                            </Box>
+                                                                            <Box>
+                                                                                <Typography variant="subtitle1" sx={{
+                                                                                    fontWeight: 600,
+                                                                                    color: '#1e293b'
+                                                                                }}>
+                                                                                    {paymentTypeLabel}
+                                                                                </Typography>
+                                                                                <Typography variant="body2" sx={{
+                                                                                    color: '#64748b'
+                                                                                }}>
+                                                                                    From {senderParty?.business || 'Unknown'}
+                                                                                </Typography>
+                                                                                <Typography variant="body2" sx={{
+                                                                                    color: '#64748b'
+                                                                                }}>
+                                                                                    To {receiverParty?.business || 'Unknown'}
+                                                                                </Typography>
+                                                                            </Box>
+                                                                        </Box>
+
+                                                                        <Box sx={{textAlign: 'right'}}>
+                                                                            <Typography variant="h6" sx={{
+                                                                                fontWeight: 700,
+                                                                                color: '#10b981'
+                                                                            }}>
+                                                                                {formatCurrency(transaction.amount)}
+                                                                            </Typography>
+                                                                            <Chip
+                                                                                label={isSuccess ? 'Successful' : 'Failed'}
+                                                                                size="small"
+                                                                                sx={{
+                                                                                    backgroundColor: isSuccess ? '#dcfce7' : '#fee2e2',
+                                                                                    color: isSuccess ? '#166534' : '#dc2626',
+                                                                                    fontWeight: 600,
+                                                                                    fontSize: '11px',
+                                                                                    mt: 0.5
+                                                                                }}
+                                                                            />
+                                                                        </Box>
+                                                                    </Box>
+
+                                                                    <Box sx={{
+                                                                        display: 'flex',
+                                                                        justifyContent: 'space-between',
+                                                                        alignItems: 'center',
+                                                                        pt: 2,
+                                                                        mt: 1,
+                                                                        borderTop: '1px solid #f1f5f9'
+                                                                    }}>
+                                                                        <Box sx={{display: 'flex', gap: 2, flexWrap: 'wrap'}}>
+                                                                            {transaction.itemId && transaction.itemId !== 0 && (
+                                                                                <Box>
+                                                                                    <Typography variant="body2" sx={{
+                                                                                        color: '#64748b',
+                                                                                        fontSize: '12px'
+                                                                                    }}>
+                                                                                        Request ID
+                                                                                    </Typography>
+                                                                                    <Chip
+                                                                                        label={parseID(transaction.itemId, 'dr')}
+                                                                                        size="small"
+                                                                                        sx={{
+                                                                                            backgroundColor: '#f3e8ff',
+                                                                                            color: '#7c3aed',
+                                                                                            fontWeight: 600,
+                                                                                            fontSize: '10px',
+                                                                                            height: '20px'
+                                                                                        }}
+                                                                                    />
+                                                                                </Box>
+                                                                            )}
+                                                                            {transaction.serviceFee > 0 && (
+                                                                                <Box>
+                                                                                    <Typography variant="body2" sx={{
+                                                                                        color: '#64748b',
+                                                                                        fontSize: '12px'
+                                                                                    }}>
+                                                                                        Service Fee
+                                                                                    </Typography>
+                                                                                    <Typography variant="body2" sx={{
+                                                                                        color: '#f59e0b',
+                                                                                        fontWeight: 600,
+                                                                                        fontSize: '13px',
+                                                                                        mt: '0.5vh'
+                                                                                    }}>
+                                                                                        {formatCurrency(transaction.serviceFee)}
+                                                                                    </Typography>
+                                                                                </Box>
+                                                                            )}
+                                                                            <Box>
+                                                                                <Typography variant="body2" sx={{
+                                                                                    color: '#64748b',
+                                                                                    fontSize: '12px'
+                                                                                }}>
+                                                                                    Paid from
+                                                                                </Typography>
+                                                                                <Typography variant="body2" sx={{
+                                                                                    color: '#0ea5b8',
+                                                                                    fontWeight: 600,
+                                                                                    fontSize: '13px',
+                                                                                    mt: '0.5vh'
+                                                                                }}>
+                                                                                    {transaction.paymentGatewayCode?.includes('w') ? 'Wallet' : 'VNPay'}
+                                                                                </Typography>
+                                                                            </Box>
+                                                                        </Box>
+
+                                                                        <Box sx={{textAlign: 'right'}}>
+                                                                            <Typography variant="body2" sx={{
+                                                                                color: '#64748b',
+                                                                                fontSize: '12px'
+                                                                            }}>
+                                                                                Payment Date
+                                                                            </Typography>
+                                                                            <Typography variant="body2" sx={{
+                                                                                color: '#1e293b',
+                                                                                fontWeight: 600,
+                                                                                fontSize: '13px',
+                                                                                mt: '0.5vh'
+                                                                            }}>
+                                                                                {formatDateTimeSecond(transaction.creationDate)}
+                                                                            </Typography>
+                                                                        </Box>
+                                                                    </Box>
+                                                                </CardContent>
+                                                            </Card>
+                                                        );
+                                                    })}
+                                            </Box>
+                                        </Box>
+                                    );
+                                })()}
+                            </CardContent>
+                        </Card>
+                    )}
 
                     {/* Logo Image Section */}
                     {selectedRequest.logoImage && (
