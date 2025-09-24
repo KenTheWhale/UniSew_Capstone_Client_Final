@@ -1,54 +1,40 @@
-import React, { useState, useEffect } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
+    Alert,
     Box,
+    Button,
     Card,
     CardContent,
-    Typography,
-    TextField,
-    Button,
-    Grid,
-    Switch,
-    FormControlLabel,
-    Divider,
-    Alert,
-    Paper,
     Chip,
+    CircularProgress,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Divider,
+    FormControl,
+    FormControlLabel,
+    Grid,
     IconButton,
-    Tooltip,
     InputAdornment,
+    InputLabel,
     List,
     ListItem,
     ListItemText,
-    ListItemSecondaryAction,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    FormControl,
-    InputLabel,
-    Select,
     MenuItem,
-    Tabs,
-    Tab,
+    Paper,
     Popover,
-    CircularProgress
+    Select,
+    Switch,
+    Tab,
+    Tabs,
+    TextField,
+    Typography
 } from '@mui/material';
-import {
-    Save,
-    Settings,
-    Notifications,
-    Business,
-    Info,
-    Add,
-    Edit,
-    Delete,
-    Upload,
-    Palette,
-    Refresh
-} from '@mui/icons-material';
-import { enqueueSnackbar } from 'notistack';
-import { getAllConfig, updateConfig } from '../../services/SystemService';
-import { uploadCloudinary } from '../../services/UploadImageService';
+import {Add, Delete, Edit, Info, Save, Settings, Upload} from '@mui/icons-material';
+import {enqueueSnackbar} from 'notistack';
+import {getAllConfig, updateConfig} from '../../services/SystemService';
+import {uploadCloudinary} from '../../services/UploadImageService';
 
 export default function PlatformSetting() {
     const [settings, setSettings] = useState({
@@ -58,7 +44,7 @@ export default function PlatformSetting() {
         serviceFeeRate: 5,
         minTransactionAmount: 10000,
         maxTransactionAmount: 200000000,
-        
+
         // Media Settings
         maxImageSize: 10,
         maxVideoSize: 50,
@@ -69,15 +55,15 @@ export default function PlatformSetting() {
         maxFeedbackVideos: 1,
         maxDesignerThumbnails: 8,
         maxGarmentThumbnails: 4,
-        
+
         // Order Settings
         minUniformQuantity: 50,
         maxAssignedMilestones: 5,
-        
+
         // Report Settings
         maxAppealDays: 7,
         maxDisbursementDays: 7,
-        
+
         // Notification Settings
         emailNotifications: true,
         smsNotifications: false,
@@ -111,11 +97,11 @@ export default function PlatformSetting() {
     const [editingFormat, setEditingFormat] = useState(null);
     const [formatType, setFormatType] = useState('image');
     const [mediaTabValue, setMediaTabValue] = useState(0);
-    
+
     // Pagination states
     const [fabricPage, setFabricPage] = useState(1);
     const [fabricPageSize] = useState(5); // Show 5 fabrics per page
-    
+
     // Search and filter states for fabrics
     const [fabricSearchTerm, setFabricSearchTerm] = useState('');
     const [fabricTypeFilter, setFabricTypeFilter] = useState('all');
@@ -123,19 +109,19 @@ export default function PlatformSetting() {
 
     // Constants for options
     const genderOptions = [
-        { value: 'male', label: 'Male' },
-        { value: 'female', label: 'Female' }
+        {value: 'male', label: 'Male'},
+        {value: 'female', label: 'Female'}
     ];
 
     const clothingTypeOptions = [
-        { value: 'shirt', label: 'Shirt' },
-        { value: 'pants', label: 'Pants' },
-        { value: 'skirts', label: 'Skirts' }
+        {value: 'shirt', label: 'Shirt'},
+        {value: 'pants', label: 'Pants'},
+        {value: 'skirts', label: 'Skirts'}
     ];
 
     const categoryOptions = [
-        { value: 'regular', label: 'Regular' },
-        { value: 'physical_education', label: 'Physical Education' }
+        {value: 'regular', label: 'Regular'},
+        {value: 'physical_education', label: 'Physical Education'}
     ];
 
     // API call to get all config
@@ -144,7 +130,7 @@ export default function PlatformSetting() {
         try {
             const response = await getAllConfig();
             const data = response?.data || response;
-            
+
             if (data?.body) {
                 // Update settings from API
                 setSettings(prev => ({
@@ -154,7 +140,7 @@ export default function PlatformSetting() {
                     serviceFeeRate: Math.round(data.body.business.serviceRate * 100),
                     minTransactionAmount: data.body.business.minPay,
                     maxTransactionAmount: data.body.business.maxPay,
-                    
+
                     // Media Settings
                     maxImageSize: data.body.media.maxImgSize,
                     maxVideoSize: data.body.media.maxVideoSize,
@@ -165,11 +151,11 @@ export default function PlatformSetting() {
                     maxFeedbackVideos: data.body.media.maxFeedbackVideo,
                     maxDesignerThumbnails: data.body.media.maxDesignerThumbnail,
                     maxGarmentThumbnails: data.body.media.maxGarmentThumbnail,
-                    
+
                     // Order Settings
                     minUniformQuantity: data.body.order.minUniformQty,
                     maxAssignedMilestones: data.body.order.maxAssignedMilestone,
-                    
+
                     // Report Settings
                     maxAppealDays: data.body.report.maxAppealDay,
                     maxDisbursementDays: data.body.report.maxDisbursementDay
@@ -231,15 +217,17 @@ export default function PlatformSetting() {
                     if (data.body.fabrics.regular) {
                         Object.entries(data.body.fabrics.regular).forEach(([clothingType, fabricList]) => {
                             fabricList.forEach(fabric => {
-                                                                    convertedFabrics.push({
-                                        id: fabricId++,
-                                        name: fabric.name,
-                                        description: fabric.description,
-                                        gender: ['male', 'female'],
-                                        clothingType: [clothingType],
-                                        category: ['regular'],
-                                        isActive: true
-                                    });
+                                convertedFabrics.push({
+                                    id: fabricId++,
+                                    name: fabric.name,
+                                    description: fabric.description,
+                                    gender: ['male', 'female'],
+                                    forShirt: fabric.forShirt,
+                                    forPants: fabric.forPants,
+                                    forSkirt: fabric.forSkirt,
+                                    forRegular: fabric.forRegular,
+                                    forPE: fabric.forPE
+                                });
                             });
                         });
                     }
@@ -248,15 +236,17 @@ export default function PlatformSetting() {
                     if (data.body.fabrics.physical) {
                         Object.entries(data.body.fabrics.physical).forEach(([clothingType, fabricList]) => {
                             fabricList.forEach(fabric => {
-                                                                    convertedFabrics.push({
-                                        id: fabricId++,
-                                        name: fabric.name,
-                                        description: fabric.description,
-                                        gender: ['male', 'female'],
-                                        clothingType: [clothingType],
-                                        category: ['physical_education'],
-                                        isActive: true
-                                    });
+                                convertedFabrics.push({
+                                    id: fabricId++,
+                                    name: fabric.name,
+                                    description: fabric.description,
+                                    gender: ['male', 'female'],
+                                    forShirt: fabric.forShirt,
+                                    forPants: fabric.forPants,
+                                    forSkirt: fabric.forSkirt,
+                                    forRegular: fabric.forRegular,
+                                    forPE: fabric.forPE
+                                });
                             });
                         });
                     }
@@ -266,7 +256,7 @@ export default function PlatformSetting() {
             }
         } catch (error) {
             console.error('Error fetching config:', error);
-            enqueueSnackbar('Failed to load configuration. Please try again.', { 
+            enqueueSnackbar('Failed to load configuration. Please try again.', {
                 variant: 'error',
                 autoHideDuration: 3000
             });
@@ -301,25 +291,25 @@ export default function PlatformSetting() {
     // Filter and sort fabrics
     const getFilteredAndSortedFabrics = () => {
         let filtered = [...fabrics];
-        
+
         // Search by name
         if (fabricSearchTerm) {
-            filtered = filtered.filter(fabric => 
+            filtered = filtered.filter(fabric =>
                 fabric.name.toLowerCase().includes(fabricSearchTerm.toLowerCase())
             );
         }
-        
+
         // Filter by type
         if (fabricTypeFilter !== 'all') {
             filtered = filtered.filter(fabric => {
                 // Handle special case for shirt/skirt filtering
                 if (fabricTypeFilter === 'shirt') {
-                    return fabric.clothingType.some(type => 
+                    return fabric.clothingType.some(type =>
                         type === 'shirt' || type === 'shirts'
                     );
                 }
                 if (fabricTypeFilter === 'skirt') {
-                    return fabric.clothingType.some(type => 
+                    return fabric.clothingType.some(type =>
                         type === 'skirt' || type === 'skirts'
                     );
                 }
@@ -327,17 +317,17 @@ export default function PlatformSetting() {
                 return fabric.clothingType.includes(fabricTypeFilter);
             });
         }
-        
+
         // Filter by category
         if (fabricCategoryFilter !== 'all') {
-            filtered = filtered.filter(fabric => 
+            filtered = filtered.filter(fabric =>
                 fabric.category.includes(fabricCategoryFilter)
             );
         }
-        
+
         // Sort by ID
         filtered.sort((a, b) => a.id - b.id);
-        
+
         return filtered;
     };
 
@@ -375,8 +365,8 @@ export default function PlatformSetting() {
     };
 
     const handleLogoPositionChange = (id, field, value) => {
-        setLogoPositions(prev => prev.map(pos => 
-            pos.id === id ? { ...pos, [field]: value } : pos
+        setLogoPositions(prev => prev.map(pos =>
+            pos.id === id ? {...pos, [field]: value} : pos
         ));
         setHasChanges(true);
     };
@@ -385,7 +375,7 @@ export default function PlatformSetting() {
         if (file) {
             // Store the file for later upload
             setIllustrationFile(file);
-            
+
             // Show preview
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -399,11 +389,11 @@ export default function PlatformSetting() {
     // Upload illustration image to Cloudinary using UploadImageService
     const uploadIllustrationToCloudinary = async (file) => {
         if (!file) return null;
-        
+
         setUploadingImage(true);
         try {
             const cloudinaryUrl = await uploadCloudinary(file);
-            
+
             if (cloudinaryUrl) {
                 return cloudinaryUrl;
             } else {
@@ -411,7 +401,7 @@ export default function PlatformSetting() {
             }
         } catch (error) {
             console.error('Error uploading to Cloudinary:', error);
-            enqueueSnackbar('Failed to upload image to Cloudinary. Please try again.', { 
+            enqueueSnackbar('Failed to upload image to Cloudinary. Please try again.', {
                 variant: 'error',
                 autoHideDuration: 3000
             });
@@ -428,7 +418,7 @@ export default function PlatformSetting() {
 
     const handleSavePosition = () => {
         if (editingPosition) {
-            setLogoPositions(prev => prev.map(pos => 
+            setLogoPositions(prev => prev.map(pos =>
                 pos.id === editingPosition.id ? editingPosition : pos
             ));
             setHasChanges(true);
@@ -442,18 +432,6 @@ export default function PlatformSetting() {
         setHasChanges(true);
     };
 
-    const handleFabricChange = (id, field, value) => {
-        setFabrics(prev => prev.map(fabric => 
-            fabric.id === id ? { ...fabric, [field]: value } : fabric
-        ));
-        setHasChanges(true);
-    };
-
-    const handleEditFabric = (fabric) => {
-        setEditingFabric(fabric);
-        setFabricDialogOpen(true);
-    };
-
     const handleSaveFabric = () => {
         if (editingFabric) {
             if (editingFabric.id > Math.max(...fabrics.map(f => f.id))) {
@@ -463,7 +441,7 @@ export default function PlatformSetting() {
                 setFabricPage(1);
             } else {
                 // This is an existing fabric, update it
-                setFabrics(prev => prev.map(fabric => 
+                setFabrics(prev => prev.map(fabric =>
                     fabric.id === editingFabric.id ? editingFabric : fabric
                 ));
             }
@@ -480,7 +458,7 @@ export default function PlatformSetting() {
             description: '',
             gender: [],
             clothingType: [],
-                                                    category: [],
+            category: [],
             isActive: true
         };
         setEditingFabric(newFabric);
@@ -510,13 +488,6 @@ export default function PlatformSetting() {
         setMediaTabValue(newValue);
     };
 
-    const handleSeverityChange = (id, field, value) => {
-        setReportSeverityLevels(prev => prev.map(level => 
-            level.id === id ? { ...level, [field]: value } : level
-        ));
-        setHasChanges(true);
-    };
-
     const handleEditSeverity = (severity) => {
         setEditingSeverity(severity);
         setSeverityDialogOpen(true);
@@ -524,7 +495,7 @@ export default function PlatformSetting() {
 
     const handleSaveSeverity = () => {
         if (editingSeverity) {
-            setReportSeverityLevels(prev => prev.map(level => 
+            setReportSeverityLevels(prev => prev.map(level =>
                 level.id === editingSeverity.id ? editingSeverity : level
             ));
             setHasChanges(true);
@@ -568,19 +539,6 @@ export default function PlatformSetting() {
         handleColorPickerClose();
     };
 
-    const handleFormatChange = (id, field, value, type) => {
-        if (type === 'image') {
-            setAcceptedImageFormats(prev => prev.map(format => 
-                format.id === id ? { ...format, [field]: value } : format
-            ));
-        } else {
-            setAcceptedVideoFormats(prev => prev.map(format => 
-                format.id === id ? { ...format, [field]: value } : format
-            ));
-        }
-        setHasChanges(true);
-    };
-
     const handleEditFormat = (format, type) => {
         setEditingFormat(format);
         setFormatType(type);
@@ -590,11 +548,11 @@ export default function PlatformSetting() {
     const handleSaveFormat = () => {
         if (editingFormat) {
             if (formatType === 'image') {
-                setAcceptedImageFormats(prev => prev.map(format => 
+                setAcceptedImageFormats(prev => prev.map(format =>
                     format.id === editingFormat.id ? editingFormat : format
                 ));
             } else {
-                setAcceptedVideoFormats(prev => prev.map(format => 
+                setAcceptedVideoFormats(prev => prev.map(format =>
                     format.id === editingFormat.id ? editingFormat : format
                 ));
             }
@@ -634,12 +592,11 @@ export default function PlatformSetting() {
                 fabricDataList: fabrics.map(fabric => ({
                     name: fabric.name,
                     description: fabric.description,
-                    type: fabric.clothingType.map(type => {
-                        if (type === 'skirts') return 'skirt';
-                        if (type === 'shirts') return 'shirt';
-                        return type;
-                    }).join(', '),
-                    category: fabric.category.map(cat => cat === 'physical_education' ? 'physical' : cat).join(', ')
+                    forShirt: fabric.forShirt,
+                    forPants: fabric.forPants,
+                    forSkirt: fabric.forSkirt,
+                    forRegular: fabric.forRegular,
+                    forPE: fabric.forPE
                 })),
                 businessData: {
                     taxRate: settings.taxRate / 100, // Convert back to decimal
@@ -715,20 +672,20 @@ export default function PlatformSetting() {
             // Call API to update configuration
             console.log('Calling updateConfig API...');
             const response = await updateConfig(updateData);
-            
+
             if (response && response.data) {
                 console.log('API Response:', response.data);
-                            enqueueSnackbar('Platform settings updated successfully!', { 
-                variant: 'success',
-                autoHideDuration: 3000
-            });
+                enqueueSnackbar('Platform settings updated successfully!', {
+                    variant: 'success',
+                    autoHideDuration: 3000
+                });
             } else {
                 throw new Error('Failed to get valid response from API');
             }
             setHasChanges(false);
         } catch (error) {
             console.error('Error saving settings:', error);
-            
+
             // Show more detailed error message
             let errorMessage = 'Failed to save settings. Please try again.';
             if (error.response?.data?.message) {
@@ -736,8 +693,8 @@ export default function PlatformSetting() {
             } else if (error.message) {
                 errorMessage = `Error: ${error.message}`;
             }
-            
-            enqueueSnackbar(errorMessage, { 
+
+            enqueueSnackbar(errorMessage, {
                 variant: 'error',
                 autoHideDuration: 5000
             });
@@ -746,16 +703,16 @@ export default function PlatformSetting() {
         }
     };
 
-    const SettingSection = ({ title, icon, children }) => (
-        <Card sx={{ mb: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+    const SettingSection = ({title, icon, children}) => (
+        <Card sx={{mb: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.1)'}}>
             <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Box sx={{display: 'flex', alignItems: 'center', mb: 2}}>
                     {icon}
-                    <Typography variant="h6" sx={{ ml: 1, fontWeight: 600, color: '#dc3545' }}>
+                    <Typography variant="h6" sx={{ml: 1, fontWeight: 600, color: '#dc3545'}}>
                         {title}
                     </Typography>
                 </Box>
-                <Divider sx={{ mb: 2 }} />
+                <Divider sx={{mb: 2}}/>
                 {children}
             </CardContent>
         </Card>
@@ -764,10 +721,10 @@ export default function PlatformSetting() {
     // Show loading state while fetching config
     if (loading) {
         return (
-            <Box sx={{ p: 3, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
-                <Box sx={{ textAlign: 'center' }}>
-                    <CircularProgress size={60} sx={{ color: '#dc3545', mb: 2 }} />
-                    <Typography variant="h6" sx={{ color: '#dc3545' }}>
+            <Box sx={{p: 3, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px'}}>
+                <Box sx={{textAlign: 'center'}}>
+                    <CircularProgress size={60} sx={{color: '#dc3545', mb: 2}}/>
+                    <Typography variant="h6" sx={{color: '#dc3545'}}>
                         Loading Platform Configuration...
                     </Typography>
                 </Box>
@@ -776,15 +733,15 @@ export default function PlatformSetting() {
     }
 
     return (
-        <Box sx={{ p: 3 }}>
-            <Paper sx={{ p: 3, mb: 3, background: 'linear-gradient(135deg, #06b6d4 0%, #0ea5b8 100%)', color: 'white' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Settings sx={{ fontSize: 32 }} />
+        <Box sx={{p: 3}}>
+            <Paper sx={{p: 3, mb: 3, background: 'linear-gradient(135deg, #06b6d4 0%, #0ea5b8 100%)', color: 'white'}}>
+                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                    <Settings sx={{fontSize: 32}}/>
                     <Box>
-                        <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+                        <Typography variant="h4" sx={{fontWeight: 700, mb: 1}}>
                             Platform Settings
                         </Typography>
-                        <Typography variant="body1" sx={{ opacity: 0.9 }}>
+                        <Typography variant="body1" sx={{opacity: 0.9}}>
                             Configure system-wide settings and platform behavior
                         </Typography>
                     </Box>
@@ -794,30 +751,30 @@ export default function PlatformSetting() {
             <Grid container spacing={3}>
                 <Grid sx={{flex: 1}}>
                     {/* Main Settings Section with Tabs */}
-                    <Card sx={{ mb: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                    <Card sx={{mb: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.1)'}}>
                         <CardContent>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                    <Settings sx={{ fontSize: 32, color: '#06b6d4', mr: 1 }} />
-                                    <Typography variant="h6" sx={{ fontWeight: 600, color: '#06b6d4' }}>
+                            <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2}}>
+                                <Box sx={{display: 'flex', alignItems: 'center'}}>
+                                    <Settings sx={{fontSize: 32, color: '#06b6d4', mr: 1}}/>
+                                    <Typography variant="h6" sx={{fontWeight: 600, color: '#06b6d4'}}>
                                         Platform Configuration
                                     </Typography>
                                 </Box>
                                 {apiLoading && (
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <CircularProgress size={20} sx={{ color: '#06b6d4' }} />
-                                        <Typography variant="body2" sx={{ color: '#06b6d4' }}>
+                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                        <CircularProgress size={20} sx={{color: '#06b6d4'}}/>
+                                        <Typography variant="body2" sx={{color: '#06b6d4'}}>
                                             Refreshing...
                                         </Typography>
                                     </Box>
                                 )}
                             </Box>
-                            <Divider sx={{ mb: 2 }} />
-                            
+                            <Divider sx={{mb: 2}}/>
+
                             {/* Main Tabs */}
-                            <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-                                <Tabs 
-                                    value={mainTabValue} 
+                            <Box sx={{borderBottom: 1, borderColor: 'divider', mb: 3}}>
+                                <Tabs
+                                    value={mainTabValue}
                                     onChange={handleMainTabChange}
                                     sx={{
                                         '& .MuiTab-root': {
@@ -834,44 +791,45 @@ export default function PlatformSetting() {
                                         }
                                     }}
                                 >
-                                    <Tab label="Business Settings" />
-                                    <Tab label="Media Settings" />
-                                    <Tab label="Design Settings" />
-                                    <Tab label="Order Settings" />
-                                    <Tab label="Report Settings" />
+                                    <Tab label="Business Settings"/>
+                                    <Tab label="Media Settings"/>
+                                    <Tab label="Design Settings"/>
+                                    <Tab label="Order Settings"/>
+                                    <Tab label="Report Settings"/>
                                 </Tabs>
                             </Box>
 
                             {/* Business Settings Tab */}
                             {mainTabValue === 0 && (
                                 <Box>
-                                    <Typography variant="h6" sx={{ mb: 2, color: '#06b6d4' }}>
+                                    <Typography variant="h6" sx={{mb: 2, color: '#06b6d4'}}>
                                         Business Configuration
                                     </Typography>
                                     <Grid container spacing={3}>
-                                                                    <Grid item xs={12} md={6} sx={{ flex: 1 }}>
-                                <TextField
-                                    fullWidth
-                                    label="Service Fee Rate (%)"
-                                    type="number"
-                                    value={settings.serviceFeeRate}
-                                    onChange={(e) => handleSettingChange('serviceFeeRate', parseFloat(e.target.value) || 0.1)}
-                                    variant="outlined"
-                                    size="medium"
-                                    inputProps={{
-                                        step: 0.1,
-                                        min: 0.1,
-                                        max: 100
-                                    }}
-                                    slotProps={{
-                                        input: {
-                                            endAdornment: <InputAdornment position="end"><Chip label="%" size="small" /></InputAdornment>
-                                        }
-                                    }}
-                                    helperText="Enter decimal values (e.g., 0.1 for 0.1%). Must be greater than 0."
-                                />
-                            </Grid>
-                                        <Grid item xs={12} md={6} sx={{ flex: 1 }}>
+                                        <Grid item xs={12} md={6} sx={{flex: 1}}>
+                                            <TextField
+                                                fullWidth
+                                                label="Service Fee Rate (%)"
+                                                type="number"
+                                                value={settings.serviceFeeRate}
+                                                onChange={(e) => handleSettingChange('serviceFeeRate', parseFloat(e.target.value) || 0.1)}
+                                                variant="outlined"
+                                                size="medium"
+                                                inputProps={{
+                                                    step: 0.1,
+                                                    min: 0.1,
+                                                    max: 100
+                                                }}
+                                                slotProps={{
+                                                    input: {
+                                                        endAdornment: <InputAdornment position="end"><Chip label="%"
+                                                                                                           size="small"/></InputAdornment>
+                                                    }
+                                                }}
+                                                helperText="Enter decimal values (e.g., 0.1 for 0.1%). Must be greater than 0."
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={6} sx={{flex: 1}}>
                                             <TextField
                                                 fullWidth
                                                 label="Minimum Transaction Amount"
@@ -882,12 +840,13 @@ export default function PlatformSetting() {
                                                 size="medium"
                                                 slotProps={{
                                                     input: {
-                                                        endAdornment: <InputAdornment position="end"><Chip label="VND" size="small" /></InputAdornment>
+                                                        endAdornment: <InputAdornment position="end"><Chip label="VND"
+                                                                                                           size="small"/></InputAdornment>
                                                     }
                                                 }}
                                             />
                                         </Grid>
-                                        <Grid item xs={12} md={6} sx={{ flex: 1 }}>
+                                        <Grid item xs={12} md={6} sx={{flex: 1}}>
                                             <TextField
                                                 fullWidth
                                                 label="Maximum Transaction Amount"
@@ -898,7 +857,8 @@ export default function PlatformSetting() {
                                                 size="medium"
                                                 slotProps={{
                                                     input: {
-                                                        endAdornment: <InputAdornment position="end"><Chip label="VND" size="small" /></InputAdornment>
+                                                        endAdornment: <InputAdornment position="end"><Chip label="VND"
+                                                                                                           size="small"/></InputAdornment>
                                                     }
                                                 }}
                                             />
@@ -910,15 +870,15 @@ export default function PlatformSetting() {
                             {/* Media Settings Tab */}
                             {mainTabValue === 1 && (
                                 <Box>
-                                    <Typography variant="h6" sx={{ mb: 2, color: '#06b6d4' }}>
+                                    <Typography variant="h6" sx={{mb: 2, color: '#06b6d4'}}>
                                         Media Configuration
                                     </Typography>
-                                    
+
                                     {/* File Size Limits */}
-                                    <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+                                    <Typography variant="subtitle1" sx={{mb: 2, fontWeight: 600}}>
                                         File Size Limits
                                     </Typography>
-                                    <Grid container spacing={3} sx={{ mb: 4 }}>
+                                    <Grid container spacing={3} sx={{mb: 4}}>
                                         <Grid item xs={12} md={3}>
                                             <TextField
                                                 fullWidth
@@ -933,7 +893,8 @@ export default function PlatformSetting() {
                                                 }}
                                                 slotProps={{
                                                     input: {
-                                                        endAdornment: <InputAdornment position="end"><Chip label="MB" size="small" /></InputAdornment>
+                                                        endAdornment: <InputAdornment position="end"><Chip label="MB"
+                                                                                                           size="small"/></InputAdornment>
                                                     }
                                                 }}
                                             />
@@ -952,7 +913,8 @@ export default function PlatformSetting() {
                                                 }}
                                                 slotProps={{
                                                     input: {
-                                                        endAdornment: <InputAdornment position="end"><Chip label="MB" size="small" /></InputAdornment>
+                                                        endAdornment: <InputAdornment position="end"><Chip label="MB"
+                                                                                                           size="small"/></InputAdornment>
                                                     }
                                                 }}
                                             />
@@ -972,7 +934,8 @@ export default function PlatformSetting() {
                                                 helperText="Max reference images for each design request"
                                                 slotProps={{
                                                     input: {
-                                                        endAdornment: <InputAdornment position="end"><Chip label="images" size="small" /></InputAdornment>
+                                                        endAdornment: <InputAdornment position="end"><Chip
+                                                            label="images" size="small"/></InputAdornment>
                                                     }
                                                 }}
                                             />
@@ -992,13 +955,14 @@ export default function PlatformSetting() {
                                                 helperText="Max images that can be added to a report"
                                                 slotProps={{
                                                     input: {
-                                                        endAdornment: <InputAdornment position="end"><Chip label="images" size="small" /></InputAdornment>
+                                                        endAdornment: <InputAdornment position="end"><Chip
+                                                            label="images" size="small"/></InputAdornment>
                                                     }
                                                 }}
                                             />
                                         </Grid>
                                     </Grid>
-                                    <Grid container spacing={3} sx={{ mb: 4 }}>
+                                    <Grid container spacing={3} sx={{mb: 4}}>
                                         <Grid item xs={12} md={3}>
                                             <TextField
                                                 fullWidth
@@ -1014,7 +978,8 @@ export default function PlatformSetting() {
                                                 helperText="Max videos that can be added to a report"
                                                 slotProps={{
                                                     input: {
-                                                        endAdornment: <InputAdornment position="end"><Chip label="videos" size="small" /></InputAdornment>
+                                                        endAdornment: <InputAdornment position="end"><Chip
+                                                            label="videos" size="small"/></InputAdornment>
                                                     }
                                                 }}
                                             />
@@ -1034,7 +999,8 @@ export default function PlatformSetting() {
                                                 helperText="Max images that can be added to feedback"
                                                 slotProps={{
                                                     input: {
-                                                        endAdornment: <InputAdornment position="end"><Chip label="images" size="small" /></InputAdornment>
+                                                        endAdornment: <InputAdornment position="end"><Chip
+                                                            label="images" size="small"/></InputAdornment>
                                                     }
                                                 }}
                                             />
@@ -1054,7 +1020,8 @@ export default function PlatformSetting() {
                                                 helperText="Max videos that can be added to feedback"
                                                 slotProps={{
                                                     input: {
-                                                        endAdornment: <InputAdornment position="end"><Chip label="videos" size="small" /></InputAdornment>
+                                                        endAdornment: <InputAdornment position="end"><Chip
+                                                            label="videos" size="small"/></InputAdornment>
                                                     }
                                                 }}
                                             />
@@ -1062,11 +1029,11 @@ export default function PlatformSetting() {
                                     </Grid>
 
                                     {/* Thumbnail Limits */}
-                                    <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+                                    <Typography variant="subtitle1" sx={{mb: 2, fontWeight: 600}}>
                                         Thumbnail Limits
                                     </Typography>
-                                    <Grid container spacing={3} sx={{ mb: 4 }}>
-                                        <Grid item xs={12} md={6} sx={{ flex: 1 }}>
+                                    <Grid container spacing={3} sx={{mb: 4}}>
+                                        <Grid item xs={12} md={6} sx={{flex: 1}}>
                                             <TextField
                                                 fullWidth
                                                 label="Max Designer Thumbnails"
@@ -1081,12 +1048,13 @@ export default function PlatformSetting() {
                                                 helperText="Max thumbnail images for designer carousel"
                                                 slotProps={{
                                                     input: {
-                                                        endAdornment: <InputAdornment position="end"><Chip label="images" size="small" /></InputAdornment>
+                                                        endAdornment: <InputAdornment position="end"><Chip
+                                                            label="images" size="small"/></InputAdornment>
                                                     }
                                                 }}
                                             />
                                         </Grid>
-                                        <Grid item xs={12} md={6} sx={{ flex: 1 }}>
+                                        <Grid item xs={12} md={6} sx={{flex: 1}}>
                                             <TextField
                                                 fullWidth
                                                 label="Max Garment Thumbnails"
@@ -1101,7 +1069,8 @@ export default function PlatformSetting() {
                                                 helperText="Max thumbnail images for garment carousel"
                                                 slotProps={{
                                                     input: {
-                                                        endAdornment: <InputAdornment position="end"><Chip label="images" size="small" /></InputAdornment>
+                                                        endAdornment: <InputAdornment position="end"><Chip
+                                                            label="images" size="small"/></InputAdornment>
                                                     }
                                                 }}
                                             />
@@ -1109,9 +1078,9 @@ export default function PlatformSetting() {
                                     </Grid>
 
                                     {/* Media Sub-tabs */}
-                                    <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-                                        <Tabs 
-                                            value={mediaTabValue} 
+                                    <Box sx={{borderBottom: 1, borderColor: 'divider', mb: 3}}>
+                                        <Tabs
+                                            value={mediaTabValue}
                                             onChange={handleMediaTabChange}
                                             sx={{
                                                 '& .MuiTab-root': {
@@ -1128,21 +1097,26 @@ export default function PlatformSetting() {
                                                 }
                                             }}
                                         >
-                                            <Tab label="Image Formats" />
-                                            <Tab label="Video Formats" />
+                                            <Tab label="Image Formats"/>
+                                            <Tab label="Video Formats"/>
                                         </Tabs>
                                     </Box>
 
                                     {/* Image Formats Sub-tab */}
                                     {mediaTabValue === 0 && (
                                         <Box>
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                                                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center',
+                                                mb: 2
+                                            }}>
+                                                <Typography variant="subtitle1" sx={{fontWeight: 600}}>
                                                     Accepted Image Formats Configuration
                                                 </Typography>
                                                 <Button
                                                     variant="contained"
-                                                    startIcon={<Add />}
+                                                    startIcon={<Add/>}
                                                     onClick={() => handleAddFormat('image')}
                                                     sx={{
                                                         background: 'linear-gradient(135deg, #06b6d4 0%, #0ea5b8 100%)',
@@ -1154,19 +1128,19 @@ export default function PlatformSetting() {
                                                     Add Format
                                                 </Button>
                                             </Box>
-                                            
-                                            <Box sx={{ 
-                                                display: 'flex', 
-                                                flexWrap: 'wrap', 
+
+                                            <Box sx={{
+                                                display: 'flex',
+                                                flexWrap: 'wrap',
                                                 gap: 2,
                                                 justifyContent: 'flex-start'
                                             }}>
                                                 {acceptedImageFormats.map((format) => (
-                                                    <Box key={format.id} sx={{ 
+                                                    <Box key={format.id} sx={{
                                                         flex: '0 0 calc(20% - 16px)',
                                                         minWidth: '120px',
-                                                        border: '1px solid #e0e0e0', 
-                                                        borderRadius: 1, 
+                                                        border: '1px solid #e0e0e0',
+                                                        borderRadius: 1,
                                                         p: 2,
                                                         display: 'flex',
                                                         flexDirection: 'row',
@@ -1174,22 +1148,23 @@ export default function PlatformSetting() {
                                                         justifyContent: 'space-between',
                                                         gap: 1
                                                     }}>
-                                                        <Typography variant="subtitle1" sx={{ fontWeight: 600, textAlign: 'left' }}>
+                                                        <Typography variant="subtitle1"
+                                                                    sx={{fontWeight: 600, textAlign: 'left'}}>
                                                             {format.format}
                                                         </Typography>
-                                                        <Box sx={{ display: 'flex', gap: 1 }}>
-                                                            <IconButton 
-                                                                size="small" 
+                                                        <Box sx={{display: 'flex', gap: 1}}>
+                                                            <IconButton
+                                                                size="small"
                                                                 onClick={() => handleEditFormat(format, 'image')}
                                                             >
-                                                                <Edit />
+                                                                <Edit/>
                                                             </IconButton>
-                                                            <IconButton 
-                                                                size="small" 
+                                                            <IconButton
+                                                                size="small"
                                                                 color="error"
                                                                 onClick={() => handleDeleteFormat(format.id, 'image')}
                                                             >
-                                                                <Delete />
+                                                                <Delete/>
                                                             </IconButton>
                                                         </Box>
                                                     </Box>
@@ -1201,13 +1176,18 @@ export default function PlatformSetting() {
                                     {/* Video Formats Sub-tab */}
                                     {mediaTabValue === 1 && (
                                         <Box>
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                                                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center',
+                                                mb: 2
+                                            }}>
+                                                <Typography variant="subtitle1" sx={{fontWeight: 600}}>
                                                     Accepted Video Formats Configuration
                                                 </Typography>
                                                 <Button
                                                     variant="contained"
-                                                    startIcon={<Add />}
+                                                    startIcon={<Add/>}
                                                     onClick={() => handleAddFormat('video')}
                                                     sx={{
                                                         background: 'linear-gradient(135deg, #06b6d4 0%, #0ea5b8 100%)',
@@ -1219,19 +1199,19 @@ export default function PlatformSetting() {
                                                     Add Format
                                                 </Button>
                                             </Box>
-                                            
-                                            <Box sx={{ 
-                                                display: 'flex', 
-                                                flexWrap: 'wrap', 
+
+                                            <Box sx={{
+                                                display: 'flex',
+                                                flexWrap: 'wrap',
                                                 gap: 2,
                                                 justifyContent: 'flex-start'
                                             }}>
                                                 {acceptedVideoFormats.map((format) => (
-                                                    <Box key={format.id} sx={{ 
+                                                    <Box key={format.id} sx={{
                                                         flex: '0 0 calc(20% - 16px)',
                                                         minWidth: '120px',
-                                                        border: '1px solid #e0e0e0', 
-                                                        borderRadius: 1, 
+                                                        border: '1px solid #e0e0e0',
+                                                        borderRadius: 1,
                                                         p: 2,
                                                         display: 'flex',
                                                         flexDirection: 'row',
@@ -1239,22 +1219,23 @@ export default function PlatformSetting() {
                                                         justifyContent: 'space-between',
                                                         gap: 1
                                                     }}>
-                                                        <Typography variant="subtitle1" sx={{ fontWeight: 600, textAlign: 'left' }}>
+                                                        <Typography variant="subtitle1"
+                                                                    sx={{fontWeight: 600, textAlign: 'left'}}>
                                                             {format.format}
                                                         </Typography>
-                                                        <Box sx={{ display: 'flex', gap: 1 }}>
-                                                            <IconButton 
-                                                                size="small" 
+                                                        <Box sx={{display: 'flex', gap: 1}}>
+                                                            <IconButton
+                                                                size="small"
                                                                 onClick={() => handleEditFormat(format, 'video')}
                                                             >
-                                                                <Edit />
+                                                                <Edit/>
                                                             </IconButton>
-                                                            <IconButton 
-                                                                size="small" 
+                                                            <IconButton
+                                                                size="small"
                                                                 color="error"
                                                                 onClick={() => handleDeleteFormat(format.id, 'video')}
                                                             >
-                                                                <Delete />
+                                                                <Delete/>
                                                             </IconButton>
                                                         </Box>
                                                     </Box>
@@ -1268,14 +1249,14 @@ export default function PlatformSetting() {
                             {/* Design Settings Tab */}
                             {mainTabValue === 2 && (
                                 <Box>
-                                    <Typography variant="h6" sx={{ mb: 2, color: '#06b6d4' }}>
+                                    <Typography variant="h6" sx={{mb: 2, color: '#06b6d4'}}>
                                         Design Configuration
                                     </Typography>
-                                    
+
                                     {/* Design Sub-tabs */}
-                                    <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-                                        <Tabs 
-                                            value={designTabValue} 
+                                    <Box sx={{borderBottom: 1, borderColor: 'divider', mb: 3}}>
+                                        <Tabs
+                                            value={designTabValue}
                                             onChange={handleDesignTabChange}
                                             sx={{
                                                 '& .MuiTab-root': {
@@ -1292,35 +1273,41 @@ export default function PlatformSetting() {
                                                 }
                                             }}
                                         >
-                                            <Tab label="Logo Positions" />
-                                            <Tab label="Fabric Types" />
+                                            <Tab label="Logo Positions"/>
+                                            <Tab label="Fabric Types"/>
                                         </Tabs>
                                     </Box>
 
                                     {/* Logo Positions Sub-tab */}
                                     {designTabValue === 0 && (
                                         <Box>
-                                            <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+                                            <Typography variant="subtitle1" sx={{mb: 2, fontWeight: 600}}>
                                                 Logo Position Configuration
                                             </Typography>
-                                            
+
                                             {/* Illustration Image Upload */}
-                                            <Box sx={{ mb: 3, p: 2, border: '2px dashed #e0e0e0', borderRadius: 2, textAlign: 'center' }}>
-                                                <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+                                            <Box sx={{
+                                                mb: 3,
+                                                p: 2,
+                                                border: '2px dashed #e0e0e0',
+                                                borderRadius: 2,
+                                                textAlign: 'center'
+                                            }}>
+                                                <Typography variant="subtitle1" sx={{mb: 2, fontWeight: 600}}>
                                                     Illustration Image
                                                 </Typography>
-                                                <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+                                                <Typography variant="body2" sx={{mb: 2, color: 'text.secondary'}}>
                                                     Upload an image showing all logo positions for reference
                                                 </Typography>
-                                                
+
                                                 {illustrationImage && (
-                                                    <Box sx={{ mb: 2 }}>
-                                                        <img 
-                                                            src={illustrationImage} 
+                                                    <Box sx={{mb: 2}}>
+                                                        <img
+                                                            src={illustrationImage}
                                                             alt="Logo positions illustration"
-                                                            style={{ 
-                                                                maxWidth: '100%', 
-                                                                maxHeight: '300px', 
+                                                            style={{
+                                                                maxWidth: '100%',
+                                                                maxHeight: '300px',
                                                                 objectFit: 'contain',
                                                                 borderRadius: 8,
                                                                 border: '1px solid #e0e0e0'
@@ -1328,10 +1315,10 @@ export default function PlatformSetting() {
                                                         />
                                                     </Box>
                                                 )}
-                                                
+
                                                 <input
                                                     accept="image/*"
-                                                    style={{ display: 'none' }}
+                                                    style={{display: 'none'}}
                                                     id="upload-illustration"
                                                     type="file"
                                                     onChange={(e) => {
@@ -1343,14 +1330,15 @@ export default function PlatformSetting() {
                                                     <Button
                                                         component="span"
                                                         variant="outlined"
-                                                        startIcon={uploadingImage ? <CircularProgress size={20} /> : <Upload />}
+                                                        startIcon={uploadingImage ? <CircularProgress size={20}/> :
+                                                            <Upload/>}
                                                         disabled={uploadingImage}
-                                                        sx={{ mr: 1 }}
+                                                        sx={{mr: 1}}
                                                     >
                                                         {uploadingImage ? 'Uploading...' : (illustrationImage ? 'Change Image' : 'Upload Image')}
                                                     </Button>
                                                 </label>
-                                                
+
                                                 {illustrationImage && (
                                                     <Button
                                                         variant="outlined"
@@ -1364,23 +1352,23 @@ export default function PlatformSetting() {
                                                     </Button>
                                                 )}
                                             </Box>
-                                            
+
                                             {/* Logo Positions List */}
-                                            <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+                                            <Typography variant="subtitle1" sx={{mb: 2, fontWeight: 600}}>
                                                 Available Positions
                                             </Typography>
-                                            <Box sx={{ 
-                                                display: 'flex', 
-                                                flexWrap: 'wrap', 
+                                            <Box sx={{
+                                                display: 'flex',
+                                                flexWrap: 'wrap',
                                                 gap: 2,
                                                 justifyContent: 'flex-start'
                                             }}>
                                                 {logoPositions.map((position) => (
-                                                    <Box key={position.id} sx={{ 
+                                                    <Box key={position.id} sx={{
                                                         flex: '0 0 calc(20% - 16px)',
                                                         minWidth: '120px',
-                                                        border: '1px solid #e0e0e0', 
-                                                        borderRadius: 1, 
+                                                        border: '1px solid #e0e0e0',
+                                                        borderRadius: 1,
                                                         p: 2,
                                                         display: 'flex',
                                                         flexDirection: 'row',
@@ -1388,22 +1376,22 @@ export default function PlatformSetting() {
                                                         justifyContent: 'space-between',
                                                         gap: 1
                                                     }}>
-                                                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                                        <Typography variant="subtitle1" sx={{fontWeight: 600}}>
                                                             {position.name}
                                                         </Typography>
-                                                        <Box sx={{ display: 'flex', gap: 1 }}>
-                                                            <IconButton 
-                                                                size="small" 
+                                                        <Box sx={{display: 'flex', gap: 1}}>
+                                                            <IconButton
+                                                                size="small"
                                                                 onClick={() => handleEditPosition(position)}
                                                             >
-                                                                <Edit />
+                                                                <Edit/>
                                                             </IconButton>
-                                                            <IconButton 
-                                                                size="small" 
+                                                            <IconButton
+                                                                size="small"
                                                                 color="error"
                                                                 onClick={() => handleDeletePosition(position.id)}
                                                             >
-                                                                <Delete />
+                                                                <Delete/>
                                                             </IconButton>
                                                         </Box>
                                                     </Box>
@@ -1415,13 +1403,18 @@ export default function PlatformSetting() {
                                     {/* Fabric Types Sub-tab */}
                                     {designTabValue === 1 && (
                                         <Box>
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                                                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center',
+                                                mb: 2
+                                            }}>
+                                                <Typography variant="subtitle1" sx={{fontWeight: 600}}>
                                                     Fabric Types Configuration
                                                 </Typography>
                                                 <Button
                                                     variant="contained"
-                                                    startIcon={<Add />}
+                                                    startIcon={<Add/>}
                                                     onClick={handleAddFabric}
                                                     sx={{
                                                         background: 'linear-gradient(135deg, #06b6d4 0%, #0ea5b8 100%)',
@@ -1433,9 +1426,9 @@ export default function PlatformSetting() {
                                                     Add Fabric
                                                 </Button>
                                             </Box>
-                                            
+
                                             {/* Search and Filter Controls */}
-                                            <Box sx={{ mb: 3 }}>
+                                            <Box sx={{mb: 3}}>
                                                 <Grid container spacing={2} alignItems="center">
                                                     {/* Search by Name */}
                                                     <Grid item xs={12} md={4}>
@@ -1451,13 +1444,16 @@ export default function PlatformSetting() {
                                                             InputProps={{
                                                                 startAdornment: (
                                                                     <InputAdornment position="start">
-                                                                        <Info sx={{ fontSize: 20, color: 'text.secondary' }} />
+                                                                        <Info sx={{
+                                                                            fontSize: 20,
+                                                                            color: 'text.secondary'
+                                                                        }}/>
                                                                     </InputAdornment>
                                                                 )
                                                             }}
                                                         />
                                                     </Grid>
-                                                    
+
                                                     {/* Filter by Type */}
                                                     <Grid item xs={12} md={2}>
                                                         <FormControl fullWidth size="small">
@@ -1479,7 +1475,7 @@ export default function PlatformSetting() {
                                                             </Select>
                                                         </FormControl>
                                                     </Grid>
-                                                    
+
                                                     {/* Filter by Category */}
                                                     <Grid item xs={12} md={2}>
                                                         <FormControl fullWidth size="small">
@@ -1501,34 +1497,35 @@ export default function PlatformSetting() {
                                                             </Select>
                                                         </FormControl>
                                                     </Grid>
-                                                    
+
                                                     {/* Reset Filters */}
                                                     <Grid item xs={12} md={2}>
                                                         <Button
                                                             variant="outlined"
                                                             size="small"
                                                             onClick={handleResetFilters}
-                                                            sx={{ height: 40 }}
+                                                            sx={{height: 40}}
                                                         >
                                                             Reset Filters
                                                         </Button>
                                                     </Grid>
-                                                    
+
                                                     {/* Results Count */}
                                                     <Grid item xs={12} md={2}>
-                                                        <Typography variant="body2" sx={{ color: 'text.secondary', textAlign: 'right' }}>
+                                                        <Typography variant="body2"
+                                                                    sx={{color: 'text.secondary', textAlign: 'right'}}>
                                                             {getFilteredAndSortedFabrics().length} fabrics found
                                                         </Typography>
                                                     </Grid>
                                                 </Grid>
                                             </Box>
-                                            
+
                                             {/* Fabric List with Pagination */}
                                             <Box>
                                                 {getFilteredAndSortedFabrics().length === 0 ? (
-                                                    <Box sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
+                                                    <Box sx={{textAlign: 'center', py: 4, color: 'text.secondary'}}>
                                                         <Typography variant="body1">
-                                                            {fabrics.length === 0 
+                                                            {fabrics.length === 0
                                                                 ? 'No fabrics available. Click "Add Fabric" to create the first one.'
                                                                 : 'No fabrics match your search criteria. Try adjusting your filters.'
                                                             }
@@ -1536,57 +1533,73 @@ export default function PlatformSetting() {
                                                     </Box>
                                                 ) : (
                                                     <>
-                                                                                                    <Box sx={{ 
-                                                display: 'flex', 
-                                                flexWrap: 'wrap', 
-                                                gap: 2,
-                                                justifyContent: 'flex-start'
-                                            }}>
-                                                {getFilteredAndSortedFabrics()
-                                                    .slice((fabricPage - 1) * fabricPageSize, fabricPage * fabricPageSize)
-                                                    .map((fabric) => (
-                                                    <Box key={fabric.id} sx={{ 
-                                                        flex: '0 0 calc(25% - 16px)',
-                                                        minWidth: '200px',
-                                                        border: '1px solid #e0e0e0', 
-                                                        borderRadius: 1, 
-                                                        p: 2,
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        gap: 1
-                                                    }}>
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                                                                {fabric.name}
-                                                            </Typography>
-                                                            {/*<Chip */}
-                                                            {/*    label={fabric.isActive ? 'Active' : 'Inactive'} */}
-                                                            {/*    size="small" */}
-                                                            {/*    color={fabric.isActive ? 'success' : 'default'}*/}
-                                                            {/*/>*/}
+                                                        <Box sx={{
+                                                            display: 'flex',
+                                                            flexWrap: 'wrap',
+                                                            gap: 2,
+                                                            justifyContent: 'flex-start'
+                                                        }}>
+                                                            {getFilteredAndSortedFabrics()
+                                                                .slice((fabricPage - 1) * fabricPageSize, fabricPage * fabricPageSize)
+                                                                .map((fabric) => (
+                                                                    <Box key={fabric.id} sx={{
+                                                                        flex: '0 0 calc(25% - 16px)',
+                                                                        minWidth: '200px',
+                                                                        border: '1px solid #e0e0e0',
+                                                                        borderRadius: 1,
+                                                                        p: 2,
+                                                                        display: 'flex',
+                                                                        flexDirection: 'column',
+                                                                        gap: 1
+                                                                    }}>
+                                                                        <Box sx={{
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            justifyContent: 'space-between'
+                                                                        }}>
+                                                                            <Typography variant="subtitle1"
+                                                                                        sx={{fontWeight: 600}}>
+                                                                                {fabric.name}
+                                                                            </Typography>
+                                                                            {/*<Chip */}
+                                                                            {/*    label={fabric.isActive ? 'Active' : 'Inactive'} */}
+                                                                            {/*    size="small" */}
+                                                                            {/*    color={fabric.isActive ? 'success' : 'default'}*/}
+                                                                            {/*/>*/}
+                                                                        </Box>
+                                                                        <Typography variant="body2"
+                                                                                    sx={{color: 'text.secondary'}}>
+                                                                            {fabric.description}
+                                                                        </Typography>
+                                                                        <Box sx={{
+                                                                            display: 'flex',
+                                                                            gap: 1,
+                                                                            flexWrap: 'wrap'
+                                                                        }}>
+                                                                            <Chip
+                                                                                label={`Type: ${fabric.clothingType.join(', ')}`}
+                                                                                size="small"
+                                                                                variant="outlined"
+                                                                            />
+                                                                            <Chip
+                                                                                label={`Category: ${fabric.category.join(', ')}`}
+                                                                                size="small"
+                                                                                variant="outlined"
+                                                                            />
+                                                                        </Box>
+                                                                    </Box>
+                                                                ))}
                                                         </Box>
-                                                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                                            {fabric.description}
-                                                        </Typography>
-                                                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                                                            <Chip 
-                                                                label={`Type: ${fabric.clothingType.join(', ')}`} 
-                                                                size="small" 
-                                                                variant="outlined"
-                                                            />
-                                                            <Chip 
-                                                                label={`Category: ${fabric.category.join(', ')}`} 
-                                                                size="small" 
-                                                                variant="outlined"
-                                                            />
-                                                        </Box>
-                                                    </Box>
-                                                ))}
-                                            </Box>
-                                                        
+
                                                         {/* Pagination Controls */}
                                                         {getFilteredAndSortedFabrics().length > fabricPageSize && (
-                                                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 2, gap: 2 }}>
+                                                            <Box sx={{
+                                                                display: 'flex',
+                                                                justifyContent: 'center',
+                                                                alignItems: 'center',
+                                                                mt: 2,
+                                                                gap: 2
+                                                            }}>
                                                                 <Button
                                                                     variant="outlined"
                                                                     size="small"
@@ -1595,11 +1608,12 @@ export default function PlatformSetting() {
                                                                 >
                                                                     Previous
                                                                 </Button>
-                                                                
-                                                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+
+                                                                <Typography variant="body2"
+                                                                            sx={{color: 'text.secondary'}}>
                                                                     Page {fabricPage} of {Math.ceil(getFilteredAndSortedFabrics().length / fabricPageSize)}
                                                                 </Typography>
-                                                                
+
                                                                 <Button
                                                                     variant="outlined"
                                                                     size="small"
@@ -1621,16 +1635,16 @@ export default function PlatformSetting() {
                             {/* Order Settings Tab */}
                             {mainTabValue === 3 && (
                                 <Box>
-                                    <Typography variant="h6" sx={{ mb: 2, color: '#06b6d4' }}>
+                                    <Typography variant="h6" sx={{mb: 2, color: '#06b6d4'}}>
                                         Order Configuration
                                     </Typography>
-                                    
+
                                     {/* Order Limits */}
-                                    <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+                                    <Typography variant="subtitle1" sx={{mb: 2, fontWeight: 600}}>
                                         Order Requirements
                                     </Typography>
-                                    <Grid container spacing={3} sx={{ mb: 4 }}>
-                                        <Grid item xs={12} md={6} sx={{ flex: 1 }}>
+                                    <Grid container spacing={3} sx={{mb: 4}}>
+                                        <Grid item xs={12} md={6} sx={{flex: 1}}>
                                             <TextField
                                                 fullWidth
                                                 label="Minimum Uniform Quantity"
@@ -1645,12 +1659,13 @@ export default function PlatformSetting() {
                                                 helperText="Minimum quantity required to create an order"
                                                 slotProps={{
                                                     input: {
-                                                        endAdornment: <InputAdornment position="end"><Chip label="pieces" size="small" /></InputAdornment>
+                                                        endAdornment: <InputAdornment position="end"><Chip
+                                                            label="pieces" size="small"/></InputAdornment>
                                                     }
                                                 }}
                                             />
                                         </Grid>
-                                        <Grid item xs={12} md={6} sx={{ flex: 1 }}>
+                                        <Grid item xs={12} md={6} sx={{flex: 1}}>
                                             <TextField
                                                 fullWidth
                                                 label="Max Assigned Milestones"
@@ -1665,50 +1680,53 @@ export default function PlatformSetting() {
                                                 helperText="Maximum milestones that can be assigned to an order"
                                                 slotProps={{
                                                     input: {
-                                                        endAdornment: <InputAdornment position="end"><Chip label="milestones" size="small" /></InputAdornment>
+                                                        endAdornment: <InputAdornment position="end"><Chip
+                                                            label="milestones" size="small"/></InputAdornment>
                                                     }
                                                 }}
                                             />
                                         </Grid>
                                     </Grid>
-                                    
+
                                     {/* Order Process Description */}
-                                    <Box sx={{ mt: 3, p: 2, bgcolor: '#f8f9fa', borderRadius: 2 }}>
-                                        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: '#06b6d4' }}>
+                                    <Box sx={{mt: 3, p: 2, bgcolor: '#f8f9fa', borderRadius: 2}}>
+                                        <Typography variant="subtitle2" sx={{fontWeight: 600, mb: 1, color: '#06b6d4'}}>
                                             Order Creation Process
                                         </Typography>
-                                        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
-                                            Schools must order a minimum of {settings.minUniformQuantity} uniform pieces to create an order. 
-                                            Each order can have up to {settings.maxAssignedMilestones} milestones for tracking progress and payments.
+                                        <Typography variant="body2" sx={{color: 'text.secondary', mb: 2}}>
+                                            Schools must order a minimum of {settings.minUniformQuantity} uniform pieces
+                                            to create an order.
+                                            Each order can have up to {settings.maxAssignedMilestones} milestones for
+                                            tracking progress and payments.
                                         </Typography>
-                                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                                            <Chip 
-                                                label="Design Selection" 
-                                                size="small" 
+                                        <Box sx={{display: 'flex', gap: 1, flexWrap: 'wrap'}}>
+                                            <Chip
+                                                label="Design Selection"
+                                                size="small"
                                                 variant="outlined"
                                                 color="primary"
                                             />
-                                            <Chip 
-                                                label="Quantity Check" 
-                                                size="small" 
+                                            <Chip
+                                                label="Quantity Check"
+                                                size="small"
                                                 variant="outlined"
                                                 color="warning"
                                             />
-                                            <Chip 
-                                                label={`Min ${settings.minUniformQuantity} Pieces`} 
-                                                size="small" 
+                                            <Chip
+                                                label={`Min ${settings.minUniformQuantity} Pieces`}
+                                                size="small"
                                                 variant="outlined"
                                                 color="info"
                                             />
-                                            <Chip 
-                                                label="Order Creation" 
-                                                size="small" 
+                                            <Chip
+                                                label="Order Creation"
+                                                size="small"
                                                 variant="outlined"
                                                 color="success"
                                             />
-                                            <Chip 
-                                                label={`Max ${settings.maxAssignedMilestones} Milestones`} 
-                                                size="small" 
+                                            <Chip
+                                                label={`Max ${settings.maxAssignedMilestones} Milestones`}
+                                                size="small"
                                                 variant="outlined"
                                                 color="secondary"
                                             />
@@ -1720,14 +1738,14 @@ export default function PlatformSetting() {
                             {/* Report Settings Tab */}
                             {mainTabValue === 4 && (
                                 <Box>
-                                    <Typography variant="h6" sx={{ mb: 2, color: '#06b6d4' }}>
+                                    <Typography variant="h6" sx={{mb: 2, color: '#06b6d4'}}>
                                         Report Configuration
                                     </Typography>
-                                    
+
                                     {/* Report Sub-tabs */}
-                                    <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-                                        <Tabs 
-                                            value={reportTabValue} 
+                                    <Box sx={{borderBottom: 1, borderColor: 'divider', mb: 3}}>
+                                        <Tabs
+                                            value={reportTabValue}
                                             onChange={handleReportTabChange}
                                             sx={{
                                                 '& .MuiTab-root': {
@@ -1744,19 +1762,19 @@ export default function PlatformSetting() {
                                                 }
                                             }}
                                         >
-                                            <Tab label="Disbursement Timeline" />
-                                            <Tab label="Severity Levels" />
+                                            <Tab label="Disbursement Timeline"/>
+                                            <Tab label="Severity Levels"/>
                                         </Tabs>
                                     </Box>
 
                                     {/* Disbursement Timeline Sub-tab */}
                                     {reportTabValue === 0 && (
                                         <Box>
-                                            <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+                                            <Typography variant="subtitle1" sx={{mb: 2, fontWeight: 600}}>
                                                 Disbursement Timeline Configuration
                                             </Typography>
-                                            <Grid container spacing={3} sx={{ mb: 3 }}>
-                                                <Grid item xs={12} md={6} sx={{ flex: 1 }}>
+                                            <Grid container spacing={3} sx={{mb: 3}}>
+                                                <Grid item xs={12} md={6} sx={{flex: 1}}>
                                                     <TextField
                                                         fullWidth
                                                         label="Max Disbursement Days"
@@ -1771,44 +1789,48 @@ export default function PlatformSetting() {
                                                         helperText="Maximum days to process disbursement after report resolution"
                                                         slotProps={{
                                                             input: {
-                                                                endAdornment: <InputAdornment position="end"><Chip label="days" size="small" /></InputAdornment>
+                                                                endAdornment: <InputAdornment position="end"><Chip
+                                                                    label="days" size="small"/></InputAdornment>
                                                             }
                                                         }}
                                                     />
                                                 </Grid>
                                             </Grid>
-                                            
+
                                             {/* Process Description */}
-                                            <Box sx={{ mt: 3, p: 2, bgcolor: '#f8f9fa', borderRadius: 2 }}>
-                                                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: '#06b6d4' }}>
+                                            <Box sx={{mt: 3, p: 2, bgcolor: '#f8f9fa', borderRadius: 2}}>
+                                                <Typography variant="subtitle2"
+                                                            sx={{fontWeight: 600, mb: 1, color: '#06b6d4'}}>
                                                     Disbursement Process
                                                 </Typography>
-                                                <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
-                                                    After a report is resolved and compensation is approved, the disbursement process begins. 
-                                                    Funds will be processed within {settings.maxDisbursementDays} days to ensure timely payment to users.
+                                                <Typography variant="body2" sx={{color: 'text.secondary', mb: 2}}>
+                                                    After a report is resolved and compensation is approved, the
+                                                    disbursement process begins.
+                                                    Funds will be processed within {settings.maxDisbursementDays} days
+                                                    to ensure timely payment to users.
                                                 </Typography>
-                                                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                                                    <Chip 
-                                                        label="Report Resolution" 
-                                                        size="small" 
+                                                <Box sx={{display: 'flex', gap: 1, flexWrap: 'wrap'}}>
+                                                    <Chip
+                                                        label="Report Resolution"
+                                                        size="small"
                                                         variant="outlined"
                                                         color="primary"
                                                     />
-                                                    <Chip 
-                                                        label="Compensation Approval" 
-                                                        size="small" 
+                                                    <Chip
+                                                        label="Compensation Approval"
+                                                        size="small"
                                                         variant="outlined"
                                                         color="warning"
                                                     />
-                                                    <Chip 
-                                                        label="Payment Processing" 
-                                                        size="small" 
+                                                    <Chip
+                                                        label="Payment Processing"
+                                                        size="small"
                                                         variant="outlined"
                                                         color="info"
                                                     />
-                                                    <Chip 
-                                                        label={`${settings.maxDisbursementDays} Days Disbursement`} 
-                                                        size="small" 
+                                                    <Chip
+                                                        label={`${settings.maxDisbursementDays} Days Disbursement`}
+                                                        size="small"
                                                         variant="outlined"
                                                         color="success"
                                                     />
@@ -1820,13 +1842,18 @@ export default function PlatformSetting() {
                                     {/* Severity Levels Sub-tab */}
                                     {reportTabValue === 1 && (
                                         <Box>
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                                                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center',
+                                                mb: 2
+                                            }}>
+                                                <Typography variant="subtitle1" sx={{fontWeight: 600}}>
                                                     Report Severity Levels Configuration
                                                 </Typography>
                                                 <Button
                                                     variant="contained"
-                                                    startIcon={<Add />}
+                                                    startIcon={<Add/>}
                                                     onClick={handleAddSeverity}
                                                     sx={{
                                                         background: 'linear-gradient(135deg, #06b6d4 0%, #0ea5b8 100%)',
@@ -1838,35 +1865,45 @@ export default function PlatformSetting() {
                                                     Add Level
                                                 </Button>
                                             </Box>
-                                            
+
                                             <List>
                                                 {reportSeverityLevels.map((level) => (
-                                                    <ListItem key={level.id} sx={{ border: '1px solid #e0e0e0', mb: 1, borderRadius: 1 }}>
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                                                            <Box sx={{ flex: 1 }}>
+                                                    <ListItem key={level.id} sx={{
+                                                        border: '1px solid #e0e0e0',
+                                                        mb: 1,
+                                                        borderRadius: 1
+                                                    }}>
+                                                        <Box
+                                                            sx={{display: 'flex', alignItems: 'center', width: '100%'}}>
+                                                            <Box sx={{flex: 1}}>
                                                                 <ListItemText
                                                                     primary={
-                                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                                            <Box 
-                                                                                sx={{ 
-                                                                                    width: 16, 
-                                                                                    height: 16, 
-                                                                                    borderRadius: '50%', 
+                                                                        <Box sx={{
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            gap: 1
+                                                                        }}>
+                                                                            <Box
+                                                                                sx={{
+                                                                                    width: 16,
+                                                                                    height: 16,
+                                                                                    borderRadius: '50%',
                                                                                     backgroundColor: level.color,
                                                                                     mr: 1
-                                                                                }} 
+                                                                                }}
                                                                             />
-                                                                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                                                            <Typography variant="subtitle1"
+                                                                                        sx={{fontWeight: 600}}>
                                                                                 {level.name}
                                                                             </Typography>
-                                                                            <Chip 
-                                                                                label={level.isActive ? 'Active' : 'Inactive'} 
-                                                                                size="small" 
+                                                                            <Chip
+                                                                                label={level.isActive ? 'Active' : 'Inactive'}
+                                                                                size="small"
                                                                                 color={level.isActive ? 'success' : 'default'}
                                                                             />
-                                                                            <Chip 
-                                                                                label={`${level.compensationPercentage}% Compensation`} 
-                                                                                size="small" 
+                                                                            <Chip
+                                                                                label={`${level.compensationPercentage}% Compensation`}
+                                                                                size="small"
                                                                                 variant="outlined"
                                                                                 color="primary"
                                                                             />
@@ -1875,19 +1912,19 @@ export default function PlatformSetting() {
                                                                     secondary={level.description}
                                                                 />
                                                             </Box>
-                                                            <Box sx={{ display: 'flex', gap: 1 }}>
-                                                                <IconButton 
-                                                                    size="small" 
+                                                            <Box sx={{display: 'flex', gap: 1}}>
+                                                                <IconButton
+                                                                    size="small"
                                                                     onClick={() => handleEditSeverity(level)}
                                                                 >
-                                                                    <Edit />
+                                                                    <Edit/>
                                                                 </IconButton>
-                                                                <IconButton 
-                                                                    size="small" 
+                                                                <IconButton
+                                                                    size="small"
                                                                     color="error"
                                                                     onClick={() => handleDeleteSeverity(level.id)}
                                                                 >
-                                                                    <Delete />
+                                                                    <Delete/>
                                                                 </IconButton>
                                                             </Box>
                                                         </Box>
@@ -1906,28 +1943,34 @@ export default function PlatformSetting() {
                         <DialogTitle>Edit Logo Position</DialogTitle>
                         <DialogContent>
                             {editingPosition && (
-                                <Box sx={{ pt: 1 }}>
+                                <Box sx={{pt: 1}}>
                                     <TextField
                                         fullWidth
                                         label="Position Name"
                                         value={editingPosition.name}
                                         onChange={(e) => setEditingPosition({...editingPosition, name: e.target.value})}
-                                        sx={{ mb: 2 }}
+                                        sx={{mb: 2}}
                                     />
                                     <TextField
                                         fullWidth
                                         label="Description"
                                         value={editingPosition.description}
-                                        onChange={(e) => setEditingPosition({...editingPosition, description: e.target.value})}
+                                        onChange={(e) => setEditingPosition({
+                                            ...editingPosition,
+                                            description: e.target.value
+                                        })}
                                         multiline
                                         rows={2}
-                                        sx={{ mb: 2 }}
+                                        sx={{mb: 2}}
                                     />
                                     <FormControlLabel
                                         control={
                                             <Switch
                                                 checked={editingPosition.isActive}
-                                                onChange={(e) => setEditingPosition({...editingPosition, isActive: e.target.checked})}
+                                                onChange={(e) => setEditingPosition({
+                                                    ...editingPosition,
+                                                    isActive: e.target.checked
+                                                })}
                                             />
                                         }
                                         label="Active"
@@ -1942,7 +1985,6 @@ export default function PlatformSetting() {
                     </Dialog>
 
 
-
                     {/* Fabric Edit Dialog */}
                     <Dialog open={fabricDialogOpen} onClose={() => setFabricDialogOpen(false)} maxWidth="md" fullWidth>
                         <DialogTitle>
@@ -1950,33 +1992,39 @@ export default function PlatformSetting() {
                         </DialogTitle>
                         <DialogContent>
                             {editingFabric && (
-                                <Box sx={{ pt: 1 }}>
+                                <Box sx={{pt: 1}}>
                                     <TextField
                                         fullWidth
                                         label="Fabric Name"
                                         value={editingFabric.name}
                                         onChange={(e) => setEditingFabric({...editingFabric, name: e.target.value})}
-                                        sx={{ mb: 2 }}
+                                        sx={{mb: 2}}
                                     />
                                     <TextField
                                         fullWidth
                                         label="Description"
                                         value={editingFabric.description}
-                                        onChange={(e) => setEditingFabric({...editingFabric, description: e.target.value})}
+                                        onChange={(e) => setEditingFabric({
+                                            ...editingFabric,
+                                            description: e.target.value
+                                        })}
                                         multiline
                                         rows={3}
-                                        sx={{ mb: 2 }}
+                                        sx={{mb: 2}}
                                     />
-                                    
-                                    <FormControl fullWidth sx={{ mb: 2 }}>
+
+                                    <FormControl fullWidth sx={{mb: 2}}>
                                         <InputLabel id="gender-label">Gender</InputLabel>
                                         <Select
                                             labelId="gender-label"
                                             label="Gender"
                                             multiple
                                             value={editingFabric.gender}
-                                            onChange={(e) => setEditingFabric({...editingFabric, gender: e.target.value})}
-                                            renderValue={(selected) => selected.map(value => 
+                                            onChange={(e) => setEditingFabric({
+                                                ...editingFabric,
+                                                gender: e.target.value
+                                            })}
+                                            renderValue={(selected) => selected.map(value =>
                                                 genderOptions.find(option => option.value === value)?.label
                                             ).join(', ')}
                                         >
@@ -1988,15 +2036,18 @@ export default function PlatformSetting() {
                                         </Select>
                                     </FormControl>
 
-                                    <FormControl fullWidth sx={{ mb: 2 }}>
+                                    <FormControl fullWidth sx={{mb: 2}}>
                                         <InputLabel id="clothing-type-label">Clothing Type</InputLabel>
                                         <Select
                                             labelId="clothing-type-label"
                                             label="Clothing Type"
                                             multiple
                                             value={editingFabric.clothingType}
-                                            onChange={(e) => setEditingFabric({...editingFabric, clothingType: e.target.value})}
-                                            renderValue={(selected) => selected.map(value => 
+                                            onChange={(e) => setEditingFabric({
+                                                ...editingFabric,
+                                                clothingType: e.target.value
+                                            })}
+                                            renderValue={(selected) => selected.map(value =>
                                                 clothingTypeOptions.find(option => option.value === value)?.label
                                             ).join(', ')}
                                         >
@@ -2008,15 +2059,18 @@ export default function PlatformSetting() {
                                         </Select>
                                     </FormControl>
 
-                                    <FormControl fullWidth sx={{ mb: 2 }}>
+                                    <FormControl fullWidth sx={{mb: 2}}>
                                         <InputLabel id="category-label">Category</InputLabel>
                                         <Select
                                             labelId="category-label"
                                             label="Category"
                                             multiple
                                             value={editingFabric.category}
-                                            onChange={(e) => setEditingFabric({...editingFabric, category: e.target.value})}
-                                            renderValue={(selected) => selected.map(value => 
+                                            onChange={(e) => setEditingFabric({
+                                                ...editingFabric,
+                                                category: e.target.value
+                                            })}
+                                            renderValue={(selected) => selected.map(value =>
                                                 categoryOptions.find(option => option.value === value)?.label
                                             ).join(', ')}
                                         >
@@ -2032,7 +2086,10 @@ export default function PlatformSetting() {
                                         control={
                                             <Switch
                                                 checked={editingFabric.isActive}
-                                                onChange={(e) => setEditingFabric({...editingFabric, isActive: e.target.checked})}
+                                                onChange={(e) => setEditingFabric({
+                                                    ...editingFabric,
+                                                    isActive: e.target.checked
+                                                })}
                                             />
                                         }
                                         label="Active"
@@ -2047,56 +2104,64 @@ export default function PlatformSetting() {
                     </Dialog>
 
                     {/* Severity Level Edit Dialog */}
-                    <Dialog open={severityDialogOpen} onClose={() => setSeverityDialogOpen(false)} maxWidth="sm" fullWidth>
+                    <Dialog open={severityDialogOpen} onClose={() => setSeverityDialogOpen(false)} maxWidth="sm"
+                            fullWidth>
                         <DialogTitle>
                             {editingSeverity && editingSeverity.id > Math.max(...reportSeverityLevels.map(s => s.id)) ? 'Add New Severity Level' : 'Edit Severity Level'}
                         </DialogTitle>
                         <DialogContent>
                             {editingSeverity && (
-                                <Box sx={{ pt: 1 }}>
+                                <Box sx={{pt: 1}}>
                                     <TextField
                                         fullWidth
                                         label="Severity Name"
                                         value={editingSeverity.name}
                                         onChange={(e) => setEditingSeverity({...editingSeverity, name: e.target.value})}
-                                        sx={{ mb: 2 }}
+                                        sx={{mb: 2}}
                                     />
                                     <TextField
                                         fullWidth
                                         label="Description"
                                         value={editingSeverity.description}
-                                        onChange={(e) => setEditingSeverity({...editingSeverity, description: e.target.value})}
+                                        onChange={(e) => setEditingSeverity({
+                                            ...editingSeverity,
+                                            description: e.target.value
+                                        })}
                                         multiline
                                         rows={2}
-                                        sx={{ mb: 2 }}
+                                        sx={{mb: 2}}
                                     />
                                     <TextField
                                         fullWidth
                                         label="Compensation Percentage"
                                         type="number"
                                         value={editingSeverity.compensationPercentage}
-                                        onChange={(e) => setEditingSeverity({...editingSeverity, compensationPercentage: parseInt(e.target.value) || 1})}
-                                        sx={{ mb: 2 }}
+                                        onChange={(e) => setEditingSeverity({
+                                            ...editingSeverity,
+                                            compensationPercentage: parseInt(e.target.value) || 1
+                                        })}
+                                        sx={{mb: 2}}
                                         inputProps={{
                                             min: 1,
                                             max: 100
                                         }}
                                         slotProps={{
                                             input: {
-                                                endAdornment: <InputAdornment position="end"><Chip label="%" size="small" /></InputAdornment>
+                                                endAdornment: <InputAdornment position="end"><Chip label="%"
+                                                                                                   size="small"/></InputAdornment>
                                             }
                                         }}
                                     />
-                                    <Box sx={{ mb: 2 }}>
-                                        <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                                    <Box sx={{mb: 2}}>
+                                        <Typography variant="body2" sx={{mb: 1, fontWeight: 500}}>
                                             Color
                                         </Typography>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                            <Box 
-                                                sx={{ 
-                                                    width: 40, 
-                                                    height: 40, 
-                                                    borderRadius: 1, 
+                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                            <Box
+                                                sx={{
+                                                    width: 40,
+                                                    height: 40,
+                                                    borderRadius: 1,
                                                     backgroundColor: editingSeverity.color,
                                                     border: '2px solid #e0e0e0',
                                                     cursor: 'pointer',
@@ -2110,7 +2175,10 @@ export default function PlatformSetting() {
                                                 fullWidth
                                                 label="Hex Color"
                                                 value={editingSeverity.color}
-                                                onChange={(e) => setEditingSeverity({...editingSeverity, color: e.target.value})}
+                                                onChange={(e) => setEditingSeverity({
+                                                    ...editingSeverity,
+                                                    color: e.target.value
+                                                })}
                                                 size="small"
                                             />
                                         </Box>
@@ -2119,7 +2187,10 @@ export default function PlatformSetting() {
                                         control={
                                             <Switch
                                                 checked={editingSeverity.isActive}
-                                                onChange={(e) => setEditingSeverity({...editingSeverity, isActive: e.target.checked})}
+                                                onChange={(e) => setEditingSeverity({
+                                                    ...editingSeverity,
+                                                    isActive: e.target.checked
+                                                })}
                                             />
                                         }
                                         label="Active"
@@ -2147,23 +2218,23 @@ export default function PlatformSetting() {
                             horizontal: 'left',
                         }}
                     >
-                        <Box sx={{ p: 2, width: 280 }}>
-                            <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
+                        <Box sx={{p: 2, width: 280}}>
+                            <Typography variant="subtitle2" sx={{mb: 2, fontWeight: 600}}>
                                 Choose Color
                             </Typography>
                             <Grid container spacing={1}>
                                 {[
-                                    '#dc3545', '#fd7e14', '#ffc107', '#28a745', '#17a2b8', 
+                                    '#dc3545', '#fd7e14', '#ffc107', '#28a745', '#17a2b8',
                                     '#6f42c1', '#e83e8c', '#6c757d', '#343a40', '#007bff',
                                     '#6610f2', '#6f42c1', '#e83e8c', '#dc3545', '#fd7e14',
                                     '#ffc107', '#28a745', '#20c997', '#17a2b8', '#6c757d'
                                 ].map((color) => (
                                     <Grid item key={color}>
-                                        <Box 
-                                            sx={{ 
-                                                width: 30, 
-                                                height: 30, 
-                                                borderRadius: 1, 
+                                        <Box
+                                            sx={{
+                                                width: 30,
+                                                height: 30,
+                                                borderRadius: 1,
                                                 backgroundColor: color,
                                                 border: '2px solid #e0e0e0',
                                                 cursor: 'pointer',
@@ -2178,8 +2249,8 @@ export default function PlatformSetting() {
                                     </Grid>
                                 ))}
                             </Grid>
-                            <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #e0e0e0' }}>
-                                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                            <Box sx={{mt: 2, pt: 2, borderTop: '1px solid #e0e0e0'}}>
+                                <Typography variant="caption" sx={{color: 'text.secondary'}}>
                                     Click on a color to select it
                                 </Typography>
                             </Box>
@@ -2189,36 +2260,42 @@ export default function PlatformSetting() {
                     {/* Format Edit Dialog */}
                     <Dialog open={formatDialogOpen} onClose={() => setFormatDialogOpen(false)} maxWidth="sm" fullWidth>
                         <DialogTitle>
-                            {editingFormat && editingFormat.id > Math.max(...(formatType === 'image' ? acceptedImageFormats.map(f => f.id) : acceptedVideoFormats.map(f => f.id))) ? 
-                                `Add New ${formatType === 'image' ? 'Image' : 'Video'} Format` : 
+                            {editingFormat && editingFormat.id > Math.max(...(formatType === 'image' ? acceptedImageFormats.map(f => f.id) : acceptedVideoFormats.map(f => f.id))) ?
+                                `Add New ${formatType === 'image' ? 'Image' : 'Video'} Format` :
                                 `Edit ${formatType === 'image' ? 'Image' : 'Video'} Format`
                             }
                         </DialogTitle>
                         <DialogContent>
                             {editingFormat && (
-                                <Box sx={{ pt: 1 }}>
+                                <Box sx={{pt: 1}}>
                                     <TextField
                                         fullWidth
                                         label="Format Extension"
                                         value={editingFormat.format}
                                         onChange={(e) => setEditingFormat({...editingFormat, format: e.target.value})}
-                                        sx={{ mb: 2 }}
+                                        sx={{mb: 2}}
                                         helperText={`Enter format without dot (e.g., ${formatType === 'image' ? 'jpg, png' : 'mp4, avi'})`}
                                     />
                                     <TextField
                                         fullWidth
                                         label="Description"
                                         value={editingFormat.description}
-                                        onChange={(e) => setEditingFormat({...editingFormat, description: e.target.value})}
+                                        onChange={(e) => setEditingFormat({
+                                            ...editingFormat,
+                                            description: e.target.value
+                                        })}
                                         multiline
                                         rows={2}
-                                        sx={{ mb: 2 }}
+                                        sx={{mb: 2}}
                                     />
                                     <FormControlLabel
                                         control={
                                             <Switch
                                                 checked={editingFormat.isActive}
-                                                onChange={(e) => setEditingFormat({...editingFormat, isActive: e.target.checked})}
+                                                onChange={(e) => setEditingFormat({
+                                                    ...editingFormat,
+                                                    isActive: e.target.checked
+                                                })}
                                             />
                                         }
                                         label="Active"
@@ -2232,19 +2309,26 @@ export default function PlatformSetting() {
                         </DialogActions>
                     </Dialog>
 
-                                        {/* Action Buttons */}
-                    <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                    {/* Action Buttons */}
+                    <Box sx={{
+                        mt: 3,
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        alignItems: 'center',
+                        gap: 2,
+                        flexWrap: 'wrap'
+                    }}>
                         {hasChanges && (
-                            <Alert severity="info" sx={{ flex: 1 }}>
+                            <Alert severity="info" sx={{flex: 1}}>
                                 <Typography variant="body2">
                                     You have unsaved changes. Click "Save Changes" to apply your modifications.
                                 </Typography>
                             </Alert>
                         )}
-                        
+
                         <Button
                             variant="contained"
-                            startIcon={<Save />}
+                            startIcon={<Save/>}
                             onClick={handleSave}
                             disabled={loading || !hasChanges}
                             sx={{
