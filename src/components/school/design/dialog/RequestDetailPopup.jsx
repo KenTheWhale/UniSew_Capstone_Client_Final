@@ -2232,80 +2232,87 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                     flexDirection: 'column',
                                     gap: 3
                                 }}>
-                                    {/* Result Info Header */}
-                                    <Box sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        p: 2,
-                                        background: 'rgba(16, 185, 129, 0.05)',
-                                        borderRadius: '8px',
-                                        border: '1px solid rgba(16, 185, 129, 0.1)'
-                                    }}>
+                                    {/* Result Info Header - Only show for object format */}
+                                    {!Array.isArray(request.resultDelivery) && (
                                         <Box sx={{
                                             display: 'flex',
                                             alignItems: 'center',
-                                            gap: 2
+                                            justifyContent: 'space-between',
+                                            p: 2,
+                                            background: 'rgba(16, 185, 129, 0.05)',
+                                            borderRadius: '8px',
+                                            border: '1px solid rgba(16, 185, 129, 0.1)'
                                         }}>
                                             <Box sx={{
                                                 display: 'flex',
                                                 alignItems: 'center',
-                                                justifyContent: 'center',
-                                                width: 32,
-                                                height: 32,
-                                                borderRadius: '8px',
-                                                background: '#10b981',
-                                                color: 'white'
-                                            }}>
-                                                <FileTextOutlined style={{fontSize: '16px'}} />
-                                            </Box>
-                                            <Box sx={{gap: 1, display: 'flex', alignItems: 'center'}}>
-                                                <Text style={{
-                                                    fontSize: '14px',
-                                                    fontWeight: 600,
-                                                    color: '#111827'
-                                                }}>
-                                                    {request.resultDelivery.name || 'Design Result'}
-                                                </Text>
-                                                <Text style={{
-                                                    fontSize: '12px',
-                                                    color: '#6b7280'
-                                                }}>
-                                                    Submitted: {formatDate(request.resultDelivery.submitDate)}
-                                                </Text>
-                                            </Box>
-                                        </Box>
-                                        <Text style={{
-                                            fontSize: '11px',
-                                            color: '#10b981',
-                                            fontWeight: 600,
-                                            background: 'rgba(16, 185, 129, 0.1)',
-                                            padding: '4px 8px',
-                                            borderRadius: '12px'
-                                        }}>
-                                            ID: {parseID(request.resultDelivery.id, 'dd')}
-                                        </Text>
-                                    </Box>
-
-                                    {/* Design Items Results */}
-                                    {request.resultDelivery.items && request.resultDelivery.items.length > 0 && (
-                                        <Box>
-                                            <Text style={{
-                                                fontSize: '13px',
-                                                fontWeight: 600,
-                                                color: '#374151',
-                                                marginBottom: '12px',
-                                                display: 'block'
-                                            }}>
-                                                Total items: ({request.resultDelivery.items.length} items)
-                                            </Text>
-                                            
-                                            <Box sx={{
-                                                display: 'flex',
-                                                flexDirection: 'column',
                                                 gap: 2
                                             }}>
-                                                {request.resultDelivery.items.map((resultItem, index) => (
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    width: 32,
+                                                    height: 32,
+                                                    borderRadius: '8px',
+                                                    background: '#10b981',
+                                                    color: 'white'
+                                                }}>
+                                                    <FileTextOutlined style={{fontSize: '16px'}} />
+                                                </Box>
+                                                <Box sx={{gap: 1, display: 'flex', alignItems: 'center'}}>
+                                                    <Text style={{
+                                                        fontSize: '14px',
+                                                        fontWeight: 600,
+                                                        color: '#111827'
+                                                    }}>
+                                                        {request.resultDelivery.name || 'Design Result'}
+                                                    </Text>
+                                                    <Text style={{
+                                                        fontSize: '12px',
+                                                        color: '#6b7280'
+                                                    }}>
+                                                        Submitted: {formatDate(request.resultDelivery.submitDate)}
+                                                    </Text>
+                                                </Box>
+                                            </Box>
+                                            <Text style={{
+                                                fontSize: '11px',
+                                                color: '#10b981',
+                                                fontWeight: 600,
+                                                background: 'rgba(16, 185, 129, 0.1)',
+                                                padding: '4px 8px',
+                                                borderRadius: '12px'
+                                            }}>
+                                                ID: {parseID(request.resultDelivery.id, 'dd')}
+                                            </Text>
+                                        </Box>
+                                    )}
+
+                                    {/* Design Items Results */}
+                                    {(() => {
+                                        // Check if resultDelivery is an array (new format) or object (old format)
+                                        const isArrayFormat = Array.isArray(request.resultDelivery);
+                                        const resultItems = isArrayFormat ? request.resultDelivery : request.resultDelivery.items;
+                                        
+                                        return resultItems && resultItems.length > 0 && (
+                                            <Box>
+                                                <Text style={{
+                                                    fontSize: '13px',
+                                                    fontWeight: 600,
+                                                    color: '#374151',
+                                                    marginBottom: '12px',
+                                                    display: 'block'
+                                                }}>
+                                                    Total items: ({resultItems.length} items)
+                                                </Text>
+                                                
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: 2
+                                                }}>
+                                                    {resultItems.map((resultItem, index) => (
                                                     <Box
                                                         key={resultItem.id || index}
                                                         sx={{
@@ -2391,7 +2398,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                             }}>
                                                                 <Box sx={{flex: 1, gap: 1, display: 'flex', alignItems: 'center'}}>
                                                                     <Text style={{
-                                                                        fontSize: '15px',
+                                                                        fontSize: '11px',
                                                                         color: '#7c3aed',
                                                                         fontWeight: 600,
                                                                         textTransform: 'uppercase'
@@ -2408,13 +2415,40 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                         flexShrink: 0
                                                                     }}/>
                                                                     <Text style={{
-                                                                        fontSize: '15px',
+                                                                        fontSize: '11px',
                                                                         color: '#374151',
                                                                         fontWeight: 500
                                                                     }}>
                                                                         {resultItem.designItem.color}
                                                                     </Text>
                                                                 </Box>
+                                                            </Box>
+
+                                                            {/* Fabric */}
+                                                            <Box sx={{
+                                                                p: 1,
+                                                                background: 'rgba(16, 185, 129, 0.05)',
+                                                                borderRadius: '6px',
+                                                                border: '1px solid rgba(16, 185, 129, 0.1)',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: 1
+                                                            }}>
+                                                                <Text style={{
+                                                                    fontSize: '11px',
+                                                                    color: '#10b981',
+                                                                    fontWeight: 600,
+                                                                    textTransform: 'uppercase'
+                                                                }}>
+                                                                    Fabric
+                                                                </Text>
+                                                                <Text style={{
+                                                                    fontSize: '11px',
+                                                                    color: '#374151',
+                                                                    fontWeight: 500
+                                                                }}>
+                                                                    {resultItem.designItem.fabricName}
+                                                                </Text>
                                                             </Box>
 
                                                             {/* Logo Position */}
@@ -2429,7 +2463,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                     gap: 1
                                                                 }}>
                                                                     <Text style={{
-                                                                        fontSize: '15px',
+                                                                        fontSize: '11px',
                                                                         color: '#f57c00',
                                                                         fontWeight: 600,
                                                                         textTransform: 'uppercase'
@@ -2437,7 +2471,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                         Logo Position
                                                                     </Text>
                                                                     <Text style={{
-                                                                        fontSize: '15px',
+                                                                        fontSize: '11px',
                                                                         color: '#374151',
                                                                         fontWeight: 500
                                                                     }}>
@@ -2472,13 +2506,12 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                     background: 'rgba(16, 185, 129, 0.05)',
                                                                     borderRadius: '6px',
                                                                     border: '1px solid rgba(16, 185, 129, 0.1)',
-                                                                    gridColumn: 'span 2',
                                                                     display: 'flex',
                                                                     alignItems: 'center',
                                                                     gap: 1
                                                                 }}>
                                                                     <Text style={{
-                                                                        fontSize: '15px',
+                                                                        fontSize: '11px',
                                                                         color: '#10b981',
                                                                         fontWeight: 600,
                                                                         textTransform: 'uppercase'
@@ -2486,7 +2519,7 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                         Logo Size
                                                                     </Text>
                                                                     <Text style={{
-                                                                        fontSize: '15px',
+                                                                        fontSize: '11px',
                                                                         color: '#374151',
                                                                         fontWeight: 500
                                                                     }}>
@@ -2494,32 +2527,243 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
                                                                     </Text>
                                                                 </Box>
                                                             )}
-                                                            <Box sx={{
-                                                                p: 1,
-                                                                background: 'rgba(16, 185, 129, 0.05)',
-                                                                borderRadius: '6px',
-                                                                border: '1px solid rgba(16, 185, 129, 0.1)',
-                                                                gridColumn: 'span 2',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                gap: 1
-                                                            }}>
-                                                                <Text style={{
-                                                                    fontSize: '15px',
-                                                                    color: '#10b981',
-                                                                    fontWeight: 600,
-                                                                    textTransform: 'uppercase'
+
+                                                            {/* Logo Attaching Technique - For shirts */}
+                                                            {resultItem.designItem.type === 'shirt' && resultItem.logoAttachingTechnique && (
+                                                                <Box sx={{
+                                                                    p: 1,
+                                                                    background: 'rgba(139, 69, 19, 0.05)',
+                                                                    borderRadius: '6px',
+                                                                    border: '1px solid rgba(139, 69, 19, 0.1)',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: 1
                                                                 }}>
-                                                                    Fabric
-                                                                </Text>
-                                                                <Text style={{
-                                                                    fontSize: '15px',
-                                                                    color: '#374151',
-                                                                    fontWeight: 500
+                                                                    <Text style={{
+                                                                        fontSize: '11px',
+                                                                        color: '#8b4513',
+                                                                        fontWeight: 600,
+                                                                        textTransform: 'uppercase'
+                                                                    }}>
+                                                                        Logo Technique
+                                                                    </Text>
+                                                                    <Text style={{
+                                                                        fontSize: '11px',
+                                                                        color: '#374151',
+                                                                        fontWeight: 500
+                                                                    }}>
+                                                                        {resultItem.logoAttachingTechnique}
+                                                                    </Text>
+                                                                </Box>
+                                                            )}
+
+                                                            {/* Logo Note - For shirts */}
+                                                            {resultItem.designItem.type === 'shirt' && resultItem.logoNote && (
+                                                                <Box sx={{
+                                                                    p: 1,
+                                                                    background: 'rgba(139, 69, 19, 0.05)',
+                                                                    borderRadius: '6px',
+                                                                    border: '1px solid rgba(139, 69, 19, 0.1)',
+                                                                    gridColumn: 'span 2',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: 1
                                                                 }}>
-                                                                    {resultItem.designItem.fabricName}
-                                                                </Text>
-                                                            </Box>
+                                                                    <Text style={{
+                                                                        fontSize: '11px',
+                                                                        color: '#8b4513',
+                                                                        fontWeight: 600,
+                                                                        textTransform: 'uppercase'
+                                                                    }}>
+                                                                        Logo Note
+                                                                    </Text>
+                                                                    <Text style={{
+                                                                        fontSize: '11px',
+                                                                        color: '#374151',
+                                                                        fontWeight: 500,
+                                                                        fontStyle: 'italic'
+                                                                    }}>
+                                                                        {resultItem.logoNote}
+                                                                    </Text>
+                                                                </Box>
+                                                            )}
+
+                                                            {/* Button Information - For shirts */}
+                                                            {resultItem.designItem.type === 'shirt' && resultItem.buttonQty > 0 && (
+                                                                <>
+                                                                    <Box sx={{
+                                                                        p: 1,
+                                                                        background: 'rgba(59, 130, 246, 0.05)',
+                                                                        borderRadius: '6px',
+                                                                        border: '1px solid rgba(59, 130, 246, 0.1)',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        gap: 1
+                                                                    }}>
+                                                                        <Text style={{
+                                                                            fontSize: '11px',
+                                                                            color: '#3b82f6',
+                                                                            fontWeight: 600,
+                                                                            textTransform: 'uppercase'
+                                                                        }}>
+                                                                            Button Qty
+                                                                        </Text>
+                                                                        <Text style={{
+                                                                            fontSize: '11px',
+                                                                            color: '#374151',
+                                                                            fontWeight: 500
+                                                                        }}>
+                                                                            {resultItem.buttonQty}
+                                                                        </Text>
+                                                                    </Box>
+
+                                                                    <Box sx={{
+                                                                        p: 1,
+                                                                        background: 'rgba(59, 130, 246, 0.05)',
+                                                                        borderRadius: '6px',
+                                                                        border: '1px solid rgba(59, 130, 246, 0.1)',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        gap: 1
+                                                                    }}>
+                                                                        <Text style={{
+                                                                            fontSize: '11px',
+                                                                            color: '#3b82f6',
+                                                                            fontWeight: 600,
+                                                                            textTransform: 'uppercase'
+                                                                        }}>
+                                                                            Button Type
+                                                                        </Text>
+                                                                        <Text style={{
+                                                                            fontSize: '11px',
+                                                                            color: '#374151',
+                                                                            fontWeight: 500
+                                                                        }}>
+                                                                            {resultItem.buttonHoleQty} holes
+                                                                        </Text>
+                                                                    </Box>
+
+                                                                    <Box sx={{
+                                                                        p: 1,
+                                                                        background: 'rgba(59, 130, 246, 0.05)',
+                                                                        borderRadius: '6px',
+                                                                        border: '1px solid rgba(59, 130, 246, 0.1)',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        gap: 1
+                                                                    }}>
+                                                                        <Text style={{
+                                                                            fontSize: '11px',
+                                                                            color: '#3b82f6',
+                                                                            fontWeight: 600,
+                                                                            textTransform: 'uppercase'
+                                                                        }}>
+                                                                            Button Size
+                                                                        </Text>
+                                                                        <Text style={{
+                                                                            fontSize: '11px',
+                                                                            color: '#374151',
+                                                                            fontWeight: 500
+                                                                        }}>
+                                                                            {resultItem.buttonWidth}cm × {resultItem.buttonHeight}cm
+                                                                        </Text>
+                                                                    </Box>
+
+                                                                    <Box sx={{
+                                                                        p: 1,
+                                                                        background: 'rgba(59, 130, 246, 0.05)',
+                                                                        borderRadius: '6px',
+                                                                        border: '1px solid rgba(59, 130, 246, 0.1)',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        gap: 1
+                                                                    }}>
+                                                                        <Text style={{
+                                                                            fontSize: '11px',
+                                                                            color: '#3b82f6',
+                                                                            fontWeight: 600,
+                                                                            textTransform: 'uppercase'
+                                                                        }}>
+                                                                            Button Color
+                                                                        </Text>
+                                                                        <Box sx={{
+                                                                            width: 12,
+                                                                            height: 12,
+                                                                            borderRadius: '50%',
+                                                                            bgcolor: resultItem.buttonColor,
+                                                                            border: '1px solid #ffffff',
+                                                                            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                                                                            flexShrink: 0
+                                                                        }}/>
+                                                                        <Text style={{
+                                                                            fontSize: '11px',
+                                                                            color: '#374151',
+                                                                            fontWeight: 500
+                                                                        }}>
+                                                                            {resultItem.buttonColor}
+                                                                        </Text>
+                                                                    </Box>
+
+                                                                    {resultItem.buttonNote && (
+                                                                        <Box sx={{
+                                                                            p: 1,
+                                                                            background: 'rgba(59, 130, 246, 0.05)',
+                                                                            borderRadius: '6px',
+                                                                            border: '1px solid rgba(59, 130, 246, 0.1)',
+                                                                            gridColumn: 'span 2',
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            gap: 1
+                                                                        }}>
+                                                                            <Text style={{
+                                                                                fontSize: '11px',
+                                                                                color: '#3b82f6',
+                                                                                fontWeight: 600,
+                                                                                textTransform: 'uppercase'
+                                                                            }}>
+                                                                                Button Note
+                                                                            </Text>
+                                                                            <Text style={{
+                                                                                fontSize: '11px',
+                                                                                color: '#374151',
+                                                                                fontWeight: 500,
+                                                                                fontStyle: 'italic'
+                                                                            }}>
+                                                                                {resultItem.buttonNote}
+                                                                            </Text>
+                                                                        </Box>
+                                                                    )}
+                                                                </>
+                                                            )}
+
+                                                            {/* Zipper Information - For pants/skirts */}
+                                                            {(resultItem.designItem.type === 'pants' || resultItem.designItem.type === 'skirt') && (
+                                                                <Box sx={{
+                                                                    p: 1,
+                                                                    background: 'rgba(168, 85, 247, 0.05)',
+                                                                    borderRadius: '6px',
+                                                                    border: '1px solid rgba(168, 85, 247, 0.1)',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: 1
+                                                                }}>
+                                                                    <Text style={{
+                                                                        fontSize: '11px',
+                                                                        color: '#a855f7',
+                                                                        fontWeight: 600,
+                                                                        textTransform: 'uppercase'
+                                                                    }}>
+                                                                        Zipper
+                                                                    </Text>
+                                                                    <Text style={{
+                                                                        fontSize: '11px',
+                                                                        color: '#374151',
+                                                                        fontWeight: 500
+                                                                    }}>
+                                                                        {resultItem.zipper ? 'Yes' : 'No'}
+                                                                    </Text>
+                                                                </Box>
+                                                            )}
                                                         </Box>
 
 
@@ -2597,12 +2841,13 @@ export default function RequestDetailPopup({visible, onCancel, request, hideFoot
 
                                                     </Box>
                                                 ))}
+                                                </Box>
                                             </Box>
-                                        </Box>
-                                    )}
+                                        );
+                                    })()}
 
-                                    {/* Design Notes */}
-                                    {request.resultDelivery.note && (
+                                    {/* Design Notes - Only show for object format */}
+                                    {!Array.isArray(request.resultDelivery) && request.resultDelivery.note && (
                                         <Box sx={{
                                             p: 2,
                                             background: 'rgba(16, 185, 129, 0.05)',

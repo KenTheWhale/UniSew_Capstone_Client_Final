@@ -67,7 +67,7 @@ export default function FeedbackReportPopup({
         }
 
         if (isReport && images.length === 0 && !videoUrl) {
-            newErrors.media = 'At least one image or video is required for reports';
+            newErrors.media = 'Evidence Media is required for reports. Please upload at least one image or video.';
         }
 
         setErrors(newErrors);
@@ -279,7 +279,12 @@ export default function FeedbackReportPopup({
                 bgcolor: 'background.paper',
                 borderRadius: 3,
                 boxShadow: 24,
-                p: 0
+                p: 0,
+                '&::-webkit-scrollbar': {
+                    display: 'none'
+                },
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none'
             }}>
                 {}
                 <Box sx={{
@@ -384,8 +389,9 @@ export default function FeedbackReportPopup({
 
                         {/* Information Grid */}
                         <Box sx={{
-                            display: 'grid',
-                            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' },
+                            display: 'flex',
+                            flexDirection: 'row',
+                            flexWrap: 'wrap',
                             gap: 2
                         }}>
                             {/* ID Information */}
@@ -394,7 +400,9 @@ export default function FeedbackReportPopup({
                                 backgroundColor: 'white',
                                 borderRadius: 2,
                                 border: '1px solid #e2e8f0',
-                                textAlign: 'center'
+                                textAlign: 'center',
+                                flex: '1 1 calc(50% - 8px)',
+                                minWidth: '200px'
                             }}>
                                 <Box sx={{
                                     width: 40,
@@ -435,7 +443,9 @@ export default function FeedbackReportPopup({
                                 backgroundColor: 'white',
                                 borderRadius: 2,
                                 border: '1px solid #e2e8f0',
-                                textAlign: 'center'
+                                textAlign: 'center',
+                                flex: '1 1 calc(50% - 8px)',
+                                minWidth: '200px'
                             }}>
                                 <Box sx={{
                                     width: 40,
@@ -477,7 +487,9 @@ export default function FeedbackReportPopup({
                                     backgroundColor: 'white',
                                     borderRadius: 2,
                                     border: '1px solid #e2e8f0',
-                                    textAlign: 'center'
+                                    textAlign: 'center',
+                                    flex: '1 1 calc(50% - 8px)',
+                                    minWidth: '200px'
                                 }}>
                                     <Box sx={{
                                         width: 40,
@@ -632,7 +644,12 @@ export default function FeedbackReportPopup({
                     }}>
                         <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3}}>
                             <Typography variant="h6" sx={{fontWeight: 'bold', color: '#1e293b'}}>
-                                {isReport ? 'Evidence Media' : 'Attached Media'}
+                                {isReport ? 'Evidence Media *' : 'Attached Media'}
+                                {isReport && (
+                                    <Typography component="span" sx={{color: '#ef4444', fontWeight: 'bold', ml: 1}}>
+                                        (Required)
+                                    </Typography>
+                                )}
                                 {!isVideoMode && (
                                     <Typography component="span" sx={{color: '#64748b', fontWeight: 'normal'}}>
                                         {' '}({images.length}/{maxImages})
@@ -778,7 +795,7 @@ export default function FeedbackReportPopup({
                                         </Typography>
                                         <Typography variant="body2" sx={{color: '#64748b'}}>
                                             {isReport
-                                                ? 'Upload evidence images (JPG, PNG, GIF)'
+                                                ? 'Upload evidence images (JPG, PNG, GIF) - Required for reports'
                                                 : 'Upload images to support your feedback (JPG, PNG, GIF)'
                                             }
                                         </Typography>
@@ -821,7 +838,7 @@ export default function FeedbackReportPopup({
                                         </Typography>
                                         <Typography variant="body2" sx={{color: '#64748b', mb: 2}}>
                                             {isReport
-                                                ? 'Upload evidence video (MP4, AVI, MOV, etc.)'
+                                                ? 'Upload evidence video (MP4, AVI, MOV, etc.) - Required for reports'
                                                 : 'Upload video to support your feedback (MP4, AVI, MOV, etc.)'
                                             }
                                         </Typography>
@@ -876,7 +893,7 @@ export default function FeedbackReportPopup({
                         <Button
                             onClick={handleSubmit}
                             variant="contained"
-                            disabled={submitting}
+                            disabled={submitting || (isReport && images.length === 0 && !videoUrl)}
                             sx={{
                                 background: isReport
                                     ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
