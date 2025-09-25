@@ -55,6 +55,7 @@ import WorkIcon from '@mui/icons-material/Work';
 import TaxIcon from '@mui/icons-material/Receipt';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import OrderDetailTable from '../../../ui/OrderDetailTable.jsx';
+import {calculateFee} from "../../../../services/ShippingService.jsx";
 
 export function statusTag(status) {
     let color;
@@ -405,6 +406,8 @@ export default function OrderDetailPopup({open, onClose, order}) {
     const [profileModalOpen, setProfileModalOpen] = useState(false);
     const [profileGarment, setProfileGarment] = useState(null);
     const [businessConfig, setBusinessConfig] = useState(null);
+    const [shippingFee, setShippingFee] = useState(0);
+    const [loadingShippingFee, setLoadingShippingFee] = useState(false);
 
     if (!order) return null;
 
@@ -413,6 +416,15 @@ export default function OrderDetailPopup({open, onClose, order}) {
             fetchQuotations();
         }
     }, [open, order?.id]);
+
+    // Calculate shipping fee when quotation is selected
+    useEffect(() => {
+        if (selectedQuotation?.garment?.shippingUID) {
+            calculateShippingFee(selectedQuotation.garment.shippingUID);
+        } else {
+            setShippingFee(0);
+        }
+    }, [selectedQuotation]);
 
     // Fetch business configuration on component mount
     useEffect(() => {
@@ -534,81 +546,6 @@ export default function OrderDetailPopup({open, onClose, order}) {
         });
     };
 
-    const groupItemsByCategory = (orderDetails) => {
-        if (!orderDetails || orderDetails.length === 0) return [];
-
-        const categoryGroups = {};
-
-        orderDetails.forEach((item) => {
-            const category = item.deliveryItem?.designItem?.category || 'regular';
-            const gender = item.deliveryItem?.designItem?.gender || 'unknown';
-            const type = item.deliveryItem?.designItem?.type || 'item';
-
-            if (!categoryGroups[category]) {
-                categoryGroups[category] = {};
-            }
-
-            if (!categoryGroups[category][gender]) {
-                categoryGroups[category][gender] = [];
-            }
-
-            let existingGroup = categoryGroups[category][gender].find(group => group.type === type);
-
-            if (!existingGroup) {
-                existingGroup = {
-                    category,
-                    gender,
-                    type,
-                    sizes: [],
-                    quantities: {},
-                    items: [],
-                    totalQuantity: 0,
-                    color: item.deliveryItem?.designItem?.color,
-                    logoPosition: item.deliveryItem?.designItem?.logoPosition,
-                    baseLogoHeight: item.deliveryItem?.baseLogoHeight,
-                    baseLogoWidth: item.deliveryItem?.baseLogoWidth,
-                    frontImageUrl: item.deliveryItem?.frontImageUrl,
-                    backImageUrl: item.deliveryItem?.backImageUrl,
-                    logoImageUrl: item.deliveryItem?.designItem?.logoImageUrl
-                };
-                categoryGroups[category][gender].push(existingGroup);
-            }
-
-            const size = item.size || 'M';
-            const quantity = item.quantity || 0;
-
-            if (!existingGroup.sizes.includes(size)) {
-                existingGroup.sizes.push(size);
-            }
-
-            existingGroup.quantities[size] = quantity;
-            existingGroup.items.push(item);
-            existingGroup.totalQuantity += quantity;
-        });
-
-        const result = [];
-        Object.entries(categoryGroups).forEach(([category, genderGroups]) => {
-            const totalCategoryRows = Object.values(genderGroups).reduce((sum, groups) => sum + groups.length, 0);
-
-            Object.entries(genderGroups).forEach(([gender, groups]) => {
-                groups.forEach((group, index) => {
-                    const isFirstInCategory = Object.keys(genderGroups).indexOf(gender) === 0 && index === 0;
-                    const isFirstInGender = index === 0;
-
-                    result.push({
-                        ...group,
-                        isFirstInCategory,
-                        categoryRowSpan: totalCategoryRows,
-                        isFirstInGender,
-                        genderRowSpan: groups.length
-                    });
-                });
-            });
-        });
-
-        return result;
-    };
-
     const handleCloseImagesDialog = () => {
         setImagesDialogOpen(false);
         setSelectedItemImages(null);
@@ -621,6 +558,40 @@ export default function OrderDetailPopup({open, onClose, order}) {
 
     const totalQuantity = (order.orderDetails || []).reduce((sum, detail) => sum + detail.quantity, 0);
     const totalUniforms = Math.ceil(totalQuantity / 2);
+    const calculateShippingFee = async (garmentShippingUID) => {
+        try {
+            setLoadingShippingFee(true);
+            
+            if (!garmentShippingUID) {
+                setShippingFee(0);
+                return;
+            }
+
+            // Get school address from localStorage
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const schoolAddress = user?.customer?.address;
+
+            if (!schoolAddress) {
+                console.warn('School address not found');
+                setShippingFee(0);
+                return;
+            }
+
+            const response = await calculateFee(garmentShippingUID, schoolAddress);
+
+            if (response && response.data.code === 200) {
+                const totalShippingFee = response.data.data.total;
+                setShippingFee(totalShippingFee);
+            } else {
+                setShippingFee(0);
+            }
+        } catch (error) {
+            console.error('Error calculating shipping fee:', error);
+            setShippingFee(0);
+        } finally {
+            setLoadingShippingFee(false);
+        }
+    };
 
     return (<>
             <Modal
@@ -1158,7 +1129,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                                 color: '#475569', fontSize: '12px'
                                             }}>
                                                 Service
-                                                fee {businessConfig?.serviceRate ? `(${(businessConfig.serviceRate * 100).toFixed(0)}% total)` : selectedQuotation.price <= 10000000 ? '(2% total)' : ''}
+                                                fee {businessConfig?.serviceRate ? `(${(businessConfig.serviceRate * 100).toFixed(0)}% base price)` : selectedQuotation.price <= 10000000 ? '(2% total)' : ''}
                                             </Typography>
                                             <Typography variant="body2" sx={{
                                                 color: '#1e293b', fontWeight: 600, fontSize: '12px'
@@ -1174,12 +1145,34 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                             <Typography variant="body2" sx={{
                                                 color: '#475569', fontSize: '12px'
                                             }}>
-                                                Deposit rate
+                                                Deposit amount ({(selectedQuotation.depositRate || 50)}% base price)
                                             </Typography>
                                             <Typography variant="body2" sx={{
                                                 color: '#1e293b', fontWeight: 600, fontSize: '12px'
                                             }}>
-                                                {(selectedQuotation.depositRate || 50)}%
+                                                {((selectedQuotation.depositRate || 50) * selectedQuotation.price/100).toLocaleString('vi-VN')} VND
+                                            </Typography>
+                                        </Box>
+
+                                        <Box sx={{
+                                            display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                                        }}>
+                                            <Typography variant="body2" sx={{
+                                                color: '#475569', fontSize: '12px'
+                                            }}>
+                                                Shipping Fee (Pay before delivery)
+                                            </Typography>
+                                            <Typography variant="body2" sx={{
+                                                color: '#1e293b', fontWeight: 600, fontSize: '12px'
+                                            }}>
+                                                {loadingShippingFee ? (
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        <SyncOutlined spin style={{ fontSize: '12px' }} />
+                                                        Calculating...
+                                                    </Box>
+                                                ) : (
+                                                    `${shippingFee.toLocaleString('vi-VN')} VND`
+                                                )}
                                             </Typography>
                                         </Box>
 

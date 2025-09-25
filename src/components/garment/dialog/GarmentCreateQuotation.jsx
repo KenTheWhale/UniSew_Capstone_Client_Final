@@ -39,96 +39,12 @@ import {
     StickyNote2 as NoteIcon,
     TableChart as TableChartIcon
 } from '@mui/icons-material';
-import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
-import {GiSkirt} from "react-icons/gi";
 import {parseID} from "../../../utils/ParseIDUtil.jsx";
 import DisplayImage from "../../ui/DisplayImage.jsx";
 import OrderDetailTable from "../../ui/OrderDetailTable.jsx";
 import {createQuotation, getSizes} from "../../../services/OrderService.jsx";
 import {calculateShippingTime} from "../../../services/ShippingService.jsx";
 import {enqueueSnackbar} from "notistack";
-
-const StatusChip = ({status}) => {
-    const getStatusConfig = (status) => {
-        switch (status?.toLowerCase()) {
-            case 'pending':
-                return {
-                    label: 'Pending',
-                    color: '#fff',
-                    bgColor: '#f59e0b',
-                    icon: <ScheduleIcon sx={{fontSize: 16}}/>
-                };
-            case 'processing':
-                return {
-                    label: 'Processing',
-                    color: '#fff',
-                    bgColor: '#3b82f6',
-                    icon: <ShippingIcon sx={{fontSize: 16}}/>
-                };
-            case 'completed':
-                return {
-                    label: 'Completed',
-                    color: '#fff',
-                    bgColor: '#10b981',
-                    icon: <CheckCircleIcon sx={{fontSize: 16}}/>
-                };
-            case 'cancelled':
-            case 'canceled':
-                return {
-                    label: 'Cancelled',
-                    color: '#fff',
-                    bgColor: '#ef4444',
-                    icon: <CancelIcon sx={{fontSize: 16}}/>
-                };
-            default:
-                return {
-                    label: 'Unknown',
-                    color: '#374151',
-                    bgColor: '#f3f4f6',
-                    icon: <InfoIcon sx={{fontSize: 16}}/>
-                };
-        }
-    };
-
-    const config = getStatusConfig(status);
-
-    return (
-        <Chip
-            icon={config.icon}
-            label={config.label}
-            sx={{
-                backgroundColor: config.bgColor,
-                color: config.color,
-                fontWeight: 600,
-                fontSize: '0.8rem',
-                padding: '6px 12px',
-                transition: 'all 0.3s ease',
-                '& .MuiChip-icon': {
-                    color: config.color,
-                    transition: 'all 0.3s ease'
-                },
-                '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-                }
-            }}
-        />
-    );
-};
-
-const getItemIcon = (itemType) => {
-    const type = itemType?.toLowerCase() || '';
-
-    if (type.includes('shirt') || type.includes('áo')) {
-        return <PiShirtFoldedFill size={24} color="#3b82f6"/>;
-    } else if (type.includes('pants') || type.includes('quần')) {
-        return <PiPantsFill size={24} color="#059669"/>;
-    } else if (type.includes('skirt') || type.includes('váy')) {
-        return <GiSkirt size={24} color="#ec4899"/>;
-    } else {
-        return <CheckroomIcon sx={{fontSize: 24, color: '#6b7280'}}/>;
-    }
-};
 
 export default function GarmentCreateQuotation({visible, onCancel, order}) {
     const [updateStatusDialogOpen, setUpdateStatusDialogOpen] = useState(false);
@@ -163,6 +79,19 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
     const [shippingLeadTime, setShippingLeadTime] = useState(null);
     const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
     const [shippingCalculationError, setShippingCalculationError] = useState('');
+    const [suggestedPrice, setSuggestedPrice] = useState(0);
+
+    // Auto-fill suggested price when it changes
+    useEffect(() => {
+        if (suggestedPrice > 0 && (!quotationData.totalPrice || quotationData.totalPrice === '')) {
+            setQuotationData(prev => ({
+                ...prev,
+                totalPrice: suggestedPrice.toString()
+            }));
+            // Clear any existing price error when auto-filling
+            setPriceError('');
+        }
+    }, [suggestedPrice]);
 
     const mergedOrderData = order || {};
 
@@ -270,23 +199,10 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
         }
     };
 
-    const getUniqueTypes = () => {
-        return mergedOrderData.orderDetails?.length || 0;
-    };
-
-    const handleUpdateStatus = () => {
-        setUpdateStatusDialogOpen(true);
-    };
-
     const handleStatusUpdate = () => {
         setUpdateStatusDialogOpen(false);
         setNewStatus('');
         setStatusNote('');
-    };
-
-    const handleViewImages = (groupedItem) => {
-        setSelectedItemImages(groupedItem);
-        setImagesDialogOpen(true);
     };
 
     const handleCloseImagesDialog = () => {
@@ -751,11 +667,6 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
         });
 
         return result;
-    };
-
-    const handleOpenQuantityDetails = (groupedItem) => {
-        setSelectedQuantityDetails(groupedItem);
-        setShowQuantityDetailsDialog(true);
     };
 
     const handleCloseQuantityDetails = () => {
@@ -1500,6 +1411,7 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                             garmentQuotation={true}
                                             orderId={mergedOrderData.id}
                                             onTotalPriceChange={(v) => setComputedTotalPrice(v || 0)}
+                                            SetSuggestedPrice={setSuggestedPrice}
                                         />
                                     )}
                                 </Box>
@@ -1567,13 +1479,42 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                         <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
                                             {}
                                             <Box>
-                                                <Typography variant="body2" sx={{
-                                                    fontWeight: 600,
-                                                    mb: 1,
-                                                    color: '#1e293b'
-                                                }}>
-                                                    Total Order Price (VND) *
-                                                </Typography>
+                                                <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1}}>
+                                                    <Typography variant="body2" sx={{
+                                                        fontWeight: 600,
+                                                        color: '#1e293b'
+                                                    }}>
+                                                        Total Order Price (VND) *
+                                                    </Typography>
+                                                    {suggestedPrice > 0 && (
+                                                        <Button
+                                                            size="small"
+                                                            variant="outlined"
+                                                            onClick={() => {
+                                                                setQuotationData(prev => ({
+                                                                    ...prev,
+                                                                    totalPrice: suggestedPrice.toString()
+                                                                }));
+                                                                // Clear price error when using suggested price
+                                                                setPriceError('');
+                                                            }}
+                                                            sx={{
+                                                                fontSize: '0.75rem',
+                                                                py: 0.5,
+                                                                px: 1.5,
+                                                                minWidth: 'auto',
+                                                                borderColor: '#3f51b5',
+                                                                color: '#3f51b5',
+                                                                '&:hover': {
+                                                                    borderColor: '#303f9f',
+                                                                    backgroundColor: 'rgba(63, 81, 181, 0.08)'
+                                                                }
+                                                            }}
+                                                        >
+                                                            Use Suggested: {formatCurrency(suggestedPrice)}
+                                                        </Button>
+                                                    )}
+                                                </Box>
                                                 <TextField
                                                     type="text"
                                                     value={quotationData.totalPrice ? parseFloat(quotationData.totalPrice).toLocaleString('vi-VN') : ''}
@@ -1582,7 +1523,7 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                     fullWidth
                                                     placeholder="Enter total price (10,000 - 200,000,000 VND)"
                                                     error={!!priceError}
-                                                    helperText={priceError || 'Price range: 10,000 - 200,000,000 VND'}
+                                                    helperText={priceError}
                                                     sx={{
                                                         '& .MuiOutlinedInput-root': {
                                                             background: 'rgba(255, 255, 255, 0.9)',
