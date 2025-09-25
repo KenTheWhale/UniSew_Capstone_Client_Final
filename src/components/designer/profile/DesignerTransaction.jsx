@@ -1,11 +1,16 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {Box, Chip, Paper, Typography} from '@mui/material';
+import {Box, Button, Card, CardContent, Chip, Paper, Tooltip, Typography} from '@mui/material';
 import {Table} from 'antd';
-import {DollarOutlined} from '@ant-design/icons';
+import {DollarOutlined, CheckOutlined, StopOutlined, CreditCardOutlined, ReloadOutlined} from '@ant-design/icons';
+import {AccountBalanceWallet, CreditScore, PictureAsPdf} from '@mui/icons-material';
+import {GrDocumentCsv} from "react-icons/gr";
 import {getTransactionsForOne} from '../../../services/PaymentService.jsx';
 import {parseID} from '../../../utils/ParseIDUtil.jsx';
 import {formatDateTimeSecond} from '../../../utils/TimestampUtil.jsx';
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import {CSVLink} from "react-csv";
 
 function formatCurrency(amount) {
     if (amount === null || amount === undefined) return 'N/A';
@@ -14,6 +19,73 @@ function formatCurrency(amount) {
         maximumFractionDigits: 0
     }).format(amount) + ' VND';
 }
+
+const formatCompactCurrency = (amount) => {
+    return new Intl.NumberFormat('vi-VN').format(amount);
+};
+
+const StatCard = React.memo(({icon, value, label, color, bgColor}) => (
+    <Card
+        sx={{
+            height: '100%',
+            background: bgColor || `linear-gradient(135deg, ${color}15 0%, ${color}08 100%)`,
+            border: `1px solid ${color}20`,
+            borderRadius: 2,
+            transition: 'all 0.3s ease',
+            '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: `0 8px 24px ${color}25`
+            },
+            minWidth: 0,
+        }}
+    >
+        <CardContent sx={{p: 2}}>
+            <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                <Box sx={{minWidth: 0, flex: 1, mr: 1}}>
+                    <Typography
+                        variant="h6"
+                        sx={{
+                            fontWeight: 700,
+                            color: color,
+                            mb: 0.5,
+                            fontSize: {xs: '0.9rem', sm: '1.1rem'},
+                            lineHeight: 1.2,
+                            wordBreak: 'break-word',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                        }}
+                        title={value}
+                    >
+                        {value}
+                    </Typography>
+                    <Typography
+                        variant="body2"
+                        sx={{
+                            color: '#64748b',
+                            fontWeight: 500,
+                            fontSize: {xs: '0.75rem', sm: '0.875rem'},
+                            lineHeight: 1.2
+                        }}
+                    >
+                        {label}
+                    </Typography>
+                </Box>
+                <Box
+                    sx={{
+                        p: 1.5,
+                        borderRadius: 2,
+                        backgroundColor: `${color}10`,
+                        color: color,
+                        flexShrink: 0
+                    }}
+                >
+                    {icon}
+                </Box>
+            </Box>
+        </CardContent>
+    </Card>
+));
 
 const paymentTypeLabel = (type) => ({
     design: 'Design',
@@ -47,6 +119,148 @@ export default function DesignerTransaction() {
     useEffect(() => {
         fetchTransactions();
     }, [fetchTransactions]);
+
+    const stats = useMemo(() => {
+        if (!Array.isArray(transactions)) {
+            return {total: 0, success: 0, failed: 0, pending: 0, totalAmount: 0, totalFees: 0};
+        }
+        const total = transactions.length;
+        const success = transactions.filter(t => t.status === 'success').length;
+        const failed = transactions.filter(t => t.status === 'fail' || t.status === 'failed').length;
+        const pending = transactions.filter(t => t.status === 'pending').length;
+        const totalAmount = transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+        const totalFees = transactions.reduce((sum, t) => sum + (t.serviceFee || 0), 0);
+
+        return {total, success, failed, pending, totalAmount, totalFees};
+    }, [transactions]);
+
+    function arrayBufferToBase64(buffer) {
+        const bytes = new Uint8Array(buffer);
+        const chunkSize = 0x8000; // ~32KB
+        let binary = "";
+        for (let i = 0; i < bytes.length; i += chunkSize) {
+            const chunk = bytes.subarray(i, i + chunkSize);
+            binary += String.fromCharCode.apply(null, chunk);
+        }
+        return btoa(binary);
+    }
+
+    async function embedUnicodeFont(doc) {
+        const res = await fetch("/fonts/NotoSans-Regular.ttf");
+        const buf = await res.arrayBuffer();
+        const base64 = arrayBufferToBase64(buf);
+        doc.addFileToVFS("NotoSans-Regular.ttf", base64);
+        doc.addFont("NotoSans-Regular.ttf", "NotoSans", "normal");
+        doc.setFont("NotoSans", "normal");
+    }
+
+    async function handleDownloadPdf() {
+        const doc = new jsPDF({unit: "pt", format: "a1", orientation: "landscape"});
+        await embedUnicodeFont(doc);
+
+        const margin = 30; // pt
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const printWidth = pageWidth - margin * 2;
+
+        const ratios = [0.0636, 0.1458, 0.1794, 0.1196, 0.0972, 0.1458, 0.0972, 0.1514];
+        const colWidths = ratios.map(r => Math.floor(printWidth * r));
+
+        doc.setFont("NotoSans", "normal");
+        doc.setFontSize(14);
+        doc.text("UniSew - Designer Transactions Report", margin, 40);
+
+        const head = [["ID", "Sender", "Receiver", "Amount", "Fee", "Type", "Status", "Date"]];
+        const body = (transactions || []).map(trs => ([
+            `${parseID(trs.id, "trs")}`,
+            (trs.sender && trs.sender.name) ? trs.sender.name : "-",
+            (trs.receiver && trs.receiver.name) ? trs.receiver.name : "-",
+            new Intl.NumberFormat("vi-VN").format(trs.amount || 0) + " ₫",
+            new Intl.NumberFormat("vi-VN").format(trs.serviceFee || 0) + " ₫",
+            paymentTypeLabel(trs.paymentType),
+            trs.status === 'success' ? 'Successful' : 'Failed',
+            (function formatDateTime(d) {
+                const date = new Date(d);
+                return date.toLocaleTimeString("vi-VN", {hour12: false}) + " " + date.toLocaleDateString("vi-VN");
+            })(trs.creationDate)
+        ]));
+
+        autoTable(doc, {
+            startY: 60,
+            head,
+            body,
+            margin: {left: margin, right: margin},
+            tableWidth: printWidth,
+            theme: "grid",
+            styles: {
+                font: "NotoSans",
+                fontSize: 10,
+                cellPadding: 6,
+                lineWidth: 0.2,
+                overflow: "linebreak",
+                textColor: 0
+            },
+            headStyles: {
+                fillColor: [255, 255, 255],
+                textColor: 0,
+                fontStyle: "bold",
+                lineWidth: 0.2
+            },
+            columnStyles: {
+                0: {cellWidth: colWidths[0], halign: "left"},
+                1: {cellWidth: colWidths[1], halign: "left"},
+                2: {cellWidth: colWidths[2], halign: "left"},
+                3: {cellWidth: colWidths[3], halign: "right"},
+                4: {cellWidth: colWidths[4], halign: "right"},
+                5: {cellWidth: colWidths[5], halign: "left"},
+                6: {cellWidth: colWidths[6], halign: "left"},
+                7: {cellWidth: colWidths[7], halign: "center"}
+            },
+            didDrawPage: () => {
+                doc.setFontSize(14);
+                doc.text("UniSew - Designer Transactions Report", margin, 40);
+            }
+        });
+
+        const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY : 60;
+        doc.setFontSize(10);
+        doc.text(`Total Transactions: ${transactions ? transactions.length : 0}`, margin, finalY + 20);
+
+        doc.save(`designer_transactions_${new Date().toISOString().slice(0, 10)}.pdf`);
+    }
+
+    function formatDateTime(d) {
+        const date = new Date(d);
+        const time = date.toLocaleTimeString("vi-VN", {hour12: false}); // 07:00:00
+        const day = date.toLocaleDateString("vi-VN");                    // 31/8/2025
+        return `${time} ${day}`;
+    }
+
+    const csvHeaders = [
+        {label: "ID", key: "id"},
+        {label: "Sender", key: "sender"},
+        {label: "Receiver", key: "receiver"},
+        {label: "Amount (VND)", key: "amount"},
+        {label: "Fee (VND)", key: "fee"},
+        {label: "Payment Type", key: "paymentType"},
+        {label: "Status", key: "status"},
+        {label: "Date", key: "date"},
+    ];
+
+    function mapToCsvRows(transactions) {
+        return (transactions || []).map(trs => ({
+            id: `#${trs.id}`,
+            sender: trs?.sender?.name || "-",
+            receiver: trs?.receiver?.name || "-",
+            amount: Number(trs?.amount || 0),
+            fee: Number(trs?.serviceFee || 0),
+            paymentType: paymentTypeLabel(trs.paymentType),
+            status: trs.status === 'success' ? 'Successful' : 'Failed',
+            date: formatDateTime(trs.creationDate),
+        }));
+    }
+
+    const data = mapToCsvRows(transactions);
+    const filename = `designer_transactions_${new Date().toISOString().slice(0, 10)}.csv`;
 
     const columns = useMemo(() => [
         {
@@ -115,9 +329,6 @@ export default function DesignerTransaction() {
                     <Typography variant="body2" sx={{ fontWeight: 600, display: 'inline' }}>
                         Paid
                     </Typography>
-                    <Typography variant="body2" sx={{ color: '#64748b', fontSize: '12px', fontWeight: 500, display: 'inline', ml: 0.5 }}>
-                        (Service Fee Incl.)
-                    </Typography>
                 </Box>
             ),
             key: 'total',
@@ -126,7 +337,7 @@ export default function DesignerTransaction() {
             sorter: (a, b) => ((a.amount || 0) + (a.serviceFee || 0)) - ((b.amount || 0) + (b.serviceFee || 0)),
             render: (_, record) => {
                 const isReceiver = record?.receiver?.account?.role === 'designer';
-                const total = (record?.amount || 0) + (record?.serviceFee || 0);
+                const total = (record?.amount || 0);
                 return (
                     <Typography variant="body2" sx={{fontWeight: 700, color: isReceiver ? '#16a34a' : '#dc2626'}}>
                         {isReceiver ? '+' : '-'}{formatCurrency(total)}
@@ -198,15 +409,114 @@ export default function DesignerTransaction() {
                 background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.05) 0%, rgba(91, 33, 182, 0.08) 100%)',
                 border: '1px solid rgba(124, 58, 237, 0.1)'
             }}>
-                <Box sx={{display: 'flex', alignItems: 'center', mb: 2}}>
-                    <DollarOutlined style={{fontSize: 28, color: '#7c3aed', marginRight: 8}}/>
-                    <Typography variant="h4" sx={{fontWeight: 700, color: '#1e293b'}}>
-                        My Transactions
-                    </Typography>
+                <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2}}>
+                    <Box sx={{display: 'flex', alignItems: 'center'}}>
+                        <DollarOutlined style={{fontSize: 28, color: '#7c3aed', marginRight: 8}}/>
+                        <Typography variant="h4" sx={{fontWeight: 700, color: '#1e293b'}}>
+                            My Transactions
+                        </Typography>
+                    </Box>
+                    <Box sx={{display: "flex", alignItems: "center", gap: 2}}>
+                        <Tooltip title="Download PDF Report">
+                            <Button
+                                variant="contained"
+                                startIcon={<PictureAsPdf style={{fontSize: 16}}/>}
+                                onClick={handleDownloadPdf}
+                                sx={{
+                                    background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+                                    color: 'white',
+                                    borderRadius: 2,
+                                    px: 3,
+                                    py: 1,
+                                    textTransform: 'none',
+                                    fontWeight: 600,
+                                    fontSize: '14px',
+                                    boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)',
+                                    '&:hover': {
+                                        background: 'linear-gradient(135deg, #b91c1c 0%, #991b1b 100%)',
+                                        transform: 'translateY(-2px)',
+                                        boxShadow: '0 6px 16px rgba(220, 38, 38, 0.4)'
+                                    },
+                                    transition: 'all 0.3s ease'
+                                }}
+                            >
+                                PDF
+                            </Button>
+                        </Tooltip>
+                        <Tooltip title="Download CSV Report">
+                            <Button
+                                variant="contained"
+                                startIcon={<GrDocumentCsv style={{fontSize: 16}}/>}
+                                sx={{
+                                    background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+                                    color: 'white',
+                                    borderRadius: 2,
+                                    px: 3,
+                                    py: 1,
+                                    textTransform: 'none',
+                                    fontWeight: 600,
+                                    fontSize: '14px',
+                                    boxShadow: '0 4px 12px rgba(22, 163, 74, 0.3)',
+                                    '&:hover': {
+                                        background: 'linear-gradient(135deg, #15803d 0%, #166534 100%)',
+                                        transform: 'translateY(-2px)',
+                                        boxShadow: '0 6px 16px rgba(22, 163, 74, 0.4)'
+                                    },
+                                    transition: 'all 0.3s ease'
+                                }}
+                            >
+                                <CSVLink
+                                    data={data}
+                                    headers={csvHeaders}
+                                    filename={filename}
+                                    separator=","
+                                    uFEFF={true}
+                                    target="_blank"
+                                    style={{
+                                        color: 'inherit',
+                                        textDecoration: 'none',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px'
+                                    }}
+                                >
+                                    CSV
+                                </CSVLink>
+                            </Button>
+                        </Tooltip>
+                    </Box>
                 </Box>
                 <Typography variant="body1" sx={{color: '#64748b'}}>
                     Review your transaction history.
                 </Typography>
+            </Box>
+
+            {/* Statistics Cards */}
+            <Box sx={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 2, mb: 4}}>
+                <StatCard
+                    icon={<AccountBalanceWallet />}
+                    value={stats.total}
+                    label="Total Transactions"
+                    color="#7c3aed"
+                />
+                <StatCard
+                    icon={<CheckOutlined style={{fontSize: 24}}/>}
+                    value={stats.success}
+                    label="Successful Transactions"
+                    color="#52c41a"
+                />
+                <StatCard
+                    icon={<StopOutlined style={{fontSize: 24}}/>}
+                    value={stats.failed}
+                    label="Failed Transactions"
+                    color="#ff4d4f"
+                />
+                <StatCard
+                    icon={<CreditScore />}
+                    value={formatCompactCurrency(stats.totalAmount) + '₫'}
+                    label="Total Amount"
+                    color="#1890ff"
+                />
             </Box>
 
             <Paper elevation={0} sx={{borderRadius: 2, border: '1px solid #e2e8f0', overflow: 'hidden'}}>

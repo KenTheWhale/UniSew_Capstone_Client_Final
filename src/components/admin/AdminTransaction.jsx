@@ -7,21 +7,20 @@ import {
     CardContent,
     Chip,
     CircularProgress,
-    IconButton,
     Paper,
     Tooltip,
     Typography
 } from "@mui/material";
 import {Badge, Descriptions, Empty, Input, Modal, Select, Table, Tag} from 'antd';
-import {CheckOutlined, CreditCardOutlined, PayCircleOutlined, ReloadOutlined, StopOutlined} from '@ant-design/icons';
-import {AccountBalance, PictureAsPdf, Visibility} from '@mui/icons-material';
+import {CheckOutlined, CreditCardOutlined, ReloadOutlined, StopOutlined} from '@ant-design/icons';
+import {AccountBalance, AccountBalanceWallet, CreditScore, PictureAsPdf} from '@mui/icons-material';
 import {enqueueSnackbar} from 'notistack';
 import {getTransactions} from '../../services/PaymentService.jsx';
 import {parseID} from "../../utils/ParseIDUtil.jsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import {CSVLink} from "react-csv";
-import { GrDocumentCsv } from "react-icons/gr";
+import {GrDocumentCsv} from "react-icons/gr";
 
 const {Search} = Input;
 const {Option} = Select;
@@ -235,22 +234,7 @@ export default function AdminTransaction() {
     };
 
     const formatCompactCurrency = (amount) => {
-        if (amount >= 1000000000) {
-            const billions = Math.floor(amount / 1000000000);
-            return `${billions} billion${billions > 1 ? 's' : ''} ₫`;
-        } else if (amount >= 1000000) {
-            const millions = Math.floor(amount / 1000000);
-            return `${millions} million${millions > 1 ? 's' : ''} ₫`;
-        }
-        return new Intl.NumberFormat('vi-VN', {
-            style: 'currency',
-            currency: 'VND'
-        }).format(amount);
-    };
-
-    const handleViewDetail = (record) => {
-        setSelectedTransaction(record);
-        setDetailModalVisible(true);
+        return new Intl.NumberFormat('vi-VN').format(amount);
     };
 
     const handleSearch = (value) => {
@@ -440,10 +424,11 @@ export default function AdminTransaction() {
         {
             title: (
                 <Box>
-                    <Typography variant="body2" sx={{ fontWeight: 600, display: 'inline' }}>
+                    <Typography variant="body2" sx={{fontWeight: 600, display: 'inline'}}>
                         Paid
                     </Typography>
-                    <Typography variant="body2" sx={{ color: '#64748b', fontSize: '12px', fontWeight: 500, display: 'inline', ml: 0.5 }}>
+                    <Typography variant="body2"
+                                sx={{color: '#64748b', fontSize: '12px', fontWeight: 500, display: 'inline', ml: 0.5}}>
                         (Service Fee Incl.)
                     </Typography>
                 </Box>
@@ -873,7 +858,7 @@ export default function AdminTransaction() {
                 ) : (
                     <>
                         <StatCard
-                            icon={<Typography variant="h5" sx={{fontWeight: 'bold', color: '#06b6d4'}}>₫</Typography>}
+                            icon={<AccountBalanceWallet />}
                             value={stats.total}
                             label="Total Transactions"
                             color="#06b6d4"
@@ -881,7 +866,7 @@ export default function AdminTransaction() {
                         <StatCard
                             icon={<CheckOutlined style={{fontSize: 24}}/>}
                             value={stats.success}
-                            label="Successful"
+                            label="Successful Transactions"
                             color="#52c41a"
                         />
                         <StatCard
@@ -891,23 +876,18 @@ export default function AdminTransaction() {
                             color="#ff4d4f"
                         />
                         <StatCard
-                            icon={<CreditCardOutlined style={{fontSize: 24}}/>}
-                            value={stats.pending}
-                            label="Pending"
-                            color="#faad14"
-                        />
-                        <StatCard
-                            icon={<Typography variant="h5" sx={{fontWeight: 'bold', color: '#1890ff'}}>₫</Typography>}
-                            value={formatCompactCurrency(stats.totalAmount)}
-                            label="Total Amount"
-                            color="#1890ff"
-                        />
-                        <StatCard
-                            icon={<Typography variant="h5" sx={{fontWeight: 'bold', color: '#1890ff'}}>₫</Typography>}
-                            value={formatCompactCurrency(stats.totalFees)}
+                            icon={<CreditScore />}
+                            value={formatCompactCurrency(stats.totalFees) + '₫'}
                             label="Total Fees"
                             color="#722ed1"
                         />
+                        <StatCard
+                            icon={<CreditScore />}
+                            value={formatCompactCurrency(stats.totalAmount) + '₫'}
+                            label="Total (Excl. Service Fee)"
+                            color="#1890ff"
+                        />
+
                     </>
                 )}
             </Box>

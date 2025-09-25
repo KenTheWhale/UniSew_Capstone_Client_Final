@@ -7,7 +7,7 @@ import DeliveryDetailModal from '../school/design/dialog/DeliveryDetailModal.jsx
 import {Button} from '@mui/material';
 import {DesignServices as DesignServicesIcon} from '@mui/icons-material';
 
-export default function OrderDetailTable({order, garmentQuotation = false, orderId = 0, onTotalPriceChange}) {
+export default function OrderDetailTable({order, garmentQuotation = false, orderId = 0, onTotalPriceChange, SetSuggestedPrice = null}) {
     const detail = order?.orderDetails;
     const [sizeData, setSizeData] = useState([]);
     const [quotationData, setQuotationData] = useState({totalPrice: 0, detailMap: {}});
@@ -48,6 +48,9 @@ export default function OrderDetailTable({order, garmentQuotation = false, order
                         detailMap[id].priceWithQty += (entry.priceWithQty || 0);
                     });
                     setQuotationData({totalPrice: data.totalPrice || 0, detailMap});
+                    if (SetSuggestedPrice !== null) {
+                        SetSuggestedPrice(data.totalPrice || 0);
+                    }
                 } else {
                     setQuotationData({totalPrice: 0, detailMap: {}});
                 }
