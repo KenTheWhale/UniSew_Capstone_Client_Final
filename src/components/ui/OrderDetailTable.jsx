@@ -336,7 +336,7 @@ export default function OrderDetailTable({order, garmentQuotation = false, order
                             <th>Size</th>
                             {garmentQuotation && orderId !== 0 && <th>Unit Cost</th>}
                             <th>Total Qty</th>
-                            {garmentQuotation && orderId !== 0 && <th>Total Cost</th>}
+                            {garmentQuotation && orderId !== 0 && <th>Estimated Cost</th>}
                         </tr>
                         </thead>
                         <tbody>
@@ -440,14 +440,19 @@ export default function OrderDetailTable({order, garmentQuotation = false, order
                                             borderRadius: 999,
                                             padding: '4px 10px',
                                             fontWeight: 700
-                                        }}>{detail.reduce((total, item) => total + (item.quantity || 0)/2, 0)}</span>
+                                        }}>{detail.reduce((total, item) => total + (item.quantity || 0), 0)}</span>
+                                        <span style={{
+                                            fontWeight: 700,
+                                            color: '#334155'
+                                        }}>clothes</span>
                                     </div>
+
                                     {garmentQuotation && orderId !== 0 && (
                                         <div style={{display: 'flex', alignItems: 'center', gap: 8}}>
                                             <span style={{
                                                 fontWeight: 700,
                                                 color: '#334155'
-                                            }}>Total Cost</span>
+                                            }}>Estimated Cost</span>
                                             <span style={{
                                                 backgroundColor: '#dcfce7',
                                                 color: '#166534',

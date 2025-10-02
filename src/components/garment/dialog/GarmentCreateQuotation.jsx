@@ -23,14 +23,11 @@ import {
     Assignment as AssignmentIcon,
     Business as BusinessIcon,
     CalendarToday as CalendarIcon,
-    Cancel as CancelIcon,
-    CheckCircle as CheckCircleIcon,
     Checkroom as CheckroomIcon,
     Close as CloseIcon,
     DesignServices as DesignServicesIcon,
     Email as EmailIcon,
     Info as InfoIcon,
-    LocalShipping as ShippingIcon,
     Person as PersonIcon,
     Phone as PhoneIcon,
     Place as PlaceIcon,
@@ -971,7 +968,7 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                     letterSpacing: '0.5px',
                                                     fontSize: '0.75rem'
                                                 }}>
-                                                    Total Uniforms
+                                                    Total Clothes
                                                 </Typography>
                                                 <Typography variant="h6" sx={{
                                                     fontWeight: 700,
@@ -979,7 +976,7 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                     fontSize: '1rem',
                                                     mb: 0.5
                                                 }}>
-                                                    {Math.ceil(getTotalItems() / 2)}
+                                                    {Math.ceil(getTotalItems())}
                                                 </Typography>
                                                 <Typography variant="body2" sx={{
                                                     color: 'transparent',
@@ -1484,7 +1481,7 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                         fontWeight: 600,
                                                         color: '#1e293b'
                                                     }}>
-                                                        Total Order Price (VND) *
+                                                       Quotation Price (VND) *
                                                     </Typography>
                                                     {suggestedPrice > 0 && (
                                                         <Button
@@ -1511,7 +1508,7 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                                                                 }
                                                             }}
                                                         >
-                                                            Use Suggested: {formatCurrency(suggestedPrice)}
+                                                            Use Suggested Price: {formatCurrency(suggestedPrice)}
                                                         </Button>
                                                     )}
                                                 </Box>
@@ -2252,7 +2249,7 @@ export default function GarmentCreateQuotation({visible, onCancel, order}) {
                     }}>
                         <Typography variant="body2" sx={{color: '#92400e', fontWeight: 600}}>
                             Your quotation price {formatCurrency(parseInt(quotationData.totalPrice||'0')||0)} is lower than
-                            the calculated total cost {formatCurrency(computedTotalPrice)}.
+                            the estimated cost {formatCurrency(computedTotalPrice)}.
                         </Typography>
                         <Typography variant="body2" sx={{color: '#92400e', mt: 1}}>
                             Do you want to continue sending this quotation?
