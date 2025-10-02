@@ -44,7 +44,7 @@ async function embedUnicodeFont(doc) {
     doc.setFont("NotoSans", "normal");
 }
 
-export const adminPDFHeader = ["ID", "Sender", "Receiver", "Amount", "Fee", "Type", "Status", "Date"]
+export const adminPDFHeader = [["ID", "Sender", "Receiver", "Amount", "Fee", "Type", "Status", "Date"]]
 export const adminPDFBody = (transactions) => {
     return transactions.map(trs => ([
         parseID(trs.id, "trs"),
@@ -58,7 +58,7 @@ export const adminPDFBody = (transactions) => {
     ]))
 }
 
-export const designerPDFHeader = ["ID", "Sender", "Receiver", "Amount", "Fee", "Type", "Status", "Date"]
+export const designerPDFHeader = [["ID", "Sender", "Receiver", "Amount", "Fee", "Type", "Status", "Date"]]
 export const designerPDFBody = (transactions) => {
     return transactions.map(trs => ([
         parseID(trs.id, "trs"),
@@ -72,7 +72,7 @@ export const designerPDFBody = (transactions) => {
     ]))
 }
 
-export const schoolPDFHeader = ["ID", "Sender", "Receiver", "Amount", "Fee", "Type", "Status", "Date"]
+export const schoolPDFHeader = [["ID", "Sender", "Receiver", "Amount", "Fee", "Type", "Status", "Date"]]
 export const schoolPDFBody = (transactions) => {
     return transactions.map(trs => ([
         parseID(trs.id, "trs"),
@@ -86,7 +86,7 @@ export const schoolPDFBody = (transactions) => {
     ]))
 }
 
-export const garmentPDFHeader = ["ID", "Sender", "Receiver", "Amount", "Fee", "Type", "Status", "Date"]
+export const garmentPDFHeader = [["ID", "Sender", "Receiver", "Amount", "Fee", "Type", "Status", "Date"]]
 export const garmentPDFBody = (transactions) => {
     return transactions.map(trs => ([
         parseID(trs.id, "trs"),
@@ -129,7 +129,7 @@ export async function handleDownloadPdf(
         colWidths.map((width, index) => [
             index,
             {
-                cellWidth: width,
+                cellWidth: "auto",
                 halign: "left"
             }
         ])
