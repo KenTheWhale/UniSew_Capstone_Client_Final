@@ -1298,7 +1298,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                                         mb: 1,
                                                         color: '#1e293b'
                                                     }}>
-                                                        Delivery Time (Days) *
+                                                        Design duration (Days) *
                                                     </Typography>
                                                     <TextField
                                                         type="number"
@@ -1578,7 +1578,7 @@ export default function DesignerPendingDesignDetail({visible, onCancel, request}
                                                                 color: '#64748b',
                                                                 fontWeight: 600
                                                             }}>
-                                                                Delivery Time:
+                                                                Design duration:
                                                             </Typography>
                                                             <Typography variant="caption" sx={{
                                                                 color: '#7c3aed',

@@ -2889,25 +2889,6 @@ export default function SchoolCreateOrder() {
                                                                 {item.designItem.fabricName}
                                                             </Typography>
                                                         </Box>
-                                                        {item.designItem.logoPosition && (
-                                                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
-                                                                <Typography variant="body2" sx={{
-                                                                    fontSize: '14px',
-                                                                    color: '#64748b',
-                                                                    fontWeight: 600,
-                                                                    minWidth: '100px'
-                                                                }}>
-                                                                    Logo Position:
-                                                                </Typography>
-                                                                <Typography variant="body2" sx={{
-                                                                    fontSize: '14px',
-                                                                    color: '#1e293b',
-                                                                    fontWeight: 500
-                                                                }}>
-                                                                    {item.designItem.logoPosition}
-                                                                </Typography>
-                                                            </Box>
-                                                        )}
                                                         {item.designItem.note && (
                                                             <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 2}}>
                                                                 <Typography variant="body2" sx={{
@@ -2926,6 +2907,328 @@ export default function SchoolCreateOrder() {
                                                                     fontStyle: 'italic'
                                                                 }}>
                                                                     {item.designItem.note}
+                                                                </Typography>
+                                                            </Box>
+                                                        )}
+                                                    </Box>
+                                                </Box>
+
+                                                {/* Detail Information Display */}
+                                                <Box sx={{
+                                                    p: 3,
+                                                    borderRadius: 3,
+                                                    background: 'linear-gradient(135deg, #f9f9f9 0%, #f1f5f9 100%)',
+                                                    border: '1px solid #e2e8f0',
+                                                    mb: 3
+                                                }}>
+                                                    <Typography variant="h6" sx={{
+                                                        fontWeight: 600,
+                                                        color: '#1e293b',
+                                                        mb: 3,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 1
+                                                    }}>
+                                                        <InfoIcon sx={{fontSize: 20, color: '#64748b'}}/>
+                                                        📋 {item.designItem.type.charAt(0).toUpperCase() + item.designItem.type.slice(1)} Detail Information
+                                                    </Typography>
+                                                    
+                                                    <Box sx={{
+                                                        display: 'grid',
+                                                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                                                        gap: 1.5
+                                                    }}>
+                                                        {/* Logo & Attaching Technique - For shirts */}
+                                                        {item.designItem.type === 'shirt' && item.logoAttachingTechnique && (
+                                                            <Box sx={{
+                                                                p: 1,
+                                                                background: 'rgba(139, 69, 19, 0.05)',
+                                                                borderRadius: '6px',
+                                                                border: '1px solid rgba(139, 69, 19, 0.1)',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: 1
+                                                            }}>
+                                                                <Typography variant="caption" sx={{
+                                                                    fontSize: '11px',
+                                                                    color: '#8b4513',
+                                                                    fontWeight: 600,
+                                                                    textTransform: 'uppercase'
+                                                                }}>
+                                                                    Logo Technique
+                                                                </Typography>
+                                                                <Typography variant="caption" sx={{
+                                                                    fontSize: '11px',
+                                                                    color: '#374151',
+                                                                    fontWeight: 500
+                                                                }}>
+                                                                    {item.logoAttachingTechnique}
+                                                                </Typography>
+                                                            </Box>
+                                                        )}
+
+                                                        {/* Logo Size - For shirts */}
+                                                        {item.designItem.type === 'shirt' && (item.baseLogoWidth > 0 || item.baseLogoHeight > 0) && (
+                                                            <Box sx={{
+                                                                p: 1,
+                                                                background: 'rgba(139, 69, 19, 0.05)',
+                                                                borderRadius: '6px',
+                                                                border: '1px solid rgba(139, 69, 19, 0.1)',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: 1
+                                                            }}>
+                                                                <Typography variant="caption" sx={{
+                                                                    fontSize: '11px',
+                                                                    color: '#8b4513',
+                                                                    fontWeight: 600,
+                                                                    textTransform: 'uppercase'
+                                                                }}>
+                                                                    Logo Size
+                                                                </Typography>
+                                                                <Typography variant="caption" sx={{
+                                                                    fontSize: '11px',
+                                                                    color: '#374151',
+                                                                    fontWeight: 500
+                                                                }}>
+                                                                    {item.baseLogoWidth}cm × {item.baseLogoHeight}cm
+                                                                </Typography>
+                                                            </Box>
+                                                        )}
+
+                                                        {/* Logo Position - For shirts */}
+                                                        {item.designItem.type === 'shirt' && item.designItem.logoPosition && (
+                                                            <Box sx={{
+                                                                p: 1,
+                                                                background: 'rgba(139, 69, 19, 0.05)',
+                                                                borderRadius: '6px',
+                                                                border: '1px solid rgba(139, 69, 19, 0.1)',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: 1
+                                                            }}>
+                                                                <Typography variant="caption" sx={{
+                                                                    fontSize: '11px',
+                                                                    color: '#8b4513',
+                                                                    fontWeight: 600,
+                                                                    textTransform: 'uppercase'
+                                                                }}>
+                                                                    Logo Position
+                                                                </Typography>
+                                                                <Typography variant="caption" sx={{
+                                                                    fontSize: '11px',
+                                                                    color: '#374151',
+                                                                    fontWeight: 500
+                                                                }}>
+                                                                    {item.designItem.logoPosition}
+                                                                </Typography>
+                                                            </Box>
+                                                        )}
+
+                                                        {/* Logo Note - For shirts */}
+                                                        {item.designItem.type === 'shirt' && item.logoNote && (
+                                                            <Box sx={{
+                                                                p: 1,
+                                                                background: 'rgba(139, 69, 19, 0.05)',
+                                                                borderRadius: '6px',
+                                                                border: '1px solid rgba(139, 69, 19, 0.1)',
+                                                                gridColumn: 'span 2',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: 1
+                                                            }}>
+                                                                <Typography variant="caption" sx={{
+                                                                    fontSize: '11px',
+                                                                    color: '#8b4513',
+                                                                    fontWeight: 600,
+                                                                    textTransform: 'uppercase'
+                                                                }}>
+                                                                    Logo Note
+                                                                </Typography>
+                                                                <Typography variant="caption" sx={{
+                                                                    fontSize: '11px',
+                                                                    color: '#374151',
+                                                                    fontWeight: 500,
+                                                                    fontStyle: 'italic'
+                                                                }}>
+                                                                    {item.logoNote}
+                                                                </Typography>
+                                                            </Box>
+                                                        )}
+
+                                                        {/* Button Information - For shirts */}
+                                                        {item.designItem.type === 'shirt' && item.buttonQty > 0 && (
+                                                            <>
+                                                                <Box sx={{
+                                                                    p: 1,
+                                                                    background: 'rgba(59, 130, 246, 0.05)',
+                                                                    borderRadius: '6px',
+                                                                    border: '1px solid rgba(59, 130, 246, 0.1)',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: 1
+                                                                }}>
+                                                                    <Typography variant="caption" sx={{
+                                                                        fontSize: '11px',
+                                                                        color: '#3b82f6',
+                                                                        fontWeight: 600,
+                                                                        textTransform: 'uppercase'
+                                                                    }}>
+                                                                        Button Qty
+                                                                    </Typography>
+                                                                    <Typography variant="caption" sx={{
+                                                                        fontSize: '11px',
+                                                                        color: '#374151',
+                                                                        fontWeight: 500
+                                                                    }}>
+                                                                        {item.buttonQty}
+                                                                    </Typography>
+                                                                </Box>
+
+                                                                <Box sx={{
+                                                                    p: 1,
+                                                                    background: 'rgba(59, 130, 246, 0.05)',
+                                                                    borderRadius: '6px',
+                                                                    border: '1px solid rgba(59, 130, 246, 0.1)',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: 1
+                                                                }}>
+                                                                    <Typography variant="caption" sx={{
+                                                                        fontSize: '11px',
+                                                                        color: '#3b82f6',
+                                                                        fontWeight: 600,
+                                                                        textTransform: 'uppercase'
+                                                                    }}>
+                                                                        Button Type
+                                                                    </Typography>
+                                                                    <Typography variant="caption" sx={{
+                                                                        fontSize: '11px',
+                                                                        color: '#374151',
+                                                                        fontWeight: 500
+                                                                    }}>
+                                                                        {item.buttonHoleQty} holes
+                                                                    </Typography>
+                                                                </Box>
+
+                                                                <Box sx={{
+                                                                    p: 1,
+                                                                    background: 'rgba(59, 130, 246, 0.05)',
+                                                                    borderRadius: '6px',
+                                                                    border: '1px solid rgba(59, 130, 246, 0.1)',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: 1
+                                                                }}>
+                                                                    <Typography variant="caption" sx={{
+                                                                        fontSize: '11px',
+                                                                        color: '#3b82f6',
+                                                                        fontWeight: 600,
+                                                                        textTransform: 'uppercase'
+                                                                    }}>
+                                                                        Button Size
+                                                                    </Typography>
+                                                                    <Typography variant="caption" sx={{
+                                                                        fontSize: '11px',
+                                                                        color: '#374151',
+                                                                        fontWeight: 500
+                                                                    }}>
+                                                                        {item.buttonWidth}cm × {item.buttonHeight}cm
+                                                                    </Typography>
+                                                                </Box>
+
+                                                                <Box sx={{
+                                                                    p: 1,
+                                                                    background: 'rgba(59, 130, 246, 0.05)',
+                                                                    borderRadius: '6px',
+                                                                    border: '1px solid rgba(59, 130, 246, 0.1)',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: 1
+                                                                }}>
+                                                                    <Typography variant="caption" sx={{
+                                                                        fontSize: '11px',
+                                                                        color: '#3b82f6',
+                                                                        fontWeight: 600,
+                                                                        textTransform: 'uppercase'
+                                                                    }}>
+                                                                        Button Color
+                                                                    </Typography>
+                                                                    <Box sx={{
+                                                                        width: 12,
+                                                                        height: 12,
+                                                                        borderRadius: '50%',
+                                                                        bgcolor: item.buttonColor,
+                                                                        border: '1px solid #ffffff',
+                                                                        boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                                                                        flexShrink: 0
+                                                                    }}/>
+                                                                    <Typography variant="caption" sx={{
+                                                                        fontSize: '11px',
+                                                                        color: '#374151',
+                                                                        fontWeight: 500
+                                                                    }}>
+                                                                        {item.buttonColor}
+                                                                    </Typography>
+                                                                </Box>
+
+                                                                {item.buttonNote && (
+                                                                    <Box sx={{
+                                                                        p: 1,
+                                                                        background: 'rgba(59, 130, 246, 0.05)',
+                                                                        borderRadius: '6px',
+                                                                        border: '1px solid rgba(59, 130, 246, 0.1)',
+                                                                        gridColumn: 'span 2',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        gap: 1
+                                                                    }}>
+                                                                        <Typography variant="caption" sx={{
+                                                                            fontSize: '11px',
+                                                                            color: '#3b82f6',
+                                                                            fontWeight: 600,
+                                                                            textTransform: 'uppercase'
+                                                                        }}>
+                                                                            Button Note
+                                                                        </Typography>
+                                                                        <Typography variant="caption" sx={{
+                                                                            fontSize: '11px',
+                                                                            color: '#374151',
+                                                                            fontWeight: 500,
+                                                                            fontStyle: 'italic'
+                                                                        }}>
+                                                                            {item.buttonNote}
+                                                                        </Typography>
+                                                                    </Box>
+                                                                )}
+                                                            </>
+                                                        )}
+
+                                                        {/* Zipper Information - For pants/skirts */}
+                                                        {(item.designItem.type === 'pants' || item.designItem.type === 'skirt') && (
+                                                            <Box sx={{
+                                                                p: 1,
+                                                                background: 'rgba(168, 85, 247, 0.05)',
+                                                                borderRadius: '6px',
+                                                                border: '1px solid rgba(168, 85, 247, 0.1)',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: 1
+                                                            }}>
+                                                                <Typography variant="caption" sx={{
+                                                                    fontSize: '11px',
+                                                                    color: '#a855f7',
+                                                                    fontWeight: 600,
+                                                                    textTransform: 'uppercase'
+                                                                }}>
+                                                                    Zipper
+                                                                </Typography>
+                                                                <Typography variant="caption" sx={{
+                                                                    fontSize: '11px',
+                                                                    color: '#374151',
+                                                                    fontWeight: 500
+                                                                }}>
+                                                                    {item.zipper ? 'Yes' : 'No'}
                                                                 </Typography>
                                                             </Box>
                                                         )}

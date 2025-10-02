@@ -587,10 +587,10 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
                             }}>
                                 <CalendarOutlined style={{color: '#2e7d32', fontSize: '20px', marginBottom: '8px'}}/>
                                 <Typography.Text style={{color: '#475569', fontSize: '13px', display: 'block'}}>
-                                    <strong>Design Time</strong>
+                                    <strong>Design Duration</strong>
                                 </Typography.Text>
                                 <Typography.Text style={{color: '#1e293b', fontSize: '16px', fontWeight: 'bold'}}>
-                                    {quotation.deliveryWithIn} days
+                                    {quotation.deliveryWithIn} day(s)
                                 </Typography.Text>
                             </Box>
 
@@ -689,12 +689,6 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
                             <Typography.Title level={5} style={{margin: 0, color: '#1e293b'}}>
                                 Service Fee
                             </Typography.Title>
-                            <Typography.Text type="secondary" style={{fontSize: '14px'}}>
-                                {businessConfig?.serviceRate 
-                                    ? `Platform service charge (${(businessConfig.serviceRate * 100).toFixed(0)}%)`
-                                    : 'Platform service charge'
-                                }
-                            </Typography.Text>
                         </Box>
                     </Box>
 
@@ -708,7 +702,7 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
                         border: '1px solid rgba(255, 152, 0, 0.2)'
                     }}>
                         <Typography.Text style={{color: '#475569', fontSize: '14px'}}>
-                            <strong>Service Fee{businessConfig?.serviceRate ? ` (${(businessConfig.serviceRate * 100).toFixed(0)}%)` : ''}:</strong>
+                            <strong>Service Fee{businessConfig?.serviceRate ? ` (${(businessConfig.serviceRate * 100).toFixed(0)}% of quotation price)` : ''}:</strong>
                         </Typography.Text>
                         <Typography.Title level={4} style={{margin: 0, color: '#f57c00'}}>
                             {(() => {
