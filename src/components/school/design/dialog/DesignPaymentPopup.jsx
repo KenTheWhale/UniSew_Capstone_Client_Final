@@ -113,10 +113,11 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
         
         try {
             const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
-            const rawSubtotal = quotation.price + (extraRevision * (quotation.extraRevisionPrice || 0));
+            // const rawSubtotal = quotation.price + (extraRevision * (quotation.extraRevisionPrice || 0));
+            const rawSubtotal = quotation.price;
             const subtotal = Math.round(rawSubtotal);
             const fee = Math.round(calculateServiceFee(subtotal));
-            const totalAmount = Math.round(subtotal + fee);
+            const totalAmount = Math.round(subtotal + fee + (extraRevision * (quotation.extraRevisionPrice || 0)));
 
             const quotationDetailsToStore = {
                 quotation: quotation,
@@ -711,8 +712,9 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
                         </Typography.Text>
                         <Typography.Title level={4} style={{margin: 0, color: '#f57c00'}}>
                             {(() => {
-                                const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
-                                const rawSubtotal = quotation.price + (extraRevision * (quotation.extraRevisionPrice || 0));
+                                // const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
+                                // const rawSubtotal = quotation.price + (extraRevision * (quotation.extraRevisionPrice || 0));
+                                const rawSubtotal = quotation.price;
                                 const subtotal = Math.round(rawSubtotal);
                                 const fee = Math.round(calculateServiceFee(subtotal));
                                 return fee.toLocaleString('vi-VN') + ' VND';
@@ -744,7 +746,6 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
                     </Typography.Text>
                 </Paper>
 
-                {}
                 <Paper
                     elevation={0}
                     sx={{
@@ -769,10 +770,11 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
                         <Typography.Title level={3} style={{margin: 0, color: '#2e7d32', fontWeight: 'bold'}}>
                             {(() => {
                                 const extraRevision = parseInt(sessionStorage.getItem('extraRevision') || '0');
-                                const rawSubtotal = quotation.price + (extraRevision * (quotation.extraRevisionPrice || 0));
+                                // const rawSubtotal = quotation.price + (extraRevision * (quotation.extraRevisionPrice || 0));
+                                const rawSubtotal = quotation.price;
                                 const subtotal = Math.round(rawSubtotal);
                                 const fee = Math.round(calculateServiceFee(subtotal));
-                                const totalAmount = Math.round(subtotal + fee);
+                                const totalAmount = Math.round(subtotal + fee + (extraRevision * (quotation.extraRevisionPrice || 0)));
                                 return totalAmount.toLocaleString('vi-VN') + ' VND';
                             })()}
                         </Typography.Title>

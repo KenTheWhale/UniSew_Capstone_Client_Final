@@ -790,7 +790,8 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
     const totalCost = useMemo(() => {
         const base = selectedDesigner?.price || 0;
         const extra = isUnlimitedRevisions ? 0 : extraRevisionCost;
-        const fee = calculateServiceFee(base + extra);
+        // const fee = calculateServiceFee(base + extra);
+        const fee = calculateServiceFee(base);
         return Math.round(base + extra + fee);
     }, [selectedDesigner, isUnlimitedRevisions, extraRevisionCost, calculateServiceFee]);
     
@@ -800,7 +801,8 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
         return {base, extra};
     }, [selectedDesigner, isUnlimitedRevisions, extraRevisionCost]);
     
-    const feeAmount = useMemo(() => calculateServiceFee(baseAndExtra.base + baseAndExtra.extra), [baseAndExtra, calculateServiceFee]);
+    // const feeAmount = useMemo(() => calculateServiceFee(baseAndExtra.base + baseAndExtra.extra), [baseAndExtra, calculateServiceFee]);
+    const feeAmount = useMemo(() => calculateServiceFee(baseAndExtra.base), [baseAndExtra, calculateServiceFee]);
     const exceedsCap = totalCost > (businessConfig?.maxPay || 200000000);
 
     const boyItems = useMemo(() => (request?.items || []).filter(i => i.gender === 'boy'), [request]);
