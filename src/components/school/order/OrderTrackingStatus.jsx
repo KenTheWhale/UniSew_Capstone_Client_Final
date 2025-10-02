@@ -2447,7 +2447,7 @@ export default function OrderTrackingStatus() {
                                                         fontWeight: 700,
                                                         fontSize: '1rem'
                                                     }}>
-                                                        {formatCurrency((orderDetail.price - (orderDetail.price * orderDetail.depositRate)) + orderDetail.shippingFee)}
+                                                        {formatCurrency((orderDetail.price - (orderDetail.price * orderDetail.depositRate)) + shippingFee)}
                                                     </Typography>
                                                 </Box>
                                             </Box>

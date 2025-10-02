@@ -69,11 +69,6 @@ const formatPrice = (price) => {
     return price.toLocaleString('vi-VN') + ' VND';
 };
 
-export function statusTag(status) {
-    const config = STATUS_CONFIG[status] || {color: 'default', icon: null, text: status};
-    return <Tag color={config.color}>{config.icon} {config.text}</Tag>;
-}
-
 const DesignerCard = React.memo(({designer, isSelected, onSelect, onViewProfile}) => {
     const handleKeyPress = useCallback((event) => {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -1848,7 +1843,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                         mt: 0.5
                                                     }}>
                                                         <Typography.Text style={{color: '#475569'}}>
-                                                            Service fee {businessConfig?.serviceRate ? `(${(businessConfig.serviceRate * 100).toFixed(0)}% total)` : ''}
+                                                            Service fee {businessConfig?.serviceRate ? `(${(businessConfig.serviceRate * 100).toFixed(0)}% of base price)` : ''}
                                                         </Typography.Text>
                                                         <Typography.Text style={{color: '#1e293b', fontWeight: 600}}>
                                                             {feeAmount.toLocaleString('vi-VN')} VND
