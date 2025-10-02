@@ -12,32 +12,27 @@ import {
     Typography
 } from "@mui/material";
 import {Badge, Descriptions, Empty, Input, Modal, Select, Table, Tag} from 'antd';
-import {CheckOutlined, CreditCardOutlined, ReloadOutlined, StopOutlined} from '@ant-design/icons';
+import {CheckOutlined, ReloadOutlined, StopOutlined} from '@ant-design/icons';
 import {AccountBalance, AccountBalanceWallet, CreditScore, PictureAsPdf} from '@mui/icons-material';
 import {enqueueSnackbar} from 'notistack';
 import {getTransactions} from '../../services/PaymentService.jsx';
 import {parseID} from "../../utils/ParseIDUtil.jsx";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import {CSVLink} from "react-csv";
 import {GrDocumentCsv} from "react-icons/gr";
-import {formatDateTimeSecond, formatDateTimeSecondForCSV} from "../../utils/TimestampUtil.jsx";
-import {csvHeaders, handleDownloadPdf, mapToCsvRows} from "../ui/DownloadFile.jsx";
+import {formatDateTimeSecond} from "../../utils/TimestampUtil.jsx";
+import {
+    adminCsvData,
+    adminCsvHeaders,
+    adminPDFBody,
+    adminPDFHeader,
+    filename,
+    getPaymentTypeText,
+    handleDownloadPdf,
+    mapToCsvRows
+} from "../ui/DownloadFile.jsx";
 
 const {Search} = Input;
 const {Option} = Select;
-
-const STATUS_COLORS = {
-    success: '#52c41a',
-    fail: '#ff4d4f',
-    pending: '#faad14'
-};
-
-const PAYMENT_TYPE_COLORS = {
-    order: '#1890ff',
-    design: '#722ed1',
-    wallet: '#13c2c2'
-};
 
 const StatCard = React.memo(({icon, value, label, color, bgColor}) => (
     <Card
@@ -210,23 +205,6 @@ export default function AdminTransaction() {
                 return 'cyan';
             default:
                 return 'default';
-        }
-    };
-
-    const getPaymentTypeText = (type) => {
-        switch (type) {
-            case 'order':
-                return 'Order';
-            case 'design':
-                return 'Design';
-            case 'wallet':
-                return 'Wallet Deposit';
-            case 'withdraw':
-                return 'Withdraw';
-            case 'deposit':
-                return 'Deposit';
-            default:
-                return type;
         }
     };
 
@@ -491,8 +469,7 @@ export default function AdminTransaction() {
         },
     ], []);
 
-    const data = mapToCsvRows(transactions, getPaymentTypeText, getStatusText);
-    const filename = `transactions_${new Date().toISOString().slice(0, 10)}.csv`;
+    const data = mapToCsvRows(transactions, adminCsvData);
 
     return (
         <Box sx={{
@@ -623,7 +600,7 @@ export default function AdminTransaction() {
                             <Button
                                 variant="contained"
                                 startIcon={<PictureAsPdf style={{fontSize: 16}}/>}
-                                onClick={() => handleDownloadPdf(filteredTransactions, getPaymentTypeText, getStatusText)}
+                                onClick={() => handleDownloadPdf(filteredTransactions, adminPDFHeader, adminPDFBody(filteredTransactions))}
                                 sx={{
                                     background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
                                     color: 'white',
@@ -669,7 +646,7 @@ export default function AdminTransaction() {
                             >
                                 <CSVLink
                                     data={data}
-                                    headers={csvHeaders}
+                                    headers={adminCsvHeaders}
                                     filename={filename}
                                     separator=","
                                     uFEFF={true}

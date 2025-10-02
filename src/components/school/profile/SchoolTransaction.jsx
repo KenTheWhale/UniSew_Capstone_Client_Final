@@ -1,16 +1,22 @@
-
-import React, {useEffect, useMemo, useState, useCallback} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {Box, Button, Card, CardContent, Chip, Paper, Tooltip, Typography} from '@mui/material';
 import {Table} from 'antd';
-import {DollarOutlined, CheckOutlined, StopOutlined, CreditCardOutlined, ReloadOutlined} from '@ant-design/icons';
+import {CheckOutlined, DollarOutlined, StopOutlined} from '@ant-design/icons';
 import {AccountBalanceWallet, CreditScore, PictureAsPdf} from '@mui/icons-material';
 import {GrDocumentCsv} from "react-icons/gr";
 import {getTransactionsForOne} from '../../../services/PaymentService.jsx';
 import {parseID} from '../../../utils/ParseIDUtil.jsx';
 import {formatDateTimeSecond} from '../../../utils/TimestampUtil.jsx';
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import {CSVLink} from "react-csv";
+import {
+    filename,
+    handleDownloadPdf,
+    mapToCsvRows,
+    schoolCsvData,
+    schoolCsvHeaders,
+    schoolPDFBody,
+    schoolPDFHeader
+} from "../../ui/DownloadFile.jsx";
 
 function formatCurrency(amount) {
     if (amount === null || amount === undefined) return 'N/A';
@@ -135,100 +141,6 @@ export default function SchoolTransaction() {
         return {total, success, failed, pending, totalAmount, totalFees};
     }, [transactions]);
 
-    function arrayBufferToBase64(buffer) {
-        const bytes = new Uint8Array(buffer);
-        const chunkSize = 0x8000; // ~32KB
-        let binary = "";
-        for (let i = 0; i < bytes.length; i += chunkSize) {
-            const chunk = bytes.subarray(i, i + chunkSize);
-            binary += String.fromCharCode.apply(null, chunk);
-        }
-        return btoa(binary);
-    }
-
-    async function embedUnicodeFont(doc) {
-        const res = await fetch("/fonts/NotoSans-Regular.ttf");
-        const buf = await res.arrayBuffer();
-        const base64 = arrayBufferToBase64(buf);
-        doc.addFileToVFS("NotoSans-Regular.ttf", base64);
-        doc.addFont("NotoSans-Regular.ttf", "NotoSans", "normal");
-        doc.setFont("NotoSans", "normal");
-    }
-
-    async function handleDownloadPdf() {
-        const doc = new jsPDF({unit: "pt", format: "a1", orientation: "landscape"});
-        await embedUnicodeFont(doc);
-
-        const margin = 30; // pt
-        const pageWidth = doc.internal.pageSize.getWidth();
-        const printWidth = pageWidth - margin * 2;
-
-        const ratios = [0.0636, 0.1458, 0.1794, 0.1196, 0.0972, 0.1458, 0.0972, 0.1514];
-        const colWidths = ratios.map(r => Math.floor(printWidth * r));
-
-        doc.setFont("NotoSans", "normal");
-        doc.setFontSize(14);
-        doc.text("UniSew - School Transactions Report", margin, 40);
-
-        const head = [["ID", "Sender", "Receiver", "Amount", "Fee", "Type", "Status", "Date"]];
-        const body = (transactions || []).map(trs => ([
-            `${parseID(trs.id, "trs")}`,
-            (trs.sender && trs.sender.name) ? trs.sender.name : "-",
-            (trs.receiver && trs.receiver.name) ? trs.receiver.name : "-",
-            new Intl.NumberFormat("vi-VN").format(trs.amount || 0) + " ₫",
-            new Intl.NumberFormat("vi-VN").format(trs.serviceFee || 0) + " ₫",
-            paymentTypeLabel(trs.paymentType),
-            trs.status === 'success' ? 'Successful' : 'Failed',
-            (function formatDateTime(d) {
-                const date = new Date(d);
-                return date.toLocaleTimeString("vi-VN", {hour12: false}) + " " + date.toLocaleDateString("vi-VN");
-            })(trs.creationDate)
-        ]));
-
-        autoTable(doc, {
-            startY: 60,
-            head,
-            body,
-            margin: {left: margin, right: margin},
-            tableWidth: printWidth,
-            theme: "grid",
-            styles: {
-                font: "NotoSans",
-                fontSize: 10,
-                cellPadding: 6,
-                lineWidth: 0.2,
-                overflow: "linebreak",
-                textColor: 0
-            },
-            headStyles: {
-                fillColor: [255, 255, 255],
-                textColor: 0,
-                fontStyle: "bold",
-                lineWidth: 0.2
-            },
-            columnStyles: {
-                0: {cellWidth: colWidths[0], halign: "left"},
-                1: {cellWidth: colWidths[1], halign: "left"},
-                2: {cellWidth: colWidths[2], halign: "left"},
-                3: {cellWidth: colWidths[3], halign: "right"},
-                4: {cellWidth: colWidths[4], halign: "right"},
-                5: {cellWidth: colWidths[5], halign: "left"},
-                6: {cellWidth: colWidths[6], halign: "left"},
-                7: {cellWidth: colWidths[7], halign: "center"}
-            },
-            didDrawPage: () => {
-                doc.setFontSize(14);
-                doc.text("UniSew - School Transactions Report", margin, 40);
-            }
-        });
-
-        const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY : 60;
-        doc.setFontSize(10);
-        doc.text(`Total Transactions: ${transactions ? transactions.length : 0}`, margin, finalY + 20);
-
-        doc.save(`school_transactions_${new Date().toISOString().slice(0, 10)}.pdf`);
-    }
-
     function formatDateTime(d) {
         const date = new Date(d);
         const time = date.toLocaleTimeString("vi-VN", {hour12: false}); // 07:00:00
@@ -236,32 +148,7 @@ export default function SchoolTransaction() {
         return `${time} ${day}`;
     }
 
-    const csvHeaders = [
-        {label: "ID", key: "id"},
-        {label: "Sender", key: "sender"},
-        {label: "Receiver", key: "receiver"},
-        {label: "Amount (VND)", key: "amount"},
-        {label: "Fee (VND)", key: "fee"},
-        {label: "Payment Type", key: "paymentType"},
-        {label: "Status", key: "status"},
-        {label: "Date", key: "date"},
-    ];
-
-    function mapToCsvRows(transactions) {
-        return (transactions || []).map(trs => ({
-            id: `#${trs.id}`,
-            sender: trs?.sender?.name || "-",
-            receiver: trs?.receiver?.name || "-",
-            amount: Number(trs?.amount || 0),
-            fee: Number(trs?.serviceFee || 0),
-            paymentType: paymentTypeLabel(trs.paymentType),
-            status: trs.status === 'success' ? 'Successful' : 'Failed',
-            date: formatDateTime(trs.creationDate),
-        }));
-    }
-
-    const data = mapToCsvRows(transactions);
-    const filename = `school_transactions_${new Date().toISOString().slice(0, 10)}.csv`;
+    const data = mapToCsvRows(transactions, schoolCsvData);
 
     const columns = useMemo(() => [
         {
@@ -441,7 +328,7 @@ export default function SchoolTransaction() {
                             <Button
                                 variant="contained"
                                 startIcon={<PictureAsPdf style={{fontSize: 16}}/>}
-                                onClick={handleDownloadPdf}
+                                onClick={() => handleDownloadPdf(transactions, schoolPDFHeader, schoolPDFBody(transactions))}
                                 sx={{
                                     background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
                                     color: 'white',
@@ -487,7 +374,7 @@ export default function SchoolTransaction() {
                             >
                                 <CSVLink
                                     data={data}
-                                    headers={csvHeaders}
+                                    headers={schoolCsvHeaders}
                                     filename={filename}
                                     separator=","
                                     uFEFF={true}
