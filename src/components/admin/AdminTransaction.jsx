@@ -21,6 +21,8 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import {CSVLink} from "react-csv";
 import {GrDocumentCsv} from "react-icons/gr";
+import {formatDateTimeSecond, formatDateTimeSecondForCSV} from "../../utils/TimestampUtil.jsx";
+import {csvHeaders, handleDownloadPdf, mapToCsvRows} from "../ui/DownloadFile.jsx";
 
 const {Search} = Input;
 const {Option} = Select;
@@ -214,13 +216,15 @@ export default function AdminTransaction() {
     const getPaymentTypeText = (type) => {
         switch (type) {
             case 'order':
-                return 'Order Payment';
+                return 'Order';
             case 'design':
-                return 'Design Payment';
+                return 'Design';
             case 'wallet':
                 return 'Wallet Deposit';
             case 'withdraw':
                 return 'Withdraw';
+            case 'deposit':
+                return 'Deposit';
             default:
                 return type;
         }
@@ -429,7 +433,7 @@ export default function AdminTransaction() {
                     </Typography>
                     <Typography variant="body2"
                                 sx={{color: '#64748b', fontSize: '12px', fontWeight: 500, display: 'inline', ml: 0.5}}>
-                        (Service Fee Incl.)
+                        (Excl. Service Fee)
                     </Typography>
                 </Box>
             ),
@@ -438,7 +442,7 @@ export default function AdminTransaction() {
             width: 180,
             sorter: (a, b) => ((a.amount || 0) + (a.serviceFee || 0)) - ((b.amount || 0) + (b.serviceFee || 0)),
             render: (_, record) => {
-                const total = (record?.amount || 0) + (record?.serviceFee || 0);
+                const total = (record?.amount || 0);
                 const isFailed = record?.status === 'fail' || record?.status === 'failed';
                 return (
                     <Typography variant="body2" sx={{fontWeight: 700, color: isFailed ? '#dc2626' : '#16a34a'}}>
@@ -480,141 +484,14 @@ export default function AdminTransaction() {
                 const transactionDate = new Date(val);
                 return (
                     <Typography variant="body2" sx={{color: '#64748b'}}>
-                        {transactionDate.toLocaleString('vi-VN')}
+                        {formatDateTimeSecond(transactionDate)}
                     </Typography>
                 );
             }
         },
     ], []);
 
-    function arrayBufferToBase64(buffer) {
-        const bytes = new Uint8Array(buffer);
-        const chunkSize = 0x8000; // ~32KB
-        let binary = "";
-        for (let i = 0; i < bytes.length; i += chunkSize) {
-            const chunk = bytes.subarray(i, i + chunkSize);
-            binary += String.fromCharCode.apply(null, chunk);
-        }
-        return btoa(binary);
-    }
-
-    async function embedUnicodeFont(doc) {
-        const res = await fetch("/fonts/NotoSans-Regular.ttf");
-        const buf = await res.arrayBuffer();
-        const base64 = arrayBufferToBase64(buf);
-        doc.addFileToVFS("NotoSans-Regular.ttf", base64);
-        doc.addFont("NotoSans-Regular.ttf", "NotoSans", "normal");
-        doc.setFont("NotoSans", "normal");
-    }
-
-    async function handleDownloadPdf() {
-        const doc = new jsPDF({unit: "pt", format: "a1", orientation: "landscape"});
-        await embedUnicodeFont(doc);
-
-        const margin = 30; // pt
-        const pageWidth = doc.internal.pageSize.getWidth();
-        const printWidth = pageWidth - margin * 2;
-
-        const ratios = [0.0636, 0.1458, 0.1794, 0.1196, 0.0972, 0.1458, 0.0972, 0.1514];
-        const colWidths = ratios.map(r => Math.floor(printWidth * r));
-
-        doc.setFont("NotoSans", "normal");
-        doc.setFontSize(14);
-        doc.text("UniSew - Transactions Report", margin, 40);
-
-        const head = [["ID", "Sender", "Receiver", "Amount", "Fee", "Type", "Status", "Date"]];
-        const body = (filteredTransactions || []).map(trs => ([
-            `${parseID(trs.id, "trs")}`,
-            (trs.sender && trs.sender.name) ? trs.sender.name : "-",
-            (trs.receiver && trs.receiver.name) ? trs.receiver.name : "-",
-            new Intl.NumberFormat("vi-VN").format(trs.amount || 0) + " ₫",
-            new Intl.NumberFormat("vi-VN").format(trs.serviceFee || 0) + " ₫",
-            typeof getPaymentTypeText === "function" ? getPaymentTypeText(trs.paymentType) : (trs.paymentType || ""),
-            typeof getStatusText === "function" ? getStatusText(trs.status) : (trs.status || ""),
-            (function formatDateTime(d) {
-                const date = new Date(d);
-                return date.toLocaleTimeString("vi-VN", {hour12: false}) + " " + date.toLocaleDateString("vi-VN");
-            })(trs.creationDate)
-        ]));
-
-        autoTable(doc, {
-            startY: 60,
-            head,
-            body,
-            margin: {left: margin, right: margin},
-            tableWidth: printWidth,
-            theme: "grid",
-            styles: {
-                font: "NotoSans",
-                fontSize: 10,
-                cellPadding: 6,
-                lineWidth: 0.2,
-                overflow: "linebreak",
-                textColor: 0
-            },
-            headStyles: {
-                fillColor: [255, 255, 255],
-                textColor: 0,
-                fontStyle: "bold",
-                lineWidth: 0.2
-            },
-            columnStyles: {
-                0: {cellWidth: colWidths[0], halign: "left"},
-                1: {cellWidth: colWidths[1], halign: "left"},
-                2: {cellWidth: colWidths[2], halign: "left"},
-                3: {cellWidth: colWidths[3], halign: "right"},
-                4: {cellWidth: colWidths[4], halign: "right"},
-                5: {cellWidth: colWidths[5], halign: "left"},
-                6: {cellWidth: colWidths[6], halign: "left"},
-                7: {cellWidth: colWidths[7], halign: "center"}
-            },
-            didDrawPage: () => {
-
-                doc.setFontSize(14);
-                doc.text("UniSew - Transactions Report", margin, 40);
-            }
-        });
-
-        const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY : 60;
-        doc.setFontSize(10);
-        doc.text(`Total Transactions: ${filteredTransactions ? filteredTransactions.length : 0}`, margin, finalY + 20);
-
-        doc.save(`transactions_${new Date().toISOString().slice(0, 10)}.pdf`);
-    }
-
-
-    function formatDateTime(d) {
-        const date = new Date(d);
-        const time = date.toLocaleTimeString("vi-VN", {hour12: false}); // 07:00:00
-        const day = date.toLocaleDateString("vi-VN");                    // 31/8/2025
-        return `${time} ${day}`;
-    }
-
-    const csvHeaders = [
-        {label: "ID", key: "id"},
-        {label: "Sender", key: "sender"},
-        {label: "Receiver", key: "receiver"},
-        {label: "Amount (VND)", key: "amount"},
-        {label: "Fee (VND)", key: "fee"},
-        {label: "Payment Type", key: "paymentType"},
-        {label: "Status", key: "status"},
-        {label: "Date", key: "date"},
-    ];
-
-    function mapToCsvRows(transactions) {
-        return (transactions || []).map(trs => ({
-            id: `#${trs.id}`,
-            sender: trs?.sender?.name || "-",
-            receiver: trs?.receiver?.name || "-",
-            amount: Number(trs?.amount || 0),
-            fee: Number(trs?.serviceFee || 0),
-            paymentType: typeof getPaymentTypeText === "function" ? getPaymentTypeText(trs.paymentType) : (trs.paymentType || ""),
-            status: typeof getStatusText === "function" ? getStatusText(trs.status) : (trs.status || ""),
-            date: formatDateTime(trs.creationDate),
-        }));
-    }
-
-    const data = mapToCsvRows(transactions);
+    const data = mapToCsvRows(transactions, getPaymentTypeText, getStatusText);
     const filename = `transactions_${new Date().toISOString().slice(0, 10)}.csv`;
 
     return (
@@ -627,7 +504,6 @@ export default function AdminTransaction() {
                 '100%': {opacity: 1}
             }
         }}>
-            {}
             <Box
                 sx={{
                     mb: 4,
@@ -747,7 +623,7 @@ export default function AdminTransaction() {
                             <Button
                                 variant="contained"
                                 startIcon={<PictureAsPdf style={{fontSize: 16}}/>}
-                                onClick={handleDownloadPdf}
+                                onClick={() => handleDownloadPdf(filteredTransactions, getPaymentTypeText, getStatusText)}
                                 sx={{
                                     background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
                                     color: 'white',
@@ -858,7 +734,7 @@ export default function AdminTransaction() {
                 ) : (
                     <>
                         <StatCard
-                            icon={<AccountBalanceWallet />}
+                            icon={<AccountBalanceWallet/>}
                             value={stats.total}
                             label="Total Transactions"
                             color="#06b6d4"
@@ -876,13 +752,13 @@ export default function AdminTransaction() {
                             color="#ff4d4f"
                         />
                         <StatCard
-                            icon={<CreditScore />}
+                            icon={<CreditScore/>}
                             value={formatCompactCurrency(stats.totalFees) + '₫'}
-                            label="Total Fees"
+                            label="Total Service Fees"
                             color="#722ed1"
                         />
                         <StatCard
-                            icon={<CreditScore />}
+                            icon={<CreditScore/>}
                             value={formatCompactCurrency(stats.totalAmount) + '₫'}
                             label="Total (Excl. Service Fee)"
                             color="#1890ff"

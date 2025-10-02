@@ -214,27 +214,15 @@ export default function AdminDashboard() {
                 to: dateRange[1].format('YYYY-MM-DD') + 'T00:00:00'
             };
 
-            console.log('Fetching transaction stats with request:', requestData);
 
             const response = await getTransactionsStats(requestData);
-            console.log('Transaction stats response:', response);
 
             if (response && response.status === 200) {
-                console.log('Raw transaction response data:', response.data);
 
-                let processedData = response.data;
-                if (response.data.body) {
-                    processedData = {data: response.data.body};
-                } else if (response.data.data) {
-                    processedData = response.data;
-                } else {
-                    processedData = {data: response.data};
-                }
+                let processedData = response.data.body;
 
-                console.log('Processed transaction data structure:', processedData);
                 setTransactionData(processedData);
             } else {
-                console.warn('Transaction API response not 200, using fallback data');
                 const fallbackData = {
                     data: {
                         overview: {
@@ -1469,9 +1457,8 @@ export default function AdminDashboard() {
                                     Transaction Summary
                                 </Typography>
 
-                                <Grid container spacing={3} sx={{width: '100%', mx: 0}}>
-                                    {}
-                                    <Grid item xs={12} sm={6} md={3}>
+                                <Box sx={{display: 'flex', gap: 3, width: '100%'}}>
+                                    <Box sx={{flex: 1}}>
                                         {loading ? (
                                             <Skeleton variant="rectangular" height={140} sx={{borderRadius: 2}}/>
                                         ) : (
@@ -1504,17 +1491,16 @@ export default function AdminDashboard() {
                                                 </Typography>
                                             </Box>
                                         )}
-                                    </Grid>
+                                    </Box>
 
-                                    {}
-                                    <Grid item xs={12} sm={6} md={3}>
+                                    <Box sx={{flex: 1}}>
                                         {loading ? (
                                             <Skeleton variant="rectangular" height={140} sx={{borderRadius: 2}}/>
                                         ) : (
                                             <Box sx={{
                                                 p: 3,
                                                 borderRadius: 2,
-                                                background: 'linear-gradient(135deg, #06b6d408 0%, #06b6d412 100%)',
+                                                background: 'linear-gradient(135deg, #ef444408 0%, #dc262612 100%)',
                                                 border: '1px solid #06b6d420',
                                                 textAlign: 'center',
                                                 height: '140px',
@@ -1528,22 +1514,21 @@ export default function AdminDashboard() {
                                                 }
                                             }}>
                                                 <Typography variant="h3"
-                                                            sx={{fontWeight: 800, color: '#06b6d4', mb: 1}}>
+                                                            sx={{fontWeight: 800, color: '#ff0024', mb: 1}}>
                                                     {(transactionData?.data?.overview || transactionData?.body?.overview || transactionData?.overview)?.byStatus?.TRANSACTION_FAIL || 0}
                                                 </Typography>
                                                 <Typography variant="body1" sx={{
                                                     fontWeight: 600,
-                                                    color: '#64748b',
+                                                    color: '#e35d61',
                                                     fontSize: '0.9rem'
                                                 }}>
                                                     Failed Transactions
                                                 </Typography>
                                             </Box>
                                         )}
-                                    </Grid>
+                                    </Box>
 
-                                    {}
-                                    <Grid item xs={12} sm={6} md={3}>
+                                    <Box sx={{flex: 1}}>
                                         {loading ? (
                                             <Skeleton variant="rectangular" height={140} sx={{borderRadius: 2}}/>
                                         ) : (
@@ -1576,10 +1561,9 @@ export default function AdminDashboard() {
                                                 </Typography>
                                             </Box>
                                         )}
-                                    </Grid>
+                                    </Box>
 
-                                    {}
-                                    <Grid item xs={12} sm={6} md={3}>
+                                    <Box sx={{flex: 1}}>
                                         {loading ? (
                                             <Skeleton variant="rectangular" height={140} sx={{borderRadius: 2}}/>
                                         ) : (
@@ -1601,7 +1585,7 @@ export default function AdminDashboard() {
                                             }}>
                                                 <Typography variant="h3"
                                                             sx={{fontWeight: 800, color: '#fd7e14', mb: 1}}>
-                                                    {(transactionData?.data?.overview || transactionData?.body?.overview || transactionData?.overview)?.byPaymentType?.ORDER || 0}
+                                                    {(transactionData?.body?.overview || transactionData?.overview)?.byPaymentType?.ORDER + (transactionData?.body?.overview || transactionData?.overview)?.byPaymentType?.DEPOSIT  || 0}
                                                 </Typography>
                                                 <Typography variant="body1" sx={{
                                                     fontWeight: 600,
@@ -1612,8 +1596,8 @@ export default function AdminDashboard() {
                                                 </Typography>
                                             </Box>
                                         )}
-                                    </Grid>
-                                </Grid>
+                                    </Box>
+                                </Box>
                             </Paper>
                         </Box>
                     </Box>
