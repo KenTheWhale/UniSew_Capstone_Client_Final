@@ -624,7 +624,7 @@ export default function OrderTrackingStatus() {
         try {
             setProcessingPayment(true);
 
-            const amount = getRemainingPaymentAmount() + shippingFee;
+            const amount = getRemainingPaymentAmount();
             const description = `Remaining payment for Order ${parseID(orderDetail.id, 'ord')}`;
             const orderType = 'order';
             const quotationId = orderDetail.quotationId || orderDetail.quotation?.id || orderDetail?.garmentQuotationId;
