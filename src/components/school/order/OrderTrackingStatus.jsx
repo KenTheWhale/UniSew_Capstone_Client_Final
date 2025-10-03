@@ -475,13 +475,16 @@ export default function OrderTrackingStatus() {
     };
 
 
+
+
+
     // Calculate remaining payment amount (excluding shipping fee)
     const getRemainingPaymentAmount = () => {
         if (!orderDetail?.price) return 0;
         const basePrice = orderDetail.price;
         const fee = getServiceFee();
         const depositAmount = getDepositAmount();
-        return (basePrice + fee) - depositAmount;
+        return (basePrice + fee + shippingFee) - depositAmount;
     };
 
     // Fetch wallet balance
@@ -1921,7 +1924,7 @@ export default function OrderTrackingStatus() {
                                     gridTemplateColumns: {xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(2, 1fr)'},
                                     gap: 3
                                 }}>
-                                    {/* Base Price */}
+                                    {/* Quotation Price */}
                                     <Box sx={{
                                         p: 3,
                                         borderRadius: 3,
@@ -1973,7 +1976,7 @@ export default function OrderTrackingStatus() {
                                                     display: 'block',
                                                     fontSize: '0.7rem'
                                                 }}>
-                                                    Base Price
+                                                    Quotation Price
                                                 </Typography>
                                                 <Typography variant="h6" sx={{
                                                     fontWeight: 700,
@@ -2055,7 +2058,7 @@ export default function OrderTrackingStatus() {
                                                     display: 'block',
                                                     fontSize: '0.6rem'
                                                 }}>
-                                                    ({orderDetail.depositRate * 100}% of Base Price)
+                                                    ({orderDetail.depositRate * 100}% of Quotation Price)
                                                 </Typography>
                                                 <Typography variant="h6" sx={{
                                                     fontWeight: 700,
@@ -2121,6 +2124,16 @@ export default function OrderTrackingStatus() {
                                                     fontSize: '0.7rem'
                                                 }}>
                                                     Service Fee
+                                                </Typography>
+                                                <Typography variant="caption" sx={{
+                                                    color: '#64748b',
+                                                    fontWeight: 500,
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.5px',
+                                                    display: 'block',
+                                                    fontSize: '0.6rem'
+                                                }}>
+                                                    {businessConfig?.serviceRate ? `(${(businessConfig.serviceRate * 100).toFixed(0)}% of Quotation Price)` : selectedQuotation.price <= 10000000 ? '(2% total)' : ''}
                                                 </Typography>
                                                 <Typography variant="h6" sx={{
                                                     fontWeight: 700,
@@ -2291,7 +2304,7 @@ export default function OrderTrackingStatus() {
                                                     display: 'block',
                                                     fontSize: '0.6rem'
                                                 }}>
-                                                    (Base price - Deposit Amount)
+                                                    (Quotation price - Deposit Amount)
                                                 </Typography>
                                                 <Typography variant="h6" sx={{
                                                     fontWeight: 700,
@@ -2515,14 +2528,14 @@ export default function OrderTrackingStatus() {
                                                     display: 'block',
                                                     fontSize: '0.6rem'
                                                 }}>
-                                                    (Base Price + Service Fee + Shipping Fee)
+                                                    (Quotation Price + Service Fee + Shipping Fee)
                                                 </Typography>
                                                 <Typography variant="h6" sx={{
                                                     fontWeight: 700,
                                                     color: '#8b5cf6',
                                                     fontSize: '1rem'
                                                 }}>
-                                                    {formatCurrency((orderDetail.price || 0) + (orderDetail.serviceFee || 0) + (orderDetail.shippingFee || 0))}
+                                                    {formatCurrency((orderDetail.price || 0) + (orderDetail.serviceFee || 0) + (shippingFee || 0))}
                                                 </Typography>
                                             </Box>
                                         </Box>
@@ -4678,15 +4691,261 @@ export default function OrderTrackingStatus() {
                                         display: 'block',
                                         fontSize: '0.7rem'
                                     }}>
-                                        Total Price (Incl. Service Fee)
+                                        Quotation Price
                                     </Typography>
                                     <Typography variant="h6" sx={{
                                         fontWeight: 700,
                                         color: '#1e293b',
                                         fontSize: '1rem'
                                     }}>
-                                        {formatCurrency((orderDetail?.price || 0) + getServiceFee())}
+                                        {formatCurrency((orderDetail?.price || 0))}
                                     </Typography>
+                                </Box>
+                            </Box>
+                        </Box>
+
+                        {/* Total Need to Payment */}
+                        <Box sx={{
+                            p: 3,
+                            borderRadius: 3,
+                            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%)',
+                            border: '1px solid rgba(139, 92, 246, 0.1)',
+                            position: 'relative'
+                        }}>
+                            <Box sx={{
+                                position: 'absolute',
+                                top: 0,
+                                right: 0,
+                                width: '40px',
+                                height: '40px',
+                                background: 'rgba(139, 92, 246, 0.1)',
+                                borderRadius: '50%',
+                                transform: 'translate(10px, -10px)'
+                            }}/>
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 2,
+                                position: 'relative',
+                                zIndex: 1
+                            }}>
+                                <Box sx={{
+                                    width: 32,
+                                    height: 32,
+                                    borderRadius: '50%',
+                                    background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)'
+                                }}>
+                                    <MoneyIcon sx={{color: 'white', fontSize: 18}}/>
+                                </Box>
+                                <Box sx={{flex: 1}}>
+                                    <Typography variant="caption" sx={{
+                                        color: '#64748b',
+                                        fontWeight: 500,
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.5px',
+                                        display: 'block',
+                                        fontSize: '0.7rem'
+                                    }}>
+                                        Service Fee
+                                    </Typography>
+                                    <Typography variant="h5" sx={{
+                                        fontWeight: 700,
+                                        color: '#8b5cf6',
+                                        fontSize: '1.25rem'
+                                    }}>
+                                        {formatCurrency(getServiceFee())}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        </Box>
+
+                        {/* Shipping Fee */}
+                        <Box sx={{
+                            p: 3,
+                            borderRadius: 3,
+                            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%)',
+                            border: '1px solid rgba(16, 185, 129, 0.1)',
+                            position: 'relative'
+                        }}>
+                            <Box sx={{
+                                position: 'absolute',
+                                top: 0,
+                                right: 0,
+                                width: '40px',
+                                height: '40px',
+                                background: 'rgba(16, 185, 129, 0.1)',
+                                borderRadius: '50%',
+                                transform: 'translate(10px, -10px)'
+                            }}/>
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 2,
+                                position: 'relative',
+                                zIndex: 1
+                            }}>
+                                <Box sx={{
+                                    width: 32,
+                                    height: 32,
+                                    borderRadius: '50%',
+                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                                }}>
+                                    <LocalShippingIcon sx={{color: 'white', fontSize: 18}}/>
+                                </Box>
+                                <Box sx={{flex: 1}}>
+                                    <Typography variant="caption" sx={{
+                                        color: '#64748b',
+                                        fontWeight: 500,
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.5px',
+                                        display: 'block',
+                                        fontSize: '0.7rem'
+                                    }}>
+                                        Shipping Fee
+                                    </Typography>
+                                    {shippingFeeLoading ? (
+                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                            <CircularProgress size={16} sx={{color: '#10b981'}}/>
+                                            <Typography variant="body2" sx={{color: '#64748b', fontSize: '0.9rem'}}>
+                                                Calculating...
+                                            </Typography>
+                                        </Box>
+                                    ) : shippingFeeError ? (
+                                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 1}}>
+                                            <Typography variant="body2" sx={{color: '#ef4444', fontSize: '0.9rem'}}>
+                                                {shippingFeeError}
+                                            </Typography>
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                onClick={calculateShippingFee}
+                                                disabled={shippingFeeLoading}
+                                                sx={{
+                                                    borderColor: '#10b981',
+                                                    color: '#10b981',
+                                                    fontSize: '0.75rem',
+                                                    py: 0.25,
+                                                    px: 1,
+                                                    minWidth: 'auto',
+                                                    '&:hover': {
+                                                        borderColor: '#059669',
+                                                        backgroundColor: 'rgba(16, 185, 129, 0.1)'
+                                                    }
+                                                }}
+                                            >
+                                                Retry
+                                            </Button>
+                                        </Box>
+                                    ) : (
+                                        <Typography variant="h6" sx={{
+                                            fontWeight: 700,
+                                            color: '#10b981',
+                                            fontSize: '1rem'
+                                        }}>
+                                            {formatCurrency(shippingFee)}
+                                        </Typography>
+                                    )}
+                                </Box>
+                            </Box>
+                        </Box>
+
+                        <Box sx={{
+                            p: 3,
+                            borderRadius: 3,
+                            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%)',
+                            border: '1px solid rgba(16, 185, 129, 0.1)',
+                            position: 'relative'
+                        }}>
+                            <Box sx={{
+                                position: 'absolute',
+                                top: 0,
+                                right: 0,
+                                width: '40px',
+                                height: '40px',
+                                background: 'rgba(16, 185, 129, 0.1)',
+                                borderRadius: '50%',
+                                transform: 'translate(10px, -10px)'
+                            }}/>
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 2,
+                                position: 'relative',
+                                zIndex: 1
+                            }}>
+                                <Box sx={{
+                                    width: 32,
+                                    height: 32,
+                                    borderRadius: '50%',
+                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                                }}>
+                                    <LocalShippingIcon sx={{color: 'white', fontSize: 18}}/>
+                                </Box>
+                                <Box sx={{flex: 1}}>
+                                    <Typography variant="caption" sx={{
+                                        color: '#64748b',
+                                        fontWeight: 500,
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.5px',
+                                        display: 'block',
+                                        fontSize: '0.7rem'
+                                    }}>
+                                        Total Price (Quotation Price + Service Fee + Shipping Fee)
+                                    </Typography>
+                                    {shippingFeeLoading ? (
+                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                                            <CircularProgress size={16} sx={{color: '#10b981'}}/>
+                                            <Typography variant="body2" sx={{color: '#64748b', fontSize: '0.9rem'}}>
+                                                Calculating...
+                                            </Typography>
+                                        </Box>
+                                    ) : shippingFeeError ? (
+                                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 1}}>
+                                            <Typography variant="body2" sx={{color: '#ef4444', fontSize: '0.9rem'}}>
+                                                {shippingFeeError}
+                                            </Typography>
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                onClick={calculateShippingFee}
+                                                disabled={shippingFeeLoading}
+                                                sx={{
+                                                    borderColor: '#10b981',
+                                                    color: '#10b981',
+                                                    fontSize: '0.75rem',
+                                                    py: 0.25,
+                                                    px: 1,
+                                                    minWidth: 'auto',
+                                                    '&:hover': {
+                                                        borderColor: '#059669',
+                                                        backgroundColor: 'rgba(16, 185, 129, 0.1)'
+                                                    }
+                                                }}
+                                            >
+                                                Retry
+                                            </Button>
+                                        </Box>
+                                    ) : (
+                                        <Typography variant="h6" sx={{
+                                            fontWeight: 700,
+                                            color: '#10b981',
+                                            fontSize: '1rem'
+                                        }}>
+                                            {formatCurrency(orderDetail.price + getServiceFee() + shippingFee)}
+                                        </Typography>
+                                    )}
                                 </Box>
                             </Box>
                         </Box>
@@ -4809,158 +5068,9 @@ export default function OrderTrackingStatus() {
                             </Box>
                         </Box>
 
-                        {/* Shipping Fee */}
-                        <Box sx={{
-                            p: 3,
-                            borderRadius: 3,
-                            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%)',
-                            border: '1px solid rgba(16, 185, 129, 0.1)',
-                            position: 'relative'
-                        }}>
-                            <Box sx={{
-                                position: 'absolute',
-                                top: 0,
-                                right: 0,
-                                width: '40px',
-                                height: '40px',
-                                background: 'rgba(16, 185, 129, 0.1)',
-                                borderRadius: '50%',
-                                transform: 'translate(10px, -10px)'
-                            }}/>
-                            <Box sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 2,
-                                position: 'relative',
-                                zIndex: 1
-                            }}>
-                                <Box sx={{
-                                    width: 32,
-                                    height: 32,
-                                    borderRadius: '50%',
-                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
-                                }}>
-                                    <LocalShippingIcon sx={{color: 'white', fontSize: 18}}/>
-                                </Box>
-                                <Box sx={{flex: 1}}>
-                                    <Typography variant="caption" sx={{
-                                        color: '#64748b',
-                                        fontWeight: 500,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.5px',
-                                        display: 'block',
-                                        fontSize: '0.7rem'
-                                    }}>
-                                        Shipping Fee
-                                    </Typography>
-                                    {shippingFeeLoading ? (
-                                        <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                                            <CircularProgress size={16} sx={{color: '#10b981'}}/>
-                                            <Typography variant="body2" sx={{color: '#64748b', fontSize: '0.9rem'}}>
-                                                Calculating...
-                                            </Typography>
-                                        </Box>
-                                    ) : shippingFeeError ? (
-                                        <Box sx={{display: 'flex', flexDirection: 'column', gap: 1}}>
-                                            <Typography variant="body2" sx={{color: '#ef4444', fontSize: '0.9rem'}}>
-                                                {shippingFeeError}
-                                            </Typography>
-                                            <Button
-                                                size="small"
-                                                variant="outlined"
-                                                onClick={calculateShippingFee}
-                                                disabled={shippingFeeLoading}
-                                                sx={{
-                                                    borderColor: '#10b981',
-                                                    color: '#10b981',
-                                                    fontSize: '0.75rem',
-                                                    py: 0.25,
-                                                    px: 1,
-                                                    minWidth: 'auto',
-                                                    '&:hover': {
-                                                        borderColor: '#059669',
-                                                        backgroundColor: 'rgba(16, 185, 129, 0.1)'
-                                                    }
-                                                }}
-                                            >
-                                                Retry
-                                            </Button>
-                                        </Box>
-                                    ) : (
-                                        <Typography variant="h6" sx={{
-                                            fontWeight: 700,
-                                            color: '#10b981',
-                                            fontSize: '1rem'
-                                        }}>
-                                            {formatCurrency(shippingFee)}
-                                        </Typography>
-                                    )}
-                                </Box>
-                            </Box>
-                        </Box>
 
-                        {/* Total Need to Payment */}
-                        <Box sx={{
-                            p: 3,
-                            borderRadius: 3,
-                            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%)',
-                            border: '1px solid rgba(139, 92, 246, 0.1)',
-                            position: 'relative'
-                        }}>
-                            <Box sx={{
-                                position: 'absolute',
-                                top: 0,
-                                right: 0,
-                                width: '40px',
-                                height: '40px',
-                                background: 'rgba(139, 92, 246, 0.1)',
-                                borderRadius: '50%',
-                                transform: 'translate(10px, -10px)'
-                            }}/>
-                            <Box sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 2,
-                                position: 'relative',
-                                zIndex: 1
-                            }}>
-                                <Box sx={{
-                                    width: 32,
-                                    height: 32,
-                                    borderRadius: '50%',
-                                    background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)'
-                                }}>
-                                    <MoneyIcon sx={{color: 'white', fontSize: 18}}/>
-                                </Box>
-                                <Box sx={{flex: 1}}>
-                                    <Typography variant="caption" sx={{
-                                        color: '#64748b',
-                                        fontWeight: 500,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.5px',
-                                        display: 'block',
-                                        fontSize: '0.7rem'
-                                    }}>
-                                        Total Need to Payment
-                                    </Typography>
-                                    <Typography variant="h5" sx={{
-                                        fontWeight: 700,
-                                        color: '#8b5cf6',
-                                        fontSize: '1.25rem'
-                                    }}>
-                                        {formatCurrency(getRemainingPaymentAmount() + shippingFee)}
-                                    </Typography>
-                                </Box>
-                            </Box>
-                        </Box>
+
+
                     </Box>
 
                     {/* Payment Note */}
