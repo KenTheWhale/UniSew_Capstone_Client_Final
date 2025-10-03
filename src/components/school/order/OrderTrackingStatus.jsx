@@ -518,7 +518,7 @@ export default function OrderTrackingStatus() {
     // Check if wallet has sufficient balance
     const hasInsufficientBalance = () => {
         if (paymentMethod !== 'wallet') return false;
-        const totalAmount = getRemainingPaymentAmount() + shippingFee;
+        const totalAmount = getRemainingPaymentAmount();
         return walletBalance < totalAmount;
     };
 
