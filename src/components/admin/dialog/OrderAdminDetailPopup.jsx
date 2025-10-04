@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {
     Avatar,
     Box,
@@ -36,6 +36,8 @@ import {parseID} from '../../../utils/ParseIDUtil';
 import {formatDate, formatDateTimeSecond} from '../../../utils/TimestampUtil';
 import OrderDetailTable from '../../ui/OrderDetailTable';
 import {serviceFee} from '../../../configs/FixedVariables';
+import {enqueueSnackbar} from "notistack";
+import {configKey, getConfigByKey} from "../../../services/SystemService.jsx";
 
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -107,18 +109,45 @@ const statusTag = (status) => {
 export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
     const [anchorEl, setAnchorEl] = useState(null);
     const [hoveredMilestone, setHoveredMilestone] = useState(null);
-    const [hoverTimeout, setHoverTimeout] = useState(null);
     const [videoDialogOpen, setVideoDialogOpen] = useState(false);
     const [selectedVideo, setSelectedVideo] = useState(null);
+    const [popoverPosition, setPopoverPosition] = useState({
+        vertical: 'top',
+        horizontal: 'center'
+    });
+    const [isHovering, setIsHovering] = useState(false);
+    const [businessConfig, setBusinessConfig] = useState(null);
+
+
+    // Use ref for timeout to prevent flickering
+    const popoverTimeoutRef = useRef(null);
+
+    const fetchBusinessConfig = async () => {
+        try {
+            const response = await getConfigByKey(configKey.business);
+            if (response && response.data && response.data.body && response.data.body.business) {
+                const config = response.data.body.business;
+                setBusinessConfig(config);
+            }
+        } catch (error) {
+            console.error('Error fetching business configuration:', error);
+            enqueueSnackbar('Failed to load business configuration', {variant: 'warning'});
+        } finally {
+        }
+    };
+
+    useEffect(() => {
+        fetchBusinessConfig();
+    }, []);
 
     // Cleanup timeout on unmount
     useEffect(() => {
         return () => {
-            if (hoverTimeout) {
-                clearTimeout(hoverTimeout);
+            if (popoverTimeoutRef.current) {
+                clearTimeout(popoverTimeoutRef.current);
             }
         };
-    }, [hoverTimeout]);
+    }, []);
 
     if (!selectedOrder) return null;
 
@@ -206,46 +235,70 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
 
     const handleMilestoneHover = (event, milestone) => {
         // Clear any existing timeout
-        if (hoverTimeout) {
-            clearTimeout(hoverTimeout);
-            setHoverTimeout(null);
+        if (popoverTimeoutRef.current) {
+            clearTimeout(popoverTimeoutRef.current);
+            popoverTimeoutRef.current = null;
         }
 
-        setAnchorEl(event.currentTarget);
         setHoveredMilestone(milestone);
+        setAnchorEl(event.currentTarget);
+        setIsHovering(true);
+
+        // Set default popover position
+        setPopoverPosition({
+            vertical: 'top',
+            horizontal: 'center'
+        });
     };
 
     const handleMilestoneLeave = () => {
-        // Add delay before hiding popover
-        const timeout = setTimeout(() => {
-            setAnchorEl(null);
+        // Clear any existing timeout
+        if (popoverTimeoutRef.current) {
+            clearTimeout(popoverTimeoutRef.current);
+        }
+
+        setIsHovering(false);
+
+        // Delay hiding popover to allow moving mouse to popover
+        popoverTimeoutRef.current = setTimeout(() => {
             setHoveredMilestone(null);
-        }, 100);
-        setHoverTimeout(timeout);
+            setAnchorEl(null);
+        }, 150);
     };
 
     const handlePopoverMouseEnter = () => {
         // Clear timeout when mouse enters popover
-        if (hoverTimeout) {
-            clearTimeout(hoverTimeout);
-            setHoverTimeout(null);
+        if (popoverTimeoutRef.current) {
+            clearTimeout(popoverTimeoutRef.current);
+            popoverTimeoutRef.current = null;
         }
     };
 
     const handlePopoverMouseLeave = () => {
-        // Add delay before hiding popover
-        const timeout = setTimeout(() => {
-            setAnchorEl(null);
+        // Clear any existing timeout first
+        if (popoverTimeoutRef.current) {
+            clearTimeout(popoverTimeoutRef.current);
+            popoverTimeoutRef.current = null;
+        }
+
+        setIsHovering(false);
+
+        // Hide popover immediately when mouse leaves popover
             setHoveredMilestone(null);
-        }, 100);
-        setHoverTimeout(timeout);
+        setAnchorEl(null);
     };
 
     const handleOpenVideoDialog = (milestone) => {
+        // Close popover when opening video dialog
+        setHoveredMilestone(null);
+        setAnchorEl(null);
+        if (popoverTimeoutRef.current) {
+            clearTimeout(popoverTimeoutRef.current);
+            popoverTimeoutRef.current = null;
+        }
+
         setSelectedVideo(milestone);
         setVideoDialogOpen(true);
-        setAnchorEl(null); // Close hover popover
-        setHoveredMilestone(null);
     };
 
     const handleCloseVideoDialog = () => {
@@ -253,11 +306,22 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
         setSelectedVideo(null);
     };
 
+    // Force close popover when clicking elsewhere
+    const handleForceClosePopover = () => {
+        if (popoverTimeoutRef.current) {
+            clearTimeout(popoverTimeoutRef.current);
+            popoverTimeoutRef.current = null;
+        }
+        setIsHovering(false);
+        setHoveredMilestone(null);
+        setAnchorEl(null);
+    };
+
     return (
         <Dialog
             open={open}
             onClose={onClose}
-            maxWidth="lg"
+            maxWidth="xl"
             fullWidth
             slotProps={{
                 paper: {
@@ -373,7 +437,7 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                 </Box>
             </DialogTitle>
 
-            <DialogContent sx={{p: 3}}>
+            <DialogContent sx={{p: 3, mt: 5}}>
                 {/* Order Header Card */}
                 <Card sx={{
                     mb: 4,
@@ -665,7 +729,6 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                                                             ? '0 4px 12px rgba(148, 163, 184, 0.3)'
                                                                             : '0 4px 12px rgba(148, 163, 184, 0.3)',
                                                             '&:hover': {
-                                                                transform: 'scale(1.1)',
                                                                 boxShadow: milestone.isCompleted
                                                                     ? '0 8px 25px rgba(34, 197, 94, 0.4)'
                                                                     : milestone.isActive
@@ -1693,82 +1756,82 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                                 color: '#1e293b',
                                                 fontSize: '0.9rem'
                                             }}>
-                                                {selectedOrder?.orderDetails?.reduce((total, detail) => total + (detail.quantity || 0), 0) || 0}
+                                                {selectedOrder?.orderDetails?.reduce((total, detail) => total + (detail.quantity || 0), 0)/2 || 0}
                                             </Typography>
                                         </Box>
                                     </Box>
                                 </Box>
 
                                 {/* Payment Information Grid */}
-                                <Box sx={{
-                                    display: 'grid',
-                                    gridTemplateColumns: {xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(2, 1fr)'},
-                                    gap: 3
-                                }}>
-                                    {/* Base Price */}
                                     <Box sx={{
-                                        p: 3,
-                                        borderRadius: 3,
-                                        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(37, 99, 235, 0.05) 100%)',
-                                        border: '1px solid rgba(59, 130, 246, 0.1)',
-                                        position: 'relative',
-                                        overflow: 'hidden',
-                                        transition: 'all 0.3s ease',
-                                        '&:hover': {
-                                            transform: 'translateY(-2px)',
-                                            boxShadow: '0 8px 25px rgba(59, 130, 246, 0.15)'
-                                        }
+                                        display: 'grid',
+                                        gridTemplateColumns: {xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(2, 1fr)'},
+                                        gap: 3
                                     }}>
+                                        {/* Base Price */}
                                         <Box sx={{
-                                            position: 'absolute',
-                                            top: 0,
-                                            right: 0,
-                                            width: '40px',
-                                            height: '40px',
-                                            background: 'rgba(59, 130, 246, 0.1)',
-                                            borderRadius: '50%',
-                                            transform: 'translate(10px, -10px)'
-                                        }}/>
-                                        <Box sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 2,
+                                            p: 3,
+                                            borderRadius: 3,
+                                            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(37, 99, 235, 0.05) 100%)',
+                                            border: '1px solid rgba(59, 130, 246, 0.1)',
                                             position: 'relative',
-                                            zIndex: 1
+                                            overflow: 'hidden',
+                                            transition: 'all 0.3s ease',
+                                            '&:hover': {
+                                                transform: 'translateY(-2px)',
+                                                boxShadow: '0 8px 25px rgba(59, 130, 246, 0.15)'
+                                            }
                                         }}>
                                             <Box sx={{
-                                                width: 32,
-                                                height: 32,
+                                                position: 'absolute',
+                                                top: 0,
+                                                right: 0,
+                                                width: '40px',
+                                                height: '40px',
+                                                background: 'rgba(59, 130, 246, 0.1)',
                                                 borderRadius: '50%',
-                                                background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                                                transform: 'translate(10px, -10px)'
+                                            }}/>
+                                            <Box sx={{
                                                 display: 'flex',
                                                 alignItems: 'center',
-                                                justifyContent: 'center',
-                                                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+                                                gap: 2,
+                                                position: 'relative',
+                                                zIndex: 1
                                             }}>
-                                                <MoneyIcon sx={{color: 'white', fontSize: 16}}/>
-                                            </Box>
-                                            <Box>
-                                                <Typography variant="caption" sx={{
-                                                    color: '#64748b',
-                                                    fontWeight: 500,
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: '0.5px',
-                                                    display: 'block',
-                                                    fontSize: '0.7rem'
+                                                <Box sx={{
+                                                    width: 32,
+                                                    height: 32,
+                                                    borderRadius: '50%',
+                                                    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
                                                 }}>
-                                                    Base Price
-                                                </Typography>
-                                                <Typography variant="h6" sx={{
-                                                    fontWeight: 700,
-                                                    color: '#1e293b',
-                                                    fontSize: '1rem'
-                                                }}>
-                                                    {formatCurrency(selectedOrder.price)}
-                                                </Typography>
+                                                    <MoneyIcon sx={{color: 'white', fontSize: 16}}/>
+                                                </Box>
+                                                <Box>
+                                                    <Typography variant="caption" sx={{
+                                                        color: '#64748b',
+                                                        fontWeight: 500,
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.5px',
+                                                        display: 'block',
+                                                        fontSize: '0.7rem'
+                                                    }}>
+                                                    Quotation Price
+                                                    </Typography>
+                                                    <Typography variant="h6" sx={{
+                                                        fontWeight: 700,
+                                                        color: '#1e293b',
+                                                        fontSize: '1rem'
+                                                    }}>
+                                                        {formatCurrency(selectedOrder.price)}
+                                                    </Typography>
+                                                </Box>
                                             </Box>
                                         </Box>
-                                    </Box>
 
                                     {/* Deposit Amount */}
                                     <Box sx={{
@@ -1839,7 +1902,7 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                                     display: 'block',
                                                     fontSize: '0.6rem'
                                                 }}>
-                                                    ({Math.round((selectedOrder.depositRate || 0.5) * 100)}% of Base Price)
+                                                    ({Math.round((selectedOrder.depositRate || 0.5) * 100)}% of Quotation Price)
                                                 </Typography>
                                                 <Typography variant="h6" sx={{
                                                     fontWeight: 700,
@@ -1847,70 +1910,80 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                                     fontSize: '1rem'
                                                 }}>
                                                     {formatCurrency(getDepositAmount(selectedOrder))}
-                                                </Typography>
+                                                    </Typography>
+                                                </Box>
                                             </Box>
                                         </Box>
-                                    </Box>
 
-                                    {/* Service Fee */}
-                                    <Box sx={{
-                                        p: 3,
-                                        borderRadius: 3,
-                                        background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(217, 119, 6, 0.05) 100%)',
-                                        border: '1px solid rgba(245, 158, 11, 0.1)',
-                                        position: 'relative',
-                                        overflow: 'hidden',
-                                        transition: 'all 0.3s ease',
-                                        '&:hover': {
-                                            transform: 'translateY(-2px)',
-                                            boxShadow: '0 8px 25px rgba(245, 158, 11, 0.15)'
-                                        }
-                                    }}>
+                                        {/* Service Fee */}
                                         <Box sx={{
-                                            position: 'absolute',
-                                            top: 0,
-                                            right: 0,
-                                            width: '40px',
-                                            height: '40px',
-                                            background: 'rgba(245, 158, 11, 0.1)',
-                                            borderRadius: '50%',
-                                            transform: 'translate(10px, -10px)'
-                                        }}/>
-                                        <Box sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 2,
+                                            p: 3,
+                                            borderRadius: 3,
+                                            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(217, 119, 6, 0.05) 100%)',
+                                            border: '1px solid rgba(245, 158, 11, 0.1)',
                                             position: 'relative',
-                                            zIndex: 1
+                                            overflow: 'hidden',
+                                            transition: 'all 0.3s ease',
+                                            '&:hover': {
+                                                transform: 'translateY(-2px)',
+                                                boxShadow: '0 8px 25px rgba(245, 158, 11, 0.15)'
+                                            }
                                         }}>
                                             <Box sx={{
-                                                width: 32,
-                                                height: 32,
+                                                position: 'absolute',
+                                                top: 0,
+                                                right: 0,
+                                                width: '40px',
+                                                height: '40px',
+                                                background: 'rgba(245, 158, 11, 0.1)',
                                                 borderRadius: '50%',
-                                                background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                                                transform: 'translate(10px, -10px)'
+                                            }}/>
+                                            <Box sx={{
                                                 display: 'flex',
                                                 alignItems: 'center',
-                                                justifyContent: 'center',
-                                                boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)'
+                                                gap: 2,
+                                                position: 'relative',
+                                                zIndex: 1
                                             }}>
-                                                <MoneyIcon sx={{color: 'white', fontSize: 16}}/>
-                                            </Box>
-                                            <Box>
-                                                <Typography variant="caption" sx={{
-                                                    color: '#64748b',
-                                                    fontWeight: 500,
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: '0.5px',
-                                                    display: 'block',
-                                                    fontSize: '0.7rem'
+                                                <Box sx={{
+                                                    width: 32,
+                                                    height: 32,
+                                                    borderRadius: '50%',
+                                                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)'
                                                 }}>
-                                                    Service Fee
-                                                </Typography>
-                                                <Typography variant="h6" sx={{
-                                                    fontWeight: 700,
-                                                    color: '#1e293b',
-                                                    fontSize: '1rem'
-                                                }}>
+                                                    <MoneyIcon sx={{color: 'white', fontSize: 16}}/>
+                                                </Box>
+                                                <Box>
+                                                    <Typography variant="caption" sx={{
+                                                        color: '#64748b',
+                                                        fontWeight: 500,
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.5px',
+                                                        display: 'block',
+                                                        fontSize: '0.7rem'
+                                                    }}>
+                                                        Service Fee
+                                                    </Typography>
+                                                    <Typography variant="caption" sx={{
+                                                        color: '#64748b',
+                                                        fontWeight: 500,
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.5px',
+                                                        display: 'block',
+                                                        fontSize: '0.6rem'
+                                                    }}>
+                                                        {businessConfig?.serviceRate ? `(${(businessConfig.serviceRate * 100)}% of Quotation Price)` : '2% of Quotation Price'}
+                                                    </Typography>
+                                                    <Typography variant="h6" sx={{
+                                                        fontWeight: 700,
+                                                        color: '#1e293b',
+                                                        fontSize: '1rem'
+                                                    }}>
                                                     {formatCurrency(getServiceFee(selectedOrder))}
                                                 </Typography>
                                             </Box>
@@ -2085,75 +2158,75 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                                     fontSize: '1rem'
                                                 }}>
                                                     {formatCurrency(getRemainingPaymentAmount(selectedOrder))}
-                                                </Typography>
+                                                    </Typography>
+                                                </Box>
                                             </Box>
                                         </Box>
-                                    </Box>
 
-                                    {/* Shipping Fee */}
-                                    <Box sx={{
-                                        p: 3,
-                                        borderRadius: 3,
-                                        background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%)',
-                                        border: '1px solid rgba(16, 185, 129, 0.1)',
-                                        position: 'relative',
-                                        overflow: 'hidden',
-                                        transition: 'all 0.3s ease',
-                                        '&:hover': {
-                                            transform: 'translateY(-2px)',
-                                            boxShadow: '0 8px 25px rgba(16, 185, 129, 0.15)'
-                                        }
-                                    }}>
+                                        {/* Shipping Fee */}
                                         <Box sx={{
-                                            position: 'absolute',
-                                            top: 0,
-                                            right: 0,
-                                            width: '40px',
-                                            height: '40px',
-                                            background: 'rgba(16, 185, 129, 0.1)',
-                                            borderRadius: '50%',
-                                            transform: 'translate(10px, -10px)'
-                                        }}/>
-                                        <Box sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 2,
+                                            p: 3,
+                                            borderRadius: 3,
+                                            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%)',
+                                            border: '1px solid rgba(16, 185, 129, 0.1)',
                                             position: 'relative',
-                                            zIndex: 1
+                                            overflow: 'hidden',
+                                            transition: 'all 0.3s ease',
+                                            '&:hover': {
+                                                transform: 'translateY(-2px)',
+                                                boxShadow: '0 8px 25px rgba(16, 185, 129, 0.15)'
+                                            }
                                         }}>
                                             <Box sx={{
-                                                width: 32,
-                                                height: 32,
+                                                position: 'absolute',
+                                                top: 0,
+                                                right: 0,
+                                                width: '40px',
+                                                height: '40px',
+                                                background: 'rgba(16, 185, 129, 0.1)',
                                                 borderRadius: '50%',
-                                                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                                transform: 'translate(10px, -10px)'
+                                            }}/>
+                                            <Box sx={{
                                                 display: 'flex',
                                                 alignItems: 'center',
-                                                justifyContent: 'center',
-                                                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                                                gap: 2,
+                                                position: 'relative',
+                                                zIndex: 1
                                             }}>
-                                                <LocalShippingIcon sx={{color: 'white', fontSize: 16}}/>
-                                            </Box>
-                                            <Box>
-                                                <Typography variant="caption" sx={{
-                                                    color: '#64748b',
-                                                    fontWeight: 500,
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: '0.5px',
-                                                    display: 'block',
-                                                    fontSize: '0.7rem'
+                                                <Box sx={{
+                                                    width: 32,
+                                                    height: 32,
+                                                    borderRadius: '50%',
+                                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
                                                 }}>
-                                                    Shipping Fee
-                                                </Typography>
-                                                <Typography variant="h6" sx={{
-                                                    fontWeight: 700,
-                                                    color: '#1e293b',
-                                                    fontSize: '1rem'
-                                                }}>
-                                                    {formatCurrency(selectedOrder.shippingFee || 0)}
-                                                </Typography>
+                                                    <LocalShippingIcon sx={{color: 'white', fontSize: 16}}/>
+                                                </Box>
+                                                <Box>
+                                                    <Typography variant="caption" sx={{
+                                                        color: '#64748b',
+                                                        fontWeight: 500,
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.5px',
+                                                        display: 'block',
+                                                        fontSize: '0.7rem'
+                                                    }}>
+                                                        Shipping Fee
+                                                    </Typography>
+                                                    <Typography variant="h6" sx={{
+                                                        fontWeight: 700,
+                                                        color: '#1e293b',
+                                                        fontSize: '1rem'
+                                                    }}>
+                                                        {formatCurrency(selectedOrder.shippingFee || 0)}
+                                                    </Typography>
+                                                </Box>
                                             </Box>
                                         </Box>
-                                    </Box>
 
                                     {/* Remaining Paid */}
                                     <Box sx={{
@@ -2230,57 +2303,57 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                     </Box>
 
                                     {/* Total Price */}
-                                    <Box sx={{
-                                        p: 3,
-                                        borderRadius: 3,
-                                        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%)',
-                                        border: '1px solid rgba(139, 92, 246, 0.1)',
-                                        position: 'relative',
-                                        overflow: 'hidden',
-                                        transition: 'all 0.3s ease',
-                                        '&:hover': {
-                                            transform: 'translateY(-2px)',
-                                            boxShadow: '0 8px 25px rgba(139, 92, 246, 0.15)'
-                                        }
-                                    }}>
                                         <Box sx={{
-                                            position: 'absolute',
-                                            top: 0,
-                                            right: 0,
-                                            width: '40px',
-                                            height: '40px',
-                                            background: 'rgba(139, 92, 246, 0.1)',
-                                            borderRadius: '50%',
-                                            transform: 'translate(10px, -10px)'
-                                        }}/>
-                                        <Box sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 2,
+                                            p: 3,
+                                            borderRadius: 3,
+                                            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%)',
+                                            border: '1px solid rgba(139, 92, 246, 0.1)',
                                             position: 'relative',
-                                            zIndex: 1
+                                            overflow: 'hidden',
+                                            transition: 'all 0.3s ease',
+                                            '&:hover': {
+                                                transform: 'translateY(-2px)',
+                                                boxShadow: '0 8px 25px rgba(139, 92, 246, 0.15)'
+                                            }
                                         }}>
                                             <Box sx={{
-                                                width: 32,
-                                                height: 32,
+                                                position: 'absolute',
+                                                top: 0,
+                                                right: 0,
+                                                width: '40px',
+                                                height: '40px',
+                                                background: 'rgba(139, 92, 246, 0.1)',
                                                 borderRadius: '50%',
-                                                background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                                                transform: 'translate(10px, -10px)'
+                                            }}/>
+                                            <Box sx={{
                                                 display: 'flex',
                                                 alignItems: 'center',
-                                                justifyContent: 'center',
-                                                boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)'
+                                                gap: 2,
+                                                position: 'relative',
+                                                zIndex: 1
                                             }}>
-                                                <MoneyIcon sx={{color: 'white', fontSize: 16}}/>
-                                            </Box>
-                                            <Box>
-                                                <Typography variant="caption" sx={{
-                                                    color: '#64748b',
-                                                    fontWeight: 500,
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: '0.5px',
-                                                    display: 'block',
-                                                    fontSize: '0.7rem'
+                                                <Box sx={{
+                                                    width: 32,
+                                                    height: 32,
+                                                    borderRadius: '50%',
+                                                    background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)'
                                                 }}>
+                                                    <MoneyIcon sx={{color: 'white', fontSize: 16}}/>
+                                                </Box>
+                                                <Box>
+                                                    <Typography variant="caption" sx={{
+                                                        color: '#64748b',
+                                                        fontWeight: 500,
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.5px',
+                                                        display: 'block',
+                                                        fontSize: '0.7rem'
+                                                    }}>
                                                     Total Price
                                                 </Typography>
                                                 <Typography variant="caption" sx={{
@@ -2292,18 +2365,18 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                                     fontSize: '0.6rem'
                                                 }}>
                                                     (Base Price + Service Fee + Shipping Fee)
-                                                </Typography>
-                                                <Typography variant="h6" sx={{
-                                                    fontWeight: 700,
-                                                    color: '#8b5cf6',
-                                                    fontSize: '1rem'
-                                                }}>
+                                                    </Typography>
+                                                    <Typography variant="h6" sx={{
+                                                        fontWeight: 700,
+                                                        color: '#8b5cf6',
+                                                        fontSize: '1rem'
+                                                    }}>
                                                     {formatCurrency((selectedOrder.price || 0) + getServiceFee(selectedOrder) + (selectedOrder.shippingFee || 0))}
-                                                </Typography>
+                                                    </Typography>
+                                                </Box>
                                             </Box>
                                         </Box>
                                     </Box>
-                                </Box>
                             </Box>
                         </Box>
 
@@ -3003,29 +3076,28 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
             <Popover
                 open={Boolean(anchorEl)}
                 anchorEl={anchorEl}
-                onClose={() => {
-                    setAnchorEl(null);
-                    setHoveredMilestone(null);
-                }}
+                onClose={handleForceClosePopover}
                 anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'center',
+                    vertical: popoverPosition.vertical,
+                    horizontal: popoverPosition.horizontal,
                 }}
                 transformOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'center',
+                    vertical: popoverPosition.vertical,
+                    horizontal: popoverPosition.horizontal === 'right' ? 'left' : 'right',
                 }}
                 disableRestoreFocus
                 disableAutoFocus
                 disableEnforceFocus
+                disableScrollLock
                 sx={{
                     zIndex: 9999,
-                    pointerEvents: 'none',
+                    pointerEvents: 'auto',
                     '& .MuiPopover-paper': {
                         borderRadius: 3,
-                        boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)',
+                        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
                         border: '1px solid rgba(0, 0, 0, 0.08)',
-                        maxWidth: 300,
+                        maxWidth: 450,
+                        minWidth: 400,
                         overflow: 'visible',
                         pointerEvents: 'auto',
                         '&::before': {
@@ -3048,7 +3120,7 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                     onMouseEnter={handlePopoverMouseEnter}
                     onMouseLeave={handlePopoverMouseLeave}
                     sx={{
-                        p: 3,
+                        p: 4,
                         background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
                         position: 'relative'
                     }}
@@ -3058,12 +3130,12 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                             <Box sx={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: 2,
-                                mb: 2
+                                gap: 3,
+                                mb: 3
                             }}>
                                 <Box sx={{
-                                    width: 40,
-                                    height: 40,
+                                    width: 48,
+                                    height: 48,
                                     borderRadius: '50%',
                                     background: hoveredMilestone.isCompleted
                                         ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'
@@ -3078,25 +3150,26 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
                                 }}>
                                     {hoveredMilestone.isCompleted ? (
-                                        <CheckCircleIcon sx={{color: 'white', fontSize: 20}}/>
+                                        <CheckCircleIcon sx={{color: 'white', fontSize: 24}}/>
                                     ) : hoveredMilestone.isActive ? (
-                                        <DesignServicesIcon sx={{color: 'white', fontSize: 20}}/>
+                                        <DesignServicesIcon sx={{color: 'white', fontSize: 24}}/>
                                     ) : (
-                                        <PendingIcon sx={{color: 'white', fontSize: 20}}/>
+                                        <PendingIcon sx={{color: 'white', fontSize: 24}}/>
                                     )}
                                 </Box>
                                 <Box>
                                     <Typography variant="h6" sx={{
                                         fontWeight: 700,
                                         color: '#1e293b',
-                                        fontSize: '1rem',
-                                        mb: 0.5
+                                        fontSize: '1.1rem',
+                                        mb: 1
                                     }}>
                                         {hoveredMilestone.title}
                                     </Typography>
                                     <Typography variant="body2" sx={{
                                         color: '#64748b',
-                                        fontSize: '0.875rem'
+                                        fontSize: '0.9rem',
+                                        lineHeight: 1.5
                                     }}>
                                         {hoveredMilestone.description}
                                     </Typography>
@@ -3106,14 +3179,14 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                             <Box sx={{
                                 display: 'flex',
                                 flexDirection: 'column',
-                                gap: 1.5
+                                gap: 2
                             }}>
                                 {hoveredMilestone.startDate && (
                                     <Box sx={{
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: 1.5,
-                                        p: 1.5,
+                                        gap: 2,
+                                        p: 2,
                                         borderRadius: 2,
                                         background: 'rgba(59, 130, 246, 0.05)',
                                         border: '1px solid rgba(59, 130, 246, 0.1)'
@@ -3142,8 +3215,8 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                     <Box sx={{
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: 1.5,
-                                        p: 1.5,
+                                        gap: 2,
+                                        p: 2,
                                         borderRadius: 2,
                                         background: 'rgba(34, 197, 94, 0.05)',
                                         border: '1px solid rgba(34, 197, 94, 0.1)'
@@ -3162,7 +3235,7 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                                 fontWeight: 600,
                                                 fontSize: '0.875rem'
                                             }}>
-                                                {new Date(hoveredMilestone.completedDate).toLocaleDateString('vi-VN')}
+                                                {formatDateTimeSecond(hoveredMilestone.completedDate)}
                                             </Typography>
                                         </Box>
                                     </Box>
@@ -3172,8 +3245,8 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                     <Box sx={{
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: 1.5,
-                                        p: 1.5,
+                                        gap: 2,
+                                        p: 2,
                                         borderRadius: 2,
                                         background: 'rgba(239, 68, 68, 0.05)',
                                         border: '1px solid rgba(239, 68, 68, 0.1)'
@@ -3204,8 +3277,8 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                         sx={{
                                             display: 'flex',
                                             alignItems: 'center',
-                                            gap: 1.5,
-                                            p: 1.5,
+                                            gap: 2,
+                                            p: 2,
                                             borderRadius: 2,
                                             background: 'rgba(139, 92, 246, 0.05)',
                                             border: '1px solid rgba(139, 92, 246, 0.1)',
@@ -3235,6 +3308,196 @@ export default function OrderAdminDetailPopup({open, onClose, selectedOrder}) {
                                                 Click to view progress video
                                             </Typography>
                                         </Box>
+                                    </Box>
+                                )}
+
+                                {/* Pre-delivery Image for Delivering phase */}
+                                {hoveredMilestone.title === 'Delivering' && selectedOrder.preDeliveryImageUrl && (
+                                    <Box sx={{
+                                        mt: 2,
+                                        p: 2,
+                                        borderRadius: 3,
+                                        background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%)',
+                                        border: '1px solid rgba(16, 185, 129, 0.2)',
+                                        position: 'relative',
+                                        overflow: 'hidden'
+                                    }}>
+                                        <Box sx={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            right: 0,
+                                            width: '40px',
+                                            height: '40px',
+                                            background: 'rgba(16, 185, 129, 0.1)',
+                                            borderRadius: '50%',
+                                            transform: 'translate(10px, -10px)'
+                                        }}/>
+                                        <Box sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 2,
+                                            mb: 2,
+                                            position: 'relative',
+                                            zIndex: 1
+                                        }}>
+                                            <Box sx={{
+                                                width: 32,
+                                                height: 32,
+                                                borderRadius: '50%',
+                                                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                                            }}>
+                                                <LocalShippingIcon sx={{color: 'white', fontSize: 16}}/>
+                                            </Box>
+                                            <Box>
+                                                <Typography variant="caption" sx={{
+                                                    color: '#64748b',
+                                                    fontWeight: 500,
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.5px',
+                                                    display: 'block',
+                                                    fontSize: '0.7rem'
+                                                }}>
+                                                    Pre-delivery Image
+                                                </Typography>
+                                                <Typography variant="body2" sx={{
+                                                    color: '#1e293b',
+                                                    fontWeight: 600,
+                                                    fontSize: '0.875rem'
+                                                }}>
+                                                    Image provided by garment before delivery
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+                                        <Box sx={{
+                                            position: 'relative',
+                                            borderRadius: 2,
+                                            overflow: 'hidden',
+                                            backgroundColor: '#000',
+                                            border: '2px solid rgba(16, 185, 129, 0.4)'
+                                        }}>
+                                            <img
+                                                src={selectedOrder.preDeliveryImageUrl}
+                                                alt="Pre-delivery"
+                                                style={{
+                                                    width: '100%',
+                                                    height: 'auto',
+                                                    maxHeight: 200,
+                                                    objectFit: 'cover',
+                                                    display: 'block'
+                                                }}
+                                                onError={(e) => {
+                                                    e.target.style.display = 'none';
+                                                }}
+                                            />
+                                        </Box>
+                                        <Typography variant="caption" sx={{
+                                            color: '#64748b',
+                                            fontSize: '0.75rem',
+                                            mt: 1,
+                                            display: 'block',
+                                            textAlign: 'center'
+                                        }}>
+                                            Image provided by garment before delivery
+                                        </Typography>
+                                    </Box>
+                                )}
+
+                                {/* Delivery Image for completed orders */}
+                                {hoveredMilestone.title === 'Completed' && selectedOrder.status === 'completed' && selectedOrder.deliveryImage && (
+                                    <Box sx={{
+                                        mt: 2,
+                                        p: 2,
+                                        borderRadius: 3,
+                                        background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(22, 163, 74, 0.05) 100%)',
+                                        border: '1px solid rgba(34, 197, 94, 0.2)',
+                                        position: 'relative',
+                                        overflow: 'hidden'
+                                    }}>
+                                        <Box sx={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            right: 0,
+                                            width: '40px',
+                                            height: '40px',
+                                            background: 'rgba(34, 197, 94, 0.1)',
+                                            borderRadius: '50%',
+                                            transform: 'translate(10px, -10px)'
+                                        }}/>
+                                        <Box sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 2,
+                                            mb: 2,
+                                            position: 'relative',
+                                            zIndex: 1
+                                        }}>
+                                            <Box sx={{
+                                                width: 32,
+                                                height: 32,
+                                                borderRadius: '50%',
+                                                background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)'
+                                            }}>
+                                                <CheckCircleIcon sx={{color: 'white', fontSize: 16}}/>
+                                            </Box>
+                                            <Box>
+                                                <Typography variant="caption" sx={{
+                                                    color: '#64748b',
+                                                    fontWeight: 500,
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.5px',
+                                                    display: 'block',
+                                                    fontSize: '0.7rem'
+                                                }}>
+                                                    Delivery Confirmation
+                                                </Typography>
+                                                <Typography variant="body2" sx={{
+                                                    color: '#1e293b',
+                                                    fontWeight: 600,
+                                                    fontSize: '0.875rem'
+                                                }}>
+                                                    Image uploaded by school upon delivery
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+                                        <Box sx={{
+                                            position: 'relative',
+                                            borderRadius: 2,
+                                            overflow: 'hidden',
+                                            backgroundColor: '#000',
+                                            border: '2px solid #16a34a'
+                                        }}>
+                                            <img
+                                                src={selectedOrder.deliveryImage}
+                                                alt="Delivery confirmation"
+                                                style={{
+                                                    width: '100%',
+                                                    height: 'auto',
+                                                    maxHeight: 200,
+                                                    objectFit: 'cover',
+                                                    display: 'block'
+                                                }}
+                                                onError={(e) => {
+                                                    e.target.style.display = 'none';
+                                                }}
+                                            />
+                                        </Box>
+                                        <Typography variant="caption" sx={{
+                                            color: '#64748b',
+                                            fontSize: '0.75rem',
+                                            mt: 1,
+                                            display: 'block',
+                                            textAlign: 'center'
+                                        }}>
+                                            Image uploaded by school upon delivery
+                                        </Typography>
                                     </Box>
                                 )}
                             </Box>

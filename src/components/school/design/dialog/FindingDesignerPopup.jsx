@@ -1817,8 +1817,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                         Payment Summary
                                                     </Typography.Text>
                                                     <Box sx={{display: 'flex', justifyContent: 'space-between', mt: 1}}>
-                                                        <Typography.Text style={{color: '#475569'}}>Base
-                                                            price</Typography.Text>
+                                                        <Typography.Text style={{color: '#475569'}}>Quotation price</Typography.Text>
                                                         <Typography.Text style={{color: '#1e293b', fontWeight: 600}}>
                                                             {baseAndExtra.base.toLocaleString('vi-VN')} VND
                                                         </Typography.Text>
@@ -1843,7 +1842,7 @@ export default function FindingDesignerPopup({visible, onCancel, request}) {
                                                         mt: 0.5
                                                     }}>
                                                         <Typography.Text style={{color: '#475569'}}>
-                                                            Service fee {businessConfig?.serviceRate ? `(${(businessConfig.serviceRate * 100).toFixed(0)}% of base price)` : ''}
+                                                            Service fee {businessConfig?.serviceRate ? `(${(businessConfig.serviceRate * 100)}% of quotation price)` : ''}
                                                         </Typography.Text>
                                                         <Typography.Text style={{color: '#1e293b', fontWeight: 600}}>
                                                             {feeAmount.toLocaleString('vi-VN')} VND

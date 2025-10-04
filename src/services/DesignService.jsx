@@ -84,7 +84,7 @@ export const getSchoolDesign = async () => {
     return response || null
 }
 
-export const buyExtraRevision = async (requestId, revisionTime, receiverId, totalPrice, gatewayCode) => {
+export const buyExtraRevision = async (requestId, revisionTime, receiverId, totalPrice, gatewayCode, payFromWallet) => {
     const response = await axiosClient.put("/design/request/revision-time", {
         requestId: requestId,
         revisionTime: revisionTime,
@@ -95,7 +95,7 @@ export const buyExtraRevision = async (requestId, revisionTime, receiverId, tota
             totalPrice: totalPrice,
             gatewayCode: gatewayCode,
             serviceFee: 0,
-            payFromWallet: false,
+            payFromWallet: payFromWallet,
             shippingFee: 0,
         }
     })

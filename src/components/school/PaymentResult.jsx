@@ -533,7 +533,8 @@ export default function PaymentResult() {
             revisionPurchaseDetails.revisionQuantity,
             revisionPurchaseDetails.designerId,
             paymentAmount,
-            isPaymentFromWallet ? "00" : vnpResponseCode
+            isPaymentFromWallet ? "00" : vnpResponseCode,
+            isPaymentFromWallet
         );
 
         if (response && response.status === 200) {

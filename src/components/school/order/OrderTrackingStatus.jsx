@@ -724,11 +724,6 @@ export default function OrderTrackingStatus() {
         return Math.round(totalAmount * depositRate + fee);
     };
 
-    const getDepositRatePercentage = () => {
-        const depositRate = orderDetail?.depositRate || 0.5;
-        return Math.round(depositRate * 100);
-    };
-
     const getTotalUniforms = () => {
         if (!orderDetail?.orderDetails) return 0;
         const totalItems = orderDetail.orderDetails.reduce((sum, detail) => sum + detail.quantity, 0);
@@ -758,7 +753,7 @@ export default function OrderTrackingStatus() {
             isActive: false,
             startDate: new Date().toISOString().split('T')[0],
             endDate: null,
-            completedDate: new Date().toISOString().split('T')[0],
+            completedDate: formatDateTimeSecond(new Date().toISOString().split('T')[0]),
             stage: 1
         };
 
@@ -776,7 +771,7 @@ export default function OrderTrackingStatus() {
                 isNotStarted: isNotStarted,
                 startDate: milestone.startDate,
                 endDate: milestone.endDate,
-                completedDate: milestone.completedDate,
+                completedDate: formatDateTimeSecond(milestone.completedDate),
                 stage: milestone.stage || (index + 2),
                 videoUrl: milestone.videoUrl || null
             };
@@ -794,7 +789,7 @@ export default function OrderTrackingStatus() {
             isPaymentRequired: orderDetail.status === 'processing' && allApiPhasesCompleted,
             startDate: shippingInfo?.pickup_time || null,
             endDate: shippingInfo?.leadtime || null,
-            completedDate: orderDetail.status === 'completed' ? shippingInfo?.leadtime : null,
+            completedDate: orderDetail.status === 'completed' ? formatDateTimeSecond(shippingInfo?.leadtime) : null,
             stage: apiMilestones.length + 2
         };
 
@@ -806,7 +801,7 @@ export default function OrderTrackingStatus() {
             isNotStarted: orderDetail.status !== 'completed',
             startDate: null,
             endDate: null,
-            completedDate: orderDetail.status === 'completed' ? (orderDetail.completedDate || shippingInfo?.leadtime) : null,
+            completedDate: orderDetail.status === 'completed' ? (formatDateTimeSecond(orderDetail.completedDate || shippingInfo?.leadtime)) : null,
             stage: apiMilestones.length + 3
         };
 
@@ -2133,7 +2128,7 @@ export default function OrderTrackingStatus() {
                                                     display: 'block',
                                                     fontSize: '0.6rem'
                                                 }}>
-                                                    {businessConfig?.serviceRate ? `(${(businessConfig.serviceRate * 100).toFixed(0)}% of Quotation Price)` : selectedQuotation.price <= 10000000 ? '(2% total)' : ''}
+                                                    {businessConfig?.serviceRate ? `(${(businessConfig.serviceRate * 100)}% of Quotation Price)` : '(2% total)'}
                                                 </Typography>
                                                 <Typography variant="h6" sx={{
                                                     fontWeight: 700,
@@ -4000,14 +3995,14 @@ export default function OrderTrackingStatus() {
                             </Box>
                         )}
 
-                        {(hoveredMilestone.startDate || hoveredMilestone.endDate || hoveredMilestone.completedDate || (hoveredMilestone.title === 'Delivering' && shippingInfo && (shippingInfo.pickup_time || shippingInfo.leadtime))) && (
+                        {(hoveredMilestone.startDate || hoveredMilestone.endDate || formatDateTimeSecond(hoveredMilestone.completedDate) || (hoveredMilestone.title === 'Delivering' && shippingInfo && (shippingInfo.pickup_time || shippingInfo.leadtime))) && (
                             <Box sx={{
                                 display: 'flex',
                                 flexDirection: 'column',
                                 gap: 2,
                                 mb: 3
                             }}>
-                                {(hoveredMilestone.completedDate || (hoveredMilestone.title === 'Delivering' && orderDetail.status === 'completed' && shippingInfo?.leadtime) || (hoveredMilestone.title === 'Completed' && orderDetail.status === 'completed' && orderDetail.completedDate)) && (
+                                {(formatDateTimeSecond(hoveredMilestone.completedDate) || (hoveredMilestone.title === 'Delivering' && orderDetail.status === 'completed' && formatDateTimeSecond(shippingInfo?.leadtime)) || (hoveredMilestone.title === 'Completed' && orderDetail.status === 'completed' && formatDateTimeSecond(orderDetail.completedDate))) && (
                                     <Box sx={{
                                         display: 'flex',
                                         alignItems: 'center',
@@ -4032,10 +4027,10 @@ export default function OrderTrackingStatus() {
                                                 fontWeight: 600
                                             }}>
                                                 {(() => {
-                                                    const completedDate = hoveredMilestone.completedDate ||
-                                                        (hoveredMilestone.title === 'Completed' ? orderDetail.completedDate : null) ||
+                                                    const completedDate = formatDateTimeSecond(hoveredMilestone.completedDate) ||
+                                                        (hoveredMilestone.title === 'Completed' ? formatDateTimeSecond(orderDetail.completedDate) : null) ||
                                                         shippingInfo?.leadtime;
-                                                    return formatDateTime(completedDate);
+                                                    return formatDateTimeSecond(completedDate);
                                                 })()}
                                             </Typography>
                                         </Box>
@@ -4072,7 +4067,7 @@ export default function OrderTrackingStatus() {
                                     </Box>
                                 )}
 
-                                {((hoveredMilestone.endDate && !hoveredMilestone.completedDate) || (hoveredMilestone.title === 'Delivering' && orderDetail.status === 'delivering' && shippingInfo?.leadtime)) && (
+                                {((hoveredMilestone.endDate && !hoveredMilestone.completedDate) || (hoveredMilestone.title === 'Delivering' && orderDetail.status === 'delivering' && formatDateTimeSecond(shippingInfo?.leadtime))) && (
                                     <Box sx={{
                                         display: 'flex',
                                         alignItems: 'center',
@@ -4891,7 +4886,7 @@ export default function OrderTrackingStatus() {
                                     justifyContent: 'center',
                                     boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
                                 }}>
-                                    <LocalShippingIcon sx={{color: 'white', fontSize: 18}}/>
+                                    <MoneyIcon sx={{color: 'white', fontSize: 18}}/>
                                 </Box>
                                 <Box sx={{flex: 1}}>
                                     <Typography variant="caption" sx={{
@@ -4940,7 +4935,6 @@ export default function OrderTrackingStatus() {
                                     ) : (
                                         <Typography variant="h6" sx={{
                                             fontWeight: 700,
-                                            color: '#10b981',
                                             fontSize: '1rem'
                                         }}>
                                             {formatCurrency(orderDetail.price + getServiceFee() + shippingFee)}
@@ -5624,7 +5618,7 @@ export default function OrderTrackingStatus() {
                                     color: '#7c3aed',
                                     fontSize: '0.875rem'
                                 }}>
-                                    {formatDate(selectedMilestoneVideo.completedDate)}
+                                    {formatDateTimeSecond(selectedMilestoneVideo.completedDate)}
                                 </Typography>
                             </Box>
                         )}

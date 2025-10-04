@@ -1769,18 +1769,24 @@ function DeliverySubmissionModal({
                     }
                 });
 
+
                 setRevisionOf(selectedRevisionId);
                 setItemList(itemListData);
 
                 const uploadedFilesData = {};
                 previousDelivery.deliveryItems.forEach((item, index) => {
-                    if (item.frontImageUrl) uploadedFilesData[`front-${index}`] = item.frontImageUrl;
-                    if (item.backImageUrl) uploadedFilesData[`back-${index}`] = item.backImageUrl;
+                    // Use the designItemId to match with requestData.items
+                    const itemId = item.designItem?.id || item.designItemId;
+                    if (item.frontImageUrl && itemId) uploadedFilesData[`front-${itemId}`] = item.frontImageUrl;
+                    if (item.backImageUrl && itemId) uploadedFilesData[`back-${itemId}`] = item.backImageUrl;
                 });
                 setUploadedFiles(uploadedFilesData);
+                console.log('Uploaded files data:', uploadedFilesData);
             }
         }
     }, [visible, deliveryType, revisionRequests, designDeliveries, requestData?.items]);
+    console.log('Item list:', itemList);
+    console.log('Uploaded files:', uploadedFiles);
 
     const fetchRevisionRequests = async () => {
         try {
@@ -1906,22 +1912,22 @@ function DeliverySubmissionModal({
                 }
                 break;
             case 'buttonHoles':
-                const holes = Number(value);
+                { const holes = Number(value);
                 if (isNaN(holes) || holes < 2 || holes > 4) {
                     newErrors[fieldKey] = 'Button holes must be between 2 and 4!';
                 } else {
                     delete newErrors[fieldKey];
                 }
-                break;
+                break; }
             case 'buttonLength':
             case 'buttonWidth':
-                const length = Number(value);
+                { const length = Number(value);
                 if (isNaN(length) || length < 0.5 || length > 10) {
                     newErrors[fieldKey] = `${field === 'buttonLength' ? 'Button length' : 'Button width'} must be between 0.5 and 10 cm!`;
                 } else {
                     delete newErrors[fieldKey];
                 }
-                break;
+                break; }
             case 'logoHeight':
             case 'logoWidth':
                 const dim = Number(value);
