@@ -1129,8 +1129,7 @@ export default function OrderDetailPopup({open, onClose, order}) {
                                 <Typography variant="body2" sx={{
                                     color: '#475569', fontSize: '12px'
                                 }}>
-                                    Service
-                                    fee {businessConfig?.serviceRate ? `(${(businessConfig.serviceRate * 100).toFixed(0)}% Quotation Price)` : selectedQuotation.price <= 10000000 ? '(2% total)' : ''}
+                                    Service fee {businessConfig?.serviceRate ? `(${(businessConfig.serviceRate * 100)}% Quotation Price)` : selectedQuotation.price <= 10000000 ? '(2% total)' : ''}
                                 </Typography>
                                 <Typography variant="body2" sx={{
                                     color: '#1e293b', fontWeight: 600, fontSize: '12px'
@@ -1322,28 +1321,6 @@ export default function OrderDetailPopup({open, onClose, order}) {
                             {/*        })()}*/}
                             {/*    </Typography>*/}
                             {/*</Box>*/}
-
-
-                            {/* Shipping Note */}
-                            <Box sx={{
-                                mt: 2,
-                                p: 1.5,
-                                backgroundColor: '#f0f9ff',
-                                borderRadius: 1,
-                                border: '1px solid #bae6fd'
-                            }}>
-                                <Typography variant="caption" sx={{
-                                    color: '#0369a1',
-                                    fontSize: '11px',
-                                    fontStyle: 'italic',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 0.5
-                                }}>
-                                    <InfoIcon sx={{fontSize: 12}}/>
-                                    Note: This amount does not include shipping costs
-                                </Typography>
-                            </Box>
                         </Box>
                     </Box>
 

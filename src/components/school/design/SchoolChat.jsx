@@ -43,7 +43,7 @@ import {
     getUndoneRevisionRequests,
     makeDesignFinal
 } from "../../../services/DesignService.jsx";
-import {getPaymentUrl} from "../../../services/PaymentService.jsx";
+import {getPaymentUrl, getPaymentUrlUsingWallet, getWalletBalance} from "../../../services/PaymentService.jsx";
 import {PiPantsFill, PiShirtFoldedFill} from "react-icons/pi";
 import {GiSkirt} from "react-icons/gi";
 import DisplayImage from '../../ui/DisplayImage.jsx';
@@ -2299,17 +2299,41 @@ function RevisionRequestModal({visible, onCancel, onSubmit, selectedDeliveryId, 
     );
 }
 
-function BuyMoreRevisionsModal({visible, onCancel, onSubmit, extraRevisionPrice, isPurchasing}) {
+function BuyMoreRevisionsModal({visible, onCancel, onSubmit, extraRevisionPrice, isPurchasing, userInfo}) {
     const [form] = Form.useForm();
     const [formKey, setFormKey] = useState(0);
     const [initialValues, setInitialValues] = useState({revisionQuantity: 1});
     const [revisionQuantity, setRevisionQuantity] = useState(1);
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('gateway');
+    const [walletBalance, setWalletBalance] = useState(0);
+    const [loadingWallet, setLoadingWallet] = useState(false);
 
     useEffect(() => {
         if (!visible) {
             setInitialValues({revisionQuantity: 1});
             setRevisionQuantity(1);
             setFormKey(k => k + 1);
+        }
+    }, [visible]);
+
+    // Fetch wallet balance when modal opens
+    useEffect(() => {
+        const fetchWalletBalance = async () => {
+            try {
+                setLoadingWallet(true);
+                const response = await getWalletBalance();
+                if (response?.status === 200 && response.data?.body?.balance !== undefined) {
+                    setWalletBalance(response.data.body.balance);
+                }
+            } catch (error) {
+                console.error('Error fetching wallet balance:', error);
+            } finally {
+                setLoadingWallet(false);
+            }
+        };
+
+        if (visible) {
+            fetchWalletBalance();
         }
     }, [visible]);
 
@@ -2320,7 +2344,7 @@ function BuyMoreRevisionsModal({visible, onCancel, onSubmit, extraRevisionPrice,
                 if (totalPrice > 200000000) {
                     return;
                 }
-                onSubmit(values);
+                onSubmit({...values, paymentMethod: selectedPaymentMethod});
             })
             .catch(info => {
                 console.log('Validate Failed:', info);
@@ -2342,20 +2366,34 @@ function BuyMoreRevisionsModal({visible, onCancel, onSubmit, extraRevisionPrice,
         form.setFieldsValue({revisionQuantity: value});
     };
 
+    const totalPrice = calculatePrice(revisionQuantity);
+    const hasEnoughBalance = walletBalance >= totalPrice;
+
     return (
         <Modal
             title={
                 <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                     <DollarOutlined style={{color: '#2e7d32', fontSize: '18px'}}/>
                     <Typography.Title level={5} style={{margin: 0, color: '#1e293b'}}>
-                        Buy More Revisions
+                        Payment Details
                     </Typography.Title>
+                    <Box sx={{
+                        backgroundColor: '#2e7d32',
+                        color: 'white',
+                        px: 2,
+                        py: 0.5,
+                        borderRadius: 2,
+                        fontSize: '12px',
+                        fontWeight: 600
+                    }}>
+                        REV{revisionQuantity}
+                    </Box>
                 </Box>
             }
             open={visible}
             onCancel={onCancel}
             onOk={handleOk}
-            okText={isPurchasing ? "Processing Payment..." : "Purchase Revisions"}
+            okText={isPurchasing ? "Processing Payment..." : `Proceed to Payment (${selectedPaymentMethod === 'gateway' ? 'Gateway' : 'Wallet'})`}
             cancelText="Cancel"
             okButtonProps={{
                 disabled: isPurchasing,
@@ -2386,74 +2424,224 @@ function BuyMoreRevisionsModal({visible, onCancel, onSubmit, extraRevisionPrice,
                 name="buy_revisions_form"
                 initialValues={initialValues}
             >
+                {/* Revision Quantity Input */}
                 <Box sx={{mb: 3}}>
-                    <Typography.Text style={{fontSize: '14px', color: '#475569'}}>
+                    <Typography.Text style={{fontSize: '14px', color: '#475569', display: 'block', mb: 2}}>
                         You have used all available revisions. Choose a package to continue requesting revisions:
                     </Typography.Text>
+                    
+                    <Form.Item
+                        name="revisionQuantity"
+                        label="Number of Revisions:"
+                        rules={[
+                            {required: true, message: 'Please enter number of revisions!'},
+                            {
+                                type: 'number',
+                                min: 1,
+                                max: maxQuantityAllowed(),
+                                message: `Quantity must be between 1 and ${maxQuantityAllowed()} (max 200 million VND)!`
+                            }
+                        ]}
+                    >
+                        <Input
+                            type="number"
+                            min={1}
+                            max={maxQuantityAllowed()}
+                            placeholder={`Enter number of revisions (1-${maxQuantityAllowed()})`}
+                            style={{borderRadius: '8px'}}
+                            onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
+                            autoComplete="off"
+                        />
+                    </Form.Item>
                 </Box>
 
-                <Form.Item
-                    name="revisionQuantity"
-                    label="Number of Revisions:"
-                    rules={[
-                        {required: true, message: 'Please enter number of revisions!'},
-                        {
-                            type: 'number',
-                            min: 1,
-                            max: maxQuantityAllowed(),
-                            message: `Quantity must be between 1 and ${maxQuantityAllowed()} (max 200 million VND)!`
-                        }
-                    ]}
-                >
-                    <Input
-                        type="number"
-                        min={1}
-                        max={maxQuantityAllowed()}
-                        placeholder={`Enter number of revisions (1-${maxQuantityAllowed()})`}
-                        style={{borderRadius: '8px'}}
-                        onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
-                        autoComplete="off"
-                    />
-                </Form.Item>
-
-                {}
+                {/* Payment Summary Section */}
                 <Box sx={{
-                    p: 2,
-                    backgroundColor: '#f6ffed',
-                    borderRadius: 2,
-                    border: '1px solid #b7eb8f',
-                    mb: 2
+                    p: 3,
+                    backgroundColor: '#f8fafc',
+                    borderRadius: 3,
+                    border: '1px solid #e2e8f0',
+                    mb: 3
                 }}>
-                    <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                        <Typography.Text strong style={{fontSize: '14px', color: '#1e293b'}}>
-                            Total Price:
-                        </Typography.Text>
-                        <Typography.Text strong style={{fontSize: '18px', color: '#2e7d32'}}>
-                            {calculatePrice(revisionQuantity).toLocaleString('vi-VN')} VND
-                        </Typography.Text>
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                        <Box sx={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: '50%',
+                            backgroundColor: '#2e7d32',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                            fontSize: '16px'
+                        }}>
+                            <DollarOutlined/>
+                        </Box>
+                        <Typography.Title level={5} style={{margin: 0, color: '#1e293b'}}>
+                            Payment Summary
+                        </Typography.Title>
                     </Box>
-                    <Typography.Text style={{fontSize: '12px', color: '#64748b', display: 'block', mt: 0.5}}>
-                        {revisionQuantity === 9999 ? 'Unlimited revisions' : `${revisionQuantity} revision${revisionQuantity !== 1 ? 's' : ''} × ${extraRevisionPrice?.toLocaleString('vi-VN') || '0'} VND each`}
+                    <Typography.Text style={{fontSize: '14px', color: '#64748b'}}>
+                        Please select your payment method and review the payment details below.
                     </Typography.Text>
-                    {calculatePrice(revisionQuantity) > 200000000 && (
-                        <Typography.Text
-                            style={{fontSize: '12px', color: '#dc2626', display: 'block', mt: 0.5, fontWeight: 600}}>
-                            ⚠️ Total price exceeds 200 million VND limit!
+                    
+                    {/* Price Display */}
+                    <Box sx={{
+                        mt: 2,
+                        p: 2,
+                        backgroundColor: '#f6ffed',
+                        borderRadius: 2,
+                        border: '1px solid #b7eb8f'
+                    }}>
+                        <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                            <Typography.Text strong style={{fontSize: '14px', color: '#1e293b'}}>
+                                Total Price:
+                            </Typography.Text>
+                            <Typography.Text strong style={{fontSize: '18px', color: '#2e7d32'}}>
+                                {totalPrice.toLocaleString('vi-VN')} VND
+                            </Typography.Text>
+                        </Box>
+                        <Typography.Text style={{fontSize: '12px', color: '#64748b', display: 'block', mt: 0.5}}>
+                            {revisionQuantity === 9999 ? 'Unlimited revisions' : `${revisionQuantity} revision${revisionQuantity !== 1 ? 's' : ''} × ${extraRevisionPrice?.toLocaleString('vi-VN') || '0'} VND each`}
                         </Typography.Text>
-                    )}
+                        {totalPrice > 200000000 && (
+                            <Typography.Text
+                                style={{fontSize: '12px', color: '#dc2626', display: 'block', mt: 0.5, fontWeight: 600}}>
+                                ⚠️ Total price exceeds 200 million VND limit!
+                            </Typography.Text>
+                        )}
+                    </Box>
                 </Box>
 
+                {/* Payment Method Selection */}
                 <Box sx={{
-                    p: 2,
-                    backgroundColor: '#e6f7ff',
-                    borderRadius: 2,
-                    border: '1px solid #91d5ff',
-                    mt: 2
+                    p: 3,
+                    backgroundColor: 'white',
+                    borderRadius: 3,
+                    border: '1px solid #e2e8f0',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    mb: 3
                 }}>
-                    <Typography.Text style={{fontSize: '12px', color: '#1890ff'}}>
-                        💡 Price: {extraRevisionPrice?.toLocaleString('vi-VN') || '0'} VND per revision.
-                        Maximum {maxQuantityAllowed()} revisions allowed (200 million VND limit).
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
+                        <Box sx={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: '50%',
+                            backgroundColor: '#1976d2',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                            fontSize: '16px'
+                        }}>
+                            💳
+                        </Box>
+                        <Typography.Title level={5} style={{margin: 0, color: '#1e293b'}}>
+                            Payment Method
+                        </Typography.Title>
+                    </Box>
+                    <Typography.Text style={{fontSize: '14px', color: '#64748b', display: 'block', mb: 3}}>
+                        Choose how you want to pay
                     </Typography.Text>
+
+                    {/* Payment Gateway Option */}
+                    <Box sx={{
+                        p: 3,
+                        borderRadius: 3,
+                        border: selectedPaymentMethod === 'gateway' ? '2px solid #2e7d32' : '1px solid #e2e8f0',
+                        backgroundColor: selectedPaymentMethod === 'gateway' ? '#f0fdf4' : 'white',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        mb: 2
+                    }}
+                    onClick={() => setSelectedPaymentMethod('gateway')}
+                    >
+                        <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                <Box sx={{
+                                    width: 20,
+                                    height: 20,
+                                    borderRadius: '50%',
+                                    border: selectedPaymentMethod === 'gateway' ? '2px solid #2e7d32' : '2px solid #e2e8f0',
+                                    backgroundColor: selectedPaymentMethod === 'gateway' ? '#2e7d32' : 'white',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    {selectedPaymentMethod === 'gateway' && (
+                                        <Box sx={{
+                                            width: 8,
+                                            height: 8,
+                                            borderRadius: '50%',
+                                            backgroundColor: 'white'
+                                        }}/>
+                                    )}
+                                </Box>
+                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                    <Box>
+                                        <Typography.Text strong style={{fontSize: '16px', color: '#1e293b'}}>
+                                            Payment Gateway
+                                        </Typography.Text>
+                                        <Typography.Text style={{fontSize: '14px', color: '#64748b', display: 'block'}}>
+                                            Pay securely with VNPay, credit/debit cards, or bank transfer
+                                        </Typography.Text>
+                                    </Box>
+                                </Box>
+                            </Box>
+                            <Typography.Text style={{fontSize: '12px', color: '#64748b'}}>
+                                Secure payment
+                            </Typography.Text>
+                        </Box>
+                    </Box>
+
+                    {/* UniSew Wallet Option */}
+                    <Box sx={{
+                        p: 3,
+                        borderRadius: 3,
+                        border: selectedPaymentMethod === 'wallet' ? '2px solid #2e7d32' : '1px solid #e2e8f0',
+                        backgroundColor: selectedPaymentMethod === 'wallet' ? '#f0fdf4' : 'white',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease'
+                    }}
+                    onClick={() => setSelectedPaymentMethod('wallet')}
+                    >
+                        <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                <Box sx={{
+                                    width: 20,
+                                    height: 20,
+                                    borderRadius: '50%',
+                                    border: selectedPaymentMethod === 'wallet' ? '2px solid #2e7d32' : '2px solid #e2e8f0',
+                                    backgroundColor: selectedPaymentMethod === 'wallet' ? '#2e7d32' : 'white',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    {selectedPaymentMethod === 'wallet' && (
+                                        <Box sx={{
+                                            width: 8,
+                                            height: 8,
+                                            borderRadius: '50%',
+                                            backgroundColor: 'white'
+                                        }}/>
+                                    )}
+                                </Box>
+                                <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                    <Box>
+                                        <Typography.Text strong style={{fontSize: '16px', color: '#1e293b'}}>
+                                            UniSew Wallet
+                                        </Typography.Text>
+                                        <Typography.Text style={{fontSize: '14px', color: '#64748b', display: 'block'}}>
+                                            Pay instantly from your wallet balance
+                                        </Typography.Text>
+                                    </Box>
+                                </Box>
+                            </Box>
+                            <Typography.Text strong style={{fontSize: '14px', color: '#2e7d32'}}>
+                                {loadingWallet ? 'Loading...' : `${walletBalance.toLocaleString('vi-VN')} VND`}
+                            </Typography.Text>
+                        </Box>
+                    </Box>
                 </Box>
             </Form>
         </Modal>
@@ -2697,6 +2885,7 @@ export default function SchoolChat() {
         setIsPurchasingRevisions(true);
         try {
             const quantity = values.revisionQuantity;
+            const paymentMethod = values.paymentMethod;
             const extraRevisionPrice = requestData?.finalDesignQuotation?.extraRevisionPrice || 0;
             const price = quantity * extraRevisionPrice;
 
@@ -2710,21 +2899,37 @@ export default function SchoolChat() {
             };
             sessionStorage.setItem('revisionPurchaseDetails', JSON.stringify(revisionPurchaseDetails));
 
-            const amount = price;
-            const description = "buy extra revision";
-            const orderType = "revision";
-            const returnURL = "/school/payment/result";
-
-            sessionStorage.setItem('currentPaymentType', orderType);
-
-            const paymentResponse = await getPaymentUrl(amount, description, orderType, returnURL);
-
-            if (paymentResponse && paymentResponse.status === 200 && paymentResponse.data.body) {
-                // Don't close modal here - the page will redirect to payment
-                window.location.href = paymentResponse.data.body.url;
+            if (paymentMethod === 'wallet') {
+                // Use wallet payment
+                try {
+                    localStorage.setItem('paymentMethod', 'wallet');
+                    sessionStorage.setItem('currentPaymentType', 'revision');
+                    const walletPaymentUrl = getPaymentUrlUsingWallet(price);
+                    window.location.href = walletPaymentUrl;
+                } catch (walletError) {
+                    console.error('Wallet payment error:', walletError);
+                    enqueueSnackbar('Wallet payment failed. Please try again.', {variant: 'error'});
+                    setIsPurchasingRevisions(false);
+                }
             } else {
-                enqueueSnackbar('Failed to get payment URL. Please try again.', {variant: 'error'});
-                setIsPurchasingRevisions(false);
+                // Use VNPay payment
+                localStorage.setItem('paymentMethod', 'gateway');
+                const amount = price;
+                const description = "buy extra revision";
+                const orderType = "revision";
+                const returnURL = "/school/payment/result";
+
+                sessionStorage.setItem('currentPaymentType', orderType);
+
+                const paymentResponse = await getPaymentUrl(amount, description, orderType, returnURL);
+
+                if (paymentResponse && paymentResponse.status === 200 && paymentResponse.data.body) {
+                    // Don't close modal here - the page will redirect to payment
+                    window.location.href = paymentResponse.data.body.url;
+                } else {
+                    enqueueSnackbar('Failed to get payment URL. Please try again.', {variant: 'error'});
+                    setIsPurchasingRevisions(false);
+                }
             }
         } catch (error) {
             console.error('Error processing revision purchase:', error);
@@ -3664,6 +3869,7 @@ export default function SchoolChat() {
                 onSubmit={handleBuyMoreRevisions}
                 extraRevisionPrice={requestData?.finalDesignQuotation?.extraRevisionPrice || 0}
                 isPurchasing={isPurchasingRevisions}
+                userInfo={userInfo}
             />
 
             <RequestDetailPopup

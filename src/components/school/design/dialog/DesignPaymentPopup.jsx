@@ -702,7 +702,7 @@ export default function DesignPaymentPopup({visible, onCancel, selectedQuotation
                         border: '1px solid rgba(255, 152, 0, 0.2)'
                     }}>
                         <Typography.Text style={{color: '#475569', fontSize: '14px'}}>
-                            <strong>Service Fee{businessConfig?.serviceRate ? ` (${(businessConfig.serviceRate * 100).toFixed(0)}% of quotation price)` : ''}:</strong>
+                            <strong>Service Fee{businessConfig?.serviceRate ? ` (${(businessConfig.serviceRate * 100)}% of quotation price)` : ''}:</strong>
                         </Typography.Text>
                         <Typography.Title level={4} style={{margin: 0, color: '#f57c00'}}>
                             {(() => {

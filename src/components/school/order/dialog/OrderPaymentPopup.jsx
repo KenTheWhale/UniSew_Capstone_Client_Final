@@ -674,7 +674,7 @@ export default function OrderPaymentPopup({visible, onCancel, selectedQuotationD
                                 Service Fee
                             </Typography.Title>
                             <Typography.Text type="secondary" style={{fontSize: '14px'}}>
-                                Platform service charge {businessConfig?.serviceRate ? `(${(businessConfig.serviceRate * 100).toFixed(0)}% total)` : ''}
+                                Platform service charge {businessConfig?.serviceRate ? `(${(businessConfig.serviceRate * 100)}% total)` : ''}
                             </Typography.Text>
                         </Box>
                     </Box>
